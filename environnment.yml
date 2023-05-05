@@ -1,0 +1,28 @@
+name: xhydro
+channels:
+    - conda-forge
+dependencies:
+    - python=3.9
+    - IPyKernel
+    - xarray
+    - dask
+    - netCDF4
+    - bottleneck
+    - s3fs
+    - zarr
+    - cartopy
+    - geoviews
+    - rioxarray
+    - matplotlib
+    - intake
+    - geopandas
+    - hvplot
+    - intake-xarray=0.6.1
+    - intake-geopandas
+    - nbsphinx
+    - sphinx
+    - xclim
+    - pymannkendall
+    - pip:
+        - sphinx-pangeo-theme
+        - furo
