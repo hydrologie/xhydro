@@ -155,7 +155,7 @@ texinfo_documents = [
      'xHydro Documentation',
      author,
      'xhydro',
-     'Hydrological analysis on top of xarray.',
+     'Hydrological analysis build with xarray.',
      'Miscellaneous'),
 ]
 
