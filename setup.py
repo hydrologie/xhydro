@@ -10,7 +10,29 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = [
+    "bottleneck>=1.3.1",
+    "cartopy",
+    "cftime",
+    "cf-xarray>=0.6.1",
+    "cftime>=1.4.1",
+    "dask[array]>=2.6",
+    "geopandas",
+    "h5netcdf",
+    "intake-xarray>=0.6.1",
+    "jsonpickle",
+    "numba",
+    "numpy>=1.16",
+    "pandas>=0.23",
+    "pint>=0.10",
+    "pyarrow",
+    "pyyaml",
+    "s3fs>=2022.7.0",
+    "scipy>=1.2",
+    "xarray>=0.17",
+    "xclim>=0.37",
+    "zarr>=2.11.1"    
+    ]
 
 test_requirements = ['pytest>=3', ]
 
