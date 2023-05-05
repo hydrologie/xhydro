@@ -10,7 +10,7 @@ xHydro
         :target: https://travis-ci.com/TC-FF/xhydro
 
 .. image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
-        :target: https://xhydro.readthedocs.io/en/latest/?version=latest
+        :target: https://hydrologie.github.io/xhydro/
         :alt: Documentation Status
 
 
