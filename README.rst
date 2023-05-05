@@ -24,7 +24,7 @@ Hydrology analysis build with xarray
 
 
 * Free software: Apache Software License 2.0
-* Documentation: https://xhydro.readthedocs.io.
+* Documentation: https://hydrologie.github.io/xhydro/
 
 
 Features
