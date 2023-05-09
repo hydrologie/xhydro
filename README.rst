@@ -9,8 +9,8 @@ xHydro
 .. image:: https://img.shields.io/travis/TC-FF/xhydro.svg
         :target: https://travis-ci.com/TC-FF/xhydro
 
-.. image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
-        :target: https://xhydro.readthedocs.io/en/latest/?version=latest
+.. image:: https://github.com/hydrologie/xhydro/actions/workflows/gh-pages.yml/badge.svg
+        :target: https://hydrologie.github.io/xhydro/
         :alt: Documentation Status
 
 
