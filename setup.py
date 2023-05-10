@@ -60,7 +60,7 @@ setup(
     packages=find_packages(include=['xhydro', 'xhydro.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/TC-FF/xhydro',
+    url='https://github.com/hydrologie/xhydro',
     version='0.1.0',
     zip_safe=False,
 )
