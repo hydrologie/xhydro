@@ -110,7 +110,7 @@ class Data:
         """
     
         if beg > end:
-        # TODO chevauchement d'années ex : année hydrologique, hiver de décembre à mars, etc
+        # TODO when beg `end, it means it has to overlap years, for example, from octobre to march
             pass
         else:
         # +1 to include the end
