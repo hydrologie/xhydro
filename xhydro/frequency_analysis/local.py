@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 import copy
 
 class Data:
@@ -74,7 +75,43 @@ class Data:
 
         # Setting the list as a class attribute
         obj._catchments = catchment_list
-        
+
         # Filtering over the list
         obj.data = obj.data.sel(id=self.data.id.isin(catchment_list))
         return obj
+    
+    def custom_group_by(self, 
+                      beg: int, 
+                      end: int):
+        """
+        a custum fonction to groupby with specified julian days.
+        
+        Parameters
+        ----------
+        beg : Int
+        Julian day of the begining of the period
+
+        end : Int
+        Julian day of the end of the period
+
+        Returns
+        -------
+        ds : xarray.DataSet
+        dataset with data grouped by time over specified dates
+        
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> grouped_ds = donnees.custom_group_by(1, 90)
+    
+        """
+    
+        if beg > end:
+        # TODO chevauchement d'années ex : année hydrologique, hiver de décembre à mars, etc
+            pass
+        else:
+        # +1 to include the end
+            return self.data.sel(time=np.isin(self.data.time.dt.dayofyear, range(beg, end + 1))).groupby('time.year')
