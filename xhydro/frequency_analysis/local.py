@@ -272,3 +272,137 @@ class Data:
             tolerence = season_size * (1-tol)
             
         return (grouped_ds.value > tolerence).load()
+    
+
+def get_maximum(self, 
+                  tolerence: float = None, seasons = None):
+    """
+    Fonction to tiddy _get_max results.
+        
+    Parameters
+    ----------
+    tolerence : Float
+      Tolerance in decimal form (0.15 for 15%)
+
+    seasons : List
+      List of season's name to be checked
+
+    Returns
+    -------
+    df : pd.Dataframe
+      Dataframe organised with id,	season,	year,	Maximums
+      
+    Examples
+    --------
+    >>> import xarray as xr
+    >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+    >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+    >>> donnees = Data(ds)
+    >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+    >>> catchment_list = ['023301']
+    >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+    >>> sub_set.season = ['Spring', 60, 182]
+    >>> sub_set.get_maximum(tolerence=0.15, seasons=['Spring'])
+    >>> id	season	year	Maximums
+      0	023301	Spring	1928	231.000000
+      1	023301	Spring	1929	241.000000
+      2	023301	Spring	1930	317.000000
+      ...
+    """
+    return self._get_max(tolerence = tolerence, seasons = seasons).to_dataframe(name = 'Maximums').reset_index()[['id', 'season', 'year', 'start_date','end_date','Maximums']].dropna()
+  
+def _get_max(self, tolerence = None, seasons = []):
+    """
+    Fonction to get maximum value per season, according to a tolerence.
+        
+    Parameters
+    ----------
+    tolerence : Float
+      Tolerance in decimal form (0.15 for 15%)
+
+    seasons : List
+      List of season's name to be checked
+
+    Returns
+    -------
+    da : xr.DataArray
+      DataArray of maximums 
+      
+    Examples
+    --------
+    >>> import xarray as xr
+    >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+    >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+    >>> donnees = Data(ds)
+    >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+    >>> catchment_list = ['023301']
+    >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+    >>> sub_set.season = ['Spring', 60, 182]
+    >>> sub_set._get_max(tolerence=0.15, seasons=['Spring'])
+        xarray.DataArray 'value' (season: 1, year: 52, id: 1)
+    """
+    grouped_ds = self.copy()
+    # Function to get the max over one season
+    def max_over_one_season(grouped_ds, tolerence, season):
+      season_vals = grouped_ds._get_season_values(season)
+      if isinstance(season_vals, xr.Dataset):
+        years = np.unique(season_vals.year)
+        bvs = np.unique(season_vals.id)
+        max = np.empty((len(years), len(bvs)), dtype=object)
+        beg = np.empty((len(years), len(bvs)), dtype=object)
+        end = np.empty((len(years), len(bvs)), dtype=object)
+        for y, year in enumerate(years):
+          for b, bv in enumerate(bvs):
+            dd = season_vals.sel(year=year, id=bv).value.to_numpy().tolist()
+            beg[y, b] = pd.to_datetime(str(year)+str(dd[0]), format='%Y%j')
+            end[y, b] = pd.to_datetime(str(year)+str(dd[1]), format='%Y%j')
+            ds_year = grouped_ds.data.where(grouped_ds.data.time.dt.year==year, drop=True)
+            ds_year = ds_year.sel(id=bv)
+            
+            # +1 to include end 
+            ds_period = ds_year.sel(time=np.isin(ds_year.time.dt.dayofyear, range(dd[0], dd[1] + 1)))
+
+            d = ds_period.value.values
+            timestep = float(ds_year.time.dt.dayofyear.timestep.values.tolist())
+            nb_expected = (dd[1]+1-dd[0]) / timestep
+            # nb_expected is used to accound for missing values as well as nan
+            if np.count_nonzero(~np.isnan(d)) / nb_expected > (1 - tolerence):
+              max[y, b] = np.nanmax(d)#.tolist()
+            else:
+              max[y, b] = np.nan
+
+        
+        max_ds = xr.Dataset()
+
+        max_ds.coords['year'] = xr.DataArray(years, dims=('year',))
+        max_ds.coords['id'] = xr.DataArray(bvs, dims=('id',))
+        max_ds.coords['start_date'] = xr.DataArray(beg, dims=('year', 'id'))
+        max_ds.coords['end_date'] = xr.DataArray(end, dims=('year', 'id'))
+        max_ds['value'] = xr.DataArray(max.astype(float), dims=('year', 'id'))
+          # For each bv
+        # For each year
+          #check for tolerence
+          #get max
+        #create a DS
+        return max_ds
+      else:
+        #TODO add year from grouped_ds.data.dt.year and make full str start_date and end_date
+        grouped_ds.data.coords['start_date'] = pd.to_datetime(str(season_vals[0]), format='%j').strftime("%m-%d")
+        grouped_ds.data.coords['end_date'] = pd.to_datetime(str(season_vals[1]), format='%j').strftime("%m-%d")
+        
+        return grouped_ds.custom_group_by(season_vals[0], season_vals[1]).max().where(grouped_ds.get_bool_over_tolerence(tolerence, season), drop=True)
+
+
+    if seasons:
+      # Creating a new dimension of season and merging all Dataset from max_over_one_season
+      return xr.concat( \
+              [max_over_one_season(grouped_ds, tolerence, season) \
+              .assign_coords(season=season) \
+              .expand_dims('season') \
+                for season in seasons], dim='season'
+              ).value
+    
+    else: 
+      #TODO Tolerence not used if no period is defined
+      return grouped_ds.data.groupby('time.year').max().value.assign_coords(season='Whole year') \
+              .expand_dims('season')
