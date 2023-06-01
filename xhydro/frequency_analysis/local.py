@@ -33,3 +33,48 @@ class Data:
         xhydro.frequency_analysis.local.Data()
         """
         return copy.copy(self)
+    
+    def select_catchments(self,
+                        catchment_list: list):
+        """
+        select specified catchements from attribute data. Also supports the use of a wildcard (*).
+        
+        Parameters
+        ----------
+        catchment_list : List
+        List of catchments that will be selcted along the id dimension
+        
+        Returns
+        -------
+        ds : xarray.DataSet
+        New dataset with only specified catchments
+        
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> filtered_ds = donnees.select_catchments(catchment_list = ['051001','051005'])
+        >>> filtered_ds = donnees.select_catchments(catchment_list = ['05*','0234*', '023301'])
+        """
+
+        # Create a copy of the object
+        obj = self.copy()
+
+    
+
+        # sub function to select complete list based on wilcards 
+        def multi_filter(names,
+                        patterns: list):
+            return [name for name in names for pattern in patterns if fnmatch.fnmatch(name, pattern) ]
+
+        # Getting the full list
+        catchment_list = multi_filter(obj.catchments, catchment_list)
+
+        # Setting the list as a class attribute
+        obj._catchments = catchment_list
+        
+        # Filtering over the list
+        obj.data = obj.data.sel(id=self.data.id.isin(catchment_list))
+        return obj
