@@ -229,3 +229,46 @@ class Data:
             return a list of julian day of begining and end of season
         """
         return self._season[season]
+    
+    def get_bool_over_tolerence(self, 
+                                tol: float, 
+                                season = None):
+        """
+        Fonction to check if a season has enough values to be used. For each season True will be returned if there is les missing dats then the specified tolerence.
+            
+        Parameters
+        ----------
+        tol : Float
+        Tolerance in decimal form (0.15 for 15%)
+
+        season : String
+        Name of the season to be checked
+
+        Returns
+        -------
+        da : xr.DataArray
+        DataArray of boolean 
+        
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.custom_group_by(1, 365.max().where(grouped_ds.get_bool_over_tolerence(tolerence, season), drop=True)
+        """
+        ds = copy.copy(self)
+        if season is None:
+            # If no season is specified, tolerence will be based on 365 values per year
+            # TODO generalize for different time step
+            tolerence = 365 * tol
+            grouped_ds = ds.data.groupby('time.year').count()
+
+        else:
+            season_vals = ds._get_season_values(season)
+            season_size = season_vals[1] - season_vals[0] + 1
+            # TODO generalize for different time step
+            grouped_ds = ds.custom_group_by(season_vals[0], season_vals[1]).count()
+            tolerence = season_size * (1-tol)
+            
+        return (grouped_ds.value > tolerence).load()
