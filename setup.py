@@ -13,7 +13,6 @@ with open('CHANGES.rst') as history_file:
 requirements = [
     "bottleneck>=1.3.1",
     "cartopy",
-    "cftime",
     "cf-xarray>=0.6.1",
     "cftime>=1.4.1",
     "dask[array]>=2.6",
@@ -22,16 +21,16 @@ requirements = [
     "intake-xarray>=0.6.1",
     "jsonpickle",
     "numba",
-    "numpy>=1.16",
+    "numpy>=1.16.0",
     "pandas>=0.23",
     "pint>=0.10",
     "pyarrow",
     "pyyaml",
     "s3fs>=2022.7.0",
     "scipy>=1.2",
-    "xarray>=0.17",
-    "xclim>=0.37",
-    "zarr>=2.11.1"    
+    "xarray>=0.17.0",
+    "xclim>=0.43.0",
+    "zarr>=2.11.1"
     ]
 
 test_requirements = ['pytest>=3', ]
