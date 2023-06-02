@@ -17,7 +17,7 @@ dependencies:
     - intake
     - intake-geopandas
     - intake-xarray >=0.6.1
-    - jsonpickly
+    - jsonpickle
     - matplotlib-base
     - nbsphinx
     - netCDF4
