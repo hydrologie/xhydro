@@ -3,9 +3,20 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
-
+include requirements_dev.txt
+include requirements_docs.txt
+include .zenodo.json
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
+
+exclude .coveralls.yml
+exclude .editorconfig
+exclude .pre-commit-config.yaml
+exclude .readthedocs.yml
+exclude .yamllint.yaml
+exclude Makefile
+exclude environment-docs.yml
+exclude tox.ini

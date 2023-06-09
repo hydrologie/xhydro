@@ -9,22 +9,16 @@ xHydro
 .. image:: https://img.shields.io/travis/TC-FF/xhydro.svg
         :target: https://travis-ci.com/TC-FF/xhydro
 
-.. image:: https://github.com/hydrologie/xhydro/actions/workflows/gh-pages.yml/badge.svg
-        :target: https://hydrologie.github.io/xhydro/
+.. image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
+        :target: https://xhydro.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 
-.. image:: https://pyup.io/repos/github/TC-FF/xhydro/shield.svg
-     :target: https://pyup.io/repos/github/TC-FF/xhydro/
-     :alt: Updates
+Hydrological analysis library built with xarray
 
 
-
-Hydrology analysis build with xarray
-
-
-* Free software: Apache Software License 2.0
-* Documentation: https://hydrologie.github.io/xhydro/
+* Free software: Apache-2.0
+* Documentation: https://xhydro.readthedocs.io.
 
 
 Features
@@ -35,7 +29,7 @@ Features
 Credits
 -------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pypackage`_ project template.
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _Cookiecutter: https://github.com/audreyfeldroy/cookiecutter-pypackage
+.. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage

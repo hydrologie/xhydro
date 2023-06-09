@@ -1,36 +1,33 @@
 name: xhydro
 channels:
-    - conda-forge
+  - conda-forge
 dependencies:
-    - python >=3.10,<3.11
-    - IPyKernel
-    - bottleneck >=1.3.1
-    - cartopy
-    - cftime >=1.4.1
-    - cf_xarray >=0.6.1
-    - dask >=2.6
-    - furo
-    - geopandas
-    - geoviews
-    - h5netcdf
-    - hvplot
-    - intake
-    - intake-geopandas
-    - intake-xarray >=0.6.1
-    - jsonpickle
-    - matplotlib-base
-    - nbsphinx
-    - netCDF4
-    - numba
-    - numpy >=1.16.0
-    - pymannkendall
-    - rioxarray
-    - s3fs >=2022.7.0
-    - scipy >=1.2
-    - sphinx
-    - xarray >=0.17.0
-    - xclim >=0.43.0
-    - zarr >=2.11.1
-    - pip
-    - pip:
-        - sphinx-pangeo-theme  # is this needed? Looks like the furo theme is being used.
+  - python >=3.10,<3.11
+  - IPyKernel
+  - bottleneck >=1.3.1
+  - cartopy
+  - cftime >=1.4.1
+  - cf_xarray >=0.6.1
+  - dask >=2.6
+  - furo
+  - geopandas
+  - geoviews
+  - h5netcdf
+  - hvplot
+  - intake
+  - intake-geopandas
+  - intake-xarray >=0.6.1
+  - jsonpickle
+  - matplotlib-base
+  - nbsphinx
+  - netCDF4
+  - numba
+  - numpy >=1.16.0
+  - pymannkendall
+  - rioxarray
+  - s3fs >=2022.7.0
+  - scipy >=1.2
+  - sphinx
+  - xarray >=0.17.0
+  - xclim >=0.43.0
+  - zarr >=2.11.1

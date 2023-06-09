@@ -31,7 +31,28 @@ import xhydro
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'nbsphinx']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.viewcode'
+    'sphinx.ext.todo',
+    'sphinx_codeautolink',
+    'sphinx_copybutton',
+    "nbsphinx"
+]
+
+autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 2
+
+# To ensure that underlined fields (e.g. `_field`) are shown in the docs.
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": False,
+    "special-members": False,
+}
+
+# Generate documentation from Jupyter notebooks.
 nbsphinx_execute = 'always'
 
 # Add any paths that contain templates here, relative to this directory.
@@ -41,7 +62,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst']
 
 # The master toctree document.
 master_doc = 'index'
@@ -65,7 +86,7 @@ release = xhydro.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -155,9 +176,6 @@ texinfo_documents = [
      'xHydro Documentation',
      author,
      'xhydro',
-     'Hydrological analysis build with xarray.',
+     'Hydrological analysis library built with xarray.',
      'Miscellaneous'),
 ]
-
-
-

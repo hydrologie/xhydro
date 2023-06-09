@@ -1,4 +1,4 @@
-name: "Publish Python 🐍 distributions 📦 to PyPI"
+name: Publish Python 🐍 distributions 📦 to PyPI
 
 on:
   release:
@@ -16,9 +16,11 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install packaging libraries
-        run: pip install setuptools wheel
+        run: |
+          pip install setuptools wheel
       - name: Build a binary wheel and a source tarball
-        run: python setup.py sdist bdist_wheel
+        run: |
+          python setup.py sdist bdist_wheel
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
