@@ -9,5 +9,4 @@ dependencies:
   - sphinx-autoapi
   - sphinx-codeautolink
   - sphinx-copybutton
-  - sphinxcontrib-napoleon- click
-  - sphinx-click
+  - sphinxcontrib-napoleon
