@@ -30,8 +30,8 @@ requirements = [
     "scipy>=1.2",
     "xarray>=0.17.0",
     "xclim>=0.43.0",
-    "zarr>=2.11.1"
-    ]
+    "zarr>=2.11.1",
+]
 
 test_requirements = ["pytest>=3"]
 
