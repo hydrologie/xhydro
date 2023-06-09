@@ -56,7 +56,9 @@ lint/flake8: ## check style with flake8
 	flake8 xhydro tests
 
 lint/black: ## check style with black
-	black --check xhydro testslint: lint/flake8 lint/black ## check style
+	black --check xhydro tests
+
+lint: lint/flake8 lint/black ## check style
 
 test: ## run tests quickly with the default Python
 	pytest
