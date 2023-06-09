@@ -34,7 +34,7 @@ import xhydro
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
     'sphinx.ext.todo',
     'sphinx_codeautolink',
     'sphinx_copybutton',
