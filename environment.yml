@@ -28,6 +28,10 @@ dependencies:
   - s3fs >=2022.7.0
   - scipy >=1.2
   - sphinx
+  - sphinx-autoapi
+  - sphinx-codeautolink
+  - sphinx-copybutton
+  - sphinxcontrib-napoleon
   - xarray >=0.17.0
   - xclim >=0.43.0
   - zarr >=2.11.1
