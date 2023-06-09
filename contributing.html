@@ -6,9 +6,11 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Credits" href="authors.html" /><link rel="prev" title="Usage" href="usage.html" />
 
     <!-- Generated with Sphinx 6.2.1 and Furo 2023.05.20 -->
-        <title>Contributing - xHydro 0.1.2 documentation</title>
+        <title>Contributing - xHydro 0.1.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-codeautolink.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -123,7 +125,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">xHydro 0.1.2 documentation</div></a>
+      <a href="index.html"><div class="brand">xHydro 0.1.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +148,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">xHydro 0.1.2 documentation</span>
+  <span class="sidebar-brand-text">xHydro 0.1.3 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -161,6 +163,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
 </ul>
 
 </div>
@@ -253,9 +256,19 @@ are welcome :)</p></li>
 <li><p>Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>mkvirtualenv<span class="w"> </span>xhydro
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>xhydro/
-$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>develop
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
+</li>
+<li><p>To ensure a consistent style, please install the pre-commit hooks to your repo:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>Special style and formatting checks will be run when you commit your changes. You
+can always run the hooks on their own with:</p>
+<blockquote>
+<div><p>$ pre-commit run -a</p>
+</div></blockquote>
 </li>
 <li><p>Create a branch for local development:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>name-of-your-bugfix-or-feature
@@ -263,15 +276,18 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 </div>
 <p>Now you can make your changes locally.</p>
 </li>
-<li><p>When you’re done making changes, check that your changes pass flake8 and the
+<li><p>When you’re done making changes, check that your changes pass flake8, black, and the
 tests, including testing other Python versions with tox:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>flake8<span class="w"> </span>xhydro<span class="w"> </span>tests
+$<span class="w"> </span>black<span class="w"> </span>--check<span class="w"> </span>xhydro<span class="w"> </span>tests
 $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span><span class="nb">test</span><span class="w"> </span>or<span class="w"> </span>pytest
 $<span class="w"> </span>tox
 </pre></div>
 </div>
-<p>To get flake8 and tox, just pip install them into your virtualenv.</p>
+<p>To get flake8, black, and tox, just pip install them into your virtualenv.</p>
 </li>
+</ol>
+<ol class="arabic" start="6">
 <li><p>Commit your changes and push your branch to GitHub:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>.
 $<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Your detailed description of your changes.&quot;</span>
@@ -279,6 +295,16 @@ $<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>
 </pre></div>
 </div>
 </li>
+<li><p>If you are editing the docs, compile and open them with:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>make<span class="w"> </span>docs
+<span class="c1"># or to simply generate the html</span>
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>docs/
+$<span class="w"> </span>make<span class="w"> </span>html
+</pre></div>
+</div>
+</li>
+</ol>
+<ol class="arabic simple" start="7">
 <li><p>Submit a pull request through the GitHub website.</p></li>
 </ol>
 </section>
@@ -290,9 +316,7 @@ $<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>
 <li><p>If the pull request adds functionality, the docs should be updated. Put
 your new functionality into a function with a docstring, and add the
 feature to the list in README.rst.</p></li>
-<li><p>The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-<a class="reference external" href="https://travis-ci.com/TC-FF/xhydro/pull_requests">https://travis-ci.com/TC-FF/xhydro/pull_requests</a>
-and make sure that the tests pass for all supported Python versions.</p></li>
+<li><p>The pull request should work for Python 3.8, 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.</p></li>
 </ol>
 </section>
 <section id="tips">
@@ -302,17 +326,92 @@ and make sure that the tests pass for all supported Python versions.</p></li>
 </pre></div>
 </div>
 </section>
-<section id="deploying">
-<h2>Deploying<a class="headerlink" href="#deploying" title="Permalink to this heading">#</a></h2>
+<section id="versioning-tagging">
+<h2>Versioning/Tagging<a class="headerlink" href="#versioning-tagging" title="Permalink to this heading">#</a></h2>
 <p>A reminder for the maintainers on how to deploy.
 Make sure all your changes are committed (including an entry in HISTORY.rst).
 Then run:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>bump2version<span class="w"> </span>patch<span class="w"> </span><span class="c1"># possible: major / minor / patch</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>bumpversion<span class="w"> </span>patch<span class="w"> </span><span class="c1"># possible: major / minor / patch</span>
 $<span class="w"> </span>git<span class="w"> </span>push
 $<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>--tags
 </pre></div>
 </div>
-<p>Travis will then deploy to PyPI if tests pass.</p>
+</section>
+<section id="packaging">
+<h2>Packaging<a class="headerlink" href="#packaging" title="Permalink to this heading">#</a></h2>
+<p>When a new version has been minted (features have been successfully integrated test coverage and stability is adequate),
+maintainers should update the pip-installable package (wheel and source release) on PyPI as well as the binary on conda-forge.</p>
+<section id="the-simple-approach">
+<h3>The simple approach<a class="headerlink" href="#the-simple-approach" title="Permalink to this heading">#</a></h3>
+<dl class="simple">
+<dt>The simplest approach to packaging for general support (pip wheels) requires the following packages installed:</dt><dd><ul class="simple">
+<li><p>build</p></li>
+<li><p>setuptools</p></li>
+<li><p>twine</p></li>
+<li><p>wheel</p></li>
+</ul>
+</dd>
+</dl>
+<p>From the command line on your Linux distribution, simply run the following from the clone’s main dev branch:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># To build the packages (sources and wheel)</span>
+$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>build<span class="w"> </span>--sdist<span class="w"> </span>--wheel
+
+<span class="c1"># To upload to PyPI</span>
+$<span class="w"> </span>twine<span class="w"> </span>upload<span class="w"> </span>dist/*
+</pre></div>
+</div>
+<p>The new version based off of the version checked out will now be available via <cite>pip</cite> (<cite>$ pip install xhydro</cite>).</p>
+</section>
+<section id="releasing-on-conda-forge">
+<h3>Releasing on conda-forge<a class="headerlink" href="#releasing-on-conda-forge" title="Permalink to this heading">#</a></h3>
+<section id="initial-release">
+<h4>Initial Release<a class="headerlink" href="#initial-release" title="Permalink to this heading">#</a></h4>
+<dl class="simple">
+<dt>In order to prepare an initial release on conda-forge, we <em>strongly</em> suggest consulting the following links:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://conda-forge.org/docs/maintainer/adding_pkgs.html">https://conda-forge.org/docs/maintainer/adding_pkgs.html</a></p></li>
+<li><p><a class="reference external" href="https://github.com/conda-forge/staged-recipes">https://github.com/conda-forge/staged-recipes</a></p></li>
+</ul>
+</dd>
+<dt>Before updating the main conda-forge recipe, we echo the conda-forge documentation and <em>strongly</em> suggest performing the following checks:</dt><dd><ul class="simple">
+<li><p>Ensure that dependencies and dependency versions correspond with those of the tagged version, with open or pinned versions for the <cite>host</cite> requirements.</p></li>
+<li><p>If possible, configure tests within the conda-forge build CI (e.g. <cite>imports: xhydro</cite>, <cite>commands: pytest xhydro</cite>)</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="subsequent-releases">
+<h4>Subsequent releases<a class="headerlink" href="#subsequent-releases" title="Permalink to this heading">#</a></h4>
+<p>If the conda-forge feedstock recipe is built from PyPI, then when a new release is published on PyPI, <cite>regro-cf-autotick-bot</cite> will open Pull Requests automatically on the conda-forge feedstock.
+It is up to the conda-forge feedstock maintainers to verify that the package is building properly before merging the Pull Request to the main branch.</p>
+</section>
+</section>
+<section id="building-sources-for-wide-support-with-manylinux-image">
+<h3>Building sources for wide support with <cite>manylinux</cite> image<a class="headerlink" href="#building-sources-for-wide-support-with-manylinux-image" title="Permalink to this heading">#</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This section is for building source files that link to or provide links to C/C++ dependencies.
+It is not necessary to perform the following when building pure Python packages.</p>
+</div>
+<p>In order to do ensure best compatibility across architectures, we suggest building wheels using the <cite>PyPA</cite>’s <cite>manylinux</cite>
+docker images (at time of writing, we endorse using <cite>manylinux_2_24_x86_64</cite>).</p>
+<p>With <cite>docker</cite> installed and running, begin by pulling the image:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>pull<span class="w"> </span>quay.io/pypa/manylinux_2_24_x86_64
+</pre></div>
+</div>
+<p>From the xhydro source folder we can enter into the docker container, providing access to the <cite>xhydro</cite> source files by linking them to the running image:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/xhydro<span class="w"> </span>-w<span class="w"> </span>/xhydro<span class="w"> </span>quay.io/pypa/manylinux_2_24_x86_64<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>Finally, to build the wheel, we run it against the provided Python3.8 binary:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>/opt/python/cp38-cp38m/bin/python<span class="w"> </span>setup.py<span class="w"> </span>sdist<span class="w"> </span>bdist_wheel
+</pre></div>
+</div>
+<p>This will then place two files in <cite>xhydro/dist/</cite> (“xhydro-1.2.3-py3-none-any.whl” and “xhydro-1.2.3.tar.gz”).
+We can now leave our docker container (<cite>$ exit</cite>) and continue with uploading the files to PyPI:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>twine<span class="w"> </span>upload<span class="w"> </span>dist/*
+</pre></div>
+</div>
+</section>
 </section>
 </section>
 
@@ -383,7 +482,17 @@ $<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>
 <li><a class="reference internal" href="#get-started">Get Started!</a></li>
 <li><a class="reference internal" href="#pull-request-guidelines">Pull Request Guidelines</a></li>
 <li><a class="reference internal" href="#tips">Tips</a></li>
-<li><a class="reference internal" href="#deploying">Deploying</a></li>
+<li><a class="reference internal" href="#versioning-tagging">Versioning/Tagging</a></li>
+<li><a class="reference internal" href="#packaging">Packaging</a><ul>
+<li><a class="reference internal" href="#the-simple-approach">The simple approach</a></li>
+<li><a class="reference internal" href="#releasing-on-conda-forge">Releasing on conda-forge</a><ul>
+<li><a class="reference internal" href="#initial-release">Initial Release</a></li>
+<li><a class="reference internal" href="#subsequent-releases">Subsequent releases</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#building-sources-for-wide-support-with-manylinux-image">Building sources for wide support with <cite>manylinux</cite> image</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -399,6 +508,8 @@ $<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     </body>
 </html>

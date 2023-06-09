@@ -1,5 +1,3 @@
-.. highlight:: shell
-
 ============
 Installation
 ============
@@ -32,7 +30,7 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/TC-FF/xhydro
+    $ git clone git@github.com:TC-FF/xhydro
 
 Or download the `tarball`_:
 
