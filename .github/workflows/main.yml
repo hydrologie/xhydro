@@ -74,17 +74,17 @@ jobs:
           python -m pip install pytest
           pytest
 
-
-  finish:
-    needs:
-      - test
-    runs-on: ubuntu-latest
-    container: python:3-slim
-    steps:
-      - name: Coveralls Finished
-        run: |
-          pip install --upgrade coveralls
-          coveralls --finish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_SERVICE_NAME: github
+# FIXME: Needs the Coveralls Pro webhook
+#  finish:
+#    needs:
+#      - test
+#    runs-on: ubuntu-latest
+#    container: python:3-slim
+#    steps:
+#      - name: Coveralls Finished
+#        run: |
+#          pip install --upgrade coveralls
+#          coveralls --finish
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          COVERALLS_SERVICE_NAME: github

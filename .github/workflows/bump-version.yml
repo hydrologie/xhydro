@@ -12,13 +12,14 @@ on:
       - .pre-commit-config.yaml
       - .yamllint.yaml
       - AUTHORS.rst
-      - CHANGES.rst
       - CONTRIBUTING.rst
+      - HISTORY.rst
       - MANIFEST.in
       - Makefile
       - docs/*.py
       - docs/*.rst
       - docs/notebooks
+      - environment-docs.yml
       - environment.yml
       - requirements_dev.txt
       - setup.cfg
