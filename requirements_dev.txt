@@ -10,7 +10,6 @@ pip
 pre-commit
 pytest
 pytest-cov
-sphinx
 tox
 twine
 watchdog
