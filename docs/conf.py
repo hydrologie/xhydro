@@ -177,5 +177,5 @@ texinfo_documents = [
      author,
      'xhydro',
      'Hydrological analysis library built with xarray.',
-     'Miscellaneous'),
+     'hydrology'),
 ]
