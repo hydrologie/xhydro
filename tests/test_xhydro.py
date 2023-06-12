@@ -34,4 +34,4 @@ def test_imports():
         contents = f.read()
         assert '__author__ = """Thomas-Charles Fortier Filion"""' in contents
         assert '__email__ = "tcff_hydro@outlook.com"' in contents
-        assert '__version__ = "0.1.3"' in contents
+        assert '__version__ = "0.1.2"' in contents
