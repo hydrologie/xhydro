@@ -71,6 +71,7 @@ coverage: ## check code coverage quickly with the default Python
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
+
 autodoc: clean-docs ## create sphinx-apidoc files:
 	sphinx-apidoc -o docs/apidoc --private --module-first xhydro
 
