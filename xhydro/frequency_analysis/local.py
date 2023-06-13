@@ -2,6 +2,8 @@ import xarray as xr
 import numpy as np
 import warnings
 import copy
+from typing import Union
+import pandas as pd
 
 class Data:
 
@@ -406,3 +408,84 @@ def _get_max(self, tolerence = None, seasons = []):
       #TODO Tolerence not used if no period is defined
       return grouped_ds.data.groupby('time.year').max().value.assign_coords(season='Whole year') \
               .expand_dims('season')
+    
+
+def calculate_volume(self, 
+                       dates: Union[list, xr.Dataset] =None, 
+                       tolerence=0.15):
+    ds = self.copy()
+    
+    def conversion_factor_to_hm3(timestep):
+      #timestep in days
+      # TODO check if last date is included
+      return float(timestep) * 60 * 60 * 24
+
+    if dates is None:
+      # TODO use season dates
+      pass
+    elif isinstance(dates, list):
+      #TODO bool over tolerence takes season, generalise
+      with warnings.catch_warnings(): # Removes overlaping warning
+        warnings.simplefilter("ignore")
+        self.season = ['Volumes', dates[0], dates[1]] 
+      grouped_ds = ds.custom_group_by(dates[0], dates[1]).sum().where(ds.get_bool_over_tolerence(tolerence, 'Volumes'), drop=True)
+      self.rm_season('Volumes')
+      # Transform tp hm³
+        # TODO add start and end and clear other attributes
+      grouped_ds = grouped_ds * xr.apply_ufunc(conversion_factor_to_hm3, grouped_ds['timestep'], input_core_dims=[[]], vectorize=True)  \
+        * (dates[1] - dates[0]) \
+          / 1000000
+
+      df = grouped_ds.year.to_dataframe()
+      df['beg']=dates[0]
+      df['end']=dates[1]
+      
+      grouped_ds['start_date'] = pd.to_datetime(df['year'] * 1000 + df['beg'], format='%Y%j')
+      grouped_ds['end_date'] = pd.to_datetime(df['year'] * 1000 + df['end'], format='%Y%j')
+
+      grouped_ds['units'] = 'hm³'
+      
+      return grouped_ds.drop_vars (['_last_update_timestamp',
+      'aggregation',
+      'data_type',
+      'data_type',
+      'drainage_area',
+      'latitude',
+      'longitude',
+      'name',
+      'source',
+      'timestep',
+      'province',
+      'regulated']).rename_vars({'value':'volume'})
+    elif isinstance(dates, xr.Dataset):
+      #TODO Make sure DS has same dimensions than target
+      vol = np.empty((len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object)
+      beg = np.empty((len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object)
+      end = np.empty((len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object)
+      for y, year in enumerate(np.unique(ds.data.time.dt.year)):
+        for b, bv in enumerate(ds.data.id):
+          dd = dates.sel(year=year, id=bv).value.to_numpy().tolist()
+          beg[y, b] = pd.to_datetime(str(year)+str(dd[0]), format='%Y%j')
+          end[y, b] = pd.to_datetime(str(year)+str(dd[1]), format='%Y%j')
+          ds_year = ds.data.where(ds.data.time.dt.year==year, drop=True)
+          ds_year = ds_year.sel(id=bv)
+          # +1 pou inclure la fin, 
+          # TODO si une seule journe dans ds_period,  ¸a donne 0 
+          # TODO check for tolerence
+          ds_period = ds_year.sel(time=np.isin(ds_year.time.dt.dayofyear, range(dd[0], dd[1] + 1)))
+          # delta en ns, à rapporter en s (1000000000) puis le tout en hm³ (1000000)
+          delta = ds_period.time[-1]-ds_period.time[0]
+          delta = delta.to_numpy().tolist() /  (1000000000 * 1000000)
+          vol[y, b] = sum(ds_period.value.values).tolist() * delta
+   
+
+      vol_ds = xr.Dataset()
+
+      vol_ds.coords['year'] = xr.DataArray(np.unique(ds.data.time.dt.year), dims=('year',))
+      vol_ds.coords['id'] = xr.DataArray(ds.data.id.to_numpy(), dims=('id',))
+      vol_ds.coords['units'] = 'hm³'
+      vol_ds.coords['start_date'] = xr.DataArray(beg, dims=('year', 'id'))
+      vol_ds.coords['end_date'] = xr.DataArray(end, dims=('year', 'id'))
+      vol_ds['volume'] = xr.DataArray(vol, dims=('year', 'id'))
+
+      return vol_ds
