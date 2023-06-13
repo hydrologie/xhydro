@@ -1,0 +1,22 @@
+{
+  "title": "xHydro",
+  "creators": [
+    {
+      "name": "Fortier Filion, Thomas-Charles"
+    },
+    {
+      "name": "Smith, Trevor James",
+      "affiliation": "Ouranos, Montréal, Québec, Canada",
+      "orcid": "0000-0001-5393-8359"
+    }
+  ],
+  "keywords": [
+    "hydrology",
+    "xarray"
+  ],
+  "license": "Apache-2.0",
+  "language": "eng",
+  "communities": [],
+  "upload_type": "software",
+  "access_right": "open"
+}

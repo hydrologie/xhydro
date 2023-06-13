@@ -9,21 +9,19 @@ on:
       - .editorconfig
       - .github/**.yml
       - .gitignore
-      - .gitlab-ci.yml
-      - .gitmodules
       - .pre-commit-config.yaml
       - .yamllint.yaml
       - AUTHORS.rst
       - CONTRIBUTING.rst
-      - docs/notebooks
+      - HISTORY.rst
+      - MANIFEST.in
+      - Makefile
       - docs/*.py
       - docs/*.rst
-      - environment-dev.yml
+      - docs/notebooks
+      - environment-docs.yml
       - environment.yml
-      - CHANGES.rst
-      - Makefile
-      - MANIFEST.in
-      - requirements_upstream.txt
+      - requirements_dev.txt
       - setup.cfg
       - setup.py
       - tests/**.py
@@ -35,11 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          persist-credentials: false
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.9"
       - name: Config Commit Bot
         run: |
           git config --local user.email "bumpversion[bot]@hydrologie.com"
