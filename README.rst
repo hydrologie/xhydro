@@ -28,8 +28,8 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://pypi.python.org/pypi/xhydro
 
 
-.. |build| image:: https://github.com/hydrologie/xhydro/workflows/xhydro/badge.svg
-        :target: https://github.com/hydrologie/xhydro
+.. |build| image:: https://github.com/hydrologie/xhydro/actions/workflows/main.yml/badge.svg
+        :target: https://github.com/hydrologie/xhydro/actions
         :alt: Build Status
 
 .. |docs| image:: https://img.shields.io/badge/Docs-GitHub.io-blue
