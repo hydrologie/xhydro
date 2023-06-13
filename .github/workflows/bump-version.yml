@@ -27,6 +27,7 @@ on:
       - tests/**.py
       - tox.ini
       - xhydro/__init__.py
+  workflow_dispatch:
 
 jobs:
   bump_patch_version:
@@ -51,6 +52,6 @@ jobs:
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
-          force: false
+          force: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
