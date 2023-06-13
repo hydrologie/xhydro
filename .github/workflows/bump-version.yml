@@ -52,6 +52,6 @@ jobs:
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
-          force: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: false
+          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
           branch: ${{ github.ref }}
