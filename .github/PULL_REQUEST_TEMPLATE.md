@@ -5,7 +5,6 @@
     - This PR fixes #xyz
 - [ ] (If applicable) Documentation has been added / updated (for bug fixes / features).
 - [ ] (If applicable) Tests have been added.
-- [ ] This PR does not seem to break the templates.
 - [ ] HISTORY.rst has been updated (with summary of main changes).
   - [ ] Link to issue (:issue:`number`) and pull request (:pull:`number`) has been added.
 
