@@ -1,5 +1,5 @@
-xHydro's documentation
-======================================
+Welcome to xHydro's documentation!
+==================================
 
 .. toctree::
    :maxdepth: 2

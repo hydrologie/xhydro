@@ -1,0 +1,10 @@
+furo
+ipykernel
+ipython
+jupyter_client
+nbsphinx
+pandoc
+sphinx
+sphinx-click
+sphinx-codeautolink
+sphinx-copybutton
