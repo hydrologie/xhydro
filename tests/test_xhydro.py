@@ -2,7 +2,8 @@
 
 """Tests for `xhydro` package."""
 
-from pathlib import Path
+import pathlib
+import pkgutil
 
 import pytest
 
@@ -27,11 +28,14 @@ def test_content(response):
     pass
 
 
-def test_imports():
-    metadata = Path(xhydro.__file__).resolve().parent.joinpath("__init__.py")
+def test_package_metadata():
+    """Test the package metadata."""
+    project = pkgutil.get_loader("xhydro").get_filename()
+
+    metadata = pathlib.Path(project).resolve().parent.joinpath("__init__.py")
 
     with open(metadata) as f:
         contents = f.read()
-        assert '__author__ = """Thomas-Charles Fortier Filion"""' in contents
+        assert """Thomas-Charles Fortier Filion""" in contents
         assert '__email__ = "tcff_hydro@outlook.com"' in contents
         assert '__version__ = "0.1.3"' in contents

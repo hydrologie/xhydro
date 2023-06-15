@@ -34,6 +34,7 @@ import xhydro
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.extlinks',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
     'sphinx_codeautolink',
@@ -50,6 +51,12 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": False,
     "special-members": False,
+}
+
+extlinks = {
+    "issue": ("https://github.com/hydrologie/xhydro/issues/%s", "GH/%s"),
+    "pull": ("https://github.com/hydrologie/xhydro/pull/%s", "PR/%s"),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 # Generate documentation from Jupyter notebooks.
