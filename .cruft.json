@@ -11,7 +11,7 @@
       "project_slug": "xhydro",
       "project_short_description": "Hydrological analysis library built with xarray",
       "pypi_username": "TC-FF",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "use_pytest": "y",
       "use_black": "y",
       "add_pyup_badge": "n",
