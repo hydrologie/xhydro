@@ -26,7 +26,7 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 
 .. |pypi| image:: https://img.shields.io/pypi/v/xhydro.svg
         :target: https://pypi.python.org/pypi/xhydro
-
+        :alt: PyPI
 
 .. |build| image:: https://github.com/hydrologie/xhydro/actions/workflows/main.yml/badge.svg
         :target: https://github.com/hydrologie/xhydro/actions
