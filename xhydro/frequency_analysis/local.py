@@ -5,6 +5,10 @@ import copy
 from typing import Union
 import pandas as pd
 import fnmatch
+import scipy.stats
+
+from statsmodels.tools import eval_measures
+from xclim.indices.stats import fit, parametric_quantile
 
 
 class Data:
@@ -565,3 +569,332 @@ def calculate_volume(self, dates: Union[list, xr.Dataset] = None, tolerence=0.15
         vol_ds["volume"] = xr.DataArray(vol, dims=("year", "id"))
 
         return vol_ds
+
+
+class Local:
+    def __init__(
+        self,
+        data_ds,
+        return_period,
+        dates_vol=None,
+        dist_list=[
+            "expon",
+            "gamma",
+            "genextreme",
+            "genpareto",
+            "gumbel_r",
+            "pearson3",
+            "weibull_min",
+        ],
+        tolerence=0.15,
+        seasons=None,
+        min_year=15,
+        vars_of_interest=["max", "vol"],
+        calculated=False,
+    ):
+        # TODO if type of data is object instead of float, it will crash, better to convert or to raise a warning  ?
+        # data_ds.data = data_ds.astype(float)
+        self.data = data_ds.astype(float)
+        self.return_period = return_period
+        self.dist_list = dist_list
+        self.dates_vol = dates_vol
+        self.tolerence = tolerence
+        self.seasons = seasons
+        self.min_year = min_year
+        self.analyse_max = None
+        self.analyse_vol = None
+
+        if "max" in vars_of_interest:
+            self.analyse_max = self._freq_analys(calculated, var_of_interest="max")
+        if "vol" in vars_of_interest:
+            self.analyse_vol = self._freq_analys(calculated, var_of_interest="vol")
+
+    def _freq_analys(self, calculated: bool, var_of_interest: str):
+        """
+        This function is executed upon initialization of calss Local. It performs multiple frequency analysis over the data provided.
+
+        Parameters
+        ----------
+        self.data  : xhydro.Data
+          a dataset containing hydrological data
+
+        self.return_period : list
+          list of return periods as float
+
+        self.dist_list : list
+          list of distribution supported by scypy.stat
+
+        self.tolerence : float
+          percentage of missing value tolerence in decimal form (0.15 for 15%), if above within the season, the maximum for that year will be skipped
+
+        self.seasons : list
+          list of seasons names, begining and end of said seasons must have been set previously in the object xhydro.Data
+
+        self.min_year : int
+          Minimum number of year. If a station has less year than the minimum, for any given season, the station will be skipped
+
+        Returns
+        -------
+        self.analyse : xr.Dataset
+          A Dataset with dimensions id, season, scipy_dist and return_period indexes with variables Criterions and Quantiles
+
+        Examples
+        --------
+        >>> TODO Not sure how to set example here
+
+
+        """
+
+        def get_criterions(data, params, dist):
+            data = data[~np.isnan(data)]
+            # params = params[~np.isnan(params)]
+
+            LLH = dist.logpdf(data, *params).sum()  # log-likelihood
+
+            aic = eval_measures.aic(llf=LLH, nobs=len(data), df_modelwc=len(params))
+            bic = eval_measures.bic(llf=LLH, nobs=len(data), df_modelwc=len(params))
+            try:
+                aicc = eval_measures.aicc(
+                    llf=LLH, nobs=len(data), df_modelwc=len(params)
+                )
+            except:
+                aicc = np.nan
+
+            # logLik = np.sum( stats.gamma.logpdf(data, fitted_params[0], loc=fitted_params[1], scale=fitted_params[2]) )
+            # k = len(fitted_params)
+            # aic = 2*k - 2*(logLik)
+            return {"aic": aic, "bic": bic, "aicc": aicc}
+
+        def fit_one_distrib(ds_max, dist):
+            return (
+                fit(ds_max.chunk(dict(time=-1)), dist=dist)
+                .assign_coords(scipy_dist=dist)
+                .expand_dims("scipy_dist")
+            )  # .rename('value')
+
+        if calculated:
+            ds_calc = self.data.rename({"year": "time"}).load()
+        else:
+            if var_of_interest == "max":
+                ds_calc = (
+                    self.data._get_max(self.tolerence, self.seasons)
+                    .rename({"year": "time"})
+                    .load()
+                )
+            elif var_of_interest == "vol":
+                ds_calc = (
+                    self.data.calculate_volume(
+                        tolerence=self.tolerence, dates=self.dates_vol
+                    )
+                    .rename({"year": "time", "volume": "value"})
+                    .astype(float)
+                    .load()
+                )
+                ds_calc = ds_calc.value
+        ds_calc = ds_calc.dropna(dim="id", thresh=self.min_year)
+
+        quantiles = []
+        criterions = []
+        parameters = []
+        for dist in self.dist_list:
+            # FIXME .load() causes issues, but it was added to fix something
+
+            params = fit_one_distrib(ds_calc, dist).load()
+            parameters.append(params)
+            # quantiles.append(xr.merge([parametric_quantile(params, q=1 - 1.0 / T).rename('value') for T in self.return_period]))
+            quantiles.append(
+                xr.merge(
+                    [
+                        parametric_quantile(params, q=1 - 1.0 / T)
+                        for T in self.return_period
+                    ]
+                )
+            )
+            dist_obj = getattr(scipy.stats, dist)
+            # criterions.append(xr.apply_ufunc(get_criterions, ds_calc, params, dist_obj, input_core_dims=[['time'], ['dparams'], []], vectorize=True).to_dataset(name='Criterions'))
+
+            crit = xr.apply_ufunc(
+                get_criterions,
+                ds_calc,
+                params,
+                dist_obj,
+                input_core_dims=[["time"], ["dparams"], []],
+                vectorize=True,
+            )
+            # If crit is a DataArray, the variable we name it value, if it's a DataSet, it will already have variables names
+            if isinstance(crit, xr.DataArray):
+                crit.name = "value"
+            criterions.append(crit)
+
+        def append_var_names(ds, str):
+            try:
+                var_list = list(ds.keys())
+            except:
+                new_name = ds.name + str
+                return ds.rename(new_name)
+            dict_names = dict(zip(var_list, [s + str for s in var_list]))
+            return ds.rename(dict_names)
+
+        # ds_paramters = xr.Dataset()
+        ds_paramters = xr.concat(
+            parameters, dim="scipy_dist", combine_attrs="drop_conflicts"
+        )
+        ds_paramters = append_var_names(ds_paramters, "_parameters")
+
+        ds_quantiles = xr.merge(quantiles)
+        ds_quantiles = append_var_names(ds_quantiles, "_quantiles")
+
+        ds_criterions = xr.merge(criterions)
+        ds_criterions = append_var_names(ds_criterions, "_criterions")
+
+        ds_quantiles = ds_quantiles.rename({"quantile": "return_period"})
+        ds_quantiles["return_period"] = 1.0 / (1 - ds_quantiles.return_period)
+
+        return xr.merge([ds_criterions, ds_quantiles, ds_calc, ds_paramters])
+
+    def view_criterions(self, var_of_interest):
+        """
+        Fonction to get Criterions results from a xhydro.Local object. Output is rounded for easiser visualisation.
+
+        Returns
+        -------
+        df : pd.Dataframe
+          Dataframe organised with id,	season,	year,	scipy_dist
+
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> catchment_list = ['023301']
+        >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+        >>> sub_set.season = ['Spring', 60, 182]
+        >>> return_period = np.array([1.01, 2, 2.33, 5, 10, 20, 50, 100, 200, 500, 1000, 10000])
+        >>> dist_list = ['expon', 'gamma', 'genextreme', 'genpareto', 'gumbel_r', 'pearson3', 'weibull_min']
+        >>> fa = xh.Local(data_ds = sub_set, return_period = return_period, dist_list = dist_list, tolerence = 0.15, seasons = ['Automne', 'Printemps'], min_year = 15)
+        >>> fa.view_quantiles()
+        >>> id	season	level_2	return_period	Quantiles
+            0	023301	Spring	expon	1.01	22.157376
+            1	023301	Spring	expon	2.00	87.891419
+            2	023301	Spring	expon	2.33	102.585536
+            3	023301	Spring	expon	5.00	176.052678
+            4	023301	Spring	expon	10.00	242.744095
+            ...
+        """
+        # dataarray to_dataframe uses first diemnsion as nameless index, so depending on the position in dim_order, dimension gets names level_x
+        var_list = [s for s in self.analyse_max.keys() if "criterions" in s]
+
+        if var_of_interest == "vol":
+            return (
+                self.analyse_vol[var_list]
+                .to_dataframe(dim_order=["id", "scipy_dist"])[var_list]
+                .reset_index()
+                .rename(columns={"level_1": "scipy_dist"})
+                .round()
+            )
+        elif var_of_interest == "max":
+            return (
+                self.analyse_max[var_list]
+                .to_dataframe(dim_order=["id", "season", "scipy_dist"])[var_list]
+                .reset_index()
+                .rename(columns={"level_2": "scipy_dist"})
+                .round()
+            )
+        else:
+            return print('use "vol" for volumes or "max" for maximums ')
+
+    def view_quantiles(self, var_of_interest):
+        """
+        Fonction to get Quantiles results from a xhydro.Local object.
+
+        Returns
+        -------
+        df : pd.Dataframe
+          Dataframe organised with id,	season,	year,	scipy_dist, return_period
+
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> catchment_list = ['023301']
+        >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+        >>> sub_set.season = ['Spring', 60, 182]
+        >>> return_period = np.array([1.01, 2, 2.33, 5, 10, 20, 50, 100, 200, 500, 1000, 10000])
+        >>> dist_list = ['expon', 'gamma', 'genextreme', 'genpareto', 'gumbel_r', 'pearson3', 'weibull_min']
+        >>> fa = xh.Local(data_ds = sub_set, return_period = return_period, dist_list = dist_list, tolerence = 0.15, seasons = ['Automne', 'Printemps'], min_year = 15)
+        >>> fa.view_criterions()
+        >>> id	season	level_2	Criterions
+        >>> 0	023301	Spring	expon	{'aic': 582.9252842821857, 'bic': 586.82777171...
+        >>> 1	023301	Spring	gamma	{'aic': 1739.77441499742, 'bic': 1745.62814615...
+            ...
+        """
+
+        var_list = [s for s in self.analyse_max.keys() if "quantiles" in s]
+        if var_of_interest == "vol":
+            return (
+                self.analyse_vol[var_list]
+                .to_dataframe(dim_order=["id", "scipy_dist", "return_period"])[var_list]
+                .reset_index()
+                .rename(columns={"level_1": "scipy_dist"})
+                .round()
+            )
+        elif var_of_interest == "max":
+            return (
+                self.analyse_max[var_list]
+                .to_dataframe(
+                    dim_order=["id", "season", "scipy_dist", "return_period"]
+                )[var_list]
+                .reset_index()
+                .rename(columns={"level_2": "scipy_dist"})
+                .round()
+            )
+        else:
+            return print('use "vol" for volumes or "max" for maximums ')
+
+    def view_values(self, var_of_interest):
+        """
+        Fonction to get values results from a xhydro.Local object.
+
+        Returns
+        -------
+        df : pd.Dataframe
+          Dataframe organised with id,	season,	year,	scipy_dist, return_period
+
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> catchment_list = ['023301']
+        >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+        >>> sub_set.season = ['Spring', 60, 182]
+        >>> return_period = np.array([1.01, 2, 2.33, 5, 10, 20, 50, 100, 200, 500, 1000, 10000])
+        >>> dist_list = ['expon', 'gamma', 'genextreme', 'genpareto', 'gumbel_r', 'pearson3', 'weibull_min']
+        >>> fa = xh.Local(data_ds = sub_set, return_period = return_period, dist_list = dist_list, tolerence = 0.15, seasons = ['Automne', 'Printemps'], min_year = 15)
+        >>> fa.view_criterions()
+        >>> id	season	level_2	Criterions
+        >>> 0	023301	Spring	expon	{'aic': 582.9252842821857, 'bic': 586.82777171...
+        >>> 1	023301	Spring	gamma	{'aic': 1739.77441499742, 'bic': 1745.62814615...
+            ...
+        """
+        # TODO  Output as dict is ugly
+
+        if var_of_interest == "vol":
+            return self.analyse_vol.value.to_dataframe().dropna().reset_index()
+        elif var_of_interest == "max":
+            return (
+                self.analyse_max.value.to_dataframe(name="Maximums")
+                .reset_index()[
+                    ["id", "season", "time", "start_date", "end_date", "Maximums"]
+                ]
+                .dropna()
+            )
+        else:
+            return print('use "vol" for volumes or "max" for maximums ')
