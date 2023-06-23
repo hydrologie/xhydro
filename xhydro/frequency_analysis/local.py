@@ -597,7 +597,6 @@ class Data:
 
 
 class Local:
-    # TODO list(ds.keys())[0] used multiples time, genewralise ofr all var, not just [0] and do it a better way, ie, in the init
     def __init__(
         self,
         data_ds,
@@ -634,6 +633,10 @@ class Local:
         self.min_year = min_year
         self.analyse_max = None
         self.analyse_vol = None
+        # TODO list(ds.keys())[0] used multiples time, use self.var_name instead and generalise for all var, not just [0]
+        self.var_name = list(self.data.data.keys())[0]
+
+        data_ds
 
         if "max" in vars_of_interest:
             self.analyse_max = self._freq_analys(calculated, var_of_interest="max")
@@ -820,17 +823,15 @@ class Local:
         if var_of_interest == "vol":
             return (
                 self.analyse_vol[var_list]
-                .to_dataframe(dim_order=["id", "scipy_dist"])[var_list]
-                .reset_index()
-                .rename(columns={"level_1": "scipy_dist"})
+                .to_dataframe()
+                .reset_index()[["id", "scipy_dist"] + var_list]
                 .round()
             )
         elif var_of_interest == "max":
             return (
                 self.analyse_max[var_list]
-                .to_dataframe(dim_order=["id", "season", "scipy_dist"])[var_list]
-                .reset_index()
-                .rename(columns={"level_2": "scipy_dist"})
+                .to_dataframe()
+                .reset_index()[["id", "season", "scipy_dist"] + var_list]
                 .round()
             )
         else:
@@ -869,19 +870,19 @@ class Local:
         if var_of_interest == "vol":
             return (
                 self.analyse_vol[var_list]
-                .to_dataframe(dim_order=["id", "scipy_dist", "return_period"])[var_list]
-                .reset_index()
-                .rename(columns={"level_1": "scipy_dist"})
+                .to_dataframe()
+                .reset_index()[
+                    ["id", "season", "scipy_dist", "return_period"] + var_list
+                ]
                 .round()
             )
         elif var_of_interest == "max":
             return (
                 self.analyse_max[var_list]
-                .to_dataframe(
-                    dim_order=["id", "season", "scipy_dist", "return_period"]
-                )[var_list]
-                .reset_index()
-                .rename(columns={"level_2": "scipy_dist"})
+                .to_dataframe()
+                .reset_index()[
+                    ["id", "season", "scipy_dist", "return_period"] + var_list
+                ]
                 .round()
             )
         else:
@@ -918,12 +919,13 @@ class Local:
         # TODO  Output as dict is ugly
 
         if var_of_interest == "vol":
-            return self.analyse_vol.value.to_dataframe().dropna().reset_index()
+            return self.analyse_vol[self.var_name].to_dataframe().dropna().reset_index()
         elif var_of_interest == "max":
             return (
-                self.analyse_max.value.to_dataframe()
+                self.analyse_max[self.var_name]
+                .to_dataframe()
                 .reset_index()[
-                    ["id", "season", "time", "start_date", "end_date", "Maximums"]
+                    ["id", "season", "time", "start_date", "end_date", self.var_name]
                 ]
                 .dropna()
             )
