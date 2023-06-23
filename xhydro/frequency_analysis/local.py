@@ -6,6 +6,7 @@ from typing import Union
 import pandas as pd
 import fnmatch
 import scipy.stats
+import xhydro as xh
 
 from statsmodels.tools import eval_measures
 from xclim.indices.stats import fit, parametric_quantile
@@ -84,7 +85,7 @@ class Data:
             ]
 
         # Getting the full list
-        catchment_list = multi_filter(obj.catchments, catchment_list)
+        catchment_list = multi_filter(obj._catchments, catchment_list)
 
         # Setting the list as a class attribute
         obj._catchments = catchment_list
@@ -299,279 +300,304 @@ class Data:
             grouped_ds = ds.custom_group_by(season_vals[0], season_vals[1]).count()
             tolerence = season_size * (1 - tol)
 
-        return (grouped_ds.value > tolerence).load()
+        return (grouped_ds[list(grouped_ds.keys())[0]] > tolerence).load()
 
+    def get_maximum(self, tolerence: float = None, seasons=None):
+        """
+        Fonction to tiddy _get_max results.
 
-def get_maximum(self, tolerence: float = None, seasons=None):
-    """
-    Fonction to tiddy _get_max results.
+        Parameters
+        ----------
+        tolerence : Float
+        Tolerance in decimal form (0.15 for 15%)
 
-    Parameters
-    ----------
-    tolerence : Float
-      Tolerance in decimal form (0.15 for 15%)
+        seasons : List
+        List of season's name to be checked
 
-    seasons : List
-      List of season's name to be checked
+        Returns
+        -------
+        df : pd.Dataframe
+        Dataframe organised with id,	season,	year,	Maximums
 
-    Returns
-    -------
-    df : pd.Dataframe
-      Dataframe organised with id,	season,	year,	Maximums
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path =
+        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> catchment_list = ['023301']
+        >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+        >>> sub_set.season = ['Spring', 60, 182]
+        >>> sub_set.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> id	season	year	Maximums
+        0	023301	Spring	1928	231.000000
+        1	023301	Spring	1929	241.000000
+        2	023301	Spring	1930	317.000000
+        ...
+        """
+        return (
+            self._get_max(tolerence=tolerence, seasons=seasons)
+            .to_dataframe()
+            .reset_index()[
+                [
+                    "id",
+                    "season",
+                    "year",
+                    "start_date",
+                    "end_date",
+                    list(self.data.keys())[0],
+                ]
+            ]
+            .dropna()
+        )
 
-    Examples
-    --------
-    >>> import xarray as xr
-    >>> cehq_data_path =
-    '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
-    >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
-    >>> donnees = Data(ds)
-    >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
-    >>> catchment_list = ['023301']
-    >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
-    >>> sub_set.season = ['Spring', 60, 182]
-    >>> sub_set.get_maximum(tolerence=0.15, seasons=['Spring'])
-    >>> id	season	year	Maximums
-      0	023301	Spring	1928	231.000000
-      1	023301	Spring	1929	241.000000
-      2	023301	Spring	1930	317.000000
-      ...
-    """
-    return (
-        self._get_max(tolerence=tolerence, seasons=seasons)
-        .to_dataframe(name="Maximums")
-        .reset_index()[["id", "season", "year", "start_date", "end_date", "Maximums"]]
-        .dropna()
-    )
+    def _get_max(self, tolerence=None, seasons=[]):
+        """
+        Fonction to get maximum value per season, according to a tolerence.
 
+        Parameters
+        ----------
+        tolerence : Float
+        Tolerance in decimal form (0.15 for 15%)
 
-def _get_max(self, tolerence=None, seasons=[]):
-    """
-    Fonction to get maximum value per season, according to a tolerence.
+        seasons : List
+        List of season's name to be checked
 
-    Parameters
-    ----------
-    tolerence : Float
-      Tolerance in decimal form (0.15 for 15%)
+        Returns
+        -------
+        da : xr.DataArray
+        DataArray of maximums
 
-    seasons : List
-      List of season's name to be checked
+        Examples
+        --------
+        >>> import xarray as xr
+        >>> cehq_data_path =
+        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
+        >>> donnees = Data(ds)
+        >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
+        >>> catchment_list = ['023301']
+        >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
+        >>> sub_set.season = ['Spring', 60, 182]
+        >>> sub_set._get_max(tolerence=0.15, seasons=['Spring'])
+            xarray.DataArray 'value' (season: 1, year: 52, id: 1)
+        """
+        grouped_ds = self.copy()
 
-    Returns
-    -------
-    da : xr.DataArray
-      DataArray of maximums
+        def max_over_one_season(grouped_ds, tolerence, season):
+            season_vals = grouped_ds._get_season_values(season)
+            if isinstance(season_vals, xr.Dataset):
+                years = np.unique(season_vals.year)
+                bvs = np.unique(season_vals.id)
+                max = np.empty((len(years), len(bvs)), dtype=object)
+                beg = np.empty((len(years), len(bvs)), dtype=object)
+                end = np.empty((len(years), len(bvs)), dtype=object)
+                for y, year in enumerate(years):
+                    for b, bv in enumerate(bvs):
+                        dd = season_vals.sel(year=year, id=bv).value.to_numpy().tolist()
+                        beg[y, b] = pd.to_datetime(
+                            str(year) + str(dd[0]), format="%Y%j"
+                        )
+                        end[y, b] = pd.to_datetime(
+                            str(year) + str(dd[1]), format="%Y%j"
+                        )
+                        ds_year = grouped_ds.data.where(
+                            grouped_ds.data.time.dt.year == year, drop=True
+                        )
+                        ds_year = ds_year.sel(id=bv)
 
-    Examples
-    --------
-    >>> import xarray as xr
-    >>> cehq_data_path =
-    '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
-    >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
-    >>> donnees = Data(ds)
-    >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
-    >>> catchment_list = ['023301']
-    >>> sub_set = donnees.select_catchments(catchment_list = catchment_list)
-    >>> sub_set.season = ['Spring', 60, 182]
-    >>> sub_set._get_max(tolerence=0.15, seasons=['Spring'])
-        xarray.DataArray 'value' (season: 1, year: 52, id: 1)
-    """
-    grouped_ds = self.copy()
+                        # +1 to include end
+                        ds_period = ds_year.sel(
+                            time=np.isin(
+                                ds_year.time.dt.dayofyear, range(dd[0], dd[1] + 1)
+                            )
+                        )
 
-    def max_over_one_season(grouped_ds, tolerence, season):
-        season_vals = grouped_ds._get_season_values(season)
-        if isinstance(season_vals, xr.Dataset):
-            years = np.unique(season_vals.year)
-            bvs = np.unique(season_vals.id)
-            max = np.empty((len(years), len(bvs)), dtype=object)
-            beg = np.empty((len(years), len(bvs)), dtype=object)
-            end = np.empty((len(years), len(bvs)), dtype=object)
-            for y, year in enumerate(years):
-                for b, bv in enumerate(bvs):
-                    dd = season_vals.sel(year=year, id=bv).value.to_numpy().tolist()
+                        d = ds_period[list(ds_period.keys())[0]].values
+                        timestep = xh.get_timestep(ds_year)
+                        # timestep = float(
+                        # ds_year.time.dt.dayofyear.timestep.values.tolist()
+                        # )
+                        nb_expected = (dd[1] + 1 - dd[0]) / timestep
+                        # nb_expected is used to account for missing and nan
+                        if np.count_nonzero(~np.isnan(d)) / nb_expected > (
+                            1 - tolerence
+                        ):
+                            max[y, b] = np.nanmax(d)  # .tolist()
+                        else:
+                            max[y, b] = np.nan
+
+                max_ds = xr.Dataset()
+
+                max_ds.coords["year"] = xr.DataArray(years, dims=("year",))
+                max_ds.coords["id"] = xr.DataArray(bvs, dims=("id",))
+                max_ds.coords["start_date"] = xr.DataArray(beg, dims=("year", "id"))
+                max_ds.coords["end_date"] = xr.DataArray(end, dims=("year", "id"))
+                max_ds["value"] = xr.DataArray(max.astype(float), dims=("year", "id"))
+                # For each bv
+                # For each year
+                # check for tolerence
+                # get max
+                # create a DS
+                return max_ds
+            else:
+                # TODO add year from grouped_ds.data.dt.year
+                # and make full str start_date and end_date
+                grouped_ds.data.coords["start_date"] = pd.to_datetime(
+                    str(season_vals[0]), format="%j"
+                ).strftime("%m-%d")
+                grouped_ds.data.coords["end_date"] = pd.to_datetime(
+                    str(season_vals[1]), format="%j"
+                ).strftime("%m-%d")
+
+                return (
+                    grouped_ds.custom_group_by(season_vals[0], season_vals[1])
+                    .max()
+                    .where(
+                        grouped_ds.get_bool_over_tolerence(tolerence, season), drop=True
+                    )
+                )
+
+        if seasons:
+            # Creating a new dimension of season and
+            # merging all Dataset from max_over_one_season
+            ds = xr.concat(
+                [
+                    max_over_one_season(grouped_ds, tolerence, season)
+                    .assign_coords(season=season)
+                    .expand_dims("season")
+                    for season in seasons
+                ],
+                dim="season",
+            )
+            return ds[list(ds.keys())[0]]
+
+        else:
+            # TODO Tolerence not used if no period is defined
+            return (
+                grouped_ds.data.groupby("time.year")
+                .max()
+                .assign_coords(season="Whole year")
+                .expand_dims("season")
+            )
+
+    def calculate_volume(self, dates: Union[list, xr.Dataset] = None, tolerence=0.15):
+        ds = self.copy()
+
+        def conversion_factor_to_hm3(timestep):
+            # flow is in m³/s and we want m³, so we multiply by seconds
+            # TODO check if last date is included
+            return pd.to_timedelta(1, unit=timestep).total_seconds()
+
+        if dates is None:
+            # TODO use season dates
+            pass
+        elif isinstance(dates, list):
+            # TODO bool over tolerence takes season, generalise
+            with warnings.catch_warnings():  # Removes overlaping warning
+                warnings.simplefilter("ignore")
+                self.season = ["Volumes", dates[0], dates[1]]
+            grouped_ds = (
+                ds.custom_group_by(dates[0], dates[1])
+                .sum()
+                .where(ds.get_bool_over_tolerence(tolerence, "Volumes"), drop=True)
+            )
+            self.rm_season("Volumes")
+            # Transform tp hm³
+            # TODO add start and end and clear other attributes
+            grouped_ds = (
+                grouped_ds
+                * xr.apply_ufunc(
+                    conversion_factor_to_hm3,
+                    grouped_ds["timestep"],
+                    input_core_dims=[[]],
+                    vectorize=True,
+                )
+                * (dates[1] - dates[0])
+                / 1000000  # from m³ to hm³
+            )
+
+            df = grouped_ds.year.to_dataframe()
+            df["beg"] = dates[0]
+            df["end"] = dates[1]
+
+            grouped_ds["start_date"] = pd.to_datetime(
+                df["year"] * 1000 + df["beg"], format="%Y%j"
+            )
+            grouped_ds["end_date"] = pd.to_datetime(
+                df["year"] * 1000 + df["end"], format="%Y%j"
+            )
+            grouped_ds["units"] = "hm³"
+
+            return grouped_ds.drop_vars(
+                [
+                    "drainage_area",
+                    "latitude",
+                    "longitude",
+                    "name",
+                    "source",
+                    "timestep",
+                    "province",
+                    "regulated",
+                ]
+            ).rename_vars({list(grouped_ds.keys())[0]: "volume"})
+        elif isinstance(dates, xr.Dataset):
+            # TODO Make sure DS has same dimensions than target
+            vol = np.empty(
+                (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
+            )
+            beg = np.empty(
+                (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
+            )
+            end = np.empty(
+                (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
+            )
+            for y, year in enumerate(np.unique(ds.data.time.dt.year)):
+                for b, bv in enumerate(ds.data.id):
+                    try:
+                        dd = dates.sel(year=year, id=bv).value.to_numpy().tolist()
+                    except KeyError:
+                        # KeyError can occur if ds is incomplete
+                        pass
                     beg[y, b] = pd.to_datetime(str(year) + str(dd[0]), format="%Y%j")
                     end[y, b] = pd.to_datetime(str(year) + str(dd[1]), format="%Y%j")
-                    ds_year = grouped_ds.data.where(
-                        grouped_ds.data.time.dt.year == year, drop=True
-                    )
+                    ds_year = ds.data.where(ds.data.time.dt.year == year, drop=True)
                     ds_year = ds_year.sel(id=bv)
-
-                    # +1 to include end
+                    # +1 pou inclure la fin,
+                    # TODO si une seule journe dans ds_period,  ¸a donne 0
+                    # TODO check for tolerence
                     ds_period = ds_year.sel(
                         time=np.isin(ds_year.time.dt.dayofyear, range(dd[0], dd[1] + 1))
                     )
+                    # delta en ns, à rapporter en s (1000000000)
+                    # puis le tout en hm³ (1000000)
+                    delta = ds_period.time[-1] - ds_period.time[0]
+                    delta = delta.to_numpy().tolist() / (1000000000 * 1000000)
+                    vol[y, b] = (
+                        sum(
+                            ds_period.squeeze()[list(ds_period.keys())[0]].values
+                        ).tolist()
+                        * delta
+                    )
 
-                    d = ds_period.value.values
-                    timestep = float(ds_year.time.dt.dayofyear.timestep.values.tolist())
-                    nb_expected = (dd[1] + 1 - dd[0]) / timestep
-                    # nb_expected is used to account for missing and nan
-                    if np.count_nonzero(~np.isnan(d)) / nb_expected > (1 - tolerence):
-                        max[y, b] = np.nanmax(d)  # .tolist()
-                    else:
-                        max[y, b] = np.nan
+            vol_ds = xr.Dataset()
 
-            max_ds = xr.Dataset()
-
-            max_ds.coords["year"] = xr.DataArray(years, dims=("year",))
-            max_ds.coords["id"] = xr.DataArray(bvs, dims=("id",))
-            max_ds.coords["start_date"] = xr.DataArray(beg, dims=("year", "id"))
-            max_ds.coords["end_date"] = xr.DataArray(end, dims=("year", "id"))
-            max_ds["value"] = xr.DataArray(max.astype(float), dims=("year", "id"))
-            # For each bv
-            # For each year
-            # check for tolerence
-            # get max
-            # create a DS
-            return max_ds
-        else:
-            # TODO add year from grouped_ds.data.dt.year
-            # and make full str start_date and end_date
-            grouped_ds.data.coords["start_date"] = pd.to_datetime(
-                str(season_vals[0]), format="%j"
-            ).strftime("%m-%d")
-            grouped_ds.data.coords["end_date"] = pd.to_datetime(
-                str(season_vals[1]), format="%j"
-            ).strftime("%m-%d")
-
-            return (
-                grouped_ds.custom_group_by(season_vals[0], season_vals[1])
-                .max()
-                .where(grouped_ds.get_bool_over_tolerence(tolerence, season), drop=True)
+            vol_ds.coords["year"] = xr.DataArray(
+                np.unique(ds.data.time.dt.year), dims=("year",)
             )
+            vol_ds.coords["id"] = xr.DataArray(ds.data.id.to_numpy(), dims=("id",))
+            vol_ds.coords["units"] = "hm³"
+            vol_ds.coords["start_date"] = xr.DataArray(beg, dims=("year", "id"))
+            vol_ds.coords["end_date"] = xr.DataArray(end, dims=("year", "id"))
+            vol_ds["volume"] = xr.DataArray(vol, dims=("year", "id"))
 
-    if seasons:
-        # Creating a new dimension of season and
-        # merging all Dataset from max_over_one_season
-        return xr.concat(
-            [
-                max_over_one_season(grouped_ds, tolerence, season)
-                .assign_coords(season=season)
-                .expand_dims("season")
-                for season in seasons
-            ],
-            dim="season",
-        ).value
-
-    else:
-        # TODO Tolerence not used if no period is defined
-        return (
-            grouped_ds.data.groupby("time.year")
-            .max()
-            .value.assign_coords(season="Whole year")
-            .expand_dims("season")
-        )
-
-
-def calculate_volume(self, dates: Union[list, xr.Dataset] = None, tolerence=0.15):
-    ds = self.copy()
-
-    def conversion_factor_to_hm3(timestep):
-        # timestep in days
-        # TODO check if last date is included
-        return float(timestep) * 60 * 60 * 24
-
-    if dates is None:
-        # TODO use season dates
-        pass
-    elif isinstance(dates, list):
-        # TODO bool over tolerence takes season, generalise
-        with warnings.catch_warnings():  # Removes overlaping warning
-            warnings.simplefilter("ignore")
-            self.season = ["Volumes", dates[0], dates[1]]
-        grouped_ds = (
-            ds.custom_group_by(dates[0], dates[1])
-            .sum()
-            .where(ds.get_bool_over_tolerence(tolerence, "Volumes"), drop=True)
-        )
-        self.rm_season("Volumes")
-        # Transform tp hm³
-        # TODO add start and end and clear other attributes
-        grouped_ds = (
-            grouped_ds
-            * xr.apply_ufunc(
-                conversion_factor_to_hm3,
-                grouped_ds["timestep"],
-                input_core_dims=[[]],
-                vectorize=True,
-            )
-            * (dates[1] - dates[0])
-            / 1000000
-        )
-
-        df = grouped_ds.year.to_dataframe()
-        df["beg"] = dates[0]
-        df["end"] = dates[1]
-
-        grouped_ds["start_date"] = pd.to_datetime(
-            df["year"] * 1000 + df["beg"], format="%Y%j"
-        )
-        grouped_ds["end_date"] = pd.to_datetime(
-            df["year"] * 1000 + df["end"], format="%Y%j"
-        )
-
-        grouped_ds["units"] = "hm³"
-
-        return grouped_ds.drop_vars(
-            [
-                "_last_update_timestamp",
-                "aggregation",
-                "data_type",
-                "data_type",
-                "drainage_area",
-                "latitude",
-                "longitude",
-                "name",
-                "source",
-                "timestep",
-                "province",
-                "regulated",
-            ]
-        ).rename_vars({"value": "volume"})
-    elif isinstance(dates, xr.Dataset):
-        # TODO Make sure DS has same dimensions than target
-        vol = np.empty(
-            (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
-        )
-        beg = np.empty(
-            (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
-        )
-        end = np.empty(
-            (len(np.unique(ds.data.time.dt.year)), len(ds.data.id)), dtype=object
-        )
-        for y, year in enumerate(np.unique(ds.data.time.dt.year)):
-            for b, bv in enumerate(ds.data.id):
-                dd = dates.sel(year=year, id=bv).value.to_numpy().tolist()
-                beg[y, b] = pd.to_datetime(str(year) + str(dd[0]), format="%Y%j")
-                end[y, b] = pd.to_datetime(str(year) + str(dd[1]), format="%Y%j")
-                ds_year = ds.data.where(ds.data.time.dt.year == year, drop=True)
-                ds_year = ds_year.sel(id=bv)
-                # +1 pou inclure la fin,
-                # TODO si une seule journe dans ds_period,  ¸a donne 0
-                # TODO check for tolerence
-                ds_period = ds_year.sel(
-                    time=np.isin(ds_year.time.dt.dayofyear, range(dd[0], dd[1] + 1))
-                )
-                # delta en ns, à rapporter en s (1000000000)
-                # puis le tout en hm³ (1000000)
-                delta = ds_period.time[-1] - ds_period.time[0]
-                delta = delta.to_numpy().tolist() / (1000000000 * 1000000)
-                vol[y, b] = sum(ds_period.value.values).tolist() * delta
-
-        vol_ds = xr.Dataset()
-
-        vol_ds.coords["year"] = xr.DataArray(
-            np.unique(ds.data.time.dt.year), dims=("year",)
-        )
-        vol_ds.coords["id"] = xr.DataArray(ds.data.id.to_numpy(), dims=("id",))
-        vol_ds.coords["units"] = "hm³"
-        vol_ds.coords["start_date"] = xr.DataArray(beg, dims=("year", "id"))
-        vol_ds.coords["end_date"] = xr.DataArray(end, dims=("year", "id"))
-        vol_ds["volume"] = xr.DataArray(vol, dims=("year", "id"))
-
-        return vol_ds
+            return vol_ds
 
 
 class Local:
+    # TODO list(ds.keys())[0] used multiples time, genewralise ofr all var, not just [0] and do it a better way, ie, in the init
     def __init__(
         self,
         data_ds,
@@ -593,8 +619,13 @@ class Local:
         calculated=False,
     ):
         # TODO if type of data is object instead of float, it will crash, better to convert or to raise a warning  ?
-        # data_ds.data = data_ds.astype(float)
-        self.data = data_ds.astype(float)
+        try:
+            # if data is provided
+            self.data = data_ds.astype(float)
+        except AttributeError:
+            # if not
+            self.data = data_ds.data.astype(float)
+        self.data = data_ds
         self.return_period = return_period
         self.dist_list = dist_list
         self.dates_vol = dates_vol
@@ -890,7 +921,7 @@ class Local:
             return self.analyse_vol.value.to_dataframe().dropna().reset_index()
         elif var_of_interest == "max":
             return (
-                self.analyse_max.value.to_dataframe(name="Maximums")
+                self.analyse_max.value.to_dataframe()
                 .reset_index()[
                     ["id", "season", "time", "start_date", "end_date", "Maximums"]
                 ]
