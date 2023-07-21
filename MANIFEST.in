@@ -7,6 +7,7 @@ include requirements_dev.txt
 include requirements_docs.txt
 include .zenodo.json
 
+recursive-include xhydro *.yml
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
 recursive-include tests *
 recursive-exclude * __pycache__
