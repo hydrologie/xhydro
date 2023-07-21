@@ -57,20 +57,11 @@ def health_checks(
 
     # Check the calendar
     if calendar is not None:
-        trans = {
-            "proleptic_gregorian": "standard",
-            "gregorian": "standard",
-            "default": "standard",
-            "366_day": "all_leap",
-            "365_day": "noleap",
-            "julian": "standard",
-        }
         cal = xc.core.calendar.get_calendar(ds.time)
-        if not any(
-            c in [cal, trans[cal]]
-            for c in [calendar, trans[calendar] if calendar in trans else None]
-        ):
-            raise ValueError(f"The calendar is not {calendar}.")
+        if xc.core.calendar.common_calendar([calendar]).replace(
+            "default", "standard"
+        ) != xc.core.calendar.common_calendar([cal]).replace("default", "standard"):
+            raise ValueError(f"The calendar is not {calendar}. Received {cal}.")
 
     # Check variables
     if variables_and_units is not None:
