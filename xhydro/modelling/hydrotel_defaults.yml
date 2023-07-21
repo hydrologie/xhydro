@@ -13,8 +13,8 @@ simulation_options:
   FICHIER PROFONDEUR RACINAIRE: physio/pro_rac.def
 
   FICHIER GRILLE METEO:
-  FICHIER STATIONS METEO: meteo\meteo.nc
-  FICHIER STATIONS HYDRO: hydro\station.sth
+  FICHIER STATIONS METEO: meteo/meteo.nc
+  FICHIER STATIONS HYDRO: hydro/station.sth
 
   PREVISION METEO: 0
   FICHIER GRILLE PREVISION:
