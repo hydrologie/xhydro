@@ -283,7 +283,7 @@ class Hydrotel:
                 ]
         ds["streamflow"].attrs[
             "standard_name"
-        ] = "outgoing_water_volume_transport_along_river_channel"
+        ] = "water_volume_transport_in_river_channel"
         ds["streamflow"].attrs["long_name"] = "Streamflow"
         ds["streamflow"].attrs[
             "description"
