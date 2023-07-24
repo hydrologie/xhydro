@@ -1,4 +1,6 @@
 """Top-level package for xHydro."""
+# Import top-level functions
+from .properties import *
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
