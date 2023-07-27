@@ -9,7 +9,7 @@ import xarray as xr
 import xclim as xc
 import yaml
 
-from .data_checks import health_checks
+from .datachecks import health_checks
 
 
 class Hydrotel:
@@ -140,7 +140,7 @@ class Hydrotel:
                 header=False,
             )
 
-    def basic_checkups(self):
+    def datachecks_basic(self):
         """
         Perform basic checkups on the inputs.
 
@@ -171,7 +171,7 @@ class Hydrotel:
                 f"The start date ({start_date}) or end date ({end_date}) are outside the bounds of the weather file ({weather_file})."
             )
 
-    def advanced_checkups(self, xr_open_kwargs: dict = None, **kwargs):
+    def datachecks_advanced(self, xr_open_kwargs: dict = None, **kwargs):
         """
         Perform more advanced checkups on the weather input file.
 
@@ -222,7 +222,7 @@ class Hydrotel:
         xr_open_kwargs: dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
-        self.basic_checkups()
+        self.datachecks_basic()
 
         if os.name == "nt":  # Windows
             if hydrotel_console is None:
