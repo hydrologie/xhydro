@@ -1,5 +1,6 @@
 """Top-level package for xHydro."""
 # Import top-level functions
+from .hydroclimate import *
 from .properties import *
 
 __author__ = """Thomas-Charles Fortier Filion"""
