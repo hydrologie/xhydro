@@ -1,6 +1,5 @@
 import os
 import re
-import subprocess
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
 
@@ -8,8 +7,7 @@ import pandas as pd
 import xarray as xr
 import xclim as xc
 import yaml
-
-from .datachecks import health_checks
+from xscen.diagnostics import health_checks
 
 
 class Hydrotel:
@@ -31,11 +29,12 @@ class Hydrotel:
         project: str | os.PathLike
             Path to the project folder.
         default_options: bool
-            Whether to use the default simulation and output options, or read them from the project folder.
+            If True, base the simulation and output options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
+            If False, read the simulation and output options directly from the project folder.
         simulation_options: dict
-            Dictionary of options to change in the simulation file.
+            Dictionary of options to overwrite in the simulation file.
         output_options: dict
-            Dictionary of options to change in the output file.
+            Dictionary of options to overwrite in the output file.
         """
         self.project = Path(project)
 
@@ -51,13 +50,8 @@ class Hydrotel:
                 "The simulation and output files must exist if default_options=False."
             )
 
-        # Load from the files, if they exist. Otherwise use default values
-        if (
-            os.path.isfile(
-                self.project / "simulation" / "simulation" / "simulation.csv"
-            )
-            and default_options is False
-        ):
+        # Load from the files, if requested. Otherwise, use default values
+        if default_options is False:
             self.simulation_options = (
                 pd.read_csv(
                     self.project / "simulation" / "simulation" / "simulation.csv",
@@ -68,15 +62,6 @@ class Hydrotel:
                 .squeeze()
                 .to_dict()
             )
-        else:
-            with open(Path(__file__).parent / "hydrotel_defaults.yml") as f:
-                self.simulation_options = yaml.safe_load(f)["simulation_options"]
-        self.simulation_options = _fix_dates(_fix_os_paths(self.simulation_options))
-
-        if (
-            os.path.isfile(self.project / "simulation" / "simulation" / "output.csv")
-            and default_options is False
-        ):
             self.output_options = (
                 pd.read_csv(
                     self.project / "simulation" / "simulation" / "output.csv",
@@ -88,8 +73,12 @@ class Hydrotel:
                 .to_dict()
             )
         else:
-            with open(Path(__file__).parent / "hydrotel_defaults.yml") as f:
+            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
+                self.simulation_options = yaml.safe_load(f)["simulation_options"]
+            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
                 self.output_options = yaml.safe_load(f)["output_options"]
+        # Fix paths and dates
+        self.simulation_options = _fix_dates(_fix_os_paths(self.simulation_options))
 
         # Update options with the user-provided ones
         self.update(
@@ -105,9 +94,9 @@ class Hydrotel:
         Parameters
         ----------
         simulation_options: dict
-            Dictionary of options to change in the simulation file.
+            Dictionary of options to overwrite in the simulation file.
         output_options: dict
-            Dictionary of options to change in the output file.
+            Dictionary of options to overwrite in the output file.
         """
         if simulation_options is not None:
             # Update options with the user-provided ones
@@ -117,35 +106,49 @@ class Hydrotel:
             for key, value in simulation_options.items():
                 self.simulation_options[key] = value
 
-            # Save the simulation options to a file
-            df = pd.DataFrame.from_dict(self.simulation_options, orient="index")
-            df = df.replace({None: ""})
-            df.to_csv(
-                self.project / "simulation" / "simulation" / "simulation.csv",
-                sep=";",
-                header=False,
-                columns=[0],
-            )
+        # Update the simulation options file
+        df = pd.DataFrame.from_dict(self.simulation_options, orient="index")
+        df = df.replace({None: ""})
+        df.to_csv(
+            self.project / "simulation" / "simulation" / "simulation.csv",
+            sep=";",
+            header=False,
+            columns=[0],
+        )
 
         if output_options is not None:
             output_options = deepcopy(output_options) or {}
             for key, value in output_options.items():
                 self.output_options[key] = value
 
-            # Save the output options to a file
-            df = pd.DataFrame.from_dict(output_options, orient="index")
-            df.to_csv(
-                self.project / "simulation" / "simulation" / "output.csv",
-                sep=";",
-                header=False,
-            )
+        # Update the output options file
+        df = pd.DataFrame.from_dict(self.output_options, orient="index")
+        df.to_csv(
+            self.project / "simulation" / "simulation" / "output.csv",
+            sep=";",
+            header=False,
+        )
 
-    def datachecks_basic(self):
+    def healthchecks_basic(self, xr_open_kwargs: dict = None):
         """
         Perform basic checkups on the inputs.
 
-        1. Checks that the files indicated in simulation.csv exist.
-        2. Checks that the start and end dates of the simulation are contained in the meteo file.
+        Parameters
+        ----------
+        xr_open_kwargs: dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Notes
+        -----
+        This function checks that:
+            1. All files mentioned in the simulation configuration exist.
+            2. The dataset has "time" and "stations" dimensions.
+            3. The dataset has "lat", "lon", "x", "y", "z" coordinates.
+            4. The dataset has "tasmin" (degC), "tasmax" (degC), and "pr" (mm) variables.
+            5. The dataset has a standard calendar.
+            6. The frequency is uniform (i.e. all time steps are equally spaced).
+            7. The start and end dates are contained in the dataset.
+
         """
         # Make sure that all the files exist
         for key, value in self.simulation_options.items():
@@ -159,21 +162,36 @@ class Hydrotel:
                 if not Path(value).is_file():
                     raise FileNotFoundError(f"The file {value} does not exist.")
 
-        # Make sure that the start and end dates of the simulation are contained in the meteo file
-        start_date = pd.to_datetime(self.simulation_options.get("DATE DEBUT", None))
-        end_date = pd.to_datetime(self.simulation_options.get("DATE FIN", None))
+        # Open the meteo file
         weather_file = self.project / self.simulation_options.get(
             "FICHIER STATIONS METEO", None
         )
-        ds = xr.open_dataset(weather_file, cache=False)
-        if not ((ds.time[0] <= start_date) and (ds.time[-1] >= end_date)).item():
-            raise ValueError(
-                f"The start date ({start_date}) or end date ({end_date}) are outside the bounds of the weather file ({weather_file})."
-            )
+        ds = xr.open_dataset(weather_file, **(xr_open_kwargs or {}))
 
-    def datachecks_advanced(self, xr_open_kwargs: dict = None, **kwargs):
+        # Check that the start and end dates are contained in the dataset
+        start_date = self.simulation_options.get("DATE DEBUT", None)
+        end_date = self.simulation_options.get("DATE FIN", None)
+
+        # Check that the dimensions, coordinates, calendar, and units are correct
+        structure = {
+            "dims": ["time", "stations"],
+            "coords": ["lat", "lon", "x", "y", "z"],
+        }
+        calendar = "standard"
+        variables_and_units = {"tasmin": "degC", "tasmax": "degC", "pr": "mm"}
+
+        health_checks(
+            ds,
+            structure=structure,
+            calendar=calendar,
+            start_date=start_date,
+            end_date=end_date,
+            variables_and_units=variables_and_units,
+        )
+
+    def healthchecks_advanced(self, xr_open_kwargs: dict = None, **kwargs):
         """
-        Perform more advanced checkups on the weather input file.
+        Perform more advanced checkups on the input file.
 
         Parameters
         ----------
@@ -182,30 +200,19 @@ class Hydrotel:
         kwargs
             Keyword arguments to pass to :py:func:`xhydro.modelling.health_checks`.
         """
-        structure = {
-            "dims": ["time", "stations"],
-            "coords": ["lat", "lon", "x", "y", "z"],
-        }
-        variables_and_units = {"tasmin": "degC", "tasmax": "degC", "pr": "mm"}
+        if len(kwargs) != 0:
+            ds = xr.open_dataset(
+                self.project / self.simulation_options["FICHIER STATIONS METEO"],
+                **(xr_open_kwargs or {}),
+            )
 
-        ds = xr.open_dataset(
-            self.project / self.simulation_options["FICHIER STATIONS METEO"],
-            **(xr_open_kwargs or {}),
-        )
-        health_checks(
-            ds,
-            structure=structure,
-            calendar="standard",
-            variables_and_units=variables_and_units,
-            **kwargs,
-        )
+            health_checks(ds, **kwargs)
 
     def run(
         self,
         *,
         hydrotel_console: str | os.PathLike = None,
-        id_as_dim: bool = True,
-        return_output: bool = False,
+        idtroncon_as_dim: bool = True,
         xr_open_kwargs: dict = None,
     ) -> xr.Dataset:
         """
@@ -215,87 +222,99 @@ class Hydrotel:
         ----------
         hydrotel_console: str | os.PathLike
             On Windows, path to Hydrotel.exe.
-        id_as_dim: bool
-            Whether to use the 'idtroncon' coordinate as a dimension.
-        return_output: bool
-            Whether to return the output as an xarray Dataset.
+        idtroncon_as_dim: bool
+            Whether to use the 'idtroncon' coordinate as a dimension and drop 'troncon'.
         xr_open_kwargs: dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
-        self.datachecks_basic()
-
         if os.name == "nt":  # Windows
             if hydrotel_console is None:
                 raise ValueError("You must specify the path to Hydrotel.exe")
         else:
             hydrotel_console = "hydrotel"
 
-        # TODO: Test it out
+        # FIXME: This needs to be tested once we have access to a working Hydrotel installation
         # subprocess.check_call(hydrotel_console + ' ' + str(self.project) + ' -t 1')
 
         # Standardize the outputs
-        ds = self._standardize_outputs(
-            id_as_dim=id_as_dim, xr_open_kwargs=xr_open_kwargs
+        self._standardise_outputs(
+            fake_copy=True,
+            idtroncon_as_dim=idtroncon_as_dim,
+            xr_open_kwargs=xr_open_kwargs,
         )
 
-        if return_output:
-            return ds
-        else:
-            # TODO: Save instead of returning
-            raise NotImplementedError
-
-    def _standardize_outputs(
-        self, *, id_as_dim: bool = True, xr_open_kwargs: dict = None
+    # TODO: Do we want to support files other than debit_aval.nc?
+    def _standardise_outputs(
+        self, *, fake_copy, idtroncon_as_dim: bool = True, xr_open_kwargs: dict = None
     ):
         """
-        Standardize the outputs of the simulation.
+        Standardise the outputs of the simulation.
 
         Parameters
         ----------
-        id_as_dim: bool
+        idtroncon_as_dim: bool
             Whether to use the 'idtroncon' coordinate as a dimension.
         xr_open_kwargs: dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
-        ds = self.get_streamflow(**(xr_open_kwargs or {}))
+        ds = self.get_streamflow(fake_copy=fake_copy, **(xr_open_kwargs or {}))
 
         # Rename variables to standard names
         ds = ds.assign_coords(troncon=ds["troncon"], idtroncon=ds["idtroncon"])
         ds = ds.rename(
             {
-                "troncon": "station",
+                "troncon": "station",  # FIXME: Names to be discussed. 'station' vs. 'reach'?
                 "idtroncon": "station_id",
                 "debit_aval": "streamflow",
             }
         )
-        if id_as_dim:
+        if idtroncon_as_dim:
             ds = ds.swap_dims({"station": "station_id"})
-        ds = ds.drop_vars(["station"])
-        ds["station_id" if id_as_dim else "station"].attrs["cf_role"] = "timeseries_id"
+            ds = ds.drop_vars(["station"])
+        ds["station_id" if idtroncon_as_dim else "station"].attrs[
+            "cf_role"
+        ] = "timeseries_id"
         # FIXME: Do we always want station_id as the dimension?
 
         # Add standard attributes for streamflow and fix units
-        ds["streamflow"].attrs["original_name"] = "debit_aval"
-        for attr in ["standard_name", "long_name", "description", "units"]:
+        orig_attrs = dict()
+        orig_attrs["original_name"] = "debit_aval"
+        for attr in ["standard_name", "long_name", "description"]:
             if attr in ds["streamflow"].attrs:
-                ds["streamflow"].attrs[f"original_{attr}"] = ds["streamflow"].attrs[
-                    attr
-                ]
+                orig_attrs[f"original_{attr}"] = ds["streamflow"].attrs[attr]
         ds["streamflow"].attrs[
             "standard_name"
-        ] = "water_volume_transport_in_river_channel"
+        ] = "outgoing_water_volume_transport_along_river_channel"  # FIXME: volume_transport_along_river_channel in xclim
         ds["streamflow"].attrs["long_name"] = "Streamflow"
         ds["streamflow"].attrs[
             "description"
         ] = "Streamflow at the outlet of the river reach"
         ds["streamflow"] = xc.units.convert_units_to(ds["streamflow"], "m3 s-1")
 
+        for attr in orig_attrs:
+            ds["streamflow"].attrs[attr] = orig_attrs[attr]
+
+        # Overwrite the file
+        # FIXME: Is this allowed?
+        os.remove(
+            os.path.join(
+                self.project,
+                "simulation",
+                "simulation",
+                "resultat",
+                "debit_aval.nc",
+            )
+        )
+        ds.to_netcdf(
+            os.path.join(
+                self.project, "simulation", "simulation", "resultat", "debit_aval.nc"
+            )
+        )
+
         # Add standard attributes for SWE and fix units
         # TODO: (currently missing the file)
 
-        return ds
-
-    def get_streamflow(self, **kwargs) -> xr.Dataset:
+    def get_streamflow(self, fake_copy, **kwargs) -> xr.Dataset:
         """
         Get the streamflow from the simulation.
 
@@ -304,19 +323,37 @@ class Hydrotel:
         kwargs
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
-        Returns
-        -------
-        ds: xr.Dataset
-            Dataset containing the streamflow.
         """
-        # FIXME: We temporarily work with a clean copy of the output, since we can't run Hydrotel
-        import shutil
+        if fake_copy:
+            # FIXME: We temporarily work with a clean copy of the output, since we can't run Hydrotel
+            import shutil
 
-        if os.path.isfile(
-            os.path.join(
-                self.project, "simulation", "simulation", "resultat", "debit_aval.nc"
-            )
-        ):
+            if not os.path.isfile(
+                os.path.join(
+                    self.project,
+                    "simulation",
+                    "simulation",
+                    "resultat",
+                    "debit_aval_orig.nc",
+                )
+            ):
+                # Create a fake file from the original
+                shutil.copy(
+                    os.path.join(
+                        self.project,
+                        "simulation",
+                        "simulation",
+                        "resultat",
+                        "debit_aval.nc",
+                    ),
+                    os.path.join(
+                        self.project,
+                        "simulation",
+                        "simulation",
+                        "resultat",
+                        "debit_aval_orig.nc",
+                    ),
+                )
             os.remove(
                 os.path.join(
                     self.project,
@@ -326,18 +363,22 @@ class Hydrotel:
                     "debit_aval.nc",
                 )
             )
-        shutil.copy(
-            os.path.join(
-                self.project,
-                "simulation",
-                "simulation",
-                "resultat",
-                "debit_aval_orig.nc",
-            ),
-            os.path.join(
-                self.project, "simulation", "simulation", "resultat", "debit_aval.nc"
-            ),
-        )
+            shutil.copy(
+                os.path.join(
+                    self.project,
+                    "simulation",
+                    "simulation",
+                    "resultat",
+                    "debit_aval_orig.nc",
+                ),
+                os.path.join(
+                    self.project,
+                    "simulation",
+                    "simulation",
+                    "resultat",
+                    "debit_aval.nc",
+                ),
+            )
 
         return xr.open_dataset(
             self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc",
@@ -347,7 +388,6 @@ class Hydrotel:
 
 def _fix_os_paths(d: dict):
     """Convert paths to fit the OS."""
-    # FIXME: Ugly fix to switch Windows paths to the right OS. Wouldn't work otherwise.
     return {
         k: str(Path(PureWindowsPath(v).as_posix()))
         if any(slash in str(v) for slash in ["/", "\\"])
@@ -362,7 +402,7 @@ def _fix_dates(d: dict):
     for key in ["DATE DEBUT", "DATE FIN"]:
         if key in d and not pd.isnull(d[key]):
             d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
-    # FIXME: Validate that this part is useful like this
+    # FIXME: Is this really useful, since this is the name of the file?
     for key in [
         "LECTURE ETAT FONTE NEIGE",
         "LECTURE ETAT TEMPERATURE DU SOL",
