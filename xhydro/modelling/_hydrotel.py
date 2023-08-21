@@ -187,18 +187,19 @@ class Hydrotel:
             start_date=start_date,
             end_date=end_date,
             variables_and_units=variables_and_units,
+            raise_on=["all"],
         )
 
     def healthchecks_advanced(self, xr_open_kwargs: dict = None, **kwargs):
         """
-        Perform more advanced checkups on the input file.
+        Perform advanced checkups on the inputs through a more generic call to :py:func:`xscen.diagnostics.health_checks`.
 
         Parameters
         ----------
         xr_open_kwargs: dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         kwargs
-            Keyword arguments to pass to :py:func:`xhydro.modelling.health_checks`.
+            Keyword arguments to pass to :py:func:`xscen.diagnostics.health_checks`.
         """
         if len(kwargs) != 0:
             ds = xr.open_dataset(
@@ -207,6 +208,8 @@ class Hydrotel:
             )
 
             health_checks(ds, **kwargs)
+        else:
+            raise ValueError("You must specify at least one keyword argument.")
 
     def run(
         self,
