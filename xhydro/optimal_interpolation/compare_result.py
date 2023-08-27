@@ -5,12 +5,7 @@ import matplotlib.pyplot as plt
 
 def nc_read(ncfile, varid):
     data = netCDF4.Dataset(ncfile)
-    vars = data.variables[varid]
-    result = []
-
-    for i in range(0, vars.shape[0]):
-        result.append(vars[i])
-    return result
+    return data.variables[varid]
 def nc_read_char2string(ncfile, varid, nchar_dimid):
     data = netCDF4.Dataset(ncfile)
     vars = data.variables[varid]
@@ -21,11 +16,8 @@ def nc_read_char2string(ncfile, varid, nchar_dimid):
         index = vars.dimensions.index(nchar_dimid)
 
     if index > 0:
-        for i in range(0,vars.shape[0]):
-            char_to_string = ""
-            char_to_string += str(vars[i,:], encoding='utf-8')
-            # for j in range(0,vars.shape[1]):
-            result.append(char_to_string)
+        for i in range(0, vars.shape[0]):
+            result.append(''.join(str(vars[i, :], encoding='utf-8')))
     return result
 
 
@@ -104,13 +96,12 @@ def KGE_prime(obs, sim):
     obs_std = np.std(obs)
     sim_std = np.std(sim)
 
-    r = np.corrcoef(obs, sim)[0,1]
-
+    r = np.corrcoef(obs, sim)[0, 1]
 
     beta = sim_mean / obs_mean
     gamma = (sim_std / sim_mean) / (obs_std / obs_mean)
 
-    return 1 - np.sqrt(np.power((r - 1),2) + np.power((beta - 1),2) + np.power((gamma - 1),2))
+    return 1 - np.sqrt(np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2))
 
 def nash(obs, sim):
     sim = np.ma.array(sim, mask=np.isnan(obs))
@@ -128,25 +119,15 @@ def compare():
     obs_data_filename = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDOBS.nc'
     sim_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDREP.nc'
     l10_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
-
-
-    nc_station_id = nc_read_char2string(obs_data_filename, 'station_id', 'nchar_station_id')
-    nc_troncon_id = nc_read_char2string(sim_data_file, 'station_id', 'nchar_station_id')
-    nc_l1o_station_id = nc_read_char2string(l10_data_file, 'station_id', 'nchar_station_id')
-
-    time_obs = nc_readtime(obs_data_filename,'time')
-    time_sim = nc_readtime(sim_data_file,'time')
-
     station_validation_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\stations_retenues_validation_croisee.csv"
-    station_correspondance_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Correspondance_Station_Troncon.csv"
-    station_info_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Info_Station_Hydro_2020.csv"
+    station_mapping_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Correspondance_Station_Troncon.csv"
 
+    print("Lecture des CSV")
     station_validation = read_csv_file(station_validation_filename, 1)
-    station_correspondance = read_csv_file(station_correspondance_filename, 1)
-    station_info = read_csv_file(station_info_filename, 1)
+    station_mapping = read_csv_file(station_mapping_filename, 1)
 
     NT = int(time)
-    NS = 3 #len(station_validation)
+    NS = len(station_validation)
     debit_sim = np.empty((NT, NS))
     debit_sim[:] = np.nan
     debit_obs = np.empty((NT, NS))
@@ -158,48 +139,67 @@ def compare():
     # debit_l1o_q75 = np.empty((NT, NS))
     # debit_sim[:] = np.nan
 
+    print("Lecture des NC ids")
+    nc_station_id = nc_read_char2string(obs_data_filename, 'station_id', 'nchar_station_id')
+    nc_troncon_id = nc_read_char2string(sim_data_file, 'station_id', 'nchar_station_id')
+    nc_l1o_station_id = nc_read_char2string(l10_data_file, 'station_id', 'nchar_station_id')
+    print("Lecture des NC drainage")
+    da_obs = nc_read(obs_data_filename, 'drainage_area')
+    da_sim = nc_read(sim_data_file, 'drainage_area')
+    da_l10 = nc_read(l10_data_file, 'drainage_area')
+    print("Lecture des NC discharge")
+    dis_obs = nc_read(obs_data_filename, 'Dis')
+    dis_sim = nc_read(sim_data_file, 'Dis')
+    dis_l10 = nc_read(l10_data_file, 'Dis')
+
+    percentile = nc_read(l10_data_file, 'percentile')
+
+    index_percentile = 0
+    for i in range(len(percentile)):
+        if percentile[i] == 50:
+            index_percentile = i
+
     for i in range(0, NS):
-        print("lecture des données..." + str(i) + "/" + str(NS))
+        print("Lecture des données..." + str(i+1) + "/" + str(NS))
 
         station_id = station_validation[i][0]
-        troncon_associe = find(station_correspondance, station_id, 0)
+        associate_section = find(station_mapping, station_id, 0)
 
-        nc_index_troncon = find_index(nc_troncon_id, troncon_associe[1])
-        sup_sim = nc_read(sim_data_file, 'drainage_area')[nc_index_troncon].item()
-        data_values = nc_read(sim_data_file, 'Dis')[nc_index_troncon][0:NT] / sup_sim
-        for j in range(0, len(data_values)):
-            if(data_values[j] != 0):
-                debit_sim[j, i] = data_values[j]
+        index_section = find_index(nc_troncon_id, associate_section[1])
+        sup_sim = da_sim[index_section].item()
+        data_values = dis_sim[index_section][0:NT] / sup_sim
+        debit_sim[:, i] = data_values.filled(np.nan)[:]
 
-        nc_index_station = find_index(nc_station_id, station_id)
-        sup_obs = nc_read(obs_data_filename, 'drainage_area')[nc_index_station].item()
-        data_values = nc_read(obs_data_filename, 'Dis')[nc_index_station][0:NT] / sup_obs
-        for j in range(0, len(data_values)):
-            if(data_values[j] != 0):
-                debit_obs[j, i] = data_values[j]
-        # debit_obs[:, i] = nc_read(obs_data_filename, 'Dis')[nc_index_station][0:NT] / sup_obs
+        index_station = find_index(nc_station_id, station_id)
+        sup_obs = da_obs[index_station].item()
+        data_values = dis_obs[index_station][0:NT] / sup_obs
+        debit_obs[:, i] = data_values.filled(np.nan)[:]
 
-        nc_index_station_l10 = find_index(nc_l1o_station_id, station_id)
-        sup= nc_read(l10_data_file, 'drainage_area')[nc_index_station_l10].item()
-        data_values = nc_read(l10_data_file, 'Dis')[0][nc_index_station_l10][0:NT] / sup
-        for j in range(0, len(data_values)):
-            if(data_values[j] != 0):
-                debit_l1o[j, i] = data_values[j]
+        index_station_l10 = find_index(nc_l1o_station_id, station_id)
+        sup = da_l10[index_station_l10].item()
 
-    KGE = np.empty(NS)
-    NSE = np.empty(NS)
-    KGE_l1o = np.empty(NS)
-    NSE_l1o = np.empty(NS)
+        data_values = dis_l10[index_percentile][index_station_l10][0:NT] / sup
+        debit_l1o[:, i] = data_values.filled(np.nan)[:]
+
+    kge = np.empty(NS)
+    nse = np.empty(NS)
+    kge_l1o = np.empty(NS)
+    nse_l1o = np.empty(NS)
 
     for n in range(0, NS):
-        KGE[n] = KGE_prime(debit_obs[:, n], debit_sim[:, n])
-        NSE[n] = nash(debit_obs[:, n], debit_sim[:, n])
-        KGE_l1o[n] = KGE_prime(debit_obs[:, n], debit_l1o[:, n])
-        NSE_l1o[n] = nash(debit_obs[:, n], debit_l1o[:, n])
+        kge[n] = KGE_prime(debit_obs[:, n], debit_sim[:, n])
+        nse[n] = nash(debit_obs[:, n], debit_sim[:, n])
+        kge_l1o[n] = KGE_prime(debit_obs[:, n], debit_l1o[:, n])
+        nse_l1o[n] = nash(debit_obs[:, n], debit_l1o[:, n])
 
-    plt.plot(KGE,KGE_l1o)
+    fig, ax = plt.subplots()
+    ax.scatter(kge, kge_l1o)
+    ax.set_xlabel("KGE")
+    ax.set_ylabel("KGE L10")
+    ax.axline((0, 0), (1, 1), linewidth=2)
+    ax.set_xlim(0.3, 1)
+    ax.set_ylim(0.3, 1)
     plt.show()
-    test =1
 
 def test():
 
