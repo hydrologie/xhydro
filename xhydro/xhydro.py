@@ -1,4 +1,6 @@
 """Main module."""
-from optimal_interpolation.compare_result import test
+from optimal_interpolation import compare_result
+from optimal_interpolation import cross_validation
 
-test()
+compare_result.compare()
+cross_validation.execute()
