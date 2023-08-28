@@ -11,6 +11,10 @@ import xhydro as xh
 from statsmodels.tools import eval_measures
 from xclim.indices.stats import fit, parametric_quantile
 
+__all__ = [
+    "Data",
+    "Local",
+]
 
 class Data:
     def __init__(self, ds: xr.Dataset):
@@ -63,7 +67,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-            '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+            '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> filtered_ds = donnees.select_catchments(
@@ -115,7 +119,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-            '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+            '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> grouped_ds = donnees.custom_group_by(1, 90)
@@ -159,13 +163,13 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.season = ['Yearly', 1, 365]
         """
 
-        # TODO a dictionary would probalby be more suited
+        # TODO Replace with dictionary instead
         name = liste[0]
         beg = liste[1]
         end = liste[2]
@@ -207,7 +211,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.season = ['Yearly', 1, 365]
@@ -232,7 +236,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.season = ['Yearly', 1, 365]
@@ -279,7 +283,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.custom_group_by(1, 365.max().where(
@@ -323,7 +327,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
@@ -374,7 +378,7 @@ class Data:
         --------
         >>> import xarray as xr
         >>> cehq_data_path =
-        '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
@@ -798,7 +802,7 @@ class Local:
         Examples
         --------
         >>> import xarray as xr
-        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> cehq_data_path = '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
@@ -849,7 +853,7 @@ class Local:
         Examples
         --------
         >>> import xarray as xr
-        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> cehq_data_path = '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
@@ -900,7 +904,7 @@ class Local:
         Examples
         --------
         >>> import xarray as xr
-        >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+        >>> cehq_data_path = '/datasets/xhydro/tests/cehq/zarr'
         >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
         >>> donnees = Data(ds)
         >>> donnees.get_maximum(tolerence=0.15, seasons=['Spring'])
