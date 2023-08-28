@@ -35,3 +35,5 @@ dependencies:
   - xarray >=0.17.0
   - xclim >=0.43.0
   - zarr >=2.11.1
+  - pip: 
+    - xdatasets
