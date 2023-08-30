@@ -7,7 +7,7 @@ import pkgutil
 
 import pytest
 
-from xhydro import xhydro
+import xhydro
 
 
 @pytest.fixture
