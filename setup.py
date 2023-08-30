@@ -27,6 +27,7 @@ requirements = [
     "scipy>=1.2",
     "xarray>=0.17.0",
     "xclim>=0.43.0",
+    "xscen",
     "zarr>=2.11.1",
 ]
 
