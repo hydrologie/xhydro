@@ -31,6 +31,7 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 .. |build| image:: https://github.com/hydrologie/xhydro/actions/workflows/main.yml/badge.svg
         :target: https://github.com/hydrologie/xhydro/actions
         :alt: Build Status
+
 ..
     .. |docs| image:: https://img.shields.io/badge/Docs-GitHub.io-blue
             :target: https://hydrologie.github.io/xhydro/
