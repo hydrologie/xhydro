@@ -8,7 +8,7 @@ Welcome to xHydro's documentation!
    readme
    installation
    usage
-   modules
+   apidoc/modules
    contributing
    authors
    history
