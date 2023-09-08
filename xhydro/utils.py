@@ -1,52 +1,45 @@
-import datetime
+"""Utility functions for xhydro."""
+from typing import Union
+
+import xarray as xr
+from xclim.core.units import rate2amount
+
+__all__ = ["compute_volume"]
 
 
-def get_julian_day(month, day, year=None):
-    """
-    Return julian day for a specified date, if year is not specified, uses curent year
+def compute_volume(
+    da: Union[xr.DataArray | xr.Dataset], *, attrs: dict = None, out_units: str = None
+):
+    """Compute the volume of water from a streamflow variable.
 
     Parameters
     ----------
-    month : int
-        integer of the target month
-
-    day : int
-        integer of the target day
-
-    year : int
-        integer of the target year
+    da : Union[xr.DataArray | xr.Dataset]
+        Streamflow variable.
+    attrs : dict, optional
+        Attributes to add to the output variable.
+        Default attributes will be added if not provided for "long_name", "units", "cell_methods" and "description".
+    out_units : str, optional
+        Output units. Defaults to "m3".
 
     Returns
     -------
-    int
-        julian day (1 - 366)
-
-    Examples
-    --------
-    >>> import xarray as xr
-    >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
-    >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
-    >>> donnees = Data(ds)
-    >>> jj = donnees.get_julian_day(month = 9, day = 1)
-    >>> jj: 244
-    >>> jj = donnees.get_julian_day(month = 9, day = 1, year = 2000)
-    >>> jj: 245
+    xr.DataArray
+        Volume of water.
     """
-    if year is None:
-        year = datetime.date.today().year
+    if isinstance(da, xr.Dataset):
+        da = da["streamflow"]
 
-    return datetime.datetime(year, month, day).timetuple().tm_yday
+    default_attrs = {
+        "long_name": "Volume of water",
+        "units": "m3",
+        "cell_methods": "time: sum",
+        "description": "Volume of water",
+    }
+    attrs = attrs or {}
+    for k, v in default_attrs.items():
+        attrs.setdefault(k, v)
+    out = rate2amount(da, out_units=out_units or "m3")
+    out.attrs.update(attrs)
 
-
-def get_timestep(array_in):
-    if len(array_in) < 2:
-        # Returns a timestep of one for a one timestep array
-        return 1
-    timestep = ((array_in[-1] - array_in[0]) / (array_in.size - 1)).values.astype(
-        "timedelta64[m]"
-    )
-    if timestep >= 60 and timestep < 24 * 60:
-        timestep = timestep.astype("timedelta64[h]")
-    elif timestep >= 24 * 60:
-        timestep = timestep.astype("timedelta64[D]")
-    return timestep
+    return out
