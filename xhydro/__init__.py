@@ -2,4 +2,4 @@
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
-__version__ = "0.1.6"
+__version__ = "0.1.7"
