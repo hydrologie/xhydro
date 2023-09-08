@@ -9,6 +9,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel R
 Announcements
 ^^^^^^^^^^^^^
 * Support for Python3.8 and lower has been dropped. (:pull:`11`).
+* `xHydro` now hosts its documentation on `Read the Docs <https://xhydro.readthedocs.io/en/latest/>`_. (:pull:`26`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -11,6 +11,8 @@ recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+recursive-exclude docs apidocs *.rst
+recursive-exclude docs _build *
 
 exclude .coveralls.yml
 exclude .cruft.json
