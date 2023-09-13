@@ -5,6 +5,7 @@ dependencies:
   - python >=3.9,<3.11
   # Don't forget to sync the changes here with environment.yml!
   # Main packages
+  - xscen
   # Dev
   - bump2version
   - coveralls
@@ -26,7 +27,8 @@ dependencies:
   - sphinx-copybutton
   - pip
   # Testing
-  - tox >=4.0
+  - tox <4.0 # 2022-12-12: tox v4.0 is incompatible with tox-conda plugin
+  - tox-conda >=0.10.2
   # Packaging
   - build
   - wheel
