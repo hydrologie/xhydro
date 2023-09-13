@@ -3,10 +3,10 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.4.0
+    rev: v3.10.1
     hooks:
     -   id: pyupgrade
-        args: [--py39-plus]
+        args: [ '--py39-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -17,29 +17,25 @@ repos:
       - id: check-json
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
+        # exclude: .ipynb
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
       - id: rst-inline-touching-normal
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.9.1
     hooks:
       - id: black
+        args: [ '--target-version=py39' ]
         exclude: ^docs/
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         additional_dependencies: [ 'flake8-rst-docstrings' ]
         args: ['--config=setup.cfg']
-  - repo: https://github.com/psf/black
-    rev: 23.3.0
-    hooks:
-      - id: black
-        exclude: ^docs/
-        args: [ '--target-version=py39' ]
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
@@ -55,7 +51,7 @@ repos:
     rev: v0.3.8
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==23.3.0' ]
+        additional_dependencies: [ 'black==23.9.1' ]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:
@@ -65,6 +61,11 @@ repos:
     rev: "0.49"
     hooks:
       - id: check-manifest
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.26.3
+    hooks:
+      - id: check-github-workflows
+      - id: check-readthedocs
   - repo: meta
     hooks:
       - id: check-hooks-apply

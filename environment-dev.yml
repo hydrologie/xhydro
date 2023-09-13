@@ -1,0 +1,32 @@
+name: xhydro-dev
+channels:
+  - conda-forge
+dependencies:
+  - python >=3.9,<3.11
+  # Don't forget to sync the changes here with environment.yml!
+  # Main packages
+  # Dev
+  - bump2version
+  - coveralls
+  - furo
+  - ipykernel
+  - ipython
+  - jupyter_client
+  - nbsphinx
+  - nbval
+  - pandoc
+  - pooch
+  - pre-commit
+  - pytest
+  - pytest-cov
+  - sphinx
+  - sphinx-autoapi
+  - sphinxcontrib-napoleon
+  - sphinx-codeautolink
+  - sphinx-copybutton
+  - pip
+  # Testing
+  - tox >=4.0
+  # Packaging
+  - build
+  - wheel
