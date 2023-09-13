@@ -55,34 +55,33 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-#      - name: Install tox
-#        run: pip install tox
-#      - name: Test with tox
-#        run: tox -e ${{ matrix.tox-env }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          COVERALLS_FLAG_NAME: run-${{ matrix.tox-env }}
-#          COVERALLS_PARALLEL: true
-#          COVERALLS_SERVICE_NAME: github
+      - name: Install tox
+        run: pip install tox
+      - name: Test with tox
+        run: tox -e ${{ matrix.tox-env }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: run-${{ matrix.tox-env }}
+          COVERALLS_PARALLEL: true
+          COVERALLS_SERVICE_NAME: github
       - name: Install xhydro (no dependencies)
         run: |
-          python -m pip install -e . --no-dependencies
-      - name: Smoke tests
+          python -m pip install -e .
+      - name: Smoke tests with dependencies
         run: |
           python -m pip install pytest
           pytest
 
-# FIXME: Needs the Coveralls Pro webhook
-#  finish:
-#    needs:
-#      - test
-#    runs-on: ubuntu-latest
-#    container: python:3-slim
-#    steps:
-#      - name: Coveralls Finished
-#        run: |
-#          pip install --upgrade coveralls
-#          coveralls --finish
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          COVERALLS_SERVICE_NAME: github
+  finish:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+      - name: Coveralls Finished
+        run: |
+          pip install --upgrade coveralls
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_SERVICE_NAME: github
