@@ -7,38 +7,9 @@ from setuptools import find_packages, setup
 with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-requirements = [
-    "bottleneck>=1.3.1",
-    "cartopy",
-    "cf-xarray>=0.6.1",
-    "cftime>=1.4.1",
-    "dask[array]>=2.6",
-    "geopandas",
-    "h5netcdf",
-    "intake-xarray>=0.6.1",
-    "jsonpickle",
-    "numba",
-    "numpy>=1.16.0",
-    "pandas>=0.23",
-    "pint>=0.10",
-    "pyarrow",
-    "pyyaml",
-    "s3fs>=2022.7.0",
-    "scipy>=1.2",
-    "xarray>=0.17.0",
-    "xclim>=0.43.0",
-    "zarr>=2.11.1",
-]
+requirements = []
 
-test_requirements = ["pytest>=3"]
-
-docs_requirements = [
-    dependency for dependency in open("requirements_docs.txt").readlines()
-]
-
-dev_requirements = [
-    dependency for dependency in open("requirements_dev.txt").readlines()
-]
+dev_requirements = ["pytest", "pytest-cov"]
 
 setup(
     author="Thomas-Charles Fortier Filion",
@@ -69,9 +40,7 @@ setup(
     name="xhydro",
     packages=find_packages(include=["xhydro", "xhydro.*"]),
     test_suite="tests",
-    tests_require=test_requirements,
     extras_require={
-        "docs": docs_requirements,
         "dev": dev_requirements,
     },
     url="https://github.com/TC-FF/xhydro",
