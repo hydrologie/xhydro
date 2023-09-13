@@ -19,7 +19,7 @@ build:
       - sphinx-apidoc -o docs/apidoc --private --module-first xhydro
 
 conda:
-  environment: environment-docs.yml
+  environment: environment-dev.yml
 
 python:
   install:
