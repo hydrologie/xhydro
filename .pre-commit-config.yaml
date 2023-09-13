@@ -6,7 +6,7 @@ repos:
     rev: v3.10.1
     hooks:
     -   id: pyupgrade
-        args: [--py39-plus]
+        args: [ '--py39-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -17,14 +17,15 @@ repos:
       - id: check-json
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
+        # exclude: .ipynb
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
       - id: rst-inline-touching-normal
-  - repo: https://github.com/psf/black
-    rev: 23.7.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.9.1
     hooks:
       - id: black
         args: [ '--target-version=py39' ]
@@ -50,7 +51,7 @@ repos:
     rev: v0.3.8
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==23.7.0' ]
+        additional_dependencies: [ 'black==23.9.1' ]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.32.0
     hooks:
