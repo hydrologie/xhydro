@@ -44,6 +44,6 @@ setup(
         "dev": dev_requirements,
     },
     url="https://github.com/TC-FF/xhydro",
-    version="0.1.7",
+    version="0.1.8",
     zip_safe=False,
 )
