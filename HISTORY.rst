@@ -9,6 +9,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel R
 Announcements
 ^^^^^^^^^^^^^
 * Support for Python3.8 and lower has been dropped. (:pull:`11`).
+* `xHydro` now hosts its documentation on `Read the Docs <https://xhydro.readthedocs.io/en/latest/>`_. (:issue:`22`, :pull:`26`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,6 +34,7 @@ Internal changes
     * Some sphinx extensions have been added/enabled (sphinx-codeautolink, sphinx-copybutton).
     * Automated testing with tox now updated to use v4.0+ conventions.
     * Removed all references to travis.ci.
+* Deployments to TestPyPI and PyPI are now run using GitHub Workflow Environments as a safeguarding mechanism. (:pull:`28`).
 
 0.1.2 (2023-05-10)
 ------------------

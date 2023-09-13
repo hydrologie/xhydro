@@ -10,7 +10,9 @@ on:
       - .github/**.yml
       - .gitignore
       - .pre-commit-config.yaml
+      - .readthedocs.yml
       - .yamllint.yaml
+      - .zenodo.json
       - AUTHORS.rst
       - CONTRIBUTING.rst
       - HISTORY.rst

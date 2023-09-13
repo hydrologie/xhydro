@@ -3,11 +3,12 @@ name: Publish Python 🐍 distributions 📦 to TestPyPI
 on:
   push:
     tags:
-      - '*'
+      - 'v*.*.*'
 
 jobs:
   build-n-publish-testpypi:
     name: Build and publish Python 🐍 distributions 📦 to TestPyPI
+    environment: staging
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
