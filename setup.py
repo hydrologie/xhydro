@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-requirements = ["xclim>=0.45.0", "xscen>=0.7.1"]
+requirements = []
 
 dev_requirements = ["pytest", "pytest-cov"]
 
