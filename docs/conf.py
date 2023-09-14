@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
     'sphinx_codeautolink',
@@ -51,6 +52,15 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": False,
     "special-members": False,
+}
+
+# For styling class attributes
+napoleon_use_ivar = True
+
+# For external documentation links
+intersphinx_mapping = {
+    # "xclim": ("https://xclim.readthedocs.io/en/latest/", None),
+    "xscen": ("https://xscen.readthedocs.io/en/latest/", None),
 }
 
 extlinks = {
