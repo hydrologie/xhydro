@@ -2,10 +2,11 @@ name: xhydro-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.11
+  - python >=3.9,<3.12
   # Don't forget to sync the changes here with environment.yml!
   # Main packages
   - xscen
+  - xclim >=0.45.0
   # Dev
   - bump2version
   - coveralls
