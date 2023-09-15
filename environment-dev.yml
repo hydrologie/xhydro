@@ -7,7 +7,6 @@ dependencies:
   # Main packages
   - xscen
   - xclim >=0.45.0
-  - xesmf
   # Dev
   - bump2version
   - coveralls
