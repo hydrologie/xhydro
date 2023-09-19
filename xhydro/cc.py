@@ -22,6 +22,6 @@ def climatological_op(ds, **kwargs):
     -----
     This is a temporary wrapper to be deleted once climatological_op is available in xscen.
     For the time being, it is a simple wrapper around climatological_mean.
-    See :py:func:`xscen.climatological_mean` for more details.
+    See :py:func:`xscen.aggregate.climatological_mean` for more details.
     """
     return climatological_mean(ds, **kwargs)
