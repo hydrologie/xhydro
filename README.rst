@@ -32,14 +32,14 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://github.com/hydrologie/xhydro/actions
         :alt: Build Status
 
-.. |docs| image:: https://img.shields.io/badge/Docs-GitHub.io-blue
-        :target: https://hydrologie.github.io/xhydro/
-        :alt: Documentation
-
 ..
-    .. |docs| image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
-            :target: https://xhydro.readthedocs.io/en/latest/?version=latest
-            :alt: Documentation Status
+    .. |docs| image:: https://img.shields.io/badge/Docs-GitHub.io-blue
+            :target: https://hydrologie.github.io/xhydro/
+            :alt: Documentation
+
+.. |docs| image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
+        :target: https://xhydro.readthedocs.io/en/latest/?version=latest
+        :alt: Documentation Status
 
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
