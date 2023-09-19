@@ -4,4 +4,4 @@ __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
 __version__ = "0.1.8"
 
-from .utils import *
+from . import utils
