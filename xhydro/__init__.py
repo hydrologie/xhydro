@@ -1,7 +1,7 @@
 """Top-level package for xHydro."""
 # Import top-level functions
-from .hydroclimate import *
-from .properties import *
+from .cc import *
+from .indicators import *
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"

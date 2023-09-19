@@ -1,4 +1,4 @@
-"""Module to compute hydroclimatic statistics."""
+"""Module to compute climate change statistics using xscen functions."""
 
 # Special imports from xscen
 from xscen import (
@@ -16,5 +16,12 @@ __all__ = [
 
 # FIXME: To be deleted once climatological_op is available in xscen
 def climatological_op(ds, **kwargs):
-    """Compute climatological operation."""
+    """Compute climatological operation.
+
+    Notes
+    -----
+    This is a temporary wrapper to be deleted once climatological_op is available in xscen.
+    For the time being, it is a simple wrapper around climatological_mean.
+    See :py:func:`xscen.climatological_mean` for more details.
+    """
     return climatological_mean(ds, **kwargs)

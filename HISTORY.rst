@@ -13,11 +13,13 @@ Announcements
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* GitHub Workflows for automated testing using `tox` have been added. (:pull:`11`)
+* GitHub Workflows for automated testing using `tox` have been added. (:pull:`11`).
+* Support for various `xscen` functions has been added to compute indicators and various climate change metrics. (:pull:`21`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * `xHydro` repository has renamed its primary development branch from `master` to `main`. (:pull:`13`).
+* `xHydro` now requires a conda environment to be installed. (:pull:`21`).
 
 Bug fixes
 ^^^^^^^^^
