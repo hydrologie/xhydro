@@ -1,6 +1,4 @@
 """Utility functions for xhydro."""
-from typing import Union
-
 import xarray as xr
 from xclim.core.units import rate2amount
 
