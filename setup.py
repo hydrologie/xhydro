@@ -18,12 +18,15 @@ setup(
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research"
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Topic :: Scientific/Engineering :: Hydrology",
+        "Topic :: Scientific/Engineering :: GIS",
     ],
     description="Hydrological analysis library built with xarray",
     entry_points={
@@ -43,7 +46,7 @@ setup(
     extras_require={
         "dev": dev_requirements,
     },
-    url="https://github.com/TC-FF/xhydro",
+    url="https://github.com/hydrologie/xhydro",
     version="0.1.8",
     zip_safe=False,
 )
