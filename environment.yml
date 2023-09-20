@@ -4,4 +4,4 @@ channels:
 dependencies:
   - python >=3.9,<3.12
   - xclim >=0.45.0
-  - xscen
+  - xscen >=0.7.1
