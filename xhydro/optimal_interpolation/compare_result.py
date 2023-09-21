@@ -11,6 +11,8 @@ key (string) : La clé d'information recherché dans le fichier
 Retourne :
 (list): Liste qui contient les valeurs du fichier
 """
+
+
 def nc_read(filename, key):
     return netCDF4.Dataset(filename).variables[key]
 
@@ -25,6 +27,8 @@ nchar_dimid (int) : La dimension des chaines de caractères séparés
 Retourne :
 (list): Liste qui contient les valeurs du fichier
 """
+
+
 def nc_read_char2string(filename, key, nchar_dimid):
     dataset = netCDF4.Dataset(filename)
     data_values = dataset.variables[key]
@@ -48,6 +52,8 @@ header (bool) : Le fichier CSV contient une entête
 Retourne :
 (list): Liste qui contient les valeurs du fichier
 """
+
+
 def read_csv_file(csv_filename, header):
     items = []
     with open(csv_filename, newline='') as csvfile:
@@ -66,6 +72,7 @@ def read_csv_file(csv_filename, header):
 
     return items
 
+
 """
 Trouve l'association d'une section à une station.
 Arguments :
@@ -74,6 +81,8 @@ section_id (string) : L'indentificateur de la section
 Retourne :
 (string): Vide si la section est introuvable ou la clé d'association entre la station et une section.
 """
+
+
 def find_section(stations, section_id):
     value = ""
     section_position = 0
@@ -83,6 +92,7 @@ def find_section(stations, section_id):
             value = stations[i]
     return value[section_value]
 
+
 """
 Trouve l'indince d'un élément donné dans une liste.
 Arguments :
@@ -91,12 +101,15 @@ key (string) : Élément à trouver dans la liste
 Retourne :
 (float): -1 si l'élément est introuvable ou l'indice de l'élément
 """
+
+
 def find_index(array, key):
     value = -1
     for i in range(0, len(array)):
         if key == array[i]:
             value = i
     return value
+
 
 """
 Calcule le coefficient d'efficacité KGE
@@ -106,6 +119,8 @@ sim (list) : Liste qui contient les débits simulés
 Retourne :
 (float): Le coefficient d'efficacité KGE.
 """
+
+
 def kge_prime(obs, sim):
     is_nan = np.isnan(obs) | np.isnan(sim)
 
@@ -125,6 +140,7 @@ def kge_prime(obs, sim):
 
     return 1 - np.sqrt(np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2))
 
+
 """
 Calcule le coefficient d'efficacité Nash–Sutcliffe
 Arguments :
@@ -133,6 +149,8 @@ sim (list) : Liste qui contient les débits simulés
 Retourne :
 (float): Le coefficient d'efficacité Nash–Sutcliffe.
 """
+
+
 def nash(obs, sim):
     sim = np.ma.array(sim, mask=np.isnan(obs))
     obs = np.ma.array(obs, mask=np.isnan(obs))
