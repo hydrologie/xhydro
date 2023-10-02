@@ -1,0 +1,35 @@
+name: xhydro-dev
+channels:
+  - conda-forge
+dependencies:
+  - python >=3.9,<3.12
+  # Don't forget to sync the changes here with environment.yml!
+  # Main packages
+  - xclim >=0.45.0
+  - xscen >=0.7.1
+  # Dev
+  - bump2version
+  - coveralls
+  - furo
+  - ipykernel
+  - ipython
+  - jupyter_client
+  - nbsphinx
+  - nbval
+  - pandoc
+  - pooch
+  - pre-commit
+  - pytest
+  - pytest-cov
+  - sphinx
+  - sphinx-autoapi
+  - sphinx-codeautolink
+  - sphinx-copybutton
+  - sphinxcontrib-napoleon
+  - pip
+  # Testing
+  - tox <4.0  # 2022-12-12: tox v4.0 is incompatible with tox-conda plugin
+  - tox-conda >=0.10.2
+  # Packaging
+  - build
+  - wheel

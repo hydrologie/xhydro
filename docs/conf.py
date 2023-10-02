@@ -16,12 +16,18 @@
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-#
+from pathlib import Path
+
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
+    # RTD doesn't activate the env, and esmpy depends on an env var set there
+    # We assume the `os` package is in {ENV}/lib/pythonX.X/os.py
+    # See conda-forge/esmf-feedstock#91 and readthedocs/readthedocs.org#4067
+    os.environ["ESMFMKFILE"] = str(Path(os.__file__).parent.parent / "esmf.mk")
 
-import xhydro
+import xhydro  # noqa
 
 # -- General configuration ---------------------------------------------
 
@@ -35,6 +41,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
     'sphinx_codeautolink',
@@ -51,6 +58,15 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": False,
     "special-members": False,
+}
+
+# For styling class attributes
+napoleon_use_ivar = True
+
+# For external documentation links
+intersphinx_mapping = {
+    "xclim": ("https://xclim.readthedocs.io/en/latest/", None),
+    "xscen": ("https://xscen.readthedocs.io/en/latest/", None),
 }
 
 extlinks = {
@@ -104,7 +120,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
+todo_include_todos = True
 
 
 # -- Options for HTML output -------------------------------------------
@@ -123,7 +139,7 @@ html_theme = 'furo'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 
 # -- Options for HTMLHelp output ---------------------------------------
