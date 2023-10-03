@@ -1,20 +1,22 @@
-import xarray as xr
-import numpy as np
-import warnings
 import copy
-from typing import Union
-import pandas as pd
 import fnmatch
-import scipy.stats
-import xhydro as xh
+import warnings
+from typing import Union
 
+import numpy as np
+import pandas as pd
+import scipy.stats
+import xarray as xr
 from statsmodels.tools import eval_measures
 from xclim.indices.stats import fit, parametric_quantile
+
+import xhydro as xh
 
 __all__ = [
     "Data",
     "Local",
 ]
+
 
 class Data:
     def __init__(self, ds: xr.Dataset):

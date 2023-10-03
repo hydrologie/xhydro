@@ -24,12 +24,12 @@ def get_julian_day(month, day, year=None):
     Examples
     --------
     >>> import xarray as xr
-    >>> cehq_data_path = '/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr'
+    >>> cehq_data_path = "/dbfs/mnt/devdlzxxkp01/datasets/xhydro/tests/cehq/zarr"
     >>> ds = xr.open_zarr(cehq_data_path, consolidated=True)
     >>> donnees = Data(ds)
-    >>> jj = donnees.get_julian_day(month = 9, day = 1)
+    >>> jj = donnees.get_julian_day(month=9, day=1)
     >>> jj: 244
-    >>> jj = donnees.get_julian_day(month = 9, day = 1, year = 2000)
+    >>> jj = donnees.get_julian_day(month=9, day=1, year=2000)
     >>> jj: 245
     """
     if year is None:
