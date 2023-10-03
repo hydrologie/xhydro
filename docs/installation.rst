@@ -2,11 +2,9 @@
 Installation
 ============
 
-
 Stable release
 --------------
-
-Because of some dependencies being absent from PyPI, we strongly recommend installing `xhydro` in an Anaconda environment.
+Due to the complexity of the install process of some dependencies, we strongly recommend installing `xhydro` in an Anaconda Python environment.
 To create a working environment and install xHydro, copy the `environment.yml` file from the root of the repository and run the following commands:
 
 .. code-block:: console
@@ -15,20 +13,17 @@ To create a working environment and install xHydro, copy the `environment.yml` f
     $ conda activate xhydro
     $ pip install xhydro --no-deps
 
-This is the preferred method to install xHydro, as it will always install the most recent stable release.
+This is the preferred method to install `xHydro`, as it will always install the most recent stable release.
 
 If for some reason you wish to install the `PyPI` version of `xscen` into an existing Anaconda environment (*not recommended*), only run the last command above.
 
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
+If you don't have `pip`_ installed, this `Python installation guide`_ can guide you through the process.
 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
-
 From sources
 ------------
-
 `xHydro` is still under active development and the latest features might not yet be available on `PyPI`.
 To install the latest development version, you can install `xHydro` directly from the `Github repo`_.
 

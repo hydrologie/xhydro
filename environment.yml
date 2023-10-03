@@ -8,4 +8,4 @@ dependencies:
   - statsmodels
   - xarray
   - xclim >=0.45.0
-  - xscen
+  - xscen >=0.7.1
