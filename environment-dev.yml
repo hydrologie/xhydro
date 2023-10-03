@@ -37,3 +37,7 @@ dependencies:
   # Packaging
   - build
   - wheel
+  # Notebooks
+  - hvplot
+  - pip:
+    - xdatasets

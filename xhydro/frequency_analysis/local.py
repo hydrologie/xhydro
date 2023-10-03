@@ -173,7 +173,7 @@ class Local:
         ----------
         ds: xr.Dataset
             Dataset containing the yearly data to analyse.
-        kwargs: dict
+        kwargs
             Keyword arguments passed to `fit`.
         """
         self.data = ds
@@ -371,7 +371,9 @@ def criteria(ds, p) -> xr.Dataset:
 
     out = []
     distributions = list(p["scipy_dist"].values)
-    for v in ds.data_vars:
+
+    common_vars = list(set(ds.data_vars).intersection(p.data_vars))
+    for v in common_vars:
         c = []
         for d in distributions:
             da = ds[v].transpose("time", ...)

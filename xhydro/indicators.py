@@ -187,6 +187,7 @@ def get_yearly_op(
                 dt_start = ds.time.groupby("time.year").min().dt.dayofyear
                 dt_end = ds.time.groupby("time.year").max().dt.dayofyear
                 dt = xr.align(dt_start, dt_end, join="override")[1] - dt_start + 1
+                dt = dt.rename({"year": "time"})
                 mult.append(dt)
             else:
                 raise NotImplementedError(
