@@ -7,8 +7,6 @@ import pkgutil
 
 import pytest
 
-import xhydro
-
 
 @pytest.fixture
 def response():
