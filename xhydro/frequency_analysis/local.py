@@ -165,25 +165,25 @@ __all__ = [
 #
 
 
-class Local:
-    def __init__(self, ds, **kwargs):
-        """Local frequency analysis.
-
-        Parameters
-        ----------
-        ds: xr.Dataset
-            Dataset containing the yearly data to analyse.
-        kwargs
-            Keyword arguments passed to `fit`.
-        """
-        self.data = ds
-        self.params = fit(ds, **kwargs)
-        self.criteria = criteria(self.data, self.params)
-
-    def parametric_quantiles(
-        self, t: Union[float, list], mode: str = "max"
-    ) -> xr.Dataset:
-        return parametric_quantiles(self.params, t=t, mode=mode)
+# class Local:
+#     def __init__(self, ds, **kwargs):
+#         """Local frequency analysis.
+#
+#         Parameters
+#         ----------
+#         ds: xr.Dataset
+#             Dataset containing the yearly data to analyse.
+#         kwargs
+#             Keyword arguments passed to `fit`.
+#         """
+#         self.data = ds
+#         self.params = fit(ds, **kwargs)
+#         self.criteria = criteria(self.data, self.params)
+#
+#     def parametric_quantiles(
+#         self, t: Union[float, list], mode: str = "max"
+#     ) -> xr.Dataset:
+#         return parametric_quantiles(self.params, t=t, mode=mode)
 
 
 def fit(
@@ -385,16 +385,28 @@ def criteria(ds, p) -> xr.Dataset:
             )
             dist_obj = getattr(scipy.stats, d)
 
-            crit = xr.apply_ufunc(
-                _get_criteria_1d,
-                da,
-                params,
-                kwargs={"dist": dist_obj},
-                input_core_dims=[["time"], ["dparams"]],
-                output_core_dims=[["criterion"]],
-                dask_gufunc_kwargs=dict(output_sizes={"criterion": 3}),
-                dask="parallelized",
-            )
+            if len(da.dims) == 1:
+                crit = xr.apply_ufunc(
+                    _get_criteria_1d,
+                    da.expand_dims("tmp"),
+                    params.expand_dims("tmp"),
+                    kwargs={"dist": dist_obj},
+                    input_core_dims=[["time"], ["dparams"]],
+                    output_core_dims=[["criterion"]],
+                    dask_gufunc_kwargs=dict(output_sizes={"criterion": 3}),
+                    dask="parallelized",
+                ).squeeze("tmp")
+            else:
+                crit = xr.apply_ufunc(
+                    _get_criteria_1d,
+                    da,
+                    params,
+                    kwargs={"dist": dist_obj},
+                    input_core_dims=[["time"], ["dparams"]],
+                    output_core_dims=[["criterion"]],
+                    dask_gufunc_kwargs=dict(output_sizes={"criterion": 3}),
+                    dask="parallelized",
+                )
 
             # Add attributes
             crit = crit.assign_coords(criterion=["aic", "bic", "aicc"]).expand_dims(
