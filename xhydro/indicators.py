@@ -173,11 +173,11 @@ def get_yearly_op(
             )
         elif (
             "doy_bounds" in indexer.keys()
-            and indexer["doy_bounds"][0] > indexer["doy_bounds"][1]
+            and indexer["doy_bounds"][0] >= indexer["doy_bounds"][1]
         ) or (
             "date_bounds" in indexer.keys()
             and int(indexer["date_bounds"][0].split("-")[0])
-            > int(indexer["date_bounds"][1].split("-")[0])
+            >= int(indexer["date_bounds"][1].split("-")[0])
         ):
             if "doy_bounds" in indexer.keys():
                 # transform doy to a date to find the month
@@ -194,11 +194,11 @@ def get_yearly_op(
                 month_end = int(indexer["date_bounds"][1].split("-")[0])
             if month_end == month_start:
                 warnings.warn(
-                    "The bounds wraps around the year, but the month is the same between the both of them. This will lead to misleading results."
+                    "The bounds wrap around the year, but the month is the same between the both of them. This is not supported and will lead to wrong results."
                 )
-            if freq == "YS" or (month_end >= month_labels.index(freq.split("-")[1])):
+            if freq == "YS" or (month_start != month_labels.index(freq.split("-")[1])):
                 warnings.warn(
-                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. This will lead to misleading results."
+                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
                 )
 
         identifier = f"{input_var}{window if window > 1 else ''}_{op}_{i.lower()}"

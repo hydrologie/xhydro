@@ -213,3 +213,37 @@ class TestGetYearlyOp:
             out_sum.volume_sum_winterdate,
             ans["winterdate"] - np.array([368, 733, 0]) * 86400,
         )
+
+    def test_errors(self):
+        with pytest.raises(ValueError, match="Operation foo is not supported."):
+            xh.indicators.get_yearly_op(self.ds, op="foo")
+        with pytest.raises(ValueError, match="Cannot use a rolling window"):
+            xh.indicators.get_yearly_op(self.ds, op="sum", window=2)
+        with pytest.raises(ValueError, match="Frequency D is not supported"):
+            xh.indicators.get_yearly_op(
+                self.ds, op="max", timeargs={"annual": {"freq": "D"}}
+            )
+        with pytest.raises(ValueError, match="Only one indexer"):
+            xh.indicators.get_yearly_op(
+                self.ds,
+                op="max",
+                timeargs={"annual": {"season": ["DJF"], "doy_bounds": [200, 300]}},
+            )
+        with pytest.warns(UserWarning, match="The frequency is not AS-DEC"):
+            xh.indicators.get_yearly_op(
+                self.ds, op="max", timeargs={"annual": {"season": ["DJF"]}}
+            )
+        with pytest.warns(UserWarning, match="The bounds wrap around the year"):
+            xh.indicators.get_yearly_op(
+                self.ds,
+                op="max",
+                timeargs={"annual": {"date_bounds": ["06-15", "06-14"]}},
+            )
+        with pytest.warns(UserWarning, match="but the bounds"):
+            xh.indicators.get_yearly_op(
+                self.ds,
+                op="max",
+                timeargs={
+                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "AS-DEC"}
+                },
+            )
