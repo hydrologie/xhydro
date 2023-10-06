@@ -15,7 +15,7 @@ To create a working environment and install xHydro, copy the `environment.yml` f
 
 This is the preferred method to install `xHydro`, as it will always install the most recent stable release.
 
-If for some reason you wish to install the `PyPI` version of `xscen` into an existing Anaconda environment (*not recommended*), only run the last command above.
+If for some reason you wish to install the `PyPI` version of `xhydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide you through the process.
 
