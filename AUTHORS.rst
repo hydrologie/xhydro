@@ -12,6 +12,7 @@ Co-Developers
 
 * Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre <https://github.com/Zeitsperre>`_
 * Gabriel Rondeau-Genesse <rondeau-genesse.gabriel@ouranos.ca> `@RondeauG <https://github.com/RondeauG>`_
+* Sébastien Langlois <todo> `@sebastienlanglois <https://github.com/sebastienlanglois>`_
 
 Contributors
 ------------

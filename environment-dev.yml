@@ -5,6 +5,10 @@ dependencies:
   - python >=3.9,<3.12
   # Don't forget to sync the changes here with environment.yml!
   # Main packages
+  - numpy
+  - scipy
+  - statsmodels
+  - xarray
   - xclim >=0.45.0
   - xscen >=0.7.1
   # Dev
@@ -33,3 +37,7 @@ dependencies:
   # Packaging
   - build
   - wheel
+  # Notebooks
+  - hvplot
+  - pip:
+    - xdatasets
