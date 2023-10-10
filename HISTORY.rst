@@ -2,7 +2,7 @@
 History
 =======
 
-v0.2.0 (unreleased)
+v0.2.0 (2023-10-10)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`)
 
