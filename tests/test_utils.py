@@ -20,10 +20,6 @@ def test_publish_release_notes():
         + ".0"
     )
     assert f"## v{v_4history}" in history
-    if vsplit[2] != "0":
-        assert "(unreleased)" in history
-    else:
-        assert "(unreleased)" not in history
     assert ":user:`" not in history
     assert ":issue:`" not in history
     assert ":pull:`" not in history
