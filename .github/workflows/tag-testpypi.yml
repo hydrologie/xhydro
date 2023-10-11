@@ -10,8 +10,10 @@ jobs:
     name: Build and publish Python 🐍 distributions 📦 to TestPyPI
     environment: staging
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python3
         uses: actions/setup-python@v4
         with:
