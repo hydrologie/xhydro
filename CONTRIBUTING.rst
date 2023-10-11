@@ -130,7 +130,7 @@ $ pytest tests.test_xhydro
 
 
 Versioning/Releasing
-------------------
+--------------------
 
 We use `bumpversion` to maintain version numbers, so most of the time you don't have to worry about it.
 
@@ -148,8 +148,8 @@ $ git push
 4. Once the pull request is merged, create a new release on GitHub. Both the tag and the release title should be the version number, prefixed with a `v` (e.g. `v0.2.0`).
 5. To generate the release notes, run::
 
-$ import xhydro
-$ print(xhydro.utils.publish_release_notes())
+    $ import xhydro
+    $ print(xhydro.utils.publish_release_notes())
 
 This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
 
