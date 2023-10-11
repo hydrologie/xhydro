@@ -6,6 +6,7 @@ dependencies:
   # Don't forget to sync the changes here with environment.yml!
   # Main packages
   - numpy
+  - pyyaml
   - scipy
   - statsmodels
   - xarray

@@ -7,7 +7,15 @@ from setuptools import find_packages, setup
 with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-requirements = ["numpy", "scipy", "statsmodels", "xarray", "xclim>=0.45.0", "xscen"]
+requirements = [
+    "numpy",
+    "pyyaml",
+    "scipy",
+    "statsmodels",
+    "xarray",
+    "xclim>=0.45.0",
+    "xscen",
+]
 
 dev_requirements = ["pytest", "pytest-cov"]
 
