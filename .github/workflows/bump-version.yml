@@ -10,7 +10,9 @@ on:
       - .github/**.yml
       - .gitignore
       - .pre-commit-config.yaml
+      - .readthedocs.yml
       - .yamllint.yaml
+      - .zenodo.json
       - AUTHORS.rst
       - CONTRIBUTING.rst
       - HISTORY.rst
@@ -33,7 +35,7 @@ jobs:
   bump_patch_version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: actions/setup-python@v4

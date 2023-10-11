@@ -4,17 +4,19 @@ Welcome to xHydro's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   :hidden:
 
    readme
    installation
    usage
-   modules
+   notebooks/local_frequency_analysis
+   apidoc/modules
    contributing
    authors
    history
 
-Indices and tables
-==================
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Indices and tables
+.. ==================
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`

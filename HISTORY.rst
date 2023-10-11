@@ -2,21 +2,27 @@
 History
 =======
 
-v0.2.0 (unreleased)
+v0.2.0 (2023-10-10)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`)
 
 Announcements
 ^^^^^^^^^^^^^
 * Support for Python3.8 and lower has been dropped. (:pull:`11`).
+* `xHydro` now hosts its documentation on `Read the Docs <https://xhydro.readthedocs.io/en/latest/>`_. (:issue:`22`, :pull:`26`).
+* Local frequency analysis functions have been added under a new module `xhydro.frequency_analysis`. (:pull:`20`, :pull:`27`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* GitHub Workflows for automated testing using `tox` have been added. (:pull:`11`)
+* GitHub Workflows for automated testing using `tox` have been added. (:pull:`11`).
+* Support for various `xscen` functions has been added to compute indicators and various climate change metrics. (:pull:`21`).
+* New function `xh.indicators.compute_volume` to convert streamflow data to volumes. (:pull:`20`, :pull:`27`).
+* New function `xh.indicators.get_yearly_op` to compute block operation (e.g. block maxima, minima, etc.). (:pull:`20`, :pull:`27`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * `xHydro` repository has renamed its primary development branch from `master` to `main`. (:pull:`13`).
+* `xHydro` now requires a conda environment to be installed. (:pull:`21`).
 
 Bug fixes
 ^^^^^^^^^
@@ -33,6 +39,10 @@ Internal changes
     * Some sphinx extensions have been added/enabled (sphinx-codeautolink, sphinx-copybutton).
     * Automated testing with tox now updated to use v4.0+ conventions.
     * Removed all references to travis.ci.
+* Deployments to TestPyPI and PyPI are now run using GitHub Workflow Environments as a safeguarding mechanism. (:pull:`28`).
+* Various cleanups of the environment files. (:issue:`23`, :pull:`30`).
+* `xhydro` now uses the trusted publishing mechanism for PyPI and TestPyPI deployment. (:pull:`32`).
+* Added tests. (:pull:`27`).
 
 0.1.2 (2023-05-10)
 ------------------
