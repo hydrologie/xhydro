@@ -2,6 +2,30 @@
 History
 =======
 
+v0.3.0 (unreleased)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`)
+
+Announcements
+^^^^^^^^^^^^^
+* N/A
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* N/A
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* N/A
+
+Bug fixes
+^^^^^^^^^
+* N/A
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added `xhydro.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
+
 v0.2.0 (2023-10-10)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`)
