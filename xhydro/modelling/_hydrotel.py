@@ -3,6 +3,7 @@ import re
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
+from typing import Union
 
 import pandas as pd
 import xarray as xr
@@ -12,13 +13,15 @@ from xscen.io import estimate_chunks, save_to_netcdf
 
 from xhydro.utils import health_checks
 
+__all__ = ["Hydrotel"]
+
 
 class Hydrotel:
     """Class to handle Hydrotel simulations."""
 
     def __init__(
         self,
-        project: str | os.PathLike,
+        project: Union[str, os.PathLike],
         *,
         default_options: bool = True,
         simulation_options: dict = None,
