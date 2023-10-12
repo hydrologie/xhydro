@@ -28,7 +28,7 @@ def publish_release_notes(
     This function exists solely for development purposes.
     Adapted from xclim.testing.utils.publish_release_notes.
     """
-    history_file = Path(__file__).parent.parent.joinpath("HISTORY.rst")
+    history_file = Path(__file__).parent.parent.parent.joinpath("HISTORY.rst")
 
     if not history_file.exists():
         raise FileNotFoundError("History file not found in xhydro file tree.")
