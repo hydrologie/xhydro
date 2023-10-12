@@ -129,16 +129,31 @@ To run a subset of tests::
 $ pytest tests.test_xhydro
 
 
-Versioning/Tagging
-------------------
+Versioning/Releasing
+--------------------
 
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
+We use `bumpversion` to maintain version numbers, so most of the time you don't have to worry about it.
+
+This section is thus mostly a reminder for the maintainers on how to proceed when a new version is ready to be released.
+
+1. Create a new branch from `main` (e.g. `release-0.2.0`).
+2. Update the `HISTORY.rst` file to change the `Unreleased` section to the current date.
+
 Then run::
 
-$ bumpversion patch # possible: major / minor / patch
+$ bumpversion minor # In most cases, we will be releasing a minor version
 $ git push
-$ git push --tags
+
+3. Create a pull request from your branch to `main`.
+4. Once the pull request is merged, create a new release on GitHub. Both the tag and the release title should be the version number, prefixed with a `v` (e.g. `v0.2.0`).
+5. To generate the release notes, run::
+
+    $ import xhydro.testing.utils as xhu
+    $ print(xhu.publish_release_notes())
+
+This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
+
+6. Once the release is published, it will go into a `staging` mode on Github Actions. Once the tests pass, admins can approve the release (an e-mail will be sent) and it will be published on PyPI.
 
 Packaging
 ---------
