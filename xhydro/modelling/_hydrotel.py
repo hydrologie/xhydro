@@ -3,7 +3,7 @@ import re
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Union
+from typing import Dict, Union
 
 import pandas as pd
 import xarray as xr
@@ -27,12 +27,11 @@ class Hydrotel:
         simulation_options: dict = None,
         output_options: dict = None,
     ):
-        """
-        Class to handle Hydrotel simulations.
+        """Class to handle Hydrotel simulations.
 
         Parameters
         ----------
-        project: str | os.PathLike
+        project: str or os.PathLike
             Path to the project folder.
         default_options: bool
             If True, base the simulation and output options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
@@ -93,8 +92,7 @@ class Hydrotel:
         # TODO: Clean up and prepare the 'etat' folder (missing the files)
 
     def update(self, *, simulation_options: dict = None, output_options: dict = None):
-        """
-        Update the simulation and output files.
+        """Update the simulation and output files.
 
         Parameters
         ----------
@@ -137,7 +135,7 @@ class Hydrotel:
     def run(
         self,
         *,
-        hydrotel_console: str | os.PathLike = None,
+        hydrotel_console: Union[str, os.PathLike] = None,
         id_as_dim: bool = True,
         xr_open_kwargs_in: dict = None,
         xr_open_kwargs_out: dict = None,
@@ -147,7 +145,7 @@ class Hydrotel:
 
         Parameters
         ----------
-        hydrotel_console: str | os.PathLike
+        hydrotel_console: str or os.PathLike
             For Windows only. Path to the Hydrotel.exe file.
         id_as_dim: bool
             Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
@@ -185,12 +183,11 @@ class Hydrotel:
         )
 
     def get_input(self, **kwargs) -> xr.Dataset:
-        """
-        Get the weather file from the simulation.
+        r"""Get the weather file from the simulation.
 
         Parameters
         ----------
-        kwargs
+        \*\*kwargs
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
         """
@@ -200,12 +197,11 @@ class Hydrotel:
         )
 
     def get_streamflow(self, **kwargs) -> xr.Dataset:
-        """
-        Get the streamflow from the simulation.
+        r"""Get the streamflow from the simulation.
 
         Parameters
         ----------
-        kwargs
+        \*\*kwargs
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
         """
@@ -215,8 +211,7 @@ class Hydrotel:
         )
 
     def _basic_checks(self, xr_open_kwargs: dict = None):
-        """
-        Perform basic checkups on the inputs.
+        """Perform basic checkups on the inputs.
 
         Parameters
         ----------
@@ -297,8 +292,7 @@ class Hydrotel:
     def _standardise_outputs(
         self, *, id_as_dim: bool = True, xr_open_kwargs: dict = None
     ):
-        """
-        Standardise the outputs of the simulation to be more consistent with CF conventions.
+        """Standardise the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
         ----------
