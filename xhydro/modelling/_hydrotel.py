@@ -291,7 +291,6 @@ class Hydrotel:
             raise_on=["all"],
         )
 
-    # TODO: Do we want to support files other than debit_aval.nc?
     def _standardise_outputs(
         self, *, id_as_dim: bool = True, xr_open_kwargs: dict = None
     ):
@@ -352,6 +351,11 @@ class Hydrotel:
             ds,
             self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc",
             rechunk=chunks,
+            netcdf_kwargs={
+                "encoding": {
+                    "streamflow": {"dtype": "float32", "zlib": True, "complevel": 1}
+                }
+            },
         )
 
 
