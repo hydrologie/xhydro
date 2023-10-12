@@ -14,10 +14,10 @@ def publish_release_notes(
 
     Parameters
     ----------
-    style: {"rst", "md"}
-      Use ReStructuredText formatting or Markdown. Default: Markdown.
-    file: {os.PathLike, StringIO, TextIO}, optional
-      If provided, prints to the given file-like object. Otherwise, returns a string.
+    style : {"rst", "md"}
+        Use ReStructuredText (`rst`) or Markdown (`md`) formatting. Default: Markdown.
+    file : {os.PathLike, StringIO, TextIO, None}
+        If provided, prints to the given file-like object. Otherwise, returns a string.
 
     Returns
     -------
