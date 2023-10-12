@@ -24,7 +24,7 @@ Bug fixes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* Added `xhydro.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
+* Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
 
 v0.2.0 (2023-10-10)
 -------------------
