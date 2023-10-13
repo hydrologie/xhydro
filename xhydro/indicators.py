@@ -13,7 +13,14 @@ from xclim.core.units import rate2amount
 # Special imports from xscen
 from xscen import compute_indicators
 
-__all__ = ["compute_indicators", "compute_volume", "get_yearly_op", "mannkendall"]
+__all__ = [
+    "compute_indicators",
+    "compute_volume",
+    "get_yearly_op",
+    "mannkendall",
+    "pval_mannwhitneyu",
+    "pval_wald_wolfowitz",
+]
 
 
 def compute_volume(
@@ -240,38 +247,8 @@ def get_yearly_op(
     return out
 
 
-def _pval_mannkendall_ufunc(da, test, outputs):
-    """
-    Calculate Mann-Kendall test statistics and associated values for a given time series.
-
-    Parameters
-    ----------
-    da : ndarray
-        1D array of time series data. NaN values are ignored.
-
-    test : str
-        The Mann-Kendall test variant to be applied. Supported options include 'original',
-        'hamed_rao_modification', 'yue_wang_modification', 'trend', and 'seasonal'.
-
-    outputs : list of str
-        A list of desired outputs to be computed and returned. Possible values include 'trend',
-        'h', 'p', 'z', 'S', 'var_s', 'trend_type', 'seasonal', and 'seasonal_slope'.
-        Refer to the documentation of the specific Mann-Kendall test variant for available outputs.
-
-    Returns
-    -------
-    results : tuple
-        A tuple containing the requested Mann-Kendall test statistics and associated values.
-        The order and content of the tuple elements are determined by the 'outputs' parameter.
-    """
-    da = da[~np.isnan(da)]
-    pmk = getattr(pymannkendall, test)
-    mk = pmk(da)
-    return tuple([getattr(mk, out) for out in outputs])
-
-
 def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
-    """Compute Mann-Kendall trend test on time series.
+    """Calculate Mann-Kendall test statistics and associated values for a given dataarray.
 
     Parameters
     ----------
@@ -279,15 +256,23 @@ def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
         Input time series
     outputs : list of str, optional
         Names of output variables to compute, by default ["h", "p"]
-        "h" is the trend statistic and "p" is the p-value
+        Possible values include 'trend', 'h', 'p', 'z', 'S', 'var_s', 'trend_type', 'seasonal', and 'seasonal_slope'.
+        Refer to the documentation of the specific Mann-Kendall test variant for available outputs.
     test : str, optional
-        Name of test to use, by default "original_test"
+        The Mann-Kendall test variant to be applied, by default "original_test"
 
     Returns
     -------
     xarray Dataset
         Dataset containing output variables specified in outputs
     """
+
+    def _pval_mannkendall_ufunc(da, test, outputs):
+        da = da[~np.isnan(da)]
+        pmk = getattr(pymannkendall, test)
+        mk = pmk(da)
+        return tuple([getattr(mk, out) for out in outputs])
+
     try:
         return xr.concat(
             xr.apply_ufunc(
@@ -314,56 +299,6 @@ def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
         ).assign_coords(mk=outputs)
 
 
-def pval_mannwhitneyu_ufunc(da_in, buffer=5, test="two-sided"):
-    """
-    Calculate Mann-Whitney U test p-values over a moving window.
-
-    Parameters
-    ----------
-    da_in : xarray DataArray
-        Input data array
-    buffer : int, optional
-        Size of moving window, by default 5
-
-    Returns
-    -------
-    mean_before : xarray DataArray
-        Mean values before each index
-    mean_after : xarray DataArray
-        Mean values after each index
-    p_values : xarray DataArray
-        p-values for difference in distribution before and
-        after each index
-
-    Handles NaNs by ignoring them in calculations.
-
-    Performs a two-sided test by default. Can use 'greater' or
-    'less' for one-sided test.
-    """
-    da_no_nan = da_in[~np.isnan(da_in)]
-    mean_before = np.empty(len(da_in)) * np.nan
-    mean_after = np.empty(len(da_in)) * np.nan
-    p_values = np.empty(len(da_in)) * np.nan
-
-    temp_pval = np.empty(len(da_no_nan)) * np.nan
-    temp_mean_before = np.empty(len(da_no_nan)) * np.nan
-    temp_mean_after = np.empty(len(da_no_nan)) * np.nan
-
-    for i in range(buffer, len(da_no_nan) - buffer):
-        part_1 = da_no_nan[:i]
-        part_2 = da_no_nan[i:]
-        mwu = mannwhitneyu(x=part_1, y=part_2, alternative=test)
-        temp_pval[i] = mwu.pvalue
-        temp_mean_before[i] = np.nanmean(da_no_nan[:i])
-        temp_mean_after[i] = np.nanmean(da_no_nan[i:])
-
-    mean_before[~np.isnan(da_in)] = temp_mean_before
-    mean_after[~np.isnan(da_in)] = temp_mean_after
-    p_values[~np.isnan(da_in)] = temp_pval
-
-    return (mean_before, mean_after, p_values)
-
-
 def pval_mannwhitneyu(da_in, buffer=5):
     """
     Apply Mann-Whitney U test for change detection.
@@ -386,6 +321,56 @@ def pval_mannwhitneyu(da_in, buffer=5):
         and p_value variables.
 
     """
+
+    def pval_mannwhitneyu_ufunc(da_in, buffer=5, test="two-sided"):
+        """
+        Calculate Mann-Whitney U test p-values over a moving window.
+
+        Parameters
+        ----------
+        da_in : xarray DataArray
+            Input data array
+        buffer : int, optional
+            Size of moving window, by default 5
+
+        Returns
+        -------
+        mean_before : xarray DataArray
+            Mean values before each index
+        mean_after : xarray DataArray
+            Mean values after each index
+        p_values : xarray DataArray
+            p-values for difference in distribution before and
+            after each index
+
+        Handles NaNs by ignoring them in calculations.
+
+        Performs a two-sided test by default. Can use 'greater' or
+        'less' for one-sided test.
+        """
+        da_no_nan = da_in[~np.isnan(da_in)]
+        mean_before = np.empty(len(da_in)) * np.nan
+        mean_after = np.empty(len(da_in)) * np.nan
+        p_values = np.empty(len(da_in)) * np.nan
+
+        temp_pval = np.empty(len(da_no_nan)) * np.nan
+        temp_mean_before = np.empty(len(da_no_nan)) * np.nan
+        temp_mean_after = np.empty(len(da_no_nan)) * np.nan
+
+        for i in range(buffer, len(da_no_nan) - buffer):
+            part_1 = da_no_nan[:i]
+            part_2 = da_no_nan[i:]
+            mwu = mannwhitneyu(x=part_1, y=part_2, alternative=test)
+            temp_pval[i] = mwu.pvalue
+            temp_mean_before[i] = np.nanmean(da_no_nan[:i])
+            temp_mean_after[i] = np.nanmean(da_no_nan[i:])
+
+        mean_before[~np.isnan(da_in)] = temp_mean_before
+        mean_after[~np.isnan(da_in)] = temp_mean_after
+        p_values[~np.isnan(da_in)] = temp_pval
+
+        return (mean_before, mean_after, p_values)
+
     return xr.concat(
         xr.apply_ufunc(
             pval_mannwhitneyu_ufunc,
@@ -400,73 +385,7 @@ def pval_mannwhitneyu(da_in, buffer=5):
     ).assign_coords(mannwhitneyu=["mean_before", "mean_after", "p_values"])
 
 
-def pval_wald_wolfowitz_ufunc(q):
-    """
-    Perform a two-sided Wald-Wolfowitz independence test.
-
-    Parameters
-    ----------
-        series (array-like): Consecutive numeric observation series (n-dimensional vector).
-
-    Returns
-    -------
-        float: The observed test threshold (p-value).
-
-    Example:
-        >>> x = normrnd(0, 1, 50, 1)
-        >>> p = pval_wald_wolfowitz_ufunc(x)
-
-    Special Notes:
-        - Data must be consecutive as this test relies on serial correlation (first-order autocorrelation).
-          Therefore, if there are gaps in the series (e.g., if some data points have been
-          disabled), the results may be inaccurate. In such a case, we recommend using the longest
-          continuous subseries.
-        - The HYFRAN software does not consider this issue and performs the test even if the sample has gaps.
-
-    References
-    ----------
-        - Bobée and Ashkar (1991). The Gamma Family and Derived Distributions Applied in Hydrology
-        - Wald and Wolfowitz (1943). An exact test for randomness in the non-parametric case based on serial correlation.
-          Ann. Math. Statist., 14, 378-388
-        - Distributions Applied in Hydrology
-    """
-    # Remove NaN values
-    q = np.array(q)
-    qo = q[~np.isnan(q)]
-    qo = np.array(qo)
-
-    """ Length of the series """
-    lseries = len(qo)
-
-    """ Calculate the Wald-Wolfowitz runs statistic R """
-    r = np.nansum(qo[: len(qo) - 1] * qo[1 : len(qo)]) + qo[0] * qo[-1]
-
-    """ Calculate the non-central moments of the sample of orders 1 to 4 """
-    m = []
-    s = []
-    for i in range(1, 5):
-        m.append(np.nanmean(qo**i))
-        s.append(lseries * np.nanmean(qo**i))
-
-    """ Calculate the mean and variance of the R statistic """
-    rmoy = (s[0] ** 2 - s[1]) / (lseries - 1)
-    term1 = (s[1] ** 2 - s[3]) / (lseries - 1)
-    term2 = rmoy**2
-    term3 = (
-        s[0] ** 4 - 4 * (s[0] ** 2) * s[1] + 4 * s[0] * s[2] + s[1] ** 2 - 2 * s[3]
-    ) / ((lseries - 1) * (lseries - 2))
-    rvar = term1 - term2 + term3
-
-    """ Calculate the centered Wald-Wolfowitz statistic """
-    rcenter = abs((r - rmoy) / (np.sqrt(rvar)))
-
-    """ Calculate the observed threshold (p-value) """
-    pvalue = 2 * (1 - norm.cdf(abs(rcenter)))
-
-    return pvalue
-
-
-def pval_wald_wolfowitz(da):
+def pval_wald_wolfowitz(da: xr.DataArray):
     """Calculate the p-value for the Wald-Wolfowitz runs test on a timeseries.
 
     Applies pval_wald_wolfowitz_ufunc over the 'time' dimension of
@@ -475,7 +394,7 @@ def pval_wald_wolfowitz(da):
     Parameters
     ----------
     da : xarray DataArray
-        Input timeseries
+        Streamflow variable.
 
     Returns
     -------
@@ -483,6 +402,74 @@ def pval_wald_wolfowitz(da):
         DataArray containing p-values for Wald-Wolfowitz test applied to each
         timeseries in da.
     """
+
+    def pval_wald_wolfowitz_ufunc(q):
+        """
+        Perform a two-sided Wald-Wolfowitz independence test.
+
+        Parameters
+        ----------
+        q: series (array-like):
+            Consecutive numeric observation series (n-dimensional vector).
+
+        Returns
+        -------
+            float: The observed test threshold (p-value).
+
+        Example
+        -------
+            >>> x = normrnd(0, 1, 50, 1)
+            >>> p = pval_wald_wolfowitz_ufunc(x)
+
+        Notes
+        -----
+        Data must be consecutive as this test relies on serial correlation (first-order autocorrelation).
+        Therefore, if there are gaps in the series (e.g., if some data points have been
+        disabled), the results may be inaccurate. In such a case, we recommend using the longest
+        continuous subseries.
+        The HYFRAN software does not consider this issue and performs the test even if the sample has gaps.
+
+        References
+        ----------
+        Bobée and Ashkar (1991). The Gamma Family and Derived Distributions Applied in Hydrology
+        Wald and Wolfowitz (1943). An exact test for randomness in the non-parametric case based on serial correlation. Ann. Math. Statist., 14, 378-388
+        Distributions Applied in Hydrology
+        """
+        # Remove NaN values
+        q = np.array(q)
+        qo = q[~np.isnan(q)]
+        qo = np.array(qo)
+
+        """ Length of the series """
+        lseries = len(qo)
+
+        """ Calculate the Wald-Wolfowitz runs statistic R """
+        r = np.nansum(qo[: len(qo) - 1] * qo[1 : len(qo)]) + qo[0] * qo[-1]
+
+        """ Calculate the non-central moments of the sample of orders 1 to 4 """
+        m = []
+        s = []
+        for i in range(1, 5):
+            m.append(np.nanmean(qo**i))
+            s.append(lseries * np.nanmean(qo**i))
+
+        """ Calculate the mean and variance of the R statistic """
+        rmoy = (s[0] ** 2 - s[1]) / (lseries - 1)
+        term1 = (s[1] ** 2 - s[3]) / (lseries - 1)
+        term2 = rmoy**2
+        term3 = (
+            s[0] ** 4 - 4 * (s[0] ** 2) * s[1] + 4 * s[0] * s[2] + s[1] ** 2 - 2 * s[3]
+        ) / ((lseries - 1) * (lseries - 2))
+        rvar = term1 - term2 + term3
+
+        """ Calculate the centered Wald-Wolfowitz statistic """
+        rcenter = abs((r - rmoy) / (np.sqrt(rvar)))
+
+        """ Calculate the observed threshold (p-value) """
+        pvalue = 2 * (1 - norm.cdf(abs(rcenter)))
+
+        return pvalue
+
     return xr.apply_ufunc(
         pval_wald_wolfowitz_ufunc, da, input_core_dims=[["time"]], vectorize=True
     )
