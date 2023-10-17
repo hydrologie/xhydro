@@ -3,8 +3,9 @@ import re
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Dict, Union
+from typing import Union
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim as xc
@@ -24,6 +25,7 @@ class Hydrotel:
         project: Union[str, os.PathLike],
         *,
         default_options: bool = True,
+        project_options: dict = None,
         simulation_options: dict = None,
         output_options: dict = None,
     ):
@@ -34,103 +36,143 @@ class Hydrotel:
         project: str or os.PathLike
             Path to the project folder.
         default_options: bool
-            If True, base the simulation and output options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
-            If False, read the simulation and output options directly from the project folder.
+            If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
+            If False, read the options directly from the files in the project folder.
+        project_options: dict
+            Dictionary of options to overwrite in the project file (projet.csv).
         simulation_options: dict
-            Dictionary of options to overwrite in the simulation file.
+            Dictionary of options to overwrite in the simulation file (simulation.csv).
         output_options: dict
-            Dictionary of options to overwrite in the output file.
+            Dictionary of options to overwrite in the output file (output.csv).
         """
+        project_options = project_options or dict()
+        simulation_options = simulation_options or dict()
+        output_options = output_options or dict()
+
         self.project = Path(project)
+        if not os.path.isdir(self.project):
+            raise ValueError("The project folder does not exist.")
 
-        if default_options is False and (
-            not os.path.isfile(
-                self.project / "simulation" / "simulation" / "simulation.csv"
-            )
-            or not os.path.isfile(
-                self.project / "simulation" / "simulation" / "output.csv"
-            )
-        ):
-            raise ValueError(
-                "The simulation and output files must exist if default_options=False."
-            )
-
-        # Load from the files, if requested. Otherwise, use default values
-        if default_options is False:
-            self.simulation_options = (
-                pd.read_csv(
-                    self.project / "simulation" / "simulation" / "simulation.csv",
-                    delimiter=";",
-                    header=None,
-                    index_col=0,
-                )
-                .squeeze()
-                .to_dict()
-            )
-            self.output_options = (
-                pd.read_csv(
-                    self.project / "simulation" / "simulation" / "output.csv",
-                    delimiter=";",
-                    header=None,
-                    index_col=0,
-                )
-                .squeeze()
-                .to_dict()
-            )
+        # Initialise the project, simulation, and output options
+        if default_options is True:
+            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
+                o = yaml.safe_load(f)
+            self.simulation_name = o["project_options"]["SIMULATION COURANTE"]
         else:
-            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-                self.simulation_options = yaml.safe_load(f)["simulation_options"]
-            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-                self.output_options = yaml.safe_load(f)["output_options"]
+
+            def _eval_df(df):
+                # convert to int, where possible
+                for row in df.itertuples():
+                    try:
+                        df.loc[row.Index, 1] = eval(row[1])
+                    except (TypeError, ValueError):
+                        pass
+                return df
+
+            o = dict()
+            o["project_options"] = (
+                _eval_df(
+                    pd.read_csv(
+                        self.project / "projet.csv",
+                        delimiter=";",
+                        header=None,
+                        index_col=0,
+                    ).replace([np.nan], [None])
+                )
+                .squeeze()
+                .to_dict()
+            )
+            if "SIMULATION COURANTE" in project_options:
+                self.simulation_name = project_options["SIMULATION COURANTE"]
+            else:
+                self.simulation_name = o["project_options"].get(
+                    "SIMULATION COURANTE", None
+                )
+            if self.simulation_name is None:
+                raise ValueError(
+                    "If not using default options, 'SIMULATION COURANTE' must be specified in the project files "
+                    "or as a keyword argument in 'project_options'."
+                )
+
+            for option in ["simulation", "output"]:
+                path = self.project / "simulation" / self.simulation_name
+                o[f"{option}_options"] = (
+                    _eval_df(
+                        pd.read_csv(
+                            path / f"{option}.csv",
+                            delimiter=";",
+                            header=None,
+                            index_col=0,
+                        ).replace([np.nan], [None])
+                    )
+                    .squeeze()
+                    .to_dict()
+                )
+        self.project_options = o["project_options"]
+        self.simulation_options = o["simulation_options"]
+        self.output_options = o["output_options"]
+
         # Fix paths and dates
+        self.project_options = _fix_os_paths(self.project_options)
         self.simulation_options = _fix_dates(_fix_os_paths(self.simulation_options))
 
         # Update options with the user-provided ones
-        self.update(
-            simulation_options=simulation_options, output_options=output_options
+        self.update_options(
+            project_options=project_options,
+            simulation_options=simulation_options,
+            output_options=output_options,
         )
         # TODO: Clean up and prepare the 'etat' folder (missing the files)
 
-    def update(self, *, simulation_options: dict = None, output_options: dict = None):
-        """Update the simulation and output files.
+    def update_options(
+        self,
+        *,
+        project_options: dict = None,
+        simulation_options: dict = None,
+        output_options: dict = None,
+    ):
+        """Update the options in the project, simulation, and output files.
 
         Parameters
         ----------
+        project_options: dict
+            Dictionary of options to overwrite in the project file (projet.csv).
         simulation_options: dict
-            Dictionary of options to overwrite in the simulation file.
+            Dictionary of options to overwrite in the simulation file (simulation.csv).
         output_options: dict
-            Dictionary of options to overwrite in the output file.
+            Dictionary of options to overwrite in the output file (output.csv).
         """
-        if simulation_options is not None:
-            # Update options with the user-provided ones
-            simulation_options = (
-                deepcopy(_fix_dates(_fix_os_paths(simulation_options))) or {}
-            )
-            for key, value in simulation_options.items():
-                self.simulation_options[key] = value
+        options = ["project_options", "simulation_options", "output_options"]
+        for option in options:
+            if eval(option) is not None:
+                if (
+                    option == "project_options"
+                    and "SIMULATION COURANTE" in project_options
+                ):
+                    self.simulation_name = project_options["SIMULATION COURANTE"]
+                path = (
+                    self.project
+                    if option == "project_options"
+                    else self.project / "simulation" / self.simulation_name
+                )
+                options_file = (
+                    path / "projet.csv"
+                    if option == "project_options"
+                    else path / f"{option.split('_')[0]}.csv"
+                )
+                option_vals = deepcopy(_fix_dates(_fix_os_paths(eval(option))))
+                for key, value in option_vals.items():
+                    self.__dict__[option][key] = value
 
-        # Update the simulation options file
-        df = pd.DataFrame.from_dict(self.simulation_options, orient="index")
-        df = df.replace({None: ""})
-        df.to_csv(
-            self.project / "simulation" / "simulation" / "simulation.csv",
-            sep=";",
-            header=False,
-            columns=[0],
-        )
-
-        if output_options is not None:
-            output_options = deepcopy(output_options) or {}
-            for key, value in output_options.items():
-                self.output_options[key] = value
-
-        # Update the output options file
-        df = pd.DataFrame.from_dict(self.output_options, orient="index")
-        df.to_csv(
-            self.project / "simulation" / "simulation" / "output.csv",
-            sep=";",
-            header=False,
-        )
+                # Update the options file
+                df = pd.DataFrame.from_dict(self.__dict__[option], orient="index")
+                df = df.replace({None: ""})
+                df.to_csv(
+                    options_file,
+                    sep=";",
+                    header=False,
+                    columns=[0],
+                )
 
     def run(
         self,
@@ -156,7 +198,7 @@ class Hydrotel:
         """
         # Perform basic checkups on the inputs
         # FIXME: This currently fails because of bad units in the input file
-        # self._basic_checks(xr_open_kwargs=xr_open_kwargs_in)
+        self._basic_checks(xr_open_kwargs=xr_open_kwargs_in)
 
         if os.name == "nt":  # Windows
             if hydrotel_console is None:
@@ -206,7 +248,11 @@ class Hydrotel:
 
         """
         return xr.open_dataset(
-            self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc",
+            self.project
+            / "simulation"
+            / self.simulation_name
+            / "resultat"
+            / "debit_aval.nc",
             **kwargs,
         )
 
@@ -221,7 +267,7 @@ class Hydrotel:
         Notes
         -----
         This function checks that:
-            1. All files mentioned in the simulation configuration exist and all expected entries are filled.
+            1. All files mentioned in the configuration exist and all expected entries are filled.
             2. The dataset has "time" and "stations" dimensions.
             3. The dataset has "lat", "lon", "x", "y", "z" coordinates.
             4. The dataset has "tasmin" (degC), "tasmax" (degC), and "pr" (mm) variables.
@@ -232,28 +278,24 @@ class Hydrotel:
         """
         # Check that the option files have no missing entries
         with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-            simulation_def = yaml.safe_load(f)["simulation_options"]
-            for key in simulation_def:
+            defaults = yaml.safe_load(f)
+        options = ["project_options", "simulation_options", "output_options"]
+        for option in options:
+            for key in defaults[option]:
                 if (
-                    simulation_def[key] is not None
-                    and key not in self.simulation_options
+                    defaults[option][key] is not None
+                    and key not in self.__dict__[option]
                 ):
                     raise ValueError(
-                        f"The option '{key}' is missing from the simulation file."
-                    )
-        with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-            self.output_options = yaml.safe_load(f)["output_options"]
-            for key in self.output_options:
-                if (
-                    self.output_options[key] is not None
-                    and key not in self.output_options
-                ):
-                    raise ValueError(
-                        f"The option '{key}' is missing from the output file."
+                        f"The option '{key}' is missing from the {option.split('_')[0]} file."
                     )
 
         # Make sure that all the files exist
-        for key, value in self.simulation_options.items():
+        possible_files = [
+            self.project_options.values(),
+            self.simulation_options.values(),
+        ]
+        for value in [item for sublist in possible_files for item in sublist]:
             if re.match("^.[a-z]", Path(str(value)).suffix):
                 if Path(value).is_absolute() is False:
                     # Some paths are relative to the project folder, others to the simulation folder
@@ -268,16 +310,20 @@ class Hydrotel:
         ds = self.get_input(**(xr_open_kwargs or {}))
 
         # Check that the start and end dates are contained in the dataset
-        start_date = self.simulation_options.get("DATE DEBUT", None)
-        end_date = self.simulation_options.get("DATE FIN", None)
+        start_date = self.simulation_options["DATE DEBUT"]
+        end_date = self.simulation_options["DATE FIN"]
 
         # Check that the dimensions, coordinates, calendar, and units are correct
         structure = {
             "dims": ["time", "stations"],
-            "coords": ["lat", "lon", "x", "y", "z"],
+            "coords": ["time", "stations", "lat", "lon", "x", "y", "z"],
         }
         calendar = "standard"
         variables_and_units = {"tasmin": "degC", "tasmax": "degC", "pr": "mm"}
+
+        # Check that the frequency is uniform
+        freq = f"{self.simulation_options['PAS DE TEMPS']}H"
+        freq = freq.replace("24H", "D")
 
         health_checks(
             ds,
@@ -286,6 +332,7 @@ class Hydrotel:
             start_date=start_date,
             end_date=end_date,
             variables_and_units=variables_and_units,
+            freq=freq,
             raise_on=["all"],
         )
 
@@ -342,7 +389,7 @@ class Hydrotel:
             self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
         )
         chunks = estimate_chunks(
-            ds, dims=["station_id" if id_as_dim else "station"], target_mb=1
+            ds, dims=["station_id" if id_as_dim else "station"], target_mb=5
         )
         save_to_netcdf(
             ds,

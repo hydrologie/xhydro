@@ -6,6 +6,91 @@ from io import StringIO
 from pathlib import Path
 from typing import Optional, TextIO, Union
 
+import pandas as pd
+import xarray as xr
+import yaml
+
+
+def fake_hydrotel_project(
+    directory: Union[str, os.PathLike],
+    name: str,
+    *,
+    meteo: xr.Dataset = None,
+    debit_aval: xr.Dataset = None,
+):
+    """
+    Create a fake Hydrotel project in the given directory.
+
+    Parameters
+    ----------
+    directory: str or os.PathLike
+        Directory where the project will be created.
+    name: str
+        Name of the project.
+    meteo: xr.Dataset
+        Fake meteo timeseries. Leave None to create an empty file.
+    debit_aval: xr.Dataset
+        Fake debit_aval timeseries. Leave None to create an empty file.
+
+    Notes
+    -----
+    Uses the directory structure specified in xhydro/testing/hydrotel_structure.yml. Most files are empty, except for the projet.csv, simulation.csv
+    and output.csv files, which are filled with default options taken from xhydro/modelling/data/hydrotel_defaults.yml.
+    If their respective arguments are None, the meteo/SLNO_meteo_GC3H.nc and simulation/simulation/resultat/debit_aval.nc files will also be fake.
+
+    """
+    project = Path(directory) / name
+    with open(Path(__file__).parent / "hydrotel_structure.yml") as f:
+        struc = yaml.safe_load(f)["structure"]
+    with open(
+        Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults.yml"
+    ) as f:
+        defaults = yaml.safe_load(f)
+
+    os.makedirs(project, exist_ok=True)
+    for k, v in struc.items():
+        if k != "_main":
+            os.makedirs(project / k, exist_ok=True)
+            for file in v:
+                if file in ["simulation.csv", "output.csv"]:
+                    opt = defaults[f"{file.split('.')[0]}_options"]
+                    df = pd.DataFrame.from_dict(opt, orient="index")
+                    df = df.replace({None: ""})
+                    df.to_csv(
+                        project / k / file,
+                        sep=";",
+                        header=False,
+                        columns=[0],
+                    )
+                elif file is not None and Path(file).suffix != ".nc":
+                    (project / k / file).touch()
+    for file in struc["_main"]:
+        if file in ["projet.csv"]:
+            opt = defaults["project_options"]
+            df = pd.DataFrame.from_dict(opt, orient="index")
+            df = df.replace({None: ""})
+            df.to_csv(
+                project / file,
+                sep=";",
+                header=False,
+                columns=[0],
+            )
+        elif file is not None:
+            (project / file).touch()
+
+    # Create fake timeseries
+    if meteo is None:
+        (project / "meteo" / "SLNO_meteo_GC3H.nc").touch()
+    else:
+        meteo.to_netcdf(project / "meteo" / "SLNO_meteo_GC3H.nc")
+
+    if debit_aval is None:
+        (project / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
+    else:
+        debit_aval.to_netcdf(
+            project / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
+        )
+
 
 def publish_release_notes(
     style: str = "md", file: Optional[Union[os.PathLike, StringIO, TextIO]] = None

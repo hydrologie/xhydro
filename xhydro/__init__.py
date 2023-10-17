@@ -1,5 +1,5 @@
 """Top-level package for xHydro."""
-from . import cc, indicators, utils
+from . import cc, indicators, testing, utils
 
 # Import top-level functions
 # TODO: Decide which functions to import at the top level
