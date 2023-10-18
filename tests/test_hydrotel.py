@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -261,7 +262,7 @@ class TestHydrotel:
         )
 
         ht = Hydrotel(tmpdir / "fake", default_options=True)
-        ds_orig = ht.get_streamflow().copy()
+        ds_orig = deepcopy(ht.get_streamflow())
         ht._standardise_outputs()
         ds = ht.get_streamflow()
 
