@@ -12,7 +12,7 @@ Announcements
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* N/A
+* New class `xhydro.modelling.Hydrotel` to facilitate the use of the Hydrotel hydrological model. (:pull:`18`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -25,6 +25,7 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
+* Added `xhydro.testing.utils.fake_hydrotel_project` to help with testing Hydrotel. (:pull:`18`).
 
 v0.2.0 (2023-10-10)
 -------------------
