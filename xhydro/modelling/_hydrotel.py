@@ -211,7 +211,6 @@ class Hydrotel:
 
         if dry_run:
             command = f"{hydrotel_console} {self.project} -t 1"
-            print(f"Command that would be run: {command}")
             return command
         else:
             # Run the simulation

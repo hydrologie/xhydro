@@ -9,6 +9,7 @@ Welcome to xHydro's documentation!
    readme
    installation
    usage
+   notebooks/hydrotel
    notebooks/local_frequency_analysis
    apidoc/modules
    contributing
