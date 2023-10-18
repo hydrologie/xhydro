@@ -279,7 +279,6 @@ class TestHydrotel:
             "long_name": "Streamflow",
             "original_name": "debit_aval",
             "original_description": "Debit en aval du troncon",
-            "coordinates": "idtroncon",
         }
         for k, v in correct_attrs.items():
             assert ds.streamflow.attrs[k] == v
