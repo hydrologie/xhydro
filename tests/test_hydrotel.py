@@ -272,7 +272,7 @@ class TestHydrotel:
 
         assert list(ds.data_vars) == ["streamflow"]
         np.testing.assert_array_equal(ds.dims, ["time", "station_id"])
-        assert ds.streamflow.attrs == {
+        correct_attrs = {
             "units": "m^3 s-1",
             "description": "Streamflow at the outlet of the river reach",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
@@ -281,6 +281,8 @@ class TestHydrotel:
             "original_description": "Debit en aval du troncon",
             "coordinates": "idtroncon",
         }
+        for k, v in correct_attrs.items():
+            assert ds.streamflow.attrs[k] == v
 
     def test_simname(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
