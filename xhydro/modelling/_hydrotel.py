@@ -359,6 +359,10 @@ class Hydrotel:
         """
         ds = self.get_streamflow(**(xr_open_kwargs or {}))
 
+        # FIXME: This is maybe because of a faulty file. Validate once we have a working Hydrotel installation
+        if "idtroncon" in ds.debit_aval.encoding.get("coordinates", ""):
+            ds.debit_aval.encoding.pop("coordinates")
+
         # Rename variables to standard names
         ds = ds.assign_coords(troncon=ds["troncon"], idtroncon=ds["idtroncon"])
         ds = ds.rename(

@@ -280,6 +280,7 @@ class TestHydrotel:
             "original_name": "debit_aval",
             "original_description": "Debit en aval du troncon",
         }
+        assert sorted(set(ds.streamflow.attrs)) == sorted(set(correct_attrs))
         for k, v in correct_attrs.items():
             assert ds.streamflow.attrs[k] == v
 
