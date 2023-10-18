@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -24,50 +25,59 @@ class TestHydrotel:
         assert ht.simulation_name == "simulation"
         assert ht.project.name == "fake"
 
-        def _eval_df(df):
-            # convert to int, where possible
-            for row in df.itertuples():
-                try:
-                    df.loc[row.Index, 1] = eval(row[1])
-                except (TypeError, ValueError):
-                    pass
-            return df
-
         # Check that the options have been updated and that the files have been overwritten
         assert ht.project_options["PROJET HYDROTEL VERSION"] == "2.1.0"
-        df = _eval_df(
-            pd.read_csv(
-                ht.project / "projet.csv", sep=";", header=None, index_col=0
-            ).replace([np.nan], [None])
-        ).to_dict()[1]
+        df = (
+            pd.read_csv(ht.project / "projet.csv", sep=";", header=None, index_col=0)
+            .replace([np.nan], [None])
+            .to_dict()[1]
+        )
         assert ht.project_options == df
 
         assert ht.simulation_options["SIMULATION HYDROTEL VERSION"] == "1.0.5"
-        df = _eval_df(
+        df = (
             pd.read_csv(
                 ht.project / "simulation" / ht.simulation_name / "simulation.csv",
                 sep=";",
                 header=None,
                 index_col=0,
-            ).replace([np.nan], [None])
-        ).to_dict()[1]
-        assert ht.simulation_options == df
+            )
+            .replace([np.nan], [None])
+            .to_dict()[1]
+        )
+        # The simulation options are not the same as the ones in the file because entries in the file are read as strings
+        simopt = (
+            pd.DataFrame.from_dict(ht.simulation_options.copy(), orient="index")
+            .astype(str)
+            .replace("None", None)
+            .to_dict()[0]
+        )
+        assert simopt == df
 
         assert ht.output_options["TMAX_JOUR"] == 1
-        df = _eval_df(
+        df = (
             pd.read_csv(
                 ht.project / "simulation" / ht.simulation_name / "output.csv",
                 sep=";",
                 header=None,
                 index_col=0,
-            ).replace([np.nan], [None])
-        ).to_dict()[1]
-        assert ht.output_options == df
+            )
+            .replace([np.nan], [None])
+            .to_dict()[1]
+        )
+        # The output options are not the same as the ones in the file because entries in the file are read as strings
+        outopt = (
+            pd.DataFrame.from_dict(ht.output_options.copy(), orient="index")
+            .astype(str)
+            .replace("None", None)
+            .to_dict()[0]
+        )
+        assert outopt == df
 
         ht2 = Hydrotel(tmpdir / "fake", default_options=False)
         assert ht2.project_options == ht.project_options
-        assert ht2.simulation_options == ht.simulation_options
-        assert ht2.output_options == ht.output_options
+        assert ht2.simulation_options == simopt
+        assert ht2.output_options == outopt
 
     def test_get_data(self, tmpdir):
         meteo = timeseries(
@@ -270,3 +280,124 @@ class TestHydrotel:
             "original_description": "Debit en aval du troncon",
             "coordinates": "idtroncon",
         }
+
+    def test_simname(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        with pytest.raises(
+            ValueError, match="The 'simulation/test/' folder does not exist"
+        ):
+            Hydrotel(
+                tmpdir / "fake",
+                default_options=False,
+                project_options={"SIMULATION COURANTE": "test"},
+            )
+
+        ht = Hydrotel(tmpdir / "fake", default_options=False)
+        with pytest.raises(
+            ValueError, match="The 'simulation/test/' folder does not exist"
+        ):
+            ht.update_options(project_options={"SIMULATION COURANTE": "test"})
+
+        os.rename(
+            tmpdir / "fake" / "simulation" / "simulation",
+            tmpdir / "fake" / "simulation" / "test",
+        )
+        Hydrotel(
+            tmpdir / "fake",
+            default_options=True,
+            project_options={"SIMULATION COURANTE": "test"},
+        )
+
+    def test_dates(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        ht = Hydrotel(
+            tmpdir / "fake",
+            default_options=True,
+            simulation_options={
+                "DATE DEBUT": "2001-01-01",
+                "DATE FIN": "2001-12-31 12",
+                "LECTURE ETAT FONTE NEIGE": "2001-01-01 03",
+                "ECRITURE ETAT FONTE NEIGE": "2001-01-01",
+            },
+        )
+        assert ht.simulation_options["DATE DEBUT"] == "2001-01-01 00:00"
+        assert ht.simulation_options["DATE FIN"] == "2001-12-31 12:00"
+        assert ht.simulation_options["LECTURE ETAT FONTE NEIGE"] == str(
+            Path("etat/fonte_neige_2001010103.csv")
+        )
+        assert ht.simulation_options["ECRITURE ETAT FONTE NEIGE"] == "2001-01-01 00"
+
+    def test_run(self, tmpdir):
+        meteo = timeseries(
+            np.zeros(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmin",
+            as_dataset=True,
+            units="degC",
+        )
+        meteo["tasmax"] = timeseries(
+            np.ones(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmax",
+            units="degC",
+        )
+        meteo["pr"] = timeseries(
+            np.ones(365 * 2) * 10,
+            start="2001-01-01",
+            freq="D",
+            variable="pr",
+            units="mm",
+        )
+        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
+        meteo = meteo.assign_coords(
+            coords={"lat": 46, "lon": -77, "x": 0, "y": 0, "z": 0}
+        )
+        for c in ["lat", "lon", "x", "y", "z"]:
+            meteo[c] = meteo[c].expand_dims("stations")
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", meteo=meteo)
+        ht = Hydrotel(
+            tmpdir / "fake",
+            default_options=False,
+            simulation_options={
+                "DATE DEBUT": "2001-01-01",
+                "DATE FIN": "2001-12-31",
+                "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
+                "PAS DE TEMPS": 24,
+            },
+        )
+
+        if os.name == "nt":
+            with pytest.raises(
+                ValueError, match="You must specify the path to Hydrotel.exe"
+            ):
+                ht.run(dry_run=True)
+        else:
+            command = ht.run(dry_run=True)
+            assert command == f"hydrotel {ht.project} -t 1"
+
+    def test_errors(self, tmpdir):
+        # Missing project folder
+        with pytest.raises(ValueError, match="The project folder does not exist."):
+            Hydrotel("fake", default_options=True)
+
+        # Missing project name
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        project_options = {
+            "FICHIER ALTITUDE": "physitel/altitude.tif",
+            "FICHIER PENTE": "physitel/pente.tif",
+        }
+        df = pd.DataFrame.from_dict(project_options, orient="index")
+        df = df.replace({None: ""})
+        df.to_csv(
+            tmpdir / "fake" / "projet.csv",
+            sep=";",
+            header=False,
+            columns=[0],
+        )
+        with pytest.raises(
+            ValueError,
+            match="If not using default options, 'SIMULATION COURANTE' must be specified in the project files or as a keyword argument in 'project_options'.",
+        ):
+            Hydrotel(tmpdir / "fake", default_options=False)

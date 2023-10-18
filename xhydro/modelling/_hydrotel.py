@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
@@ -59,26 +60,15 @@ class Hydrotel:
                 o = yaml.safe_load(f)
             self.simulation_name = o["project_options"]["SIMULATION COURANTE"]
         else:
-
-            def _eval_df(df):
-                # convert to int, where possible
-                for row in df.itertuples():
-                    try:
-                        df.loc[row.Index, 1] = eval(row[1])
-                    except (TypeError, ValueError):
-                        pass
-                return df
-
             o = dict()
             o["project_options"] = (
-                _eval_df(
-                    pd.read_csv(
-                        self.project / "projet.csv",
-                        delimiter=";",
-                        header=None,
-                        index_col=0,
-                    ).replace([np.nan], [None])
+                pd.read_csv(
+                    self.project / "projet.csv",
+                    delimiter=";",
+                    header=None,
+                    index_col=0,
                 )
+                .replace([np.nan], [None])
                 .squeeze()
                 .to_dict()
             )
@@ -93,18 +83,21 @@ class Hydrotel:
                     "If not using default options, 'SIMULATION COURANTE' must be specified in the project files "
                     "or as a keyword argument in 'project_options'."
                 )
+            elif not os.path.isdir(self.project / "simulation" / self.simulation_name):
+                raise ValueError(
+                    f"The 'simulation/{self.simulation_name}/' folder does not exist in the project directory."
+                )
 
             for option in ["simulation", "output"]:
                 path = self.project / "simulation" / self.simulation_name
                 o[f"{option}_options"] = (
-                    _eval_df(
-                        pd.read_csv(
-                            path / f"{option}.csv",
-                            delimiter=";",
-                            header=None,
-                            index_col=0,
-                        ).replace([np.nan], [None])
+                    pd.read_csv(
+                        path / f"{option}.csv",
+                        delimiter=";",
+                        header=None,
+                        index_col=0,
                     )
+                    .replace([np.nan], [None])
                     .squeeze()
                     .to_dict()
                 )
@@ -114,7 +107,7 @@ class Hydrotel:
 
         # Fix paths and dates
         self.project_options = _fix_os_paths(self.project_options)
-        self.simulation_options = _fix_dates(_fix_os_paths(self.simulation_options))
+        self.simulation_options = _fix_os_paths(_fix_dates(self.simulation_options))
 
         # Update options with the user-provided ones
         self.update_options(
@@ -142,30 +135,38 @@ class Hydrotel:
         output_options: dict
             Dictionary of options to overwrite in the output file (output.csv).
         """
-        options = ["project_options", "simulation_options", "output_options"]
-        for option in options:
-            if eval(option) is not None:
-                if (
-                    option == "project_options"
-                    and "SIMULATION COURANTE" in project_options
-                ):
+        options = [project_options, simulation_options, output_options]
+        option_names = ["project_options", "simulation_options", "output_options"]
+        for o in range(len(options)):
+            if options[o] is not None:
+                if o == 0 and "SIMULATION COURANTE" in project_options:
+                    if not os.path.isdir(
+                        self.project
+                        / "simulation"
+                        / project_options["SIMULATION COURANTE"]
+                    ):
+                        raise ValueError(
+                            f"The 'simulation/{project_options['SIMULATION COURANTE']}/' folder does not exist in the project directory."
+                        )
                     self.simulation_name = project_options["SIMULATION COURANTE"]
                 path = (
                     self.project
-                    if option == "project_options"
+                    if o == 0
                     else self.project / "simulation" / self.simulation_name
                 )
                 options_file = (
                     path / "projet.csv"
-                    if option == "project_options"
-                    else path / f"{option.split('_')[0]}.csv"
+                    if o == 0
+                    else path / f"{option_names[o].split('_')[0]}.csv"
                 )
-                option_vals = deepcopy(_fix_dates(_fix_os_paths(eval(option))))
+                option_vals = deepcopy(_fix_os_paths(_fix_dates(options[o])))
                 for key, value in option_vals.items():
-                    self.__dict__[option][key] = value
+                    self.__dict__[option_names[o]][key] = value
 
                 # Update the options file
-                df = pd.DataFrame.from_dict(self.__dict__[option], orient="index")
+                df = pd.DataFrame.from_dict(
+                    self.__dict__[option_names[o]], orient="index"
+                )
                 df = df.replace({None: ""})
                 df.to_csv(
                     options_file,
@@ -181,6 +182,7 @@ class Hydrotel:
         id_as_dim: bool = True,
         xr_open_kwargs_in: dict = None,
         xr_open_kwargs_out: dict = None,
+        dry_run: bool = True,
     ):
         """
         Run the simulation.
@@ -195,9 +197,10 @@ class Hydrotel:
             Used on the input file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         xr_open_kwargs_out: dict
             Used on the output file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+        dry_run: bool
+            If True, do not run the simulation. Only perform basic checks and print the command that would be run.
         """
         # Perform basic checkups on the inputs
-        # FIXME: This currently fails because of bad units in the input file
         self._basic_checks(xr_open_kwargs=xr_open_kwargs_in)
 
         if os.name == "nt":  # Windows
@@ -206,23 +209,29 @@ class Hydrotel:
         else:
             hydrotel_console = "hydrotel"
 
-        # FIXME: This needs to be tested once we have access to a working Hydrotel installation
-        # subprocess.check_call(hydrotel_console + ' ' + str(self.project) + ' -t 1')
-
-        # TODO: Check that this waits for the simulation to finish
-        # Standardize the outputs
-        if any(
-            self.output_options[k] == 1
-            for k in self.output_options
-            if k not in ["TRONCONS", "DEBITS_AVAL", "OUTPUT_NETCDF"]
-        ):
-            warnings.warn(
-                "The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted."
+        if dry_run:
+            command = f"{hydrotel_console} {self.project} -t 1"
+            print(f"Command that would be run: {command}")
+            return command
+        else:
+            # Run the simulation
+            subprocess.run(
+                [str(hydrotel_console), str(self.project), "-t", "1"], check=True
             )
-        self._standardise_outputs(
-            id_as_dim=id_as_dim,
-            xr_open_kwargs=xr_open_kwargs_out,
-        )
+
+            # Standardize the outputs
+            if any(
+                self.output_options[k] == 1
+                for k in self.output_options
+                if k not in ["TRONCONS", "DEBITS_AVAL", "OUTPUT_NETCDF"]
+            ):
+                warnings.warn(
+                    "The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted."
+                )
+            self._standardise_outputs(
+                id_as_dim=id_as_dim,
+                xr_open_kwargs=xr_open_kwargs_out,
+            )
 
     def get_input(self, **kwargs) -> xr.Dataset:
         r"""Get the weather file from the simulation.
@@ -428,7 +437,16 @@ def _fix_dates(d: dict):
         "LECTURE ETAT ACHEMINEMENT RIVIERE",
     ]:
         if key in d and not pd.isnull(d[key]):
-            d[key] = d[key].replace(
+            # If only a date is provided, add the path to the file
+            if ".csv" not in d[key]:
+                warnings.warn(
+                    f"The path to the file was not provided for '{key}'. Assuming it is in the 'etat' folder."
+                )
+                d[key] = (
+                    Path("etat")
+                    / f"{'_'.join(key.split(' ')[2:]).lower()}_{d[key]}.csv"
+                )
+            d[key] = str(d[key]).replace(
                 Path(d[key]).stem.split("_")[-1],
                 pd.to_datetime(Path(d[key]).stem.split("_")[-1]).strftime("%Y%m%d%H"),
             )
