@@ -12,7 +12,6 @@ Retourne :
 (list): Liste qui contient les valeurs du fichier
 """
 
-
 def nc_read(filename, key):
     return netCDF4.Dataset(filename).variables[key]
 

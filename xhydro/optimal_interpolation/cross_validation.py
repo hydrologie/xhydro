@@ -1,7 +1,8 @@
 import netCDF4
 import numpy as np
 import csv
-import utm
+import scipy.optimize
+from scipy.stats import invgauss
 
 """
 Retourne une liste qui contient avec les valeurs d'un fichier netCDF
@@ -114,6 +115,7 @@ def ajustement_ECF_climatologique(debit_obs, debit_sim, PX, PY, savename):
     station_count = np.shape(PX)[1]
     time_range = np.shape(ecart)[0]
 
+
     distance = np.empty((station_count, station_count))
 
     for i in range(0, station_count):
@@ -130,23 +132,97 @@ def ajustement_ECF_climatologique(debit_obs, debit_sim, PX, PY, savename):
     covB = np.empty((time_range, nbin))
     stdB = np.empty((time_range, nbin))
 
+
+    hB[:, :] = np.nan
+    covB[:, :] = np.nan
+    stdB[:, :] = np.nan
+
     for i in range(0, time_range):
-        inan = np.isnan(ecart[i, :])
-        ecart_jour = ecart[i, ~inan]
+        print(i)
+        is_nan = np.isnan(ecart[i, :])
+        ecart_jour = ecart[i, ~is_nan]
 
         tableau_de_1 = np.array([1 for i in range(0,len(ecart_jour))])
 
         if len(ecart_jour) >= 10:
 
 
-            inanh = inan[0:len(distance)]
+            inanh = is_nan[0:len(distance)]
             inanv = inanh.reshape(1,len(distance))
 
 
             distancePC = distance[~inanh]
             distancePC = distancePC[:, ~inanv[0,:]]
-            [h_b,cov_b,std_b,NP] = eval_covariance_bin(distancePC, ecart_jour,tableau_de_1,1,input_opt,nbin)
 
+            [h_b,cov_b,std_b,NP] = eval_covariance_bin(distancePC, ecart_jour, tableau_de_1, 1, input_opt, nbin)
+
+            if len(NP[0]) >= 10:
+
+                hB[i, :] = h_b[0, 0:11]
+                covB[i, :] = cov_b[0, 0:11]
+                stdB[i, :] = std_b[0, 0:11]
+
+    distance = hB.T.reshape(len(hB) * len(hB[0]))
+    Covariance = covB.T.reshape(len(covB) * len(covB[0]))
+    poidsCovariance = 1 / np.power(stdB.T.reshape(len(stdB) * len(stdB[0])), 2)
+
+    nc = nbin
+    qt = np.linspace(0, 1, nc + 1)
+    cl = np.unique(np.quantile(distance[~np.isnan(distance)], qt))
+    nc = len(cl) - 1
+    cov_b = np.zeros((nc))
+    h_b = np.zeros((nc))
+    std_b = np.zeros((nc))
+
+    for i in range(0, nc):
+
+        ind = np.where((distance >= cl[i]) & (distance < cl[i+1]))
+        h_b[i] = np.mean(distance[ind])
+
+        wt = poidsCovariance[ind] / np.sum(poidsCovariance[ind])
+
+        cov_b[i] = np.sum(wt * Covariance[ind])
+        average = np.average(Covariance[ind], weights=wt)
+        variance = np.average((Covariance[ind] - average) ** 2, weights=wt)
+        std_b[i] = np.sqrt(variance)
+
+    hmax_divider = input_opt['hmax_divider']
+    p1_bnds = input_opt['p1_bnds']
+    hmax_mult_range_bnds = input_opt['hmax_mult_range_bnds']
+    form = 3
+    if form == 1:
+        ecf_fun = lambda h, par: par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+    elif form == 2:
+        ecf_fun = lambda h, par: par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+    else:
+        ecf_fun = lambda h, par: par[0] * np.exp(-h / par[1])
+
+    weight = 1 / np.power(std_b, 2)
+    weight = weight / np.sum(weight)
+    rmse_fun = lambda par: np.sqrt(np.mean(weight * np.power(ecf_fun(h_b, par) - cov_b, 2)))
+
+    par_opt = scipy.optimize.minimize(rmse_fun, [np.mean(cov_b), np.mean(h_b)/3], \
+                                      bounds=([p1_bnds[0], p1_bnds[1]], [0, hmax_mult_range_bnds[1]*500]))['x']
+    error_cov_fun = lambda x: ecf_fun(x, par_opt)
+
+    #
+    # Faire graphique et sauvegarde
+    #
+    #
+    #
+    #
+    #
+    #
+
+    return ecf_fun, par_opt
+
+def ecf_fun(h, par, form=1):
+     if form == 2:
+         return par[0] * np.exp(-0.5 * np.power(h/par[1], 2))
+     elif form == 3:
+         return par[0] * np.exp(-h/par[1])
+     else:
+         return par[0]*(1+h/par[1]) * np.exp(-h/par[1])
 
 def eval_covariance_bin(distance, val, err, form, input_opt=None, nbin=None):
 
@@ -166,7 +242,6 @@ def eval_covariance_bin(distance, val, err, form, input_opt=None, nbin=None):
         nbin = 20
 
     ndata = len(val)
-    nh = np.sum([k for k in range(1, ndata)])
     poids = np.power(1 / err, 2)
     poids = poids / np.sum(poids)
 
@@ -185,8 +260,8 @@ def eval_covariance_bin(distance, val, err, form, input_opt=None, nbin=None):
     distance = distance.reshape(len(distance)*len(distance))
 
     hmx = max(distance) / hmax_divider
-    Covariance = Covariance[distance > hmx]
-    distance = distance[distance > hmx]
+    Covariance = Covariance[distance < hmx]
+    distance = distance[distance < hmx]
 
     nc = nbin
     qt = [(1/nc)*i for i in range(0, nc + 1)]
@@ -211,17 +286,109 @@ def eval_covariance_bin(distance, val, err, form, input_opt=None, nbin=None):
 
         wt = poidsCovariance[ind] / np.sum(poidsCovariance[ind])
 
-        cov_b[:, i] = (np.sum(wt) / (np.power(np.sum(wt), 2) - np.sum(np.power(wt, 2)) * np.sum(wt * Covariance[ind]))) / variance
-        std_b[:, i] = np.sqrt(np.var(Covariance[ind] * wt, ddof=1))
-        NP[:, i] = np.sum(ind)
+        cov_b[:, i] = (np.sum(wt) / (np.power(np.sum(wt), 2) - np.sum(np.power(wt, 2))) * np.sum(wt * Covariance[ind])) / variance
+
+
+        std_b[:, i] = np.sqrt(np.var(Covariance[ind]))
+        NP[:, i] = len(ind[0])
 
     return h_b, cov_b, std_b, NP
-def latlon_to_xy(lat, lon):
+def latlon_to_xy(lat, lon, lat0, lon0):
     R = 6371  # km
-    x = R * np.cos(lat) * np.cos(lon)
-    y = R * np.cos(lat) * np.sin(lon)
+
+    lon = lon - lon0
+
+    coslat = np.cos(np.deg2rad(lat))
+    coslon = np.cos(np.deg2rad(lon))
+    coslat0 = np.cos(np.deg2rad(lat0))
+
+    sinlat = np.sin(np.deg2rad(lat))
+    sinlon = np.sin(np.deg2rad(lon))
+    sinlat0 = np.sin(np.deg2rad(lat0))
+
+    x = R * coslat * sinlon
+    y = -R * coslat*sinlat0*coslon+R*coslat0*sinlat
 
     return x, y
+
+def optimal_interpolation_vBox(oi_input,preCalcul):
+    if len(preCalcul) == 0:
+        preCalcul = {}
+
+    S = 1 #len(oi_input['x_est'])
+    N = len(oi_input['x_obs'][0, :])
+    oi_output = oi_input
+
+    cond = 0
+
+    if isinstance(preCalcul, dict):
+        if 'x_obs' in preCalcul:
+            cond = (np.array_equal(preCalcul['x_est'],oi_input['x_est']) \
+                    and np.array_equal(preCalcul['y_est'],oi_input['y_est'])) \
+                    and (np.array_equal(preCalcul['x_obs'],oi_input['x_obs']) \
+                    and np.array_equal(preCalcul['y_obs'],oi_input['y_obs']))
+
+    if cond == 0:
+        Doo = np.zeros((N, N))
+        for s1 in range(0, N):
+            for s2 in range(0, N):
+                eq1 = np.power(oi_input['x_obs'][:, s2] - oi_input['x_obs'][:, s1], 2)
+                eq2 = np.power(oi_input['y_obs'][:, s2] - oi_input['y_obs'][:, s1], 2)
+                Doo[s1, s2] = np.mean(np.sqrt(eq1 + eq2))
+
+    else:
+        Doo = preCalcul['Doo']
+
+    preCalcul['x_obs'] = oi_input['x_obs']
+    preCalcul['y_obs'] = oi_input['y_obs']
+    preCalcul['Doo'] = Doo
+
+    Coo = oi_input['error_cov_fun'](Doo) / oi_input['error_cov_fun'](0)
+
+    BEo_j = np.tile(oi_input['bg_var_obs'], (N, 1))
+    BEo_i = np.tile(np.resize(oi_input['bg_var_obs'], (1, N)), (N, 1))
+
+    Bij = Coo * np.sqrt(BEo_j) / np.sqrt(BEo_i)
+
+    OEo_j = np.tile(oi_input['var_obs'], (N, 1))
+    OEo_i = np.tile(oi_input['var_obs'], (1, N))
+
+    Oij = (np.sqrt(OEo_j) * np.sqrt(OEo_i)) * np.eye(len(OEo_j), len(OEo_j[0])) / BEo_i
+
+    if cond == 0:
+        Doe = np.zeros((S,N))
+
+        for s1 in range(0, S):
+            for s2 in range(0, N):
+                eq1 = np.power(oi_input['x_obs'][:, s2] - oi_input['x_est'], 2)
+                eq2 = np.power(oi_input['y_obs'][:, s2] - oi_input['y_est'], 2)
+
+                Doe[s1, s2] = np.mean(np.sqrt(eq1 + eq2))
+    else:
+        Doe = preCalcul['Doe']
+
+    preCalcul['x_est'] = oi_input['x_est']
+    preCalcul['y_est'] = oi_input['y_est']
+    preCalcul['Doe'] = Doe
+
+    BEe = np.tile(np.resize(oi_input['bg_var_est'], (1, N)), (S, 1))
+    BEo = np.tile(oi_input['bg_var_obs'], (S, 1))
+
+    Coe = oi_input['error_cov_fun'](Doe) / oi_input['error_cov_fun'](0)
+
+    Bei = np.resize(Coe * np.sqrt(BEe) / np.sqrt(BEo), (N, 1))
+
+    weights = np.linalg.solve(Bij + Oij, Bei)
+
+    I = np.resize(np.tile(oi_input['bg_departures'], (1, S)), (S, 1))
+
+    t1 = weights * I
+    t2 = np.sum(np.resize(weights * I, (S, 1)))
+    oi_output['v_est'] = oi_input['bg_est'] + np.sum(weights * I)
+
+    oi_output['var_est'] = oi_input['bg_var_est'] * np.diag(1 - Bei * weights)
+
+    return oi_output, preCalcul
 
 
 def execute():
@@ -262,8 +429,6 @@ def execute():
     superficie_drainee = np.empty(station_count)
     longitude_station = np.empty(station_count)
     latitude_station = np.empty(station_count)
-    PX = np.empty((time_range, station_count))
-    PY = np.empty((time_range, station_count))
 
     for i in range(0, station_count):
         print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
@@ -292,34 +457,78 @@ def execute():
         longitude_station[i] = station_info[3]
         latitude_station[i] = station_info[2]
 
+    lat0 = np.array([45]*len(centroide_lat))
+    lon0 = np.array([-70]*len(centroide_lat))
 
-    x, y = latlon_to_xy(centroide_lat, centroide_lon)  # Projete dans un plan pour avoir des distances en km
+    x, y = latlon_to_xy(centroide_lat, centroide_lon, lat0, lon0)  # Projete dans un plan pour avoir des distances en km
 
+    PX = np.empty((4, station_count))
+    PY = np.empty((4, station_count))
     for i in range(station_count):
-        L = np.sqrt(superficie_drainee[i])
-        xv = [x[i] - (L / 2) * x[i] + L / 2]
-        yv = [y[i] - (L / 2) * y[i] + L / 2]
-        [Xp, Yp] = np.meshgrid(xv, yv)
+        root_superficie = np.sqrt(superficie_drainee[i])
+        xv = [x[i] - (root_superficie / 2), x[i] + root_superficie / 2]
+        yv = [y[i] - (root_superficie / 2), y[i] + root_superficie / 2]
+        [x_p, y_p] = np.meshgrid(xv, yv)
 
-        PX[:, i] = Xp.reshape(len(Xp))
-        PY[:, i] = Yp.reshape(len(Yp))
+        x_p = np.transpose(x_p)
+        y_p = np.transpose(y_p)
+
+        PX[:, i] = x_p.reshape(2*len(x_p))
+        PY[:, i] = y_p.reshape(2*len(y_p))
 
 
     # Transformation log-débit pour l'interpolation
     qsim_log = np.log(debit_sim)
     qobs_log = np.log(debit_obs)
 
-    # PX = np.array([[165.5620, 169.3326, 358.0216, 306.8524, 187.99811],
-    #                [165.5620, 169.3326, 358.0216, 306.8524, 187.99811],
-    #                [189.1205, 221.8016, 383.0416, 341.4934, 228.67980],
-    #                [189.1205, 221.8016, 383.0416, 341.4934, 228.67980]])
-    #
-    # PY = np.array([[385.3479, 354.8049, 447.9909, 438.2225, 394.4463],
-    #                [408.9064, 407.2739, 473.0109, 472.8635, 435.1280],
-    #                [385.3479, 354.8049, 447.9909, 438.2225, 394.4463],
-    #                [408.9064, 407.2739, 473.0109, 472.8635, 435.1280]])
+    ecf_fun,par_opt = ajustement_ECF_climatologique(qobs_log, qsim_log, PX, PY, "test")
 
-    ajustement_ECF_climatologique(qobs_log, qsim_log, PX, PY, "test")
+    index = range(0, station_count)
+    ratio_var_bg = 0.15
+    qest_l1o = np.empty((time_range, station_count))
+    qest_l1o_q25 = np.empty((time_range, station_count))
+    qest_l1o_q75 = np.empty((time_range, station_count))
+
+    qest_l1o[:, :] = np.nan
+    qest_l1o_q25[:, :] = np.nan
+    qest_l1o_q75[:, :] = np.nan
+
 
     for i in range(0, station_count):
-        ew = 1
+        print(f'validation station croisé {i} de {station_count}')
+        index_validation = i
+        index_calibration = np.setdiff1d(index, i)
+
+        ecart = qobs_log[:, index_calibration] - qsim_log[:, index_calibration]
+        vsim_at_est = qsim_log[:, index_validation]
+        oi_input = {}
+
+        oi_input['var_obs'] = ratio_var_bg
+        oi_input['error_cov_fun'] = lambda h : ecf_fun(h, par_opt)
+        oi_input['x_est'] = PX[:, index_validation]
+        oi_input['y_est'] = PY[:, index_validation]
+
+        preCalcul = {}
+        for j in range(0, time_range):
+            if not np.isnan(debit_obs[j, index_validation]):
+                val = ecart[j, :]
+                idx = ~np.isnan(val)
+
+                oi_input['x_obs'] = PX[:, index_calibration[idx]]
+                oi_input['y_obs'] = PY[:, index_calibration[idx]]
+                oi_input['bg_departures'] = ecart[j, idx]
+                oi_input['bg_var_obs'] = np.ones(len(oi_input['bg_departures']))
+                oi_input['bg_est'] = vsim_at_est[j]
+                oi_input['bg_var_est'] = 1
+
+                oi_output, preCalcul = optimal_interpolation_vBox(oi_input, preCalcul)
+                qest_l1o[j, i] = np.exp(oi_output['v_est']) * superficie_drainee[i]
+
+                var_bg = np.var(oi_input['bg_departures'])
+                var_est = oi_output['var_est'] * var_bg
+
+                t1 = invgauss.cdf(0.25, oi_output['v_est']) #, np.sqrt(var_est))
+
+                qest_l1o_q25[j, i] = np.exp(np.percentile(np.random.normal(oi_output['v_est'], np.sqrt(var_est), 10000), 25)) * superficie_drainee[i]
+                qest_l1o_q75[j, i] = np.exp(np.percentile(np.random.normal(oi_output['v_est'], np.sqrt(var_est), 10000), 75)) * superficie_drainee[i]
+    test =1
