@@ -4,7 +4,7 @@ import subprocess
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Union
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -45,6 +45,11 @@ class Hydrotel:
             Dictionary of options to overwrite in the simulation file (simulation.csv).
         output_options: dict
             Dictionary of options to overwrite in the output file (output.csv).
+
+        Notes
+        -----
+        At minimum, the project folder must already exist when this function is called
+        and either 'default_options' must be True or 'SIMULATION COURANTE' must be specified as a keyword argument in 'project_options'.
         """
         project_options = project_options or dict()
         simulation_options = simulation_options or dict()
@@ -115,6 +120,7 @@ class Hydrotel:
             simulation_options=simulation_options,
             output_options=output_options,
         )
+
         # TODO: Clean up and prepare the 'etat' folder (missing the files)
 
     def update_options(
@@ -232,19 +238,58 @@ class Hydrotel:
                 xr_open_kwargs=xr_open_kwargs_out,
             )
 
-    def get_input(self, **kwargs) -> xr.Dataset:
+    def get_input(
+        self, return_config=False, **kwargs
+    ) -> Union[xr.Dataset, tuple[xr.Dataset, dict]]:
         r"""Get the weather file from the simulation.
 
         Parameters
         ----------
+        return_config: bool
+            Whether to return the configuration file as well. If True, returns a tuple of (dataset, configuration).
         \*\*kwargs
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
         """
-        return xr.open_dataset(
-            self.project / self.simulation_options["FICHIER STATIONS METEO"],
-            **kwargs,
-        )
+        # Set the type of weather file
+        if all(
+            self.simulation_options.get(k, None) is not None
+            for k in ["FICHIER GRILLE METEO", "FICHIER STATIONS METEO"]
+        ):
+            raise ValueError(
+                "Both 'FICHIER GRILLE METEO' and 'FICHIER STATIONS METEO' are specified in the simulation configuration file."
+            )
+        if self.simulation_options["FICHIER GRILLE METEO"] is not None:
+            weather_file = self.simulation_options["FICHIER GRILLE METEO"]
+        elif self.simulation_options["FICHIER STATIONS METEO"] is not None:
+            weather_file = self.simulation_options["FICHIER STATIONS METEO"]
+        else:
+            raise ValueError(
+                "You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO' in the simulation configuration file."
+            )
+
+        if return_config is False:
+            return xr.open_dataset(
+                self.project / weather_file,
+                **kwargs,
+            )
+        else:
+            ds = xr.open_dataset(
+                self.project / weather_file,
+                **kwargs,
+            )
+            cfg = (
+                pd.read_csv(
+                    self.project / f"{weather_file}.config",
+                    delimiter=";",
+                    header=None,
+                    index_col=0,
+                )
+                .replace([np.nan], [None])
+                .squeeze()
+                .to_dict()
+            )
+            return ds, cfg
 
     def get_streamflow(self, **kwargs) -> xr.Dataset:
         r"""Get the streamflow from the simulation.
@@ -276,12 +321,11 @@ class Hydrotel:
         -----
         This function checks that:
             1. All files mentioned in the configuration exist and all expected entries are filled.
-            2. The dataset has "time" and "stations" dimensions.
-            3. The dataset has "lat", "lon", "x", "y", "z" coordinates.
-            4. The dataset has "tasmin" (degC), "tasmax" (degC), and "pr" (mm) variables.
-            5. The dataset has a standard calendar.
-            6. The frequency is uniform (i.e. all time steps are equally spaced).
-            7. The start and end dates are contained in the dataset.
+            2. The dataset has the right dimensions and coordinates.
+            3. The dataset has TMIN (degC), TMAX (degC), and PRECIP (mm) variables, named as specified in the configuration.
+            4. The dataset has a standard calendar.
+            5. The frequency is uniform (i.e. all time steps are equally spaced).
+            6. The start and end dates are contained in the dataset.
 
         """
         # Check that the option files have no missing entries
@@ -297,6 +341,13 @@ class Hydrotel:
                     raise ValueError(
                         f"The option '{key}' is missing from the {option.split('_')[0]} file."
                     )
+        if any(
+            self.simulation_options.get(k, None) is None
+            for k in ["DATE DEBUT", "DATE FIN", "PAS DE TEMPS"]
+        ):
+            raise ValueError(
+                "You must specify 'DATE DEBUT', 'DATE FIN', and 'PAS DE TEMPS' in the simulation configuration file."
+            )
 
         # Make sure that all the files exist
         possible_files = [
@@ -314,20 +365,64 @@ class Hydrotel:
                 if not Path(value).is_file():
                     raise FileNotFoundError(f"The file {value} does not exist.")
 
-        # Open the meteo file
-        ds = self.get_input(**(xr_open_kwargs or {}))
+        # Open the meteo file and its configuration
+        ds, cfg = self.get_input(**(xr_open_kwargs or {}), return_config=True)
+        # Validate the configuration
+        req = [
+            "TYPE (STATION/GRID)",
+            "LATITUDE_NAME",
+            "LONGITUDE_NAME",
+            "ELEVATION_NAME",
+            "TIME_NAME",
+            "TMIN_NAME",
+            "TMAX_NAME",
+            "PRECIP_NAME",
+        ]
+        if (
+            any(cfg.get(k, None) is None for k in req)
+            or cfg.get("STATION_DIM_NAME", None) is None
+        ):
+            raise ValueError("The configuration file is missing some entries.")
+        if cfg["TYPE (STATION/GRID)"] not in ["STATION", "GRID"]:
+            raise ValueError(
+                "The configuration file must specify 'STATION' or 'GRID' as the type of weather file."
+            )
+        if (
+            cfg["TYPE (STATION/GRID)"] == "GRID"
+            and cfg.get("STATION_DIM_NAME", None) is not None
+        ):
+            raise ValueError(
+                "STATION_DIM_NAME must be specified if and only if TYPE (STATION/GRID) is 'STATION'."
+            )
 
         # Check that the start and end dates are contained in the dataset
         start_date = self.simulation_options["DATE DEBUT"]
         end_date = self.simulation_options["DATE FIN"]
 
         # Check that the dimensions, coordinates, calendar, and units are correct
+        dims = (
+            [cfg["TIME_NAME"], cfg["STATION_DIM_NAME"]]
+            if cfg["TYPE (STATION/GRID)"] == "STATION"
+            else [cfg["TIME_NAME"], cfg["LATITUDE_NAME"], cfg["LONGITUDE_NAME"]]
+        )
+        coords = [
+            cfg["TIME_NAME"],
+            cfg["LATITUDE_NAME"],
+            cfg["LONGITUDE_NAME"],
+            cfg["ELEVATION_NAME"],
+        ]
+        if cfg["TYPE (STATION/GRID)"] == "STATION":
+            coords.append(cfg["STATION_DIM_NAME"])
         structure = {
-            "dims": ["time", "stations"],
-            "coords": ["time", "stations", "lat", "lon", "x", "y", "z"],
+            "dims": dims,
+            "coords": coords,
         }
         calendar = "standard"
-        variables_and_units = {"tasmin": "degC", "tasmax": "degC", "pr": "mm"}
+        variables_and_units = {
+            cfg["TMIN_NAME"]: "degC",
+            cfg["TMAX_NAME"]: "degC",
+            cfg["PRECIP_NAME"]: "mm",
+        }
 
         # Check that the frequency is uniform
         freq = f"{self.simulation_options['PAS DE TEMPS']}H"

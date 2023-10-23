@@ -13,6 +13,55 @@ from xhydro.modelling import Hydrotel
 
 
 class TestHydrotel:
+    @staticmethod
+    def make_meteo():
+        meteo = timeseries(
+            np.zeros(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmin",
+            as_dataset=True,
+            units="degC",
+        )
+        meteo["tasmax"] = timeseries(
+            np.ones(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmax",
+            units="degC",
+        )
+        meteo["pr"] = timeseries(
+            np.ones(365 * 2) * 10,
+            start="2001-01-01",
+            freq="D",
+            variable="pr",
+            units="mm",
+        )
+        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
+        meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77, "z": 0})
+        for c in ["lat", "lon", "z"]:
+            meteo[c] = meteo[c].expand_dims("stations")
+        return meteo
+
+    @staticmethod
+    def make_debit_aval():
+        debit_aval = timeseries(
+            np.zeros(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="streamflow",
+            as_dataset=True,
+        )
+        debit_aval = debit_aval.expand_dims("troncon").assign_coords(troncon=[0])
+        debit_aval = debit_aval.assign_coords(coords={"idtroncon": 0})
+        debit_aval["idtroncon"] = debit_aval["idtroncon"].expand_dims("troncon")
+        debit_aval = debit_aval.rename({"streamflow": "debit_aval"})
+        debit_aval["debit_aval"].attrs = {
+            "units": "m3/s",
+            "description": "Debit en aval du troncon",
+        }
+        return debit_aval
+
     def test_options(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
         ht = Hydrotel(
@@ -80,101 +129,57 @@ class TestHydrotel:
         assert ht2.simulation_options == simopt
         assert ht2.output_options == outopt
 
-    def test_get_data(self, tmpdir):
-        meteo = timeseries(
-            np.zeros(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmin",
-            as_dataset=True,
-            units="degC",
-        )
-        meteo["tasmax"] = timeseries(
-            np.ones(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmax",
-            units="degC",
-        )
-        meteo["pr"] = timeseries(
-            np.ones(365 * 2) * 10,
-            start="2001-01-01",
-            freq="D",
-            variable="pr",
-            units="mm",
-        )
-        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
-        meteo = meteo.assign_coords(
-            coords={"lat": 46, "lon": -77, "x": 0, "y": 0, "z": 0}
-        )
-        for c in ["lat", "lon", "x", "y", "z"]:
-            meteo[c] = meteo[c].expand_dims("stations")
-
-        debit_aval = timeseries(
-            np.zeros(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="streamflow",
-            as_dataset=True,
-        )
-        debit_aval = debit_aval.expand_dims("troncon").assign_coords(troncon=[0])
-        debit_aval = debit_aval.assign_coords(coords={"idtroncon": 0})
-        debit_aval["idtroncon"] = debit_aval["idtroncon"].expand_dims("troncon")
-        debit_aval = debit_aval.rename({"streamflow": "debit_aval"})
-        debit_aval["debit_aval"].attrs = {
-            "units": "m3/s",
-            "description": "Debit en aval du troncon",
-        }
+    @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
+    def test_get_data(self, tmpdir, test):
+        meteo = self.make_meteo()
+        debit_aval = self.make_debit_aval()
 
         xhydro.testing.utils.fake_hydrotel_project(
             tmpdir, "fake", meteo=meteo, debit_aval=debit_aval
         )
+        if test == "station":
+            simulation_options = {"FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc"}
+        elif test == "grid":
+            simulation_options = {"FICHIER GRILLE METEO": r"meteo\SLNO_meteo_GC3H.nc"}
+        elif test == "none":
+            simulation_options = {}
+        else:
+            simulation_options = {
+                "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
+                "FICHIER GRILLE METEO": r"meteo\SLNO_meteo_GC3H.nc",
+            }
 
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=True,
-            simulation_options={"FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc"},
+            simulation_options=simulation_options,
         )
-        ds = ht.get_input()
-        assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
-        np.testing.assert_array_equal(ds.tasmin, meteo.tasmin)
-        np.testing.assert_array_equal(ds.tasmax.mean(), 1)
+        if test in ["station", "grid"]:
+            ds = ht.get_input()
+            assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
+            np.testing.assert_array_equal(ds.tasmin, meteo.tasmin)
+            np.testing.assert_array_equal(ds.tasmax.mean(), 1)
 
-        ds = ht.get_streamflow()
-        assert all(v in ds.variables for v in ["debit_aval"])
-        np.testing.assert_array_equal(ds.dims, ["time", "troncon"])
-        np.testing.assert_array_equal(ds.debit_aval.mean(), 0)
+            ds = ht.get_streamflow()
+            assert all(v in ds.variables for v in ["debit_aval"])
+            np.testing.assert_array_equal(ds.dims, ["time", "troncon"])
+            np.testing.assert_array_equal(ds.debit_aval.mean(), 0)
+        elif test == "toomany":
+            with pytest.raises(
+                ValueError,
+                match="Both 'FICHIER GRILLE METEO' and 'FICHIER STATIONS METEO' are specified in the simulation configuration file.",
+            ):
+                ht.get_input()
+        else:
+            with pytest.raises(
+                ValueError,
+                match="You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO'",
+            ):
+                ht.get_input()
 
     @pytest.mark.parametrize("test", ["ok", "option", "file", "health"])
     def test_basic(self, tmpdir, test):
-        meteo = timeseries(
-            np.zeros(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmin",
-            as_dataset=True,
-            units="degC",
-        )
-        meteo["tasmax"] = timeseries(
-            np.ones(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmax",
-            units="degC",
-        )
-        meteo["pr"] = timeseries(
-            np.ones(365 * 2) * 10,
-            start="2001-01-01",
-            freq="D",
-            variable="pr",
-            units="mm",
-        )
-        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
-        meteo = meteo.assign_coords(
-            coords={"lat": 46, "lon": -77, "x": 0, "y": 0, "z": 0}
-        )
-        for c in ["lat", "lon", "x", "y", "z"]:
-            meteo[c] = meteo[c].expand_dims("stations")
+        meteo = self.make_meteo()
         if test == "health":
             meteo = meteo.reset_coords("z", drop=True).squeeze()
             meteo = meteo.convert_calendar("noleap")
@@ -241,22 +246,7 @@ class TestHydrotel:
                 ht._basic_checks()
 
     def test_standard(self, tmpdir):
-        debit_aval = timeseries(
-            np.zeros(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="streamflow",
-            as_dataset=True,
-        )
-        debit_aval = debit_aval.expand_dims("troncon").assign_coords(troncon=[0])
-        debit_aval = debit_aval.assign_coords(coords={"idtroncon": 0})
-        debit_aval["idtroncon"] = debit_aval["idtroncon"].expand_dims("troncon")
-        debit_aval = debit_aval.rename({"streamflow": "debit_aval"})
-        debit_aval["debit_aval"].attrs = {
-            "units": "m3/s",
-            "description": "Debit en aval du troncon",
-        }
-
+        debit_aval = self.make_debit_aval()
         xhydro.testing.utils.fake_hydrotel_project(
             tmpdir, "fake", debit_aval=debit_aval
         )
@@ -330,36 +320,11 @@ class TestHydrotel:
         )
         assert ht.simulation_options["ECRITURE ETAT FONTE NEIGE"] == "2001-01-01 00"
 
-    def test_run(self, tmpdir):
-        meteo = timeseries(
-            np.zeros(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmin",
-            as_dataset=True,
-            units="degC",
+    @pytest.mark.parametrize("test", ["ok", "pdt", "cfg"])
+    def test_run(self, tmpdir, test):
+        xhydro.testing.utils.fake_hydrotel_project(
+            tmpdir, "fake", meteo=self.make_meteo()
         )
-        meteo["tasmax"] = timeseries(
-            np.ones(365 * 2),
-            start="2001-01-01",
-            freq="D",
-            variable="tasmax",
-            units="degC",
-        )
-        meteo["pr"] = timeseries(
-            np.ones(365 * 2) * 10,
-            start="2001-01-01",
-            freq="D",
-            variable="pr",
-            units="mm",
-        )
-        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
-        meteo = meteo.assign_coords(
-            coords={"lat": 46, "lon": -77, "x": 0, "y": 0, "z": 0}
-        )
-        for c in ["lat", "lon", "x", "y", "z"]:
-            meteo[c] = meteo[c].expand_dims("stations")
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", meteo=meteo)
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=False,
@@ -367,7 +332,7 @@ class TestHydrotel:
                 "DATE DEBUT": "2001-01-01",
                 "DATE FIN": "2001-12-31",
                 "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
-                "PAS DE TEMPS": 24,
+                "PAS DE TEMPS": 24 if test != "pdt" else None,
             },
         )
 
@@ -377,8 +342,71 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
         else:
-            command = ht.run(dry_run=True)
-            assert command == f"hydrotel {ht.project} -t 1"
+            if test == "ok":
+                command = ht.run(dry_run=True)
+                assert command == f"hydrotel {ht.project} -t 1"
+            elif test == "pdt":
+                with pytest.raises(
+                    ValueError,
+                    match="You must specify 'DATE DEBUT', 'DATE FIN', and 'PAS DE TEMPS'",
+                ):
+                    ht.run(dry_run=True)
+            elif test == "cfg":
+                cfg = (
+                    pd.read_csv(
+                        tmpdir / "fake" / "meteo" / "SLNO_meteo_GC3H.nc.config",
+                        sep=";",
+                        header=None,
+                        index_col=0,
+                    )
+                    .replace([np.nan], [None])
+                    .squeeze()
+                    .to_dict()
+                )
+                # 1: missing entry
+                cfg_bad = deepcopy(cfg)
+                cfg_bad["LATITUDE_NAME"] = ""
+                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
+                    tmpdir / "fake" / "meteo" / "SLNO_meteo_GC3H.nc.config",
+                    sep=";",
+                    header=False,
+                    columns=[0],
+                )
+                with pytest.raises(
+                    ValueError, match="The configuration file is missing some entries."
+                ):
+                    ht.run(dry_run=True)
+
+                # 2: bad type
+                cfg_bad = deepcopy(cfg)
+                cfg_bad["TYPE (STATION/GRID)"] = "fake"
+                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
+                    tmpdir / "fake" / "meteo" / "SLNO_meteo_GC3H.nc.config",
+                    sep=";",
+                    header=False,
+                    columns=[0],
+                )
+                with pytest.raises(
+                    ValueError,
+                    match="The configuration file must specify 'STATION' or 'GRID'",
+                ):
+                    ht.run(dry_run=True)
+
+                # 3: bad station name
+                cfg_bad = deepcopy(cfg)
+                cfg_bad["TYPE (STATION/GRID)"] = "GRID"
+                cfg_bad["STATION_DIM_NAME"] = "stations"
+                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
+                    tmpdir / "fake" / "meteo" / "SLNO_meteo_GC3H.nc.config",
+                    sep=";",
+                    header=False,
+                    columns=[0],
+                )
+                with pytest.raises(
+                    ValueError,
+                    match="STATION_DIM_NAME must be specified if and only if",
+                ):
+                    ht.run(dry_run=True)
 
     def test_errors(self, tmpdir):
         # Missing project folder

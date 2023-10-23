@@ -81,8 +81,28 @@ def fake_hydrotel_project(
     # Create fake timeseries
     if meteo is None:
         (project / "meteo" / "SLNO_meteo_GC3H.nc").touch()
+        (project / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
     else:
         meteo.to_netcdf(project / "meteo" / "SLNO_meteo_GC3H.nc")
+        cfg = pd.Series(
+            {
+                "TYPE (STATION/GRID)": "STATION",
+                "STATION_DIM_NAME": "stations",
+                "LATITUDE_NAME": "lat",
+                "LONGITUDE_NAME": "lon",
+                "ELEVATION_NAME": "z",
+                "TIME_NAME": "time",
+                "TMIN_NAME": "tasmin",
+                "TMAX_NAME": "tasmax",
+                "PRECIP_NAME": "pr",
+            }
+        )
+        cfg.to_csv(
+            project / "meteo" / "SLNO_meteo_GC3H.nc.config",
+            sep=";",
+            header=False,
+            columns=[0],
+        )
 
     if debit_aval is None:
         (project / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
