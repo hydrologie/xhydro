@@ -5,10 +5,11 @@ include LICENSE
 include README.rst
 include .zenodo.json
 
-recursive-include xhydro *.yml
+recursive-include xhydro *.py *.yml
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
 recursive-include docs *.ipynb
 recursive-include tests *
+
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-exclude docs apidocs *.rst

@@ -9,6 +9,7 @@ with open("README.rst") as readme_file:
 
 requirements = [
     "numpy",
+    "pandas",
     "pyyaml",
     "scipy",
     "statsmodels",

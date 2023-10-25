@@ -1,6 +1,5 @@
 """Utilities for testing and releasing xhydro."""
-
-import os
+import pathlib
 import re
 from io import StringIO
 from pathlib import Path
@@ -10,47 +9,48 @@ import pandas as pd
 import xarray as xr
 import yaml
 
+testing_data = Path(__file__).parent / "data"
+
 
 def fake_hydrotel_project(
-    directory: Union[str, os.PathLike],
+    directory: Union[str, Path],
     name: str,
     *,
-    meteo: xr.Dataset = None,
-    debit_aval: xr.Dataset = None,
+    meteo: Optional[xr.Dataset] = None,
+    debit_aval: Optional[xr.Dataset] = None,
 ):
-    """
-    Create a fake Hydrotel project in the given directory.
+    """Create a fake Hydrotel project in the given directory.
 
     Parameters
     ----------
-    directory: str or os.PathLike
+    directory : str or pathlib.Path
         Directory where the project will be created.
-    name: str
+    name : str
         Name of the project.
-    meteo: xr.Dataset
+    meteo : xr.Dataset, optional
         Fake meteo timeseries. Leave None to create an empty file.
-    debit_aval: xr.Dataset
+    debit_aval : xr.Dataset, optional
         Fake debit_aval timeseries. Leave None to create an empty file.
 
     Notes
     -----
-    Uses the directory structure specified in xhydro/testing/hydrotel_structure.yml. Most files are empty, except for the projet.csv, simulation.csv
-    and output.csv files, which are filled with default options taken from xhydro/modelling/data/hydrotel_defaults.yml.
-    If their respective arguments are None, the meteo/SLNO_meteo_GC3H.nc and simulation/simulation/resultat/debit_aval.nc files will also be fake.
-
+    Uses the directory structure specified in xhydro/testing/hydrotel_structure.yml.
+    Most files are empty, except for the projet.csv, simulation.csv and output.csv files, which are filled with
+    default options taken from xhydro/modelling/data/hydrotel_defaults.yml. If their respective arguments are None,
+    the meteo/SLNO_meteo_GC3H.nc and simulation/simulation/resultat/debit_aval.nc files will also be fake.
     """
     project = Path(directory) / name
-    with open(Path(__file__).parent / "hydrotel_structure.yml") as f:
+    with open(testing_data / "hydrotel_structure.yml") as f:
         struc = yaml.safe_load(f)["structure"]
     with open(
         Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults.yml"
     ) as f:
         defaults = yaml.safe_load(f)
 
-    os.makedirs(project, exist_ok=True)
+    project.mkdir(exist_ok=True, parents=True)
     for k, v in struc.items():
         if k != "_main":
-            os.makedirs(project / k, exist_ok=True)
+            project.joinpath(k).mkdir(exist_ok=True, parents=True)
             for file in v:
                 if file in ["simulation.csv", "output.csv"]:
                     opt = defaults[f"{file.split('.')[0]}_options"]
@@ -113,7 +113,7 @@ def fake_hydrotel_project(
 
 
 def publish_release_notes(
-    style: str = "md", file: Optional[Union[os.PathLike, StringIO, TextIO]] = None
+    style: str = "md", file: Optional[Union[pathlib.Path, StringIO, TextIO]] = None
 ) -> Optional[str]:
     """Format release history in Markdown or ReStructuredText.
 
@@ -121,7 +121,7 @@ def publish_release_notes(
     ----------
     style : {"rst", "md"}
         Use ReStructuredText (`rst`) or Markdown (`md`) formatting. Default: Markdown.
-    file : {os.PathLike, StringIO, TextIO, None}
+    file : {pathlib.Path, StringIO, TextIO}, optional
         If provided, prints to the given file-like object. Otherwise, returns a string.
 
     Returns
@@ -154,7 +154,7 @@ def publish_release_notes(
             r":user:`([a-zA-Z0-9_.-]+)`": r"[@\1](https://github.com/\1)",
         }
     else:
-        raise NotImplementedError()
+        raise NotImplementedError(f"Style {style} not implemented.")
 
     for search, replacement in hyperlink_replacements.items():
         history = re.sub(search, replacement, history)
