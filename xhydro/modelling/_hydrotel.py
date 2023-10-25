@@ -321,12 +321,13 @@ class Hydrotel:
         -----
         This function checks that:
             1. All files mentioned in the configuration exist and all expected entries are filled.
-            2. The dataset has the right dimensions and coordinates.
+            2. The dataset has the TIME and STATION (optional) dimensions, and LONGITUDE, LATITUDE, ELEVATION coordinates.
             3. The dataset has TMIN (degC), TMAX (degC), and PRECIP (mm) variables, named as specified in the configuration.
             4. The dataset has a standard calendar.
             5. The frequency is uniform (i.e. all time steps are equally spaced).
             6. The start and end dates are contained in the dataset.
 
+        The name of the dimensions, coordinates, and variables are checked against the configuration file.
         """
         # Check that the option files have no missing entries
         with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
