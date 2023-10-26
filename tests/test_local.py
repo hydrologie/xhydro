@@ -95,9 +95,7 @@ def test_quantiles(mode):
     else:
         rp = xhfa.local.parametric_quantiles(params, [10, 20], mode=mode)
 
-        np.testing.assert_array_equal(
-            rp.return_period, [0.9, 0.95] if mode == "max" else [0.1, 0.05]
-        )
+        np.testing.assert_array_equal(rp.return_period, [10, 20])
         np.testing.assert_array_equal(rp.scipy_dist, ["gamma", "pearson3"])
         assert rp.streamflow.attrs["long_name"] == "Distribution quantiles"
         assert (
