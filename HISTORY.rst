@@ -20,7 +20,7 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is not the actual return level, not the quantile (:issue:`41`, :pull:`43`).
+* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile (:issue:`41`, :pull:`43`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
