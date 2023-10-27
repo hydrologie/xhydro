@@ -103,7 +103,7 @@ def test_quantiles(mode):
         assert rp.streamflow.attrs["long_name"] == "Return period"
         assert (
             rp.streamflow.attrs["description"]
-            == f"Return period ({mode}) estimated by statistic distributions"
+            == f"Return period ({mode}) estimated with statistic distributions"
         )
         assert rp.streamflow.attrs["cell_methods"] == "dparams: ppf"
         assert rp.streamflow.attrs["mode"] == mode
