@@ -20,11 +20,12 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* N/A
+* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile (:issue:`41`, :pull:`43`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
+* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
 
 v0.2.0 (2023-10-10)
 -------------------
