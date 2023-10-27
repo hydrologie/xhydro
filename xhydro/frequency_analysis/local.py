@@ -118,8 +118,8 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
     for v in p.data_vars:
         quantiles = []
         for d in distributions:
-            dc = xclim.indices.stats.get_dist(d)
-            shape_params = [] if dc.shapes is None else dc.shapes.split(",")
+            dist_obj = xclim.indices.stats.get_dist(d)
+            shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
             dist_params = shape_params + ["loc", "scale"]
             da = p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
             da.attrs["scipy_dist"] = d
@@ -131,11 +131,26 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
             )
             quantiles.append(qt)
         quantiles = xr.concat(quantiles, dim="scipy_dist")
+
+        # Add the quantile as a new coordinate
+        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": t})
+        da_q.attrs["long_name"] = (
+            "Probability of exceedance"
+            if mode == "max"
+            else "Probability of non-exceedance"
+        )
+        da_q.attrs[
+            "description"
+        ] = "Parametric distribution quantiles for the given return levels."
+        da_q.attrs["mode"] = mode
+        quantiles = quantiles.assign_coords(p_quantile=da_q)
+
         quantiles.attrs["scipy_dist"] = distributions
         quantiles.attrs[
             "description"
-        ] = "Quantiles estimated by statistic distributions"
-        quantiles.attrs["long_name"] = "Distribution quantiles"
+        ] = f"Return levels ({mode}) estimated with statistic distributions"
+        quantiles.attrs["long_name"] = "Return levels"
+        quantiles.attrs["mode"] = mode
         out.append(quantiles)
 
     out = xr.merge(out)
@@ -186,8 +201,8 @@ def criteria(ds, p) -> xr.Dataset:
     for v in common_vars:
         c = []
         for d in distributions:
-            dc = xclim.indices.stats.get_dist(d)
-            shape_params = [] if dc.shapes is None else dc.shapes.split(",")
+            dist_obj = xclim.indices.stats.get_dist(d)
+            shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
             dist_params = shape_params + ["loc", "scale"]
             da = ds[v].transpose("time", ...)
             params = (
@@ -199,7 +214,7 @@ def criteria(ds, p) -> xr.Dataset:
                     _get_criteria_1d,
                     da.expand_dims("tmp"),
                     params.expand_dims("tmp"),
-                    kwargs={"dist": dc},
+                    kwargs={"dist": dist_obj},
                     input_core_dims=[["time"], ["dparams"]],
                     output_core_dims=[["criterion"]],
                     dask_gufunc_kwargs=dict(output_sizes={"criterion": 3}),
@@ -210,7 +225,7 @@ def criteria(ds, p) -> xr.Dataset:
                     _get_criteria_1d,
                     da,
                     params,
-                    kwargs={"dist": dc},
+                    kwargs={"dist": dist_obj},
                     input_core_dims=[["time"], ["dparams"]],
                     output_core_dims=[["criterion"]],
                     dask_gufunc_kwargs=dict(output_sizes={"criterion": 3}),
