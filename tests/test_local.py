@@ -100,10 +100,10 @@ def test_quantiles(mode):
             rp.p_quantile, [0.1, 0.05] if mode == "min" else [0.9, 0.95]
         )
         np.testing.assert_array_equal(rp.scipy_dist, ["gamma", "pearson3"])
-        assert rp.streamflow.attrs["long_name"] == "Return levels"
+        assert rp.streamflow.attrs["long_name"] == "Return period"
         assert (
             rp.streamflow.attrs["description"]
-            == f"Return levels ({mode}) estimated by statistic distributions"
+            == f"Return period ({mode}) estimated by statistic distributions"
         )
         assert rp.streamflow.attrs["cell_methods"] == "dparams: ppf"
         assert rp.streamflow.attrs["mode"] == mode

@@ -141,15 +141,15 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
         )
         da_q.attrs[
             "description"
-        ] = "Parametric distribution quantiles for the given return levels."
+        ] = "Parametric distribution quantiles for the given return period."
         da_q.attrs["mode"] = mode
         quantiles = quantiles.assign_coords(p_quantile=da_q)
 
         quantiles.attrs["scipy_dist"] = distributions
         quantiles.attrs[
             "description"
-        ] = f"Return levels ({mode}) estimated with statistic distributions"
-        quantiles.attrs["long_name"] = "Return levels"
+        ] = f"Return period ({mode}) estimated with statistic distributions"
+        quantiles.attrs["long_name"] = "Return period"
         quantiles.attrs["mode"] = mode
         out.append(quantiles)
 
