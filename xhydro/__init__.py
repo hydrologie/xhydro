@@ -6,4 +6,4 @@ from . import cc, indicators, testing, utils
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
-__version__ = "0.2.1"
+__version__ = "0.2.2"
