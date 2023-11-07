@@ -7,11 +7,11 @@ from setuptools import find_packages, setup
 with open("README.rst") as readme_file:
     readme = readme_file.read()
 
+# Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
 requirements = [
     "numpy",
     "pandas",
     "pyyaml",
-    "scipy",
     "statsmodels",
     "xarray",
     "xclim>=0.45.0",
@@ -56,6 +56,6 @@ setup(
         "dev": dev_requirements,
     },
     url="https://github.com/hydrologie/xhydro",
-    version="0.2.2",
+    version="0.2.3",
     zip_safe=False,
 )

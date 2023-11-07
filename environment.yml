@@ -2,11 +2,11 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
   - python >=3.9,<3.12
   - numpy
   - pandas
   - pyyaml
-  - scipy
   - statsmodels
   - xarray
   - xclim >=0.45.0
