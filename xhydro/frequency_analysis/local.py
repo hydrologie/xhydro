@@ -1,10 +1,9 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
-import scipy.stats
 import statsmodels
 import xarray as xr
 import xclim.indices.stats
@@ -18,7 +17,10 @@ __all__ = [
 
 
 def fit(
-    ds, distributions: list = None, min_years=None, method: str = "ML"
+    ds,
+    distributions: Optional[list[str]] = None,
+    min_years: Optional[int] = None,
+    method: str = "ML",
 ) -> xr.Dataset:
     """Fit multiple distributions to data.
 
@@ -26,10 +28,10 @@ def fit(
     ----------
     ds : xr.Dataset
         Dataset containing the data to fit. All variables will be fitted.
-    distributions : list of str
+    distributions : list of str, optional
         List of distribution names as defined in `scipy.stats`. See https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-distributions.
         Defaults to ["expon", "gamma", "genextreme", "genpareto", "gumbel_r", "pearson3", "weibull_min"].
-    min_years : int
+    min_years : int, optional
         Minimum number of years required for a distribution to be fitted.
     method : str
         Fitting method. Defaults to "ML" (maximum likelihood).
@@ -86,7 +88,9 @@ def fit(
     return out
 
 
-def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Dataset:
+def parametric_quantiles(
+    p: xr.Dataset, t: Union[float, list[float]], mode: str = "max"
+) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 
     Parameters
@@ -159,7 +163,7 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
     return out
 
 
-def criteria(ds, p) -> xr.Dataset:
+def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
     """Compute information criteria (AIC, BIC, AICC) from fitted distributions, using the log-likelihood.
 
     Parameters
