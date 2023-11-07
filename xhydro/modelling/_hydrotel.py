@@ -379,11 +379,11 @@ class Hydrotel:
             "TMAX_NAME",
             "PRECIP_NAME",
         ]
-        if (
-            any(cfg.get(k, None) is None for k in req)
-            or cfg.get("STATION_DIM_NAME", None) is None
-        ):
-            raise ValueError("The configuration file is missing some entries.")
+        missing = [k for k in req if cfg.get(k, None) is None]
+        if len(missing) > 0 or cfg.get("STATION_DIM_NAME", None) is None:
+            raise ValueError(
+                f"The configuration file is missing some entries: {missing}"
+            )
         if cfg["TYPE (STATION/GRID)"] not in ["STATION", "GRID"]:
             raise ValueError(
                 "The configuration file must specify 'STATION' or 'GRID' as the type of weather file."

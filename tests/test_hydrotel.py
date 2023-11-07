@@ -341,7 +341,7 @@ class TestHydrotel:
                     columns=[0],
                 )
                 with pytest.raises(
-                    ValueError, match="The configuration file is missing some entries."
+                    ValueError, match="The configuration file is missing some entries:"
                 ):
                     ht.run(dry_run=True)
 
