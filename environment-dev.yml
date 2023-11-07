@@ -3,10 +3,9 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.9,<3.12
-  # Don't forget to sync the changes here with environment.yml!
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
   # Main packages
   - numpy
-  - scipy
   - statsmodels
   - xarray
   - xclim >=0.45.0
