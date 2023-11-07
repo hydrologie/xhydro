@@ -26,7 +26,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-docs clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
 clean-build: ## remove build artifacts
 	rm -fr build/
@@ -36,6 +36,8 @@ clean-build: ## remove build artifacts
 	find . -name '*.egg' -exec rm -f {} +
 
 clean-docs: ## remove docs artifacts
+	rm -fr docs/notebooks/_data/
+	rm -fr docs/notebooks/.ipynb_checkpoints/
 	rm -f docs/apidoc/xhydro*.rst
 	rm -f docs/apidoc/modules.rst
 	$(MAKE) -C docs clean
