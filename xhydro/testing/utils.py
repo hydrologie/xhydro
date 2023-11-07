@@ -1,41 +1,46 @@
 """Utilities for testing and releasing xhydro."""
+import os
 import pathlib
 import re
 from io import StringIO
 from pathlib import Path
 from typing import Optional, TextIO, Union
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 import yaml
+from xclim.testing.helpers import test_timeseries as timeseries
 
 testing_data = Path(__file__).parent / "data"
 
 
 def fake_hydrotel_project(
-    directory: Union[str, Path],
+    directory: Union[str, os.PathLike],
     name: str,
     *,
-    meteo: Optional[xr.Dataset] = None,
-    debit_aval: Optional[xr.Dataset] = None,
+    meteo: Optional[Union[bool, xr.Dataset]] = None,
+    debit_aval: Optional[Union[bool, xr.Dataset]] = None,
 ):
     """Create a fake Hydrotel project in the given directory.
 
     Parameters
     ----------
-    directory : str or pathlib.Path
+    directory : str or os.PathLike
         Directory where the project will be created.
     name : str
         Name of the project.
-    meteo : xr.Dataset, optional
-        Fake meteo timeseries. Leave None to create an empty file.
-    debit_aval : xr.Dataset, optional
-        Fake debit_aval timeseries. Leave None to create an empty file.
+    meteo : bool or xr.Dataset, optional
+        Fake meteo timeseries. If True, a 2-year timeseries of zeros (tasmin) and ones (tasmax, pr) is created. Alternatively, provide a Dataset.
+        Leave None to create a fake file.
+    debit_aval : bool or xr.Dataset, optional
+        Fake debit_aval timeseries. If True, a 2-year timeseries of zeros is created. Alternatively, provide a Dataset.
+        Leave None to create a fake file.
 
     Notes
     -----
     Uses the directory structure specified in xhydro/testing/hydrotel_structure.yml.
-    Most files are empty, except for the projet.csv, simulation.csv and output.csv files, which are filled with
+    Most files are fake and empty, except for the projet.csv, simulation.csv and output.csv files, which are filled with
     default options taken from xhydro/modelling/data/hydrotel_defaults.yml. If their respective arguments are None,
     the meteo/SLNO_meteo_GC3H.nc and simulation/simulation/resultat/debit_aval.nc files will also be fake.
     """
@@ -78,11 +83,35 @@ def fake_hydrotel_project(
         elif file is not None:
             (project / file).touch()
 
-    # Create fake timeseries
-    if meteo is None:
-        (project / "meteo" / "SLNO_meteo_GC3H.nc").touch()
-        (project / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
-    else:
+    # Create fake meteo and debit_aval files
+    if isinstance(meteo, bool) and meteo:
+        meteo = timeseries(
+            np.zeros(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmin",
+            as_dataset=True,
+            units="degC",
+        )
+        meteo["tasmax"] = timeseries(
+            np.ones(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmax",
+            units="degC",
+        )
+        meteo["pr"] = timeseries(
+            np.ones(365 * 2) * 10,
+            start="2001-01-01",
+            freq="D",
+            variable="pr",
+            units="mm",
+        )
+        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
+        meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77, "z": 0})
+        for c in ["lat", "lon", "z"]:
+            meteo[c] = meteo[c].expand_dims("stations")
+    if isinstance(meteo, xr.Dataset):
         meteo.to_netcdf(project / "meteo" / "SLNO_meteo_GC3H.nc")
         cfg = pd.Series(
             {
@@ -103,17 +132,36 @@ def fake_hydrotel_project(
             header=False,
             columns=[0],
         )
-
-    if debit_aval is None:
-        (project / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
     else:
+        (project / "meteo" / "SLNO_meteo_GC3H.nc").touch()
+        (project / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
+
+    if isinstance(debit_aval, bool) and debit_aval:
+        debit_aval = timeseries(
+            np.zeros(365 * 2),
+            start="2001-01-01",
+            freq="D",
+            variable="streamflow",
+            as_dataset=True,
+        )
+        debit_aval = debit_aval.expand_dims("troncon").assign_coords(troncon=[0])
+        debit_aval = debit_aval.assign_coords(coords={"idtroncon": 0})
+        debit_aval["idtroncon"] = debit_aval["idtroncon"].expand_dims("troncon")
+        debit_aval = debit_aval.rename({"streamflow": "debit_aval"})
+        debit_aval["debit_aval"].attrs = {
+            "units": "m3/s",
+            "description": "Debit en aval du troncon",
+        }
+    if isinstance(debit_aval, xr.Dataset):
         debit_aval.to_netcdf(
             project / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
         )
+    else:
+        (project / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
 
 
 def publish_release_notes(
-    style: str = "md", file: Optional[Union[pathlib.Path, StringIO, TextIO]] = None
+    style: str = "md", file: Optional[Union[os.PathLike, StringIO, TextIO]] = None
 ) -> Optional[str]:
     """Format release history in Markdown or ReStructuredText.
 
@@ -121,7 +169,7 @@ def publish_release_notes(
     ----------
     style : {"rst", "md"}
         Use ReStructuredText (`rst`) or Markdown (`md`) formatting. Default: Markdown.
-    file : {pathlib.Path, StringIO, TextIO}, optional
+    file : {od.PathLike, StringIO, TextIO}, optional
         If provided, prints to the given file-like object. Otherwise, returns a string.
 
     Returns

@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro
 from xhydro.modelling import Hydrotel
@@ -80,12 +81,9 @@ class TestHydrotel:
         assert ht2.output_options == outopt
 
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
-    def test_get_data(self, tmpdir, test, make_meteo, make_debit_aval):
-        meteo = make_meteo()
-        debit_aval = make_debit_aval()
-
+    def test_get_data(self, tmpdir, test):
         xhydro.testing.utils.fake_hydrotel_project(
-            tmpdir, "fake", meteo=meteo, debit_aval=debit_aval
+            tmpdir, "fake", meteo=True, debit_aval=True
         )
         if test == "station":
             simulation_options = {"FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc"}
@@ -107,7 +105,7 @@ class TestHydrotel:
         if test in ["station", "grid"]:
             ds = ht.get_input()
             assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
-            np.testing.assert_array_equal(ds.tasmin, meteo.tasmin)
+            np.testing.assert_array_equal(ds.tasmin, np.zeros([1, 365 * 2]))
             np.testing.assert_array_equal(ds.tasmax.mean(), 1)
 
             ds = ht.get_streamflow()
@@ -128,12 +126,37 @@ class TestHydrotel:
                 ht.get_input()
 
     @pytest.mark.parametrize("test", ["ok", "option", "file", "health"])
-    def test_basic(self, tmpdir, test, make_meteo):
-        meteo = make_meteo()
+    def test_basic(self, tmpdir, test):
+        meteo = True
         if test == "health":
-            meteo = meteo.reset_coords("z", drop=True).squeeze()
+            meteo = timeseries(
+                np.zeros(365 * 2),
+                start="2001-01-01",
+                freq="D",
+                variable="tasmin",
+                as_dataset=True,
+                units="K",
+            )
+            meteo["tasmax"] = timeseries(
+                np.ones(365 * 2),
+                start="2001-01-01",
+                freq="D",
+                variable="tasmax",
+                units="degC",
+            )
+            meteo["pr"] = timeseries(
+                np.ones(365 * 2) * 10,
+                start="2001-01-01",
+                freq="D",
+                variable="pr",
+                units="mm",
+            )
+            meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
+            meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77})
+            for c in ["lat", "lon"]:
+                meteo[c] = meteo[c].expand_dims("stations")
+            meteo = meteo.squeeze()
             meteo = meteo.convert_calendar("noleap")
-            meteo["tasmin"].attrs["units"] = "K"
             meteo = xr.concat(
                 (
                     meteo.sel(time=slice("2001-01-01", "2001-12-30")),
@@ -195,11 +218,8 @@ class TestHydrotel:
             ):
                 ht._basic_checks()
 
-    def test_standard(self, tmpdir, make_debit_aval):
-        debit_aval = make_debit_aval()
-        xhydro.testing.utils.fake_hydrotel_project(
-            tmpdir, "fake", debit_aval=debit_aval
-        )
+    def test_standard(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", debit_aval=True)
 
         ht = Hydrotel(tmpdir / "fake", default_options=True)
         ds_orig = deepcopy(ht.get_streamflow())
@@ -271,8 +291,8 @@ class TestHydrotel:
         assert ht.simulation_options["ECRITURE ETAT FONTE NEIGE"] == "2001-01-01 00"
 
     @pytest.mark.parametrize("test", ["ok", "pdt", "cfg"])
-    def test_run(self, tmpdir, test, make_meteo):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", meteo=make_meteo())
+    def test_run(self, tmpdir, test):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", meteo=True)
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=False,

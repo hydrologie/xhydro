@@ -4,7 +4,7 @@ import subprocess
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -26,9 +26,9 @@ class Hydrotel:
         project: Union[str, os.PathLike],
         *,
         default_options: bool = True,
-        project_options: dict = None,
-        simulation_options: dict = None,
-        output_options: dict = None,
+        project_options: Optional[dict] = None,
+        simulation_options: Optional[dict] = None,
+        output_options: Optional[dict] = None,
     ):
         """Class to handle Hydrotel simulations.
 
@@ -39,11 +39,11 @@ class Hydrotel:
         default_options: bool
             If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
             If False, read the options directly from the files in the project folder.
-        project_options: dict
+        project_options: dict, optional
             Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options: dict
+        simulation_options: dict, optional
             Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options: dict
+        output_options: dict, optional
             Dictionary of options to overwrite in the output file (output.csv).
 
         Notes
@@ -126,19 +126,19 @@ class Hydrotel:
     def update_options(
         self,
         *,
-        project_options: dict = None,
-        simulation_options: dict = None,
-        output_options: dict = None,
+        project_options: Optional[dict] = None,
+        simulation_options: Optional[dict] = None,
+        output_options: Optional[dict] = None,
     ):
         """Update the options in the project, simulation, and output files.
 
         Parameters
         ----------
-        project_options: dict
+        project_options: dict, optional
             Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options: dict
+        simulation_options: dict, optional
             Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options: dict
+        output_options: dict, optional
             Dictionary of options to overwrite in the output file (output.csv).
         """
         options = [project_options, simulation_options, output_options]
@@ -184,10 +184,10 @@ class Hydrotel:
     def run(
         self,
         *,
-        hydrotel_console: Union[str, os.PathLike] = None,
+        hydrotel_console: Optional[Union[str, os.PathLike]] = None,
         id_as_dim: bool = True,
-        xr_open_kwargs_in: dict = None,
-        xr_open_kwargs_out: dict = None,
+        xr_open_kwargs_in: Optional[dict] = None,
+        xr_open_kwargs_out: Optional[dict] = None,
         dry_run: bool = True,
     ):
         """
@@ -195,13 +195,13 @@ class Hydrotel:
 
         Parameters
         ----------
-        hydrotel_console: str or os.PathLike
+        hydrotel_console: str or os.PathLike, optional
             For Windows only. Path to the Hydrotel.exe file.
         id_as_dim: bool
             Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
-        xr_open_kwargs_in: dict
+        xr_open_kwargs_in: dict, optional
             Used on the input file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
-        xr_open_kwargs_out: dict
+        xr_open_kwargs_out: dict, optional
             Used on the output file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         dry_run: bool
             If True, do not run the simulation. Only perform basic checks and print the command that would be run.
@@ -309,7 +309,7 @@ class Hydrotel:
             **kwargs,
         )
 
-    def _basic_checks(self, xr_open_kwargs: dict = None):
+    def _basic_checks(self, xr_open_kwargs: Optional[dict] = None):
         """Perform basic checkups on the inputs.
 
         Parameters
@@ -441,7 +441,7 @@ class Hydrotel:
         )
 
     def _standardise_outputs(
-        self, *, id_as_dim: bool = True, xr_open_kwargs: dict = None
+        self, *, id_as_dim: bool = True, xr_open_kwargs: Optional[dict] = None
     ):
         """Standardise the outputs of the simulation to be more consistent with CF conventions.
 
@@ -449,7 +449,7 @@ class Hydrotel:
         ----------
         id_as_dim: bool
             Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
-        xr_open_kwargs: dict
+        xr_open_kwargs: dict, optional
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
         ds = self.get_streamflow(**(xr_open_kwargs or {}))
