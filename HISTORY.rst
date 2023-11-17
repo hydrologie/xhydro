@@ -12,7 +12,7 @@ Announcements
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* N/A
+* The `xhydro` planification was added to the documentation. (:issue:`39`, :pull:`49`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
