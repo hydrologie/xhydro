@@ -48,6 +48,6 @@ setup(
         "dev": dev_requirements,
     },
     url="https://github.com/hydrologie/xhydro",
-    version="0.2.3",
+    version="0.2.4",
     zip_safe=False,
 )
