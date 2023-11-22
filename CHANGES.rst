@@ -1,6 +1,6 @@
-=======
-History
-=======
+=========
+Changelog
+=========
 
 v0.3.0 (unreleased)
 -------------------
@@ -16,7 +16,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* N/A
+* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging.
 
 Bug fixes
 ^^^^^^^^^
@@ -26,6 +26,14 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
 * `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
+* The `cookiecutter` template has been updated to the latest commit via `cruft`:
+    * `Manifest.in` and `setup.py` have been removed.
+    * `pyproject.toml` has been added, with most package configurations migrated into it.
+    * `HISTORY.rst` has been renamed to `CHANGES.rst`.
+    * `actions-version-updater.yml` has been added to automate the versioning of the package.
+    * `bump-version.yml` has been added to automate patch versioning of the package.
+    * `pre-commit` hooks have been updated to the latest versions; `check-toml` and `toml-sort` have been added to cleanup the `pyproject.toml` file.
+    * `ruff` has been added to the linting tools to replace most `flake8` and `pydocstyle` verifications.
 
 v0.2.0 (2023-10-10)
 -------------------

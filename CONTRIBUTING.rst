@@ -57,20 +57,20 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `xhydro` for local development.
+Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
-1. Fork the `xhydro` repo on GitHub.
-2. Clone your fork locally::
+#. Fork the ``xhydro`` repo on GitHub.
+#. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/xhydro.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+#. Install your local copy into a development environment. Using ``mamba``, you can create a new development environment with::
 
-    $ mkvirtualenv xhydro
-    $ cd xhydro/
-    $ pip install -e .
+    $ mamba env create -f environment-dev.yml
+    $ conda activate xhydro
+    $ flit install --symlink .
 
-4. To ensure a consistent style, please install the pre-commit hooks to your repo::
+#. To ensure a consistent style, please install the pre-commit hooks to your repo::
 
     $ pre-commit install
 
@@ -79,36 +79,38 @@ Ready to contribute? Here's how to set up `xhydro` for local development.
 
     $ pre-commit run -a
 
-5. Create a branch for local development::
+#. Create a branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
-6. When you're done making changes, check that your changes pass flake8, black, and the
-   tests, including testing other Python versions with tox::
+#. When you're done making changes, check that your changes pass ``black``, ``blackdoc``, ``flake8``, ``isort``, ``ruff``, and the tests, including testing other Python versions with tox::
 
-    $ flake8 xhydro tests
     $ black --check xhydro tests
-    $ python setup.py test or pytest
+    $ isort --check xhydro tests
+    $ ruff xhydro tests
+    $ flake8 xhydro tests
+    $ blackdoc --check xhydro docs
+    $ python -m pytest
     $ tox
 
-   To get flake8, black, and tox, just pip install them into your virtualenv.
+   To get ``black``, ``blackdoc``, ``flake8``, ``isort``, ``ruff``, and tox, just pip install them into your virtualenv.
 
-6. Commit your changes and push your branch to GitHub::
+#. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. If you are editing the docs, compile and open them with::
+#. If you are editing the docs, compile and open them with::
 
     $ make docs
     # or to simply generate the html
     $ cd docs/
     $ make html
 
-7. Submit a pull request through the GitHub website.
+#. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
@@ -116,9 +118,7 @@ Pull Request Guidelines
 Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
+2. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
 3. The pull request should work for Python 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
 
 Tips
@@ -128,24 +128,31 @@ To run a subset of tests::
 
 $ pytest tests.test_xhydro
 
+Versioning/Tagging
+------------------
 
-Versioning/Releasing
---------------------
-
-We use `bumpversion` to maintain version numbers, so most of the time you don't have to worry about it.
-
-This section is thus mostly a reminder for the maintainers on how to proceed when a new version is ready to be released.
+A reminder for the maintainers on how to deploy. This section is only relevant for maintainers when they are producing a new point release for the package.
 
 1. Create a new branch from `main` (e.g. `release-0.2.0`).
-2. Update the `HISTORY.rst` file to change the `Unreleased` section to the current date.
-
-Then run::
-
-$ bumpversion minor # In most cases, we will be releasing a minor version
-$ git push
-
+2. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
 3. Create a pull request from your branch to `main`.
-4. Once the pull request is merged, create a new release on GitHub. Both the tag and the release title should be the version number, prefixed with a `v` (e.g. `v0.2.0`).
+4. Once the pull request is merged, create a new release on GitHub. On the main branch, run::
+
+ $ bumpversion minor # In most cases, we will be releasing a minor version
+ $ git push
+ $ git push --tags
+
+
+This will trigger the CI to build the package and upload it to TestPyPI. In order to upload to PyPI, this can be done by publishing a new version on GitHub. This will trigger the workflow to build and upload the package to PyPI.
+
+.. note::
+
+    The ``bump-version.yml`` GitHub workflow will automatically bump the patch version when pull requests are pushed to the ``main`` branch on GitHub. It is not necessary to manually bump the version in your branch when merging (non-release) pull requests.
+
+.. warning::
+
+    It is important to be aware that any changes to files found within the ``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will trigger the ``bump-version.yml`` workflow. Be careful not to commit changes to files in this folder when preparing a new release.
+
 5. To generate the release notes, run::
 
     $ import xhydro.testing.utils as xhu
@@ -158,25 +165,22 @@ This will print the release notes (taken from the `HISTORY.rst` file) to your py
 Packaging
 ---------
 
-When a new version has been minted (features have been successfully integrated test coverage and stability is adequate),
-maintainers should update the pip-installable package (wheel and source release) on PyPI as well as the binary on conda-forge.
+When a new version has been minted (features have been successfully integrated test coverage and stability is adequate), maintainers should update the pip-installable package (wheel and source release) on PyPI as well as the binary on conda-forge.
 
 The simple approach
 ~~~~~~~~~~~~~~~~~~~
 
-The simplest approach to packaging for general support (pip wheels) requires the following packages installed:
- * build
- * setuptools
- * twine
- * wheel
+The simplest approach to packaging for general support (pip wheels) requires that ``flit`` be installed::
+
+    $ python -m pip install flit
 
 From the command line on your Linux distribution, simply run the following from the clone's main dev branch::
 
     # To build the packages (sources and wheel)
-    $ python -m build --sdist --wheel
+    $ python -m flit build
 
-    # To upload to PyPI
-    $ twine upload dist/*
+     # To upload to PyPI
+    $ python -m flit publish dist/*
 
 The new version based off of the version checked out will now be available via `pip` (`$ pip install xhydro`).
 
@@ -186,19 +190,25 @@ Releasing on conda-forge
 Initial Release
 ^^^^^^^^^^^^^^^
 
-In order to prepare an initial release on conda-forge, we *strongly* suggest consulting the following links:
+Before preparing an initial release on conda-forge, we *strongly* suggest consulting the following links:
  * https://conda-forge.org/docs/maintainer/adding_pkgs.html
  * https://github.com/conda-forge/staged-recipes
 
+In order to create a new conda build recipe, to be used when proposing packages to the conda-forge repository, we strongly suggest using the ``grayskull`` tool::
+
+    $ python -m pip install grayskull
+    $ grayskull pypi xhydro
+
+For more information on ``grayskull``, please see the following link: https://github.com/conda/grayskull
+
 Before updating the main conda-forge recipe, we echo the conda-forge documentation and *strongly* suggest performing the following checks:
  * Ensure that dependencies and dependency versions correspond with those of the tagged version, with open or pinned versions for the `host` requirements.
- * If possible, configure tests within the conda-forge build CI (e.g. `imports: xhydro`, `commands: pytest xhydro`)
+ * If possible, configure tests within the conda-forge build CI (e.g. `imports: xhydro`, `commands: pytest xhydro`).
 
 Subsequent releases
 ^^^^^^^^^^^^^^^^^^^
 
-If the conda-forge feedstock recipe is built from PyPI, then when a new release is published on PyPI, `regro-cf-autotick-bot` will open Pull Requests automatically on the conda-forge feedstock.
-It is up to the conda-forge feedstock maintainers to verify that the package is building properly before merging the Pull Request to the main branch.
+If the conda-forge feedstock recipe is built from PyPI, then when a new release is published on PyPI, `regro-cf-autotick-bot` will open Pull Requests automatically on the conda-forge feedstock. It is up to the conda-forge feedstock maintainers to verify that the package is building properly before merging the Pull Request to the main branch.
 
 Building sources for wide support with `manylinux` image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,9 +228,9 @@ From the xhydro source folder we can enter into the docker container, providing 
 
     $ sudo docker run --rm -ti -v $(pwd):/xhydro -w /xhydro quay.io/pypa/manylinux_2_24_x86_64 bash
 
-Finally, to build the wheel, we run it against the provided Python3.8 binary::
+Finally, to build the wheel, we run it against the provided Python3.9 binary::
 
-    $ /opt/python/cp38-cp38m/bin/python setup.py sdist bdist_wheel
+    $ /opt/python/cp39-cp39m/bin/python -m build --sdist --wheel
 
 This will then place two files in `xhydro/dist/` ("xhydro-1.2.3-py3-none-any.whl" and "xhydro-1.2.3.tar.gz").
 We can now leave our docker container (`$ exit`) and continue with uploading the files to PyPI::

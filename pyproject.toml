@@ -1,0 +1,205 @@
+[build-system]
+requires = ["flit_core >=3.8,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "xhydro"
+authors = [
+  {name = "Thomas-Charles Fortier Filion", email = "tcff_hydro@outlook.com"},
+  {name = "Gabriel Rondeau-Genesse", email = "rondeau-genesse.gabriel@ouranos.ca"},
+  {name = "Sébastien Langlois"}
+]
+maintainers = [
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
+  {name = "Gabriel Rondeau-Genesse", email = "rondeau-genesse.gabriel@ouranos.ca"}
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+requires-python = ">=3.9.0"
+keywords = ["xhydro"]
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Hydrology"
+]
+dynamic = ["description", "version"]
+dependencies = [
+  "numpy",
+  "statsmodels",
+  "xarray",
+  "xclim>=0.45.0",
+  "xscen"
+]
+
+[project.optional-dependencies]
+dev = [
+  # Dev tools and testing
+  "pip>=23.1.2",
+  "bump2version>=1.0.1",
+  "watchdog>=3.0.0",
+  "flake8>=6.1.0",
+  "flake8-rst-docstrings>=0.3.0",
+  "flit",
+  "tox>=4.5.1",
+  "coverage>=6.2.2,<7.0.0",
+  "coveralls>=3.3.1",
+  "pytest>=7.3.1",
+  "pytest-cov>=4.0.0",
+  "black>=23.10.1",
+  "blackdoc>=0.3.9",
+  "isort>=5.12.0",
+  "pre-commit>=3.3.2"
+]
+docs = [
+  # Documentation and examples
+  "sphinx",
+  "sphinx-codeautolink",
+  "sphinx-copybutton",
+  "sphinx-rtd-theme>=1.0",
+  "nbsphinx",
+  "pandoc",
+  "ipython",
+  "ipykernel",
+  "jupyter_client"
+]
+
+[project.urls]
+"Homepage" = "https://xhydro.readthedocs.io/"
+"Changelog" = "https://xhydro.readthedocs.io/en/stable/changes.html"
+"Source" = "https://github.com/hydrologie/xhydro"
+"Issue tracker" = "https://github.com/hydrologie/xhydro/issues"
+
+[tool]
+
+[tool.black]
+target-version = [
+  "py38",
+  "py39",
+  "py310",
+  "py311"
+]
+
+[tool.coverage.run]
+relative_files = true
+include = ["xhydro/*"]
+omit = ["tests/*.py"]
+
+[tool.flit.sdist]
+include = [
+  ".zenodo.json",
+  "AUTHORS.rst",
+  "CHANGES.rst",
+  "CONTRIBUTING.rst",
+  "LICENSE",
+  "README.rst",
+  "docs/**/*.gif",
+  "docs/**/*.jpg",
+  "docs/**/*.png",
+  "docs/**/*.rst",
+  "docs/Makefile",
+  "docs/conf.py",
+  "docs/make.bat",
+  "setup.cfg",
+  "tests/*.py",
+  "tox.ini",
+  "xhydro/**/*.py"
+]
+exclude = [
+  "**/*.py[co]",
+  "**/__pycache__",
+  ".coveralls.yml",
+  ".editorconfig",
+  ".gitignore",
+  ".pre-commit-config.yaml",
+  ".readthedocs.yml",
+  ".yamllint.yaml",
+  "Makefile",
+  "docs/_*",
+  "docs/**/modules.rst",
+  "docs/**/xhydro*.rst",
+  "environment.yml",
+  "environment-dev.yml",
+  "tox.ini"
+]
+
+[tool.isort]
+profile = "black"
+py_version = 38
+
+[tool.mypy]
+python_version = 3.8
+show_error_codes = true
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = [
+  "--verbose",
+  "--color=yes"
+]
+filterwarnings = ["ignore::UserWarning"]
+testpaths = "tests"
+
+[tool.ruff]
+src = [""]
+line-length = 150
+target-version = "py38"
+exclude = [
+  ".eggs",
+  ".git",
+  "build",
+  "docs",
+  "tests"
+]
+ignore = [
+  "D205",
+  "D400",
+  "D401"
+]
+select = [
+  "C9",
+  "D",
+  "E",
+  "F",
+  "W"
+]
+
+[tool.ruff.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.format]
+line-ending = "auto"
+
+[tool.ruff.isort]
+known-first-party = ["xhydro"]
+case-sensitive = true
+detect-same-package = false
+lines-after-imports = 1
+no-lines-before = ["future", "standard-library"]
+
+[tool.ruff.mccabe]
+max-complexity = 15
+
+[tool.ruff.per-file-ignores]
+"xhydro/**/__init__.py" = ["F401", "F403"]
+
+[tool.ruff.pycodestyle]
+max-doc-length = 180
+
+[tool.ruff.pydocstyle]
+convention = "numpy"

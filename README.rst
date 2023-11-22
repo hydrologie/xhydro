@@ -9,7 +9,6 @@ Hydrological analysis library built with xarray
 * Free software: Apache-2.0
 * Documentation: https://xhydro.readthedocs.io.
 
-
 Features
 --------
 

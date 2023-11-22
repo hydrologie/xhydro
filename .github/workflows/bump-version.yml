@@ -51,7 +51,7 @@ jobs:
         run: |
           pip install bump2version
           echo "Bumping version"
-          bump2version patch
+          bump2version patch --no-tag
           echo "new_version=$(grep -E '__version__'  xhydro/__init__.py | cut -d ' ' -f3)"
       - name: Push Changes
         uses: ad-m/github-push-action@master
