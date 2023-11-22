@@ -10,9 +10,9 @@ import xclim.indices.stats
 from statsmodels.tools import eval_measures
 
 __all__ = [
+    "criteria",
     "fit",
     "parametric_quantiles",
-    "criteria",
 ]
 
 
@@ -43,7 +43,8 @@ def fit(
 
     Notes
     -----
-    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the maximum number of unique parameters between the distributions.
+    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the
+    maximum number of unique parameters between the distributions.
     """
     distributions = distributions or [
         "expon",
@@ -243,7 +244,8 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
             crit.attrs = p[v].attrs
             crit.attrs["history"] = (
                 crit.attrs.get("history", "")
-                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
+                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                f"criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
             )
             crit.attrs[
                 "description"
