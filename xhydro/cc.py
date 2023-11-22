@@ -1,9 +1,8 @@
 """Module to compute climate change statistics using xscen functions."""
 
 # Special imports from xscen
-from xscen import (
-    climatological_mean,  # FIXME: To be replaced with climatological_op once available
-)
+from xscen import \
+    climatological_mean  # FIXME: To be replaced with climatological_op once available
 from xscen import compute_deltas, ensemble_stats, produce_horizon
 
 __all__ = [

@@ -6,7 +6,6 @@ import xarray as xr
 import xclim as xc
 import xscen as xs
 from xclim.core.units import rate2amount
-
 # Special imports from xscen
 from xscen import compute_indicators
 
