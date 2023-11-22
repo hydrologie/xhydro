@@ -4,7 +4,7 @@ Changelog
 
 v0.3.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`)
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
 
 Announcements
 ^^^^^^^^^^^^^
@@ -26,7 +26,7 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
 * `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
-* The `cookiecutter` template has been updated to the latest commit via `cruft`:
+* The `cookiecutter` template has been updated to the latest commit via `cruft`. (:pull:`50`):
     * `Manifest.in` and `setup.py` have been removed.
     * `pyproject.toml` has been added, with most package configurations migrated into it.
     * `HISTORY.rst` has been renamed to `CHANGES.rst`.

@@ -2,7 +2,7 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   - python >=3.9,<3.12
   - numpy
   - statsmodels

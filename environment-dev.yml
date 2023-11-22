@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.9,<3.12
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - numpy
   - statsmodels
@@ -29,12 +29,13 @@ dependencies:
   - sphinx-codeautolink
   - sphinx-copybutton
   - sphinxcontrib-napoleon
-  - pip
   # Testing
   - tox >=4.0
   # Packaging
   - flit
   # Notebooks
   - hvplot
-  - pip:
-    - xdatasets
+#  FIXME: xdatasets install xagg-no-xesmf-deps which breaks xhydro
+#  - pip
+#  - pip:
+#    - xdatasets

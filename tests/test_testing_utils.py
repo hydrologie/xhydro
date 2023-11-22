@@ -3,9 +3,9 @@ import xhydro.testing.utils as xhu
 
 
 def test_publish_release_notes():
-    changelog = xhu.publish_release_notes(style="md")
+    changelog_md = xhu.publish_release_notes(style="md")
 
-    assert changelog.startswith("# Changes")
+    assert changelog_md.startswith("# Changelog")
     version = xh.__version__
     vsplit = version.split(".")
 
@@ -15,10 +15,10 @@ def test_publish_release_notes():
         + str(int(vsplit[1]) + 1 if vsplit[2] != "0" else vsplit[1])
         + ".0"
     )
-    assert f"## v{v_4history}" in changelog
-    assert ":user:`" not in changelog
-    assert ":issue:`" not in changelog
-    assert ":pull:`" not in changelog
+    assert f"## v{v_4history}" in changelog_md
+    assert ":user:`" not in changelog_md
+    assert ":issue:`" not in changelog_md
+    assert ":pull:`" not in changelog_md
 
-    history_rst = xhu.publish_release_notes(style="rst")
-    assert history_rst.startswith("=========\nChangelog\n=========")
+    changelog_rst = xhu.publish_release_notes(style="rst")
+    assert changelog_rst.startswith("=========\nChangelog\n=========")
