@@ -71,7 +71,7 @@ jobs:
           python -m pip check || true
       - name: Test with pytest
         run: |
-          python -m pytest tests
+          python -m pytest --cov xhydro
       - name: Report coverage
         run: |
           python -m coveralls
