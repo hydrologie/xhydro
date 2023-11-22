@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 import numpy as np
 import pytest
 from xclim.testing.helpers import test_timeseries as timeseries

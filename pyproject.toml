@@ -197,6 +197,7 @@ max-complexity = 15
 
 [tool.ruff.per-file-ignores]
 "xhydro/**/__init__.py" = ["F401", "F403"]
+"tests/**/*.py" = ["D100", "D101", "D102", "D103"]
 
 [tool.ruff.pycodestyle]
 max-doc-length = 180
