@@ -1,11 +1,18 @@
+import pytest
+
 import xhydro as xh
 import xhydro.testing.utils as xhu
 
 
-def test_publish_release_notes():
-    changelog_md = xhu.publish_release_notes(style="md")
+@pytest.mark.requires_docs
+def test_publish_release_notes(tmp_path):
+    temp_md_filename = tmp_path.joinpath("version_info.md")
+    xhu.publish_release_notes(style="md", file=temp_md_filename)
 
-    assert changelog_md.startswith("# Changelog")
+    with open(temp_md_filename) as f:
+        changelog = f.read()
+
+    assert changelog.startswith("# Changelog")
     version = xh.__version__
     vsplit = version.split(".")
 
@@ -15,10 +22,13 @@ def test_publish_release_notes():
         + str(int(vsplit[1]) + 1 if vsplit[2] != "0" else vsplit[1])
         + ".0"
     )
-    assert f"## v{v_4history}" in changelog_md
-    assert ":user:`" not in changelog_md
-    assert ":issue:`" not in changelog_md
-    assert ":pull:`" not in changelog_md
+    assert f"## v{v_4history}" in changelog
+    assert ":user:`" not in changelog
+    assert ":issue:`" not in changelog
+    assert ":pull:`" not in changelog
 
-    changelog_rst = xhu.publish_release_notes(style="rst")
+    temp_rst_filename = tmp_path.joinpath("version_info.rst")
+    xhu.publish_release_notes(style="rst", file=temp_rst_filename)
+    with open(temp_rst_filename) as f:
+        changelog_rst = f.read()
     assert changelog_rst.startswith("=========\nChangelog\n=========")

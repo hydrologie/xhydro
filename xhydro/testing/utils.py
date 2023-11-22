@@ -8,7 +8,9 @@ from typing import Optional, TextIO, Union
 
 
 def publish_release_notes(
-    style: str = "md", file: Optional[Union[os.PathLike, StringIO, TextIO]] = None
+    style: str = "md",
+    file: Optional[Union[os.PathLike, StringIO, TextIO]] = None,
+    changes: Union[str, os.PathLike] = None,
 ) -> Optional[str]:
     """Format release history in Markdown or ReStructuredText.
 
@@ -18,6 +20,9 @@ def publish_release_notes(
         Use ReStructuredText (`rst`) or Markdown (`md`) formatting. Default: Markdown.
     file : {os.PathLike, StringIO, TextIO, None}
         If provided, prints to the given file-like object. Otherwise, returns a string.
+    changes : {str, os.PathLike}, optional
+        If provided, manually points to the file where the changelog can be found.
+        Assumes a relative path otherwise.
 
     Returns
     -------
@@ -28,7 +33,10 @@ def publish_release_notes(
     This function exists solely for development purposes.
     Adapted from xclim.testing.utils.publish_release_notes.
     """
-    changes_file = Path(__file__).parent.parent.parent.joinpath("CHANGES.rst")
+    if isinstance(changes, (str, Path)):
+        changes_file = Path(changes).absolute()
+    else:
+        changes_file = Path(__file__).absolute().parents[2].joinpath("CHANGES.rst")
 
     if not changes_file.exists():
         raise FileNotFoundError("Changes file not found in xhydro file tree.")
@@ -77,4 +85,6 @@ def publish_release_notes(
 
     if not file:
         return
+    if isinstance(file, (Path, os.PathLike)):
+        file = Path(file).open("w")
     print(changes, file=file)
