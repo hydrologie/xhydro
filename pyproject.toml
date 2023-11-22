@@ -47,7 +47,7 @@ dependencies = [
 dev = [
   # Dev tools and testing
   "pip>=23.1.2",
-  "bump2version>=1.0.1",
+  "bump-my-version>=0.12.0",
   "watchdog>=3.0.0",
   "flake8>=6.1.0",
   "flake8-rst-docstrings>=0.3.0",
@@ -94,6 +94,30 @@ target-version = [
   "py311"
 ]
 
+[tool.bumpversion]
+current_version = "0.2.4"
+commit = true
+tag = true
+tag_name = "{new_version}"
+allow_dirty = false
+serialize = ["{major}.{minor}.{patch}"]
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+
+[[tool.bumpversion.files]]
+filename = "xhydro/__init__.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "tests/test_xhydro.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = ".cruft.json"
+search = "\"version\": \"{current_version}\""
+replace = "\"version\": \"{new_version}\""
+
 [tool.coverage.run]
 relative_files = true
 include = ["xhydro/*"]
@@ -124,6 +148,7 @@ exclude = [
   "**/__pycache__",
   ".coveralls.yml",
   ".editorconfig",
+  ".flake8",
   ".gitignore",
   ".pre-commit-config.yaml",
   ".readthedocs.yml",

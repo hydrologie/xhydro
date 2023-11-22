@@ -4,8 +4,7 @@
 Contributing
 ============
 
-Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given.
 
 You can contribute in many ways:
 
@@ -26,21 +25,17 @@ If you are reporting a bug, please include:
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
-wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for bugs. Anything tagged with "bug" and "help wanted" is open to whoever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with "enhancement"
-and "help wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for features. Anything tagged with "enhancement" and "help wanted" is open to whoever wants to implement it.
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-xHydro could always use more documentation, whether as part of the
-official xHydro docs, in docstrings, or even on the web in blog posts,
-articles, and such.
+xHydro could always use more documentation, whether as part of the official xHydro docs, in docstrings, or even on the web in blog posts, articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
@@ -117,9 +112,11 @@ Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
-3. The pull request should work for Python 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
+#. The pull request should include tests.
+
+#. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
+
+#. The pull request should work for Python 3.8, 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
 
 Tips
 ----
@@ -133,17 +130,29 @@ Versioning/Tagging
 
 A reminder for the maintainers on how to deploy. This section is only relevant for maintainers when they are producing a new point release for the package.
 
-1. Create a new branch from `main` (e.g. `release-0.2.0`).
-2. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
-3. Create a pull request from your branch to `main`.
-4. Once the pull request is merged, create a new release on GitHub. On the main branch, run::
+#. Create a new branch from `main` (e.g. `release-0.2.0`).
+#. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
+#. Create a pull request from your branch to `main`.
+#. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
 
- $ bumpversion minor # In most cases, we will be releasing a minor version
- $ git push
- $ git push --tags
+    .. code-block:: shell
 
+        $ bump-my-version bump minor # In most cases, we will be releasing a minor version
+        $ git push
+        $ git push --tags
 
-This will trigger the CI to build the package and upload it to TestPyPI. In order to upload to PyPI, this can be done by publishing a new version on GitHub. This will trigger the workflow to build and upload the package to PyPI.
+    This will trigger the CI to build the package and upload it to TestPyPI. In order to upload to PyPI, this can be done by publishing a new version on GitHub. This will then trigger the workflow to build and upload the package to PyPI.
+
+#. To generate the release notes, run:
+
+    .. code-block:: shell
+
+        $ import xhydro.testing.utils as xhu
+        $ print(xhu.publish_release_notes())
+
+    This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
+
+#. Once the release is published, it will go into a `staging` mode on Github Actions. Once the tests pass, admins can approve the release (an e-mail will be sent) and it will be published on PyPI.
 
 .. note::
 
@@ -152,15 +161,6 @@ This will trigger the CI to build the package and upload it to TestPyPI. In orde
 .. warning::
 
     It is important to be aware that any changes to files found within the ``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will trigger the ``bump-version.yml`` workflow. Be careful not to commit changes to files in this folder when preparing a new release.
-
-5. To generate the release notes, run::
-
-    $ import xhydro.testing.utils as xhu
-    $ print(xhu.publish_release_notes())
-
-This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
-
-6. Once the release is published, it will go into a `staging` mode on Github Actions. Once the tests pass, admins can approve the release (an e-mail will be sent) and it will be published on PyPI.
 
 Packaging
 ---------

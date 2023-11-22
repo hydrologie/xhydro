@@ -11,7 +11,7 @@ dependencies:
   - xclim >=0.45.0
   - xscen >=0.7.1
   # Dev
-  - bump2version
+  - bump-my-version >=0.12.0
   - coveralls
   - furo
   - ipykernel
