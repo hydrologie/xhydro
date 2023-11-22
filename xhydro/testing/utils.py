@@ -28,10 +28,10 @@ def publish_release_notes(
     This function exists solely for development purposes.
     Adapted from xclim.testing.utils.publish_release_notes.
     """
-    history_file = Path(__file__).parent.parent.parent.joinpath("HISTORY.rst")
+    history_file = Path(__file__).parent.parent.parent.joinpath("CHANGES.rst")
 
     if not history_file.exists():
-        raise FileNotFoundError("History file not found in xhydro file tree.")
+        raise FileNotFoundError("Changes file not found in xhydro file tree.")
 
     with open(history_file) as hf:
         history = hf.read()
@@ -55,7 +55,7 @@ def publish_release_notes(
         history = re.sub(search, replacement, history)
 
     if style == "md":
-        history = history.replace("=======\nHistory\n=======", "# History")
+        history = history.replace("=========\nChangelog\n=========", "# Changelog")
 
         titles = {r"\n(.*?)\n([\-]{1,})": "-", r"\n(.*?)\n([\^]{1,})": "^"}
         for title_expression, level in titles.items():
