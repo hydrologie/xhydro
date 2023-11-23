@@ -98,7 +98,7 @@ release: dist ## package and upload a release
 	python -m flit publish dist/*
 
 install: clean ## install the package to the active Python's site-packages
-	python -m flit install .
+	python -m flit install
 
 dev: clean ## install the package to the active Python's site-packages
-	python -m flit install --symlink .
+	python -m flit install --symlink

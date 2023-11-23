@@ -130,22 +130,24 @@ include = [
   "CHANGES.rst",
   "CONTRIBUTING.rst",
   "LICENSE",
+  "Makefile",
   "README.rst",
-  "docs/**/*.gif",
-  "docs/**/*.jpg",
-  "docs/**/*.png",
-  "docs/**/*.rst",
+  "environment-dev.yml",
+  "environment.yml",
+  "docs/_static/_images/*.gif",
+  "docs/_static/_images/*.jpg",
+  "docs/_static/_images/*.png",
+  "docs/_static/_images/*.rst",
   "docs/Makefile",
   "docs/conf.py",
   "docs/make.bat",
-  "setup.cfg",
   "tests/*.py",
   "tox.ini",
-  "xhydro/**/*.py"
+  "xhydro"
 ]
 exclude = [
-  "**/*.py[co]",
-  "**/__pycache__",
+  "*.py[co]",
+  "__pycache__",
   ".coveralls.yml",
   ".editorconfig",
   ".flake8",
@@ -156,10 +158,7 @@ exclude = [
   "Makefile",
   "docs/_*",
   "docs/**/modules.rst",
-  "docs/**/xhydro*.rst",
-  "environment.yml",
-  "environment-dev.yml",
-  "tox.ini"
+  "docs/**/xhydro*.rst"
 ]
 
 [tool.isort]

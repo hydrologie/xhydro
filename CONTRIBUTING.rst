@@ -63,7 +63,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     $ mamba env create -f environment-dev.yml
     $ conda activate xhydro
-    $ flit install --symlink .
+    $ flit install --symlink
 
 #. To ensure a consistent style, please install the pre-commit hooks to your repo::
 
