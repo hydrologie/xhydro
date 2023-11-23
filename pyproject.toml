@@ -157,8 +157,8 @@ exclude = [
   ".yamllint.yaml",
   "Makefile",
   "docs/_*",
-  "docs/**/modules.rst",
-  "docs/**/xhydro*.rst"
+  "docs/apidoc/modules.rst",
+  "docs/apidoc/xhydro*.rst"
 ]
 
 [tool.isort]
