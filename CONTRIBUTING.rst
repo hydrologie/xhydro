@@ -62,7 +62,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 #. Install your local copy into a development environment. Using ``mamba``, you can create a new development environment with::
 
     $ mamba env create -f environment-dev.yml
-    $ conda activate xhydro
+    $ mamba activate xhydro-dev
     $ flit install --symlink
 
 #. To ensure a consistent style, please install the pre-commit hooks to your repo::
@@ -116,7 +116,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
 
-#. The pull request should work for Python 3.8, 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
+#. The pull request should work for Python 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
 
 Tips
 ----
@@ -150,7 +150,7 @@ A reminder for the maintainers on how to deploy. This section is only relevant f
         $ import xhydro.testing.utils as xhu
         $ print(xhu.publish_release_notes())
 
-    This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
+    This will print the release notes (taken from the `CHANGES.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
 
 #. Once the release is published, it will go into a `staging` mode on Github Actions. Once the tests pass, admins can approve the release (an e-mail will be sent) and it will be published on PyPI.
 

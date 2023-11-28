@@ -9,8 +9,8 @@ To create a working environment and install xHydro, copy the `environment.yml` f
 
 .. code-block:: console
 
-    $ conda env create -f environment.yml
-    $ conda activate xhydro
+    $ mamba env create -f environment.yml
+    $ mamba activate xhydro
     $ python -m pip install xhydro --no-deps
 
 This is the preferred method to install `xHydro`, as it will always install the most recent stable release.
@@ -43,8 +43,8 @@ Once you have a copy of the source, you can create a working environment and ins
 
 .. code-block:: console
 
-    $ conda env create -f environment.yml
-    $ conda activate xhydro
+    $ mamba env create -f environment.yml
+    $ mamba activate xhydro
     $ python -m pip install . --no-deps
 
 When new changes are made to the `Github repo`_, you can update your local copy using:
@@ -52,8 +52,8 @@ When new changes are made to the `Github repo`_, you can update your local copy 
 .. code-block:: console
 
     $ git pull origin main
-    $ conda env update -n xhydro -f environment.yml
-    $ conda activate xhydro
+    $ mamba env update -n xhydro -f environment.yml
+    $ mamba activate xhydro
     $ python -m pip install . --no-deps
 
 .. _Github repo: https://github.com/hydrologie/xhydro
