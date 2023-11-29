@@ -77,7 +77,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 #. Install your local copy into a development environment. You can create a new Anaconda development environment with::
 
     $ conda env create -f environment-dev.yml
-    $ conda activate xhydro
+    $ conda activate xhydro-dev
     $ flit install --symlink
 
    This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment.
@@ -143,7 +143,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. If the pull request adds functionality, the docs should also be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
 
-#. The pull request should work for Python 3.8, 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
+#. The pull request should work for Python 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
 
 Tips
 ----
