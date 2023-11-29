@@ -50,6 +50,7 @@ dev = [
   "bump-my-version>=0.12.0",
   "watchdog>=3.0.0",
   "flake8>=6.1.0",
+  "flake8-alphabetize>=0.0.21",
   "flake8-rst-docstrings>=0.3.0",
   "flit",
   "tox>=4.5.1",
@@ -97,7 +98,7 @@ target-version = [
 [tool.bumpversion]
 current_version = "0.2.4"
 commit = true
-tag = true
+tag = false
 tag_name = "{new_version}"
 allow_dirty = false
 serialize = ["{major}.{minor}.{patch}"]

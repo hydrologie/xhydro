@@ -52,6 +52,21 @@ If you are proposing a feature:
 Get Started!
 ------------
 
+.. note::
+
+    If you are new to using GitHub and `git`, please read `this guide <https://guides.github.com/activities/hello-world/>`_ first.
+
+.. warning::
+
+    Anaconda Python users: Due to the complexity of some packages, the default dependency solver can take a long time to resolve the environment. Consider running the following commands in order to speed up the process::
+
+        $ conda install -n base conda-libmamba-solver
+        $ conda config --set solver libmamba
+
+    For more information, please see the following link: https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community
+
+    Alternatively, you can use the `mamba <https://mamba.readthedocs.io/en/latest/index.html>`_ package manager, which is a drop-in replacement for ``conda``. If you are already using `mamba`, replace the following commands with ``mamba`` instead of ``conda``.
+
 Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
 #. Fork the ``xhydro`` repo on GitHub.
@@ -59,20 +74,25 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     $ git clone git@github.com:your_name_here/xhydro.git
 
-#. Install your local copy into a development environment. Using ``mamba``, you can create a new development environment with::
+#. Install your local copy into a development environment. You can create a new Anaconda development environment with::
 
-    $ mamba env create -f environment-dev.yml
+    $ conda env create -f environment-dev.yml
     $ conda activate xhydro
     $ flit install --symlink
 
-#. To ensure a consistent style, please install the pre-commit hooks to your repo::
+   This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment.
+
+#. To ensure a consistent coding style, install the ``pre-commit`` hooks to your local clone::
 
     $ pre-commit install
 
-   Special style and formatting checks will be run when you commit your changes. You
-   can always run the hooks on their own with:
+   On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, ``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
+
+   You can also run the hooks manually with::
 
     $ pre-commit run -a
+
+   If you want to skip the ``pre-commit`` hooks temporarily, you can pass the ``--no-verify`` flag to `$ git commit`.
 
 #. Create a branch for local development::
 
@@ -80,17 +100,11 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
    Now you can make your changes locally.
 
-#. When you're done making changes, check that your changes pass ``black``, ``blackdoc``, ``flake8``, ``isort``, ``ruff``, and the tests, including testing other Python versions with tox::
+#. When you're done making changes, we **strongly** suggest running the tests in your environment or with the help of ``tox``::
 
-    $ black --check xhydro tests
-    $ isort --check xhydro tests
-    $ ruff xhydro tests
-    $ flake8 xhydro tests
-    $ blackdoc --check xhydro docs
     $ python -m pytest
+    # Or, to run multiple build tests
     $ tox
-
-   To get ``black``, ``blackdoc``, ``flake8``, ``isort``, ``ruff``, and tox, just pip install them into your virtualenv.
 
 #. Commit your changes and push your branch to GitHub::
 
@@ -98,23 +112,36 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-#. If you are editing the docs, compile and open them with::
+   If ``pre-commit`` hooks fail, try re-committing your changes (or, if need be, you can skip them with `$ git commit --no-verify`).
 
+#. Submit a `Pull Request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_ through the GitHub website.
+
+#. When pushing your changes to your branch on GitHub, the documentation will automatically be tested to reflect the changes in your Pull Request. This build process can take several minutes at times. If you are actively making changes that affect the documentation and wish to save time, you can compile and test your changes beforehand locally with::
+
+    # To generate the html and open it in your browser
     $ make docs
-    # or to simply generate the html
-    $ cd docs/
-    $ make html
+    # To only generate the html
+    $ make autodoc
+    $ make -C docs html
+    # To simply test that the docs pass build checks
+    $ tox -e docs
 
-#. Submit a pull request through the GitHub website.
+#. Once your Pull Request has been accepted and merged to the ``main`` branch, several automated workflows will be triggered:
+
+    - The ``bump-version.yml`` workflow will automatically bump the patch version when pull requests are pushed to the ``main`` branch on GitHub. **It is not recommended to manually bump the version in your branch when merging (non-release) pull requests (this will cause the version to be bumped twice).**
+    - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xhydro` documentation website.
+    - If your branch is not a fork (ie: you are a maintainer), your branch will be automatically deleted.
+
+   You will have contributed your first changes to ``xhydro``!
 
 Pull Request Guidelines
 -----------------------
 
 Before you submit a pull request, check that it meets these guidelines:
 
-#. The pull request should include tests.
+#. The pull request should include tests and should aim to provide `code coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new lines of code. You can use the ``--cov-report html --cov xhydro`` flags during the call to ``pytest`` to generate an HTML report and analyse the current test coverage.
 
-#. If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
+#. If the pull request adds functionality, the docs should also be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
 
 #. The pull request should work for Python 3.8, 3.9, 3.10, and 3.11. Check that the tests pass for all supported Python versions.
 
@@ -123,44 +150,63 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_xhydro
+    $ pytest tests.test_xhydro
+
+To run specific code style checks::
+
+    $ black --check xhydro tests
+    $ isort --check xhydro tests
+    $ blackdoc --check xhydro docs
+    $ ruff xhydro tests
+    $ flake8 xhydro tests
+
+To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply `$ pip install` them into your environment.
 
 Versioning/Tagging
 ------------------
 
-A reminder for the maintainers on how to deploy. This section is only relevant for maintainers when they are producing a new point release for the package.
+A reminder for the **maintainers** on how to deploy. This section is only relevant when producing a new point release for the package.
+
+.. warning::
+
+    It is important to be aware that any changes to files found within the ``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will trigger the ``bump-version.yml`` workflow. Be careful not to commit changes to files in this folder when preparing a new release.
 
 #. Create a new branch from `main` (e.g. `release-0.2.0`).
 #. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
-#. Create a pull request from your branch to `main`.
-#. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
+#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`):
 
     .. code-block:: shell
 
         $ bump-my-version bump minor # In most cases, we will be releasing a minor version
         $ git push
-        $ git push --tags
 
-    This will trigger the CI to build the package and upload it to TestPyPI. In order to upload to PyPI, this can be done by publishing a new version on GitHub. This will then trigger the workflow to build and upload the package to PyPI.
-
-#. To generate the release notes, run:
+#. Create a pull request from your branch to `main`.
+#. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
 
     .. code-block:: shell
 
-        $ import xhydro.testing.utils as xhu
-        $ print(xhu.publish_release_notes())
+        $ git tag v0.2.0
+        $ git push --tags
 
-    This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
+   This will trigger a GitHub workflow to build the package and upload it to TestPyPI. At the same time, the GitHub workflow will create a draft release on GitHub. Assuming that the workflow passes, the final release can then be published on GitHub by finalizing the draft release.
+
+#. Once the release is published, the `publish-pypi.yml` workflow will go into an `awaiting approval` mode on Github Actions. Only authorized users may approve this workflow (notifications will be sent) to trigger the upload to PyPI.
+
+#. To generate the release notes, run:
+
+    .. code-block:: python
+
+        import xhydro.testing.utils as xhu
+
+        print(xhu.publish_release_notes())
+
+   This will print the release notes (taken from the `HISTORY.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
 
 #. Once the release is published, it will go into a `staging` mode on Github Actions. Once the tests pass, admins can approve the release (an e-mail will be sent) and it will be published on PyPI.
 
-.. note::
-
-    The ``bump-version.yml`` GitHub workflow will automatically bump the patch version when pull requests are pushed to the ``main`` branch on GitHub. It is not necessary to manually bump the version in your branch when merging (non-release) pull requests.
-
 .. warning::
 
-    It is important to be aware that any changes to files found within the ``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will trigger the ``bump-version.yml`` workflow. Be careful not to commit changes to files in this folder when preparing a new release.
+    Uploads to PyPI can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version  "broken") on PyPI.
 
 Packaging
 ---------
@@ -179,7 +225,7 @@ From the command line on your Linux distribution, simply run the following from 
     # To build the packages (sources and wheel)
     $ python -m flit build
 
-     # To upload to PyPI
+    # To upload to PyPI
     $ python -m flit publish dist/*
 
 The new version based off of the version checked out will now be available via `pip` (`$ pip install xhydro`).

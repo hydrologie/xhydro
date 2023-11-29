@@ -39,7 +39,7 @@ jobs:
 
   test-conda:
     name: Test with Python${{ matrix.python-version }} (Anaconda)
-    needs: LINT
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -62,7 +62,7 @@ jobs:
         run: |
           mamba --version
           echo "micromamba $(micromamba --version)"
-      - name: Compile catalogs and install xscen
+      - name: Install xhydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions

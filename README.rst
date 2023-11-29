@@ -22,7 +22,6 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 .. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage
 
-
 .. |pypi| image:: https://img.shields.io/pypi/v/xhydro.svg
         :target: https://pypi.python.org/pypi/xhydro
         :alt: PyPI
