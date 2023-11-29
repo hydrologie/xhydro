@@ -69,7 +69,7 @@ Get Started!
 
 Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
-#. Fork the ``xhydro`` repo on GitHub.
+#. If you are not already an `xhydro` collaborator, fork the ``xhydro`` repo on GitHub.
 #. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/xhydro.git
