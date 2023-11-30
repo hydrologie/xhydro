@@ -14,8 +14,8 @@ on:
       - .yamllint.yaml
       - .zenodo.json
       - AUTHORS.rst
+      - CHANGES.rst
       - CONTRIBUTING.rst
-      - HISTORY.rst
       - MANIFEST.in
       - Makefile
       - docs/*.py

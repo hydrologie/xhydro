@@ -2,13 +2,9 @@
 Changelog
 =========
 
-v0.3.0 (unreleased)
+v0.3.0 (2023-12-01)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
-
-Announcements
-^^^^^^^^^^^^^
-* N/A
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,7 +12,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging.
+* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging. (:pull:`50`).
 
 Bug fixes
 ^^^^^^^^^
