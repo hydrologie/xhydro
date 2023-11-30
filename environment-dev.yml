@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.9,<3.12
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - numpy
   - statsmodels
@@ -11,7 +11,7 @@ dependencies:
   - xclim >=0.45.0
   - xscen >=0.7.1
   # Dev
-  - bump2version
+  - bump-my-version >=0.12.0
   - coveralls
   - furo
   - ipykernel
@@ -29,14 +29,13 @@ dependencies:
   - sphinx-codeautolink
   - sphinx-copybutton
   - sphinxcontrib-napoleon
-  - pip
   # Testing
-  - tox <4.0  # 2022-12-12: tox v4.0 is incompatible with tox-conda plugin
-  - tox-conda >=0.10.2
+  - tox >=4.0
   # Packaging
-  - build
-  - wheel
+  - flit
   # Notebooks
   - hvplot
-  - pip:
-    - xdatasets
+#  FIXME: xdatasets install xagg-no-xesmf-deps which breaks xhydro
+#  - pip
+#  - pip:
+#    - xdatasets

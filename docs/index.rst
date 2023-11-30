@@ -14,7 +14,7 @@ Welcome to xHydro's documentation!
    apidoc/modules
    contributing
    authors
-   history
+   changes
 
 .. Indices and tables
 .. ==================

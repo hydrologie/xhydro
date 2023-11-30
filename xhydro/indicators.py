@@ -79,9 +79,11 @@ def get_yearly_op(
         Size of the rolling window. A "mean" operation is performed on the rolling window before the call to xclim.
         This parameter cannot be used with the "sum" operation.
     timeargs: dict, optional
-        Dictionary of time arguments for the operation. Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
+        Dictionary of time arguments for the operation.
+        Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
         Values are up to two dictionaries, with both being optional.
-        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC"). It needs to be a yearly frequency. Defaults to "AS-JAN".
+        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC").
+        It needs to be a yearly frequency. Defaults to "AS-JAN".
         The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which means the whole year.
         See :py:func:`xclim.core.calendar.select_time` for more information.
         Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ['12-01', '02-28']}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
@@ -96,11 +98,13 @@ def get_yearly_op(
     Returns
     -------
     xr.Dataset
-        Dataset containing the computed operations, with one variable per indexer. The name of the variable follows the pattern `{input_var}{window}_{op}_{indexer}`.
+        Dataset containing the computed operations, with one variable per indexer.
+        The name of the variable follows the pattern `{input_var}{window}_{op}_{indexer}`.
 
     Notes
     -----
-    If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs (e.g. 1 per month) to create multiple distinct variables.
+    If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs
+    (e.g. 1 per month) to create multiple distinct variables.
 
     """
     missing_options = missing_options or {}
@@ -195,11 +199,13 @@ def get_yearly_op(
                 month_end = int(indexer["date_bounds"][1].split("-")[0])
             if month_end == month_start:
                 warnings.warn(
-                    "The bounds wrap around the year, but the month is the same between the both of them. This is not supported and will lead to wrong results."
+                    "The bounds wrap around the year, but the month is the same between the both of them. "
+                    "This is not supported and will lead to wrong results."
                 )
             if freq == "YS" or (month_start != month_labels.index(freq.split("-")[1])):
                 warnings.warn(
-                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
+                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. "
+                    f"You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
                 )
 
         identifier = f"{input_var}{window if window > 1 else ''}_{op}_{i.lower()}"
