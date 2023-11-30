@@ -23,6 +23,7 @@ on:
       - docs/notebooks
       - environment-docs.yml
       - environment.yml
+      - pyproject.toml
       - requirements_dev.txt
       - setup.cfg
       - setup.py
