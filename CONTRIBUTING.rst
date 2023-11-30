@@ -132,7 +132,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xhydro` documentation website.
     - If your branch is not a fork (ie: you are a maintainer), your branch will be automatically deleted.
 
-   You will have contributed your first changes to ``xhydro``!
+You will have contributed your first changes to ``xhydro``!
 
 Pull Request Guidelines
 -----------------------
@@ -160,7 +160,7 @@ To run specific code style checks::
     $ ruff xhydro tests
     $ flake8 xhydro tests
 
-To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply `$ pip install` them into your environment.
+To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install them with `pip` (or `conda`) into your environment.
 
 Versioning/Tagging
 ------------------
