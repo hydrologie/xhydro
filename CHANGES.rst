@@ -16,12 +16,12 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile (:issue:`41`, :pull:`43`).
+* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile. (:issue:`41`, :pull:`43`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
-* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
+* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier. (:issue:`41`, :pull:`43`).
 * The `cookiecutter` template has been updated to the latest commit via `cruft`. (:pull:`50`):
     * `Manifest.in` and `setup.py` have been removed.
     * `pyproject.toml` has been added, with most package configurations migrated into it.
