@@ -10,10 +10,11 @@ Welcome to xHydro's documentation!
    installation
    usage
    notebooks/local_frequency_analysis
+   planification
    apidoc/modules
    contributing
    authors
-   history
+   changes
 
 .. Indices and tables
 .. ==================
