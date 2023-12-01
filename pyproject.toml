@@ -97,7 +97,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.2.4"
+current_version = "0.3.0"
 commit = true
 tag = false
 tag_name = "v{new_version}"
