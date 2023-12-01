@@ -40,6 +40,7 @@ dependencies = [
   "statsmodels",
   "xarray",
   "xclim>=0.45.0",
+  "xdatasets>=0.3.1",
   "xscen>=0.7.1"
 ]
 
@@ -96,7 +97,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.2.4"
+current_version = "0.3.0"
 commit = true
 tag = false
 tag_name = "v{new_version}"

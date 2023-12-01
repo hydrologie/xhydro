@@ -14,19 +14,15 @@ on:
       - .yamllint.yaml
       - .zenodo.json
       - AUTHORS.rst
+      - CHANGES.rst
       - CONTRIBUTING.rst
-      - HISTORY.rst
-      - MANIFEST.in
       - Makefile
       - docs/*.py
       - docs/*.rst
       - docs/notebooks
-      - environment-docs.yml
+      - environment-dev.yml
       - environment.yml
       - pyproject.toml
-      - requirements_dev.txt
-      - setup.cfg
-      - setup.py
       - tests/**.py
       - tox.ini
       - xhydro/__init__.py
