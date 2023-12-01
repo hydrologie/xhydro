@@ -40,6 +40,7 @@ dependencies = [
   "statsmodels",
   "xarray",
   "xclim>=0.45.0",
+  "xdatasets[extra]>=0.3.1",
   "xscen>=0.7.1"
 ]
 
