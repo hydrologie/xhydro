@@ -2,6 +2,27 @@
 Changelog
 =========
 
+v0.4.0 (unreleased)
+-------------------
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added `xh.cc.perturbed_indicators` to compute future indicators using a perturbation approach and random sampling. (:pull:`54`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* N/A
+
+Bug fixes
+^^^^^^^^^
+* N/A
+
+Internal changes
+^^^^^^^^^^^^^^^^
+
+* N/A
+
+
 v0.3.0 (2023-12-01)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
