@@ -2,6 +2,15 @@
 Changelog
 =========
 
+
+v0.4.0 (unreleased)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added French language support to the documentation. (:issue:`53`, :pull:`55`).
+
 v0.3.0 (2023-12-01)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
