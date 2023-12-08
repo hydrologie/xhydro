@@ -2,13 +2,9 @@
 Changelog
 =========
 
-v0.3.0 (unreleased)
+v0.3.0 (2023-12-01)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
-
-Announcements
-^^^^^^^^^^^^^
-* N/A
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,16 +12,16 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging.
+* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging. (:pull:`50`).
 
 Bug fixes
 ^^^^^^^^^
-* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile (:issue:`41`, :pull:`43`).
+* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile. (:issue:`41`, :pull:`43`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
-* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
+* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier. (:issue:`41`, :pull:`43`).
 * The `cookiecutter` template has been updated to the latest commit via `cruft`. (:pull:`50`):
     * `Manifest.in` and `setup.py` have been removed.
     * `pyproject.toml` has been added, with most package configurations migrated into it.
