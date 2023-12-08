@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.2.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-08 11:18-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr_CA\n"
+"Language-Team: fr_CA <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../../README.rst:3
+msgid "xHydro"
+msgstr ""
+
+#: ../../../README.rst:5
+msgid "|pypi| |build| |docs| |license|"
+msgstr ""
+
+#: ../../../README.rst
+msgid "PyPI"
+msgstr ""
+
+#: ../../../README.rst
+msgid "Build Status"
+msgstr ""
+
+#: ../../../README.rst
+msgid "Documentation Status"
+msgstr ""
+
+#: ../../../README.rst
+msgid "License"
+msgstr ""
+
+#: ../../../README.rst:7
+msgid "Hydrological analysis library built with xarray"
+msgstr ""
+
+#: ../../../README.rst:9
+msgid "Free software: Apache-2.0"
+msgstr ""
+
+#: ../../../README.rst:10
+msgid "Documentation: https://xhydro.readthedocs.io."
+msgstr ""
+
+#: ../../../README.rst:13
+msgid "Features"
+msgstr ""
+
+#: ../../../README.rst:15
+msgid "TODO"
+msgstr ""
+
+#: ../../../README.rst:18
+msgid "Credits"
+msgstr ""
+
+#: ../../../README.rst:20
+msgid ""
+"This package was created with Cookiecutter_ and the `Ouranosinc"
+"/cookiecutter-pypackage`_ project template."
+msgstr ""
