@@ -6,13 +6,13 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.2.4\n"
+"Project-Id-Version: xHydro 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-08 11:18-0500\n"
+"POT-Creation-Date: 2023-12-08 12:18-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr_CA\n"
-"Language-Team: fr_CA <LL@li.org>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -45,11 +45,11 @@ msgstr ""
 
 #: ../../../README.rst:7
 msgid "Hydrological analysis library built with xarray"
-msgstr ""
+msgstr "Bibliothèque d'analyse hydrologique construite avec xarray"
 
 #: ../../../README.rst:9
 msgid "Free software: Apache-2.0"
-msgstr ""
+msgstr "Logiciel libre : Apache-2.0"
 
 #: ../../../README.rst:10
 msgid "Documentation: https://xhydro.readthedocs.io."
@@ -57,7 +57,7 @@ msgstr ""
 
 #: ../../../README.rst:13
 msgid "Features"
-msgstr ""
+msgstr "Fonctionnalités"
 
 #: ../../../README.rst:15
 msgid "TODO"
@@ -65,10 +65,12 @@ msgstr ""
 
 #: ../../../README.rst:18
 msgid "Credits"
-msgstr ""
+msgstr "Crédits"
 
 #: ../../../README.rst:20
 msgid ""
 "This package was created with Cookiecutter_ and the `Ouranosinc"
 "/cookiecutter-pypackage`_ project template."
 msgstr ""
+"Ce paquet a été créé avec Cookiecutter_ et le modèle de projet `Ouranosinc"
+"/cookiecutter-pypackage`_."

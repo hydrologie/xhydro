@@ -6,13 +6,13 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.2.4\n"
+"Project-Id-Version: xHydro 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-08 11:18-0500\n"
+"POT-Creation-Date: 2023-12-08 12:18-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr_CA\n"
-"Language-Team: fr_CA <LL@li.org>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -24,7 +24,7 @@ msgid "Changelog"
 msgstr ""
 
 #: ../../../CHANGES.rst:6
-msgid "v0.3.0 (unreleased)"
+msgid "v0.3.0 (2023-12-01)"
 msgstr ""
 
 #: ../../../CHANGES.rst:7
@@ -33,236 +33,236 @@ msgid ""
 " Trevor James Smith (:user:`Zeitsperre`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:10 ../../../CHANGES.rst:43
-msgid "Announcements"
-msgstr ""
-
-#: ../../../CHANGES.rst:11 ../../../CHANGES.rst:62
-msgid "N/A"
-msgstr ""
-
-#: ../../../CHANGES.rst:14 ../../../CHANGES.rst:49
+#: ../../../CHANGES.rst:10 ../../../CHANGES.rst:45
 msgid "New features and enhancements"
 msgstr ""
 
-#: ../../../CHANGES.rst:15
+#: ../../../CHANGES.rst:11
 msgid ""
 "The `xhydro` planification was added to the documentation. (:issue:`39`, "
 ":pull:`49`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:18 ../../../CHANGES.rst:56
+#: ../../../CHANGES.rst:14 ../../../CHANGES.rst:52
 msgid "Breaking changes"
+msgstr ""
+
+#: ../../../CHANGES.rst:15
+msgid ""
+"`xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for "
+"building and packaging. (:pull:`50`)."
+msgstr ""
+
+#: ../../../CHANGES.rst:18 ../../../CHANGES.rst:57
+msgid "Bug fixes"
 msgstr ""
 
 #: ../../../CHANGES.rst:19
 msgid ""
-"`xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for "
-"building and packaging."
+"The `return_level` dimension in "
+"`xh.frequency_analysis.local.parametric_quantiles()` is now the actual "
+"return level, not the quantile. (:issue:`41`, :pull:`43`)."
 msgstr ""
 
 #: ../../../CHANGES.rst:22 ../../../CHANGES.rst:61
-msgid "Bug fixes"
-msgstr ""
-
-#: ../../../CHANGES.rst:23
-msgid ""
-"The `return_level` dimension in "
-"`xh.frequency_analysis.local.parametric_quantiles()` is now the actual "
-"return level, not the quantile (:issue:`41`, :pull:`43`)."
-msgstr ""
-
-#: ../../../CHANGES.rst:26 ../../../CHANGES.rst:65
 msgid "Internal changes"
 msgstr ""
 
-#: ../../../CHANGES.rst:27
+#: ../../../CHANGES.rst:23
 msgid ""
 "Added `xhydro.testing.utils.publish_release_notes()` to help with the "
 "release process. (:pull:`37`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:28
+#: ../../../CHANGES.rst:24
 msgid ""
 "`xh.frequency_analysis.local.parametric_quantiles()` and "
-"`xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, "
+"`xh.frequency_analysis.local.criteria()` are now lazier. (:issue:`41`, "
 ":pull:`43`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:36
+#: ../../../CHANGES.rst:32
 msgid ""
 "The `cookiecutter` template has been updated to the latest commit via "
 "`cruft`. (:pull:`50`):"
 msgstr ""
 
-#: ../../../CHANGES.rst:30
+#: ../../../CHANGES.rst:26
 msgid "`Manifest.in` and `setup.py` have been removed."
 msgstr ""
 
-#: ../../../CHANGES.rst:31
+#: ../../../CHANGES.rst:27
 msgid ""
 "`pyproject.toml` has been added, with most package configurations "
 "migrated into it."
 msgstr ""
 
-#: ../../../CHANGES.rst:32
+#: ../../../CHANGES.rst:28
 msgid "`HISTORY.rst` has been renamed to `CHANGES.rst`."
 msgstr ""
 
-#: ../../../CHANGES.rst:33
+#: ../../../CHANGES.rst:29
 msgid ""
 "`actions-version-updater.yml` has been added to automate the versioning "
 "of the package."
 msgstr ""
 
-#: ../../../CHANGES.rst:34
+#: ../../../CHANGES.rst:30
 msgid ""
 "`bump-version.yml` has been added to automate patch versioning of the "
 "package."
 msgstr ""
 
-#: ../../../CHANGES.rst:35
+#: ../../../CHANGES.rst:31
 msgid ""
 "`pre-commit` hooks have been updated to the latest versions; `check-toml`"
 " and `toml-sort` have been added to cleanup the `pyproject.toml` file."
 msgstr ""
 
-#: ../../../CHANGES.rst:36
+#: ../../../CHANGES.rst:32
 msgid ""
 "`ruff` has been added to the linting tools to replace most `flake8` and "
 "`pydocstyle` verifications."
 msgstr ""
 
-#: ../../../CHANGES.rst:39
+#: ../../../CHANGES.rst:35
 msgid "v0.2.0 (2023-10-10)"
 msgstr ""
 
-#: ../../../CHANGES.rst:40
+#: ../../../CHANGES.rst:36
 msgid ""
 "Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), "
 "Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion"
 " (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`)"
 msgstr ""
 
-#: ../../../CHANGES.rst:44
+#: ../../../CHANGES.rst:39
+msgid "Announcements"
+msgstr ""
+
+#: ../../../CHANGES.rst:40
 msgid "Support for Python3.8 and lower has been dropped. (:pull:`11`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:45
+#: ../../../CHANGES.rst:41
 msgid ""
 "`xHydro` now hosts its documentation on `Read the Docs "
 "<https://xhydro.readthedocs.io/en/latest/>`_. (:issue:`22`, :pull:`26`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:46
+#: ../../../CHANGES.rst:42
 msgid ""
 "Local frequency analysis functions have been added under a new module "
 "`xhydro.frequency_analysis`. (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:50
+#: ../../../CHANGES.rst:46
 msgid ""
 "GitHub Workflows for automated testing using `tox` have been added. "
 "(:pull:`11`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:51
+#: ../../../CHANGES.rst:47
 msgid ""
 "Support for various `xscen` functions has been added to compute "
 "indicators and various climate change metrics. (:pull:`21`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:52
+#: ../../../CHANGES.rst:48
 msgid ""
 "New function `xh.indicators.compute_volume` to convert streamflow data to"
 " volumes. (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:53
+#: ../../../CHANGES.rst:49
 msgid ""
 "New function `xh.indicators.get_yearly_op` to compute block operation "
 "(e.g. block maxima, minima, etc.). (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:57
+#: ../../../CHANGES.rst:53
 msgid ""
 "`xHydro` repository has renamed its primary development branch from "
 "`master` to `main`. (:pull:`13`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:58
+#: ../../../CHANGES.rst:54
 msgid "`xHydro` now requires a conda environment to be installed. (:pull:`21`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:66
+#: ../../../CHANGES.rst:58
+msgid "N/A"
+msgstr ""
+
+#: ../../../CHANGES.rst:62
 msgid "Added a Pull Request template. (:pull:`14`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:73
+#: ../../../CHANGES.rst:69
 msgid ""
 "Various updates to the autogenerated boilerplate (Ouranosinc"
 "/cookiecutter-pypackage) via `cruft`. (:pull:`11`, :pull:`12`, "
 ":pull:`13`):"
 msgstr ""
 
-#: ../../../CHANGES.rst:68
+#: ../../../CHANGES.rst:64
 msgid ""
 "General updates to pre-commit hooks, development dependencies, "
 "documentation."
 msgstr ""
 
-#: ../../../CHANGES.rst:69
+#: ../../../CHANGES.rst:65
 msgid "Added configurations for Pull Request and Issues templates, Zenodo."
 msgstr ""
 
-#: ../../../CHANGES.rst:70
+#: ../../../CHANGES.rst:66
 msgid ""
 "Documentation now makes use of sphinx directives for usernames, issues, "
 "and pull request hyperlinks (via sphinx.ext.extlinks). (:issue:`15`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:71
+#: ../../../CHANGES.rst:67
 msgid "GitHub Workflows have been added for automated testing, and publishing."
 msgstr ""
 
-#: ../../../CHANGES.rst:72
+#: ../../../CHANGES.rst:68
 msgid ""
 "Some sphinx extensions have been added/enabled (sphinx-codeautolink, "
 "sphinx-copybutton)."
 msgstr ""
 
-#: ../../../CHANGES.rst:73
+#: ../../../CHANGES.rst:69
 msgid "Automated testing with tox now updated to use v4.0+ conventions."
 msgstr ""
 
-#: ../../../CHANGES.rst:74
+#: ../../../CHANGES.rst:70
 msgid "Removed all references to travis.ci."
 msgstr ""
 
-#: ../../../CHANGES.rst:75
+#: ../../../CHANGES.rst:71
 msgid ""
 "Deployments to TestPyPI and PyPI are now run using GitHub Workflow "
 "Environments as a safeguarding mechanism. (:pull:`28`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:76
+#: ../../../CHANGES.rst:72
 msgid "Various cleanups of the environment files. (:issue:`23`, :pull:`30`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:77
+#: ../../../CHANGES.rst:73
 msgid ""
 "`xhydro` now uses the trusted publishing mechanism for PyPI and TestPyPI "
 "deployment. (:pull:`32`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:78
+#: ../../../CHANGES.rst:74
 msgid "Added tests. (:pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGES.rst:81
+#: ../../../CHANGES.rst:77
 msgid "0.1.2 (2023-05-10)"
 msgstr ""
 
-#: ../../../CHANGES.rst:83
+#: ../../../CHANGES.rst:79
 msgid "First release on PyPI."
 msgstr ""

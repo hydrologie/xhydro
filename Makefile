@@ -81,7 +81,7 @@ autodoc: clean-docs ## create sphinx-apidoc files:
 
 initialize-translations: clean-docs ## initialize translations, ignoring autodoc-generated files
 	${MAKE} -C docs gettext
-	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr_CA
+	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck
@@ -90,7 +90,7 @@ docs: autodoc ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs html BUILDDIR="_build/html/en"
 ifneq ("$(wildcard $(LOCALES))","")
 	${MAKE} -C docs gettext
-	$(MAKE) -C docs html BUILDDIR="_build/html/fr_CA" SPHINXOPTS="-D language='fr_CA'"
+	$(MAKE) -C docs html BUILDDIR="_build/html/fr" SPHINXOPTS="-D language='fr'"
 endif
 ifndef READTHEDOCS
 	$(BROWSER) docs/_build/html/en/html/index.html
