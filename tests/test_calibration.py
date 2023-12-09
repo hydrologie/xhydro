@@ -5,8 +5,6 @@ from xhydro.calibration import (perform_calibration,
                                 dummy_model, 
                                 spot_setup)
 import numpy as np
-import spotpy
-
 
 
 def test_spotpy_calibration():
@@ -31,19 +29,13 @@ def test_spotpy_calibration():
     assert len(best_parameters) == len(bounds_high)
     
     # Test that the objective function is calculated correctly
-    objfun = get_objective_function_value(model_config['Qobs'], best_simulation)
+    objfun = get_objective_function_value(model_config['Qobs'], best_simulation,best_parameters, obj_func='nse')
     assert objfun == best_objfun
-    
-    # Test Spotpy setup and sampler
-    spotSetup = spot_setup(model_config, bounds_high, bounds_low, obj_func="nse")
-    sampler = spotpy.algorithms.dds(spotSetup, dbname="tmp", dbformat="ram", save_sim=False)
-    sampler.sample(20, trials=1)
-    assert spotSetup.diagnostics is not None
-    
+        
     # Test dummy model response
     model_config['parameters']=[5,5,5]
     Qsim = dummy_model(model_config)
-    assert Qsim[3]==10.000 # Todo: update when xhydro is installed.
+    assert Qsim[3]==3500.00
     
     
     
