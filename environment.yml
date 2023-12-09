@@ -12,4 +12,6 @@ dependencies:
   - xscen >=0.7.1
   - pip
   - pip:
+    - hydroeval
+    - spotpy
     - xdatasets
