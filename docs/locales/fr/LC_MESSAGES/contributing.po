@@ -1,0 +1,560 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-12-08 12:18-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../../CONTRIBUTING.rst:5
+msgid "Contributing"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:7
+msgid ""
+"Contributions are welcome, and they are greatly appreciated! Every little"
+" bit helps, and credit will always be given."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:9
+msgid "You can contribute in many ways:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:12
+msgid "Types of Contributions"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:15
+msgid "Report Bugs"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:17
+msgid "Report bugs at https://github.com/hydrologie/xhydro/issues."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:19
+msgid "If you are reporting a bug, please include:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:21
+msgid "Your operating system name and version."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:22
+msgid ""
+"Any details about your local setup that might be helpful in "
+"troubleshooting."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:23
+msgid "Detailed steps to reproduce the bug."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:26
+msgid "Fix Bugs"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:28
+msgid ""
+"Look through the GitHub issues for bugs. Anything tagged with \"bug\" and"
+" \"help wanted\" is open to whoever wants to implement it."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:31
+msgid "Implement Features"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:33
+msgid ""
+"Look through the GitHub issues for features. Anything tagged with "
+"\"enhancement\" and \"help wanted\" is open to whoever wants to implement"
+" it."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:36
+msgid "Write Documentation"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:38
+msgid ""
+"xHydro could always use more documentation, whether as part of the "
+"official xHydro docs, in docstrings, or even on the web in blog posts, "
+"articles, and such."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:41
+msgid "Submit Feedback"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:43
+msgid ""
+"The best way to send feedback is to file an issue at "
+"https://github.com/hydrologie/xhydro/issues."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:45
+msgid "If you are proposing a feature:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:47
+msgid "Explain in detail how it would work."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:48
+msgid "Keep the scope as narrow as possible, to make it easier to implement."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:49
+msgid ""
+"Remember that this is a volunteer-driven project, and that contributions "
+"are welcome :)"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:53
+msgid "Get Started!"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:57
+msgid ""
+"If you are new to using GitHub and `git`, please read `this guide "
+"<https://guides.github.com/activities/hello-world/>`_ first."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:61
+msgid ""
+"Anaconda Python users: Due to the complexity of some packages, the "
+"default dependency solver can take a long time to resolve the "
+"environment. Consider running the following commands in order to speed up"
+" the process::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:66
+msgid ""
+"For more information, please see the following link: "
+"https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:68
+msgid ""
+"Alternatively, you can use the `mamba "
+"<https://mamba.readthedocs.io/en/latest/index.html>`_ package manager, "
+"which is a drop-in replacement for ``conda``. If you are already using "
+"`mamba`, replace the following commands with ``mamba`` instead of "
+"``conda``."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:70
+msgid ""
+"Ready to contribute? Here's how to set up ``xhydro`` for local "
+"development."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:72
+msgid ""
+"If you are not already an `xhydro` collaborator, fork the ``xhydro`` repo"
+" on GitHub."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:73
+msgid "Clone your fork locally::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:77
+msgid ""
+"Install your local copy into a development environment. You can create a "
+"new Anaconda development environment with::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:83
+msgid ""
+"This installs ``xhydro`` in an \"editable\" state, meaning that changes "
+"to the code are immediately seen by the environment."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:85
+msgid ""
+"To ensure a consistent coding style, install the ``pre-commit`` hooks to "
+"your local clone::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:89
+msgid ""
+"On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, "
+"``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic"
+" fixes if possible, and warn of violations that require intervention. If "
+"your commit fails the checks initially, simply fix the errors, re-add the"
+" files, and re-commit."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:91
+msgid "You can also run the hooks manually with::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:95
+msgid ""
+"If you want to skip the ``pre-commit`` hooks temporarily, you can pass "
+"the ``--no-verify`` flag to `$ git commit`."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:97
+msgid "Create a branch for local development::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:101
+msgid "Now you can make your changes locally."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:103
+msgid ""
+"When you're done making changes, we **strongly** suggest running the "
+"tests in your environment or with the help of ``tox``::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:109
+msgid "Commit your changes and push your branch to GitHub::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:115
+msgid ""
+"If ``pre-commit`` hooks fail, try re-committing your changes (or, if need"
+" be, you can skip them with `$ git commit --no-verify`)."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:117
+msgid ""
+"Submit a `Pull Request <https://docs.github.com/en/pull-requests"
+"/collaborating-with-pull-requests/proposing-changes-to-your-work-with-"
+"pull-requests/creating-a-pull-request>`_ through the GitHub website."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:119
+msgid ""
+"When pushing your changes to your branch on GitHub, the documentation "
+"will automatically be tested to reflect the changes in your Pull Request."
+" This build process can take several minutes at times. If you are "
+"actively making changes that affect the documentation and wish to save "
+"time, you can compile and test your changes beforehand locally with::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:129
+msgid ""
+"Once your Pull Request has been accepted and merged to the ``main`` "
+"branch, several automated workflows will be triggered:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:131
+msgid ""
+"The ``bump-version.yml`` workflow will automatically bump the patch "
+"version when pull requests are pushed to the ``main`` branch on GitHub. "
+"**It is not recommended to manually bump the version in your branch when "
+"merging (non-release) pull requests (this will cause the version to be "
+"bumped twice).**"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:132
+msgid ""
+"`ReadTheDocs` will automatically build the documentation and publish it "
+"to the `latest` branch of `xhydro` documentation website."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:133
+msgid ""
+"If your branch is not a fork (ie: you are a maintainer), your branch will"
+" be automatically deleted."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:135
+msgid "You will have contributed your first changes to ``xhydro``!"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:138
+msgid "Pull Request Guidelines"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:140
+msgid "Before you submit a pull request, check that it meets these guidelines:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:142
+msgid ""
+"The pull request should include tests and should aim to provide `code "
+"coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new "
+"lines of code. You can use the ``--cov-report html --cov xhydro`` flags "
+"during the call to ``pytest`` to generate an HTML report and analyse the "
+"current test coverage."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:144
+msgid ""
+"If the pull request adds functionality, the docs should also be updated. "
+"Put your new functionality into a function with a docstring, and add the "
+"feature to the list in ``README.rst``."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:146
+msgid ""
+"The pull request should work for Python 3.9, 3.10, and 3.11. Check that "
+"the tests pass for all supported Python versions."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:149
+msgid "Tips"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:151
+msgid "To run a subset of tests::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:155
+msgid "To run specific code style checks::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:163
+msgid ""
+"To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with "
+"plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply "
+"install them with `pip` (or `conda`) into your environment."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:166
+msgid "Versioning/Tagging"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:168
+msgid ""
+"A reminder for the **maintainers** on how to deploy. This section is only"
+" relevant when producing a new point release for the package."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:172
+msgid ""
+"It is important to be aware that any changes to files found within the "
+"``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will "
+"trigger the ``bump-version.yml`` workflow. Be careful not to commit "
+"changes to files in this folder when preparing a new release."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:174
+msgid "Create a new branch from `main` (e.g. `release-0.2.0`)."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:175
+msgid ""
+"Update the `CHANGES.rst` file to change the `Unreleased` section to the "
+"current date."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:176
+msgid ""
+"Bump the version in your branch to the next version (e.g. `v0.1.0 -> "
+"v0.2.0`):"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:183
+msgid "Create a pull request from your branch to `main`."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:184
+msgid ""
+"Once the pull request is merged, create a new release on GitHub. On the "
+"main branch, run:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:191
+msgid ""
+"This will trigger a GitHub workflow to build the package and upload it to"
+" TestPyPI. At the same time, the GitHub workflow will create a draft "
+"release on GitHub. Assuming that the workflow passes, the final release "
+"can then be published on GitHub by finalizing the draft release."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:193
+msgid ""
+"Once the release is published, the `publish-pypi.yml` workflow will go "
+"into an `awaiting approval` mode on Github Actions. Only authorized users"
+" may approve this workflow (notifications will be sent) to trigger the "
+"upload to PyPI."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:195
+msgid "To generate the release notes, run:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:203
+msgid ""
+"This will print the release notes (taken from the `HISTORY.rst` file) to "
+"your python console. Copy and paste them into the GitHub release "
+"description, keeping only the changes for the current version."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:205
+msgid ""
+"Once the release is published, it will go into a `staging` mode on Github"
+" Actions. Once the tests pass, admins can approve the release (an e-mail "
+"will be sent) and it will be published on PyPI."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:209
+msgid ""
+"Uploads to PyPI can **never** be overwritten. If you make a mistake, you "
+"will need to bump the version and re-release the package. If the package "
+"uploaded to PyPI is broken, you should modify the GitHub release to mark "
+"the package as broken, as well as yank the package (mark the version  "
+"\"broken\") on PyPI."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:212
+msgid "Packaging"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:214
+msgid ""
+"When a new version has been minted (features have been successfully "
+"integrated test coverage and stability is adequate), maintainers should "
+"update the pip-installable package (wheel and source release) on PyPI as "
+"well as the binary on conda-forge."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:217
+msgid "The simple approach"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:219
+msgid ""
+"The simplest approach to packaging for general support (pip wheels) "
+"requires that ``flit`` be installed::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:223
+msgid ""
+"From the command line on your Linux distribution, simply run the "
+"following from the clone's main dev branch::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:231
+msgid ""
+"The new version based off of the version checked out will now be "
+"available via `pip` (`$ pip install xhydro`)."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:234
+msgid "Releasing on conda-forge"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:237
+msgid "Initial Release"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:241
+msgid ""
+"Before preparing an initial release on conda-forge, we *strongly* suggest"
+" consulting the following links:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:240
+msgid "https://conda-forge.org/docs/maintainer/adding_pkgs.html"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:241
+msgid "https://github.com/conda-forge/staged-recipes"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:243
+msgid ""
+"In order to create a new conda build recipe, to be used when proposing "
+"packages to the conda-forge repository, we strongly suggest using the "
+"``grayskull`` tool::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:248
+msgid ""
+"For more information on ``grayskull``, please see the following link: "
+"https://github.com/conda/grayskull"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:252
+msgid ""
+"Before updating the main conda-forge recipe, we echo the conda-forge "
+"documentation and *strongly* suggest performing the following checks:"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:251
+msgid ""
+"Ensure that dependencies and dependency versions correspond with those of"
+" the tagged version, with open or pinned versions for the `host` "
+"requirements."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:252
+msgid ""
+"If possible, configure tests within the conda-forge build CI (e.g. "
+"`imports: xhydro`, `commands: pytest xhydro`)."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:255
+msgid "Subsequent releases"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:257
+msgid ""
+"If the conda-forge feedstock recipe is built from PyPI, then when a new "
+"release is published on PyPI, `regro-cf-autotick-bot` will open Pull "
+"Requests automatically on the conda-forge feedstock. It is up to the "
+"conda-forge feedstock maintainers to verify that the package is building "
+"properly before merging the Pull Request to the main branch."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:260
+msgid "Building sources for wide support with `manylinux` image"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:263
+msgid ""
+"This section is for building source files that link to or provide links "
+"to C/C++ dependencies. It is not necessary to perform the following when "
+"building pure Python packages."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:266
+msgid ""
+"In order to do ensure best compatibility across architectures, we suggest"
+" building wheels using the `PyPA`'s `manylinux` docker images (at time of"
+" writing, we endorse using `manylinux_2_24_x86_64`)."
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:269
+msgid "With `docker` installed and running, begin by pulling the image::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:273
+msgid ""
+"From the xhydro source folder we can enter into the docker container, "
+"providing access to the `xhydro` source files by linking them to the "
+"running image::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:277
+msgid ""
+"Finally, to build the wheel, we run it against the provided Python3.9 "
+"binary::"
+msgstr ""
+
+#: ../../../CONTRIBUTING.rst:281
+msgid ""
+"This will then place two files in `xhydro/dist/` (\"xhydro-1.2.3-py3"
+"-none-any.whl\" and \"xhydro-1.2.3.tar.gz\"). We can now leave our docker"
+" container (`$ exit`) and continue with uploading the files to PyPI::"
+msgstr ""
