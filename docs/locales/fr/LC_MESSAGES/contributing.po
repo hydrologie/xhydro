@@ -3,65 +3,68 @@
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: xHydro 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-08 12:18-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr\n"
+"PO-Revision-Date: 2023-12-12 08:28-0500\n"
+"Last-Translator: Thomas-Charles Fortier Filion <tcff_hydro@outlook.com>\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.12.1\n"
+"X-Generator: Poedit 3.4.1\n"
 
 #: ../../../CONTRIBUTING.rst:5
 msgid "Contributing"
-msgstr ""
+msgstr "Contribuer"
 
 #: ../../../CONTRIBUTING.rst:7
 msgid ""
-"Contributions are welcome, and they are greatly appreciated! Every little"
-" bit helps, and credit will always be given."
+"Contributions are welcome, and they are greatly appreciated! Every little "
+"bit helps, and credit will always be given."
 msgstr ""
+"Les contributions sont les bienvenues et sont très appréciées ! Chaque "
+"petite contribution est utile, et le crédit sera toujours accordé."
 
 #: ../../../CONTRIBUTING.rst:9
 msgid "You can contribute in many ways:"
-msgstr ""
+msgstr "Vous pouvez contribuer de différentes manières :"
 
 #: ../../../CONTRIBUTING.rst:12
 msgid "Types of Contributions"
-msgstr ""
+msgstr "Types de contributions"
 
 #: ../../../CONTRIBUTING.rst:15
 msgid "Report Bugs"
-msgstr ""
+msgstr "Signaler les bogues"
 
 #: ../../../CONTRIBUTING.rst:17
 msgid "Report bugs at https://github.com/hydrologie/xhydro/issues."
-msgstr ""
+msgstr "Signalez les bogues à https://github.com/hydrologie/xhydro/issues."
 
 #: ../../../CONTRIBUTING.rst:19
 msgid "If you are reporting a bug, please include:"
-msgstr ""
+msgstr "Si vous signalez un bogue, veuillez inclure :"
 
 #: ../../../CONTRIBUTING.rst:21
 msgid "Your operating system name and version."
-msgstr ""
+msgstr "Le nom et la version de votre système d'exploitation."
 
 #: ../../../CONTRIBUTING.rst:22
 msgid ""
-"Any details about your local setup that might be helpful in "
-"troubleshooting."
+"Any details about your local setup that might be helpful in troubleshooting."
 msgstr ""
+"Tout détail sur votre installation locale qui pourrait être utile pour le "
+"dépannage."
 
 #: ../../../CONTRIBUTING.rst:23
 msgid "Detailed steps to reproduce the bug."
-msgstr ""
+msgstr "Etapes détaillées pour reproduire le bogue."
 
 #: ../../../CONTRIBUTING.rst:26
 msgid "Fix Bugs"
@@ -69,9 +72,11 @@ msgstr ""
 
 #: ../../../CONTRIBUTING.rst:28
 msgid ""
-"Look through the GitHub issues for bugs. Anything tagged with \"bug\" and"
-" \"help wanted\" is open to whoever wants to implement it."
+"Look through the GitHub issues for bugs. Anything tagged with \"bug\" and "
+"\"help wanted\" is open to whoever wants to implement it."
 msgstr ""
+"Recherchez les bogues dans les problèmes de GitHub. Tout ce qui est étiqueté "
+"avec \"bug\" et \"help wanted\" est ouvert à quiconque veut l'implémenter."
 
 #: ../../../CONTRIBUTING.rst:31
 msgid "Implement Features"
@@ -80,318 +85,422 @@ msgstr ""
 #: ../../../CONTRIBUTING.rst:33
 msgid ""
 "Look through the GitHub issues for features. Anything tagged with "
-"\"enhancement\" and \"help wanted\" is open to whoever wants to implement"
-" it."
+"\"enhancement\" and \"help wanted\" is open to whoever wants to implement it."
 msgstr ""
+"Consultez les questions de GitHub pour trouver des fonctionnalités. Tout ce "
+"qui est étiqueté \"amélioration\" et \"aide recherchée\" est ouvert à "
+"quiconque veut l'implémenter."
 
 #: ../../../CONTRIBUTING.rst:36
 msgid "Write Documentation"
-msgstr ""
+msgstr "Rédiger la documentation"
 
 #: ../../../CONTRIBUTING.rst:38
 msgid ""
-"xHydro could always use more documentation, whether as part of the "
-"official xHydro docs, in docstrings, or even on the web in blog posts, "
-"articles, and such."
+"xHydro could always use more documentation, whether as part of the official "
+"xHydro docs, in docstrings, or even on the web in blog posts, articles, and "
+"such."
 msgstr ""
+"xHydro pourrait toujours utiliser plus de documentation, que ce soit dans le "
+"cadre de la documentation officielle de xHydro, dans les docstrings, ou même "
+"sur le web dans des billets de blog, des articles, etc."
 
 #: ../../../CONTRIBUTING.rst:41
 msgid "Submit Feedback"
-msgstr ""
+msgstr "Soumettre un retour d'information"
 
 #: ../../../CONTRIBUTING.rst:43
 msgid ""
-"The best way to send feedback is to file an issue at "
-"https://github.com/hydrologie/xhydro/issues."
+"The best way to send feedback is to file an issue at https://github.com/"
+"hydrologie/xhydro/issues."
 msgstr ""
+"La meilleure façon d'envoyer un retour d'information est de déposer un "
+"problème à l'adresse https://github.com/hydrologie/xhydro/issues."
 
 #: ../../../CONTRIBUTING.rst:45
 msgid "If you are proposing a feature:"
-msgstr ""
+msgstr "Si vous proposez une fonctionnalité :"
 
 #: ../../../CONTRIBUTING.rst:47
 msgid "Explain in detail how it would work."
-msgstr ""
+msgstr "Expliquez en détail comment cela fonctionnerait."
 
 #: ../../../CONTRIBUTING.rst:48
 msgid "Keep the scope as narrow as possible, to make it easier to implement."
 msgstr ""
+"Le champ d'application doit être aussi restreint que possible, afin de "
+"faciliter la mise en œuvre."
 
 #: ../../../CONTRIBUTING.rst:49
 msgid ""
-"Remember that this is a volunteer-driven project, and that contributions "
-"are welcome :)"
+"Remember that this is a volunteer-driven project, and that contributions are "
+"welcome :)"
 msgstr ""
+"N'oubliez pas qu'il s'agit d'un projet mené par des personnes volontaires et "
+"que les contributions sont les bienvenues :)"
 
 #: ../../../CONTRIBUTING.rst:53
 msgid "Get Started!"
-msgstr ""
+msgstr "Démarrer !"
 
 #: ../../../CONTRIBUTING.rst:57
 msgid ""
-"If you are new to using GitHub and `git`, please read `this guide "
-"<https://guides.github.com/activities/hello-world/>`_ first."
+"If you are new to using GitHub and `git`, please read `this guide <https://"
+"guides.github.com/activities/hello-world/>`_ first."
 msgstr ""
+"Si vous n'avez jamais utilisé GitHub et `git`, veuillez d'abord lire `ce "
+"guide <https://guides.github.com/activities/hello-world/>`_."
 
 #: ../../../CONTRIBUTING.rst:61
 msgid ""
-"Anaconda Python users: Due to the complexity of some packages, the "
-"default dependency solver can take a long time to resolve the "
-"environment. Consider running the following commands in order to speed up"
-" the process::"
+"Anaconda Python users: Due to the complexity of some packages, the default "
+"dependency solver can take a long time to resolve the environment. Consider "
+"running the following commands in order to speed up the process::"
 msgstr ""
+"Utilisateurs d'Anaconda Python : En raison de la complexité de certains "
+"paquets, le résolveur de dépendances par défaut peut prendre beaucoup de "
+"temps pour résoudre l'environnement. Envisagez d'exécuter les commandes "
+"suivantes afin d'accélérer le processus: :"
 
 #: ../../../CONTRIBUTING.rst:66
 msgid ""
-"For more information, please see the following link: "
-"https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community"
+"For more information, please see the following link: https://www.anaconda."
+"com/blog/a-faster-conda-for-a-growing-community"
 msgstr ""
+"Pour plus d'informations, veuillez consulter le lien suivant : https://www."
+"anaconda.com/blog/a-faster-conda-for-a-growing-community"
 
 #: ../../../CONTRIBUTING.rst:68
 msgid ""
-"Alternatively, you can use the `mamba "
-"<https://mamba.readthedocs.io/en/latest/index.html>`_ package manager, "
-"which is a drop-in replacement for ``conda``. If you are already using "
-"`mamba`, replace the following commands with ``mamba`` instead of "
-"``conda``."
+"Alternatively, you can use the `mamba <https://mamba.readthedocs.io/en/"
+"latest/index.html>`_ package manager, which is a drop-in replacement for "
+"``conda``. If you are already using `mamba`, replace the following commands "
+"with ``mamba`` instead of ``conda``."
 msgstr ""
+"Alternativement, vous pouvez utiliser le gestionnaire de paquets `mamba "
+"<https://mamba.readthedocs.io/en/latest/index.html>`_, qui est un "
+"remplacement direct de ``conda``. Si vous utilisez déjà `mamba`, remplacez "
+"les commandes suivantes par `mamba`` au lieu de `conda``."
 
 #: ../../../CONTRIBUTING.rst:70
 msgid ""
-"Ready to contribute? Here's how to set up ``xhydro`` for local "
-"development."
+"Ready to contribute? Here's how to set up ``xhydro`` for local development."
 msgstr ""
+"Prêt à contribuer ? Voici comment mettre en place ``xhydro`` pour le "
+"développement local."
 
 #: ../../../CONTRIBUTING.rst:72
 msgid ""
-"If you are not already an `xhydro` collaborator, fork the ``xhydro`` repo"
-" on GitHub."
+"If you are not already an `xhydro` collaborator, fork the ``xhydro`` repo on "
+"GitHub."
 msgstr ""
+"Si vous n'êtes pas encore un collaborateur de `xhydro`, créez un "
+"embranchement sur le dépôt `xhydro`` sur GitHub."
 
 #: ../../../CONTRIBUTING.rst:73
 msgid "Clone your fork locally::"
-msgstr ""
+msgstr "Clonez votre embranchement localement :"
 
 #: ../../../CONTRIBUTING.rst:77
 msgid ""
-"Install your local copy into a development environment. You can create a "
-"new Anaconda development environment with::"
+"Install your local copy into a development environment. You can create a new "
+"Anaconda development environment with::"
 msgstr ""
+"Installez votre copie locale dans un environnement de développement. Vous "
+"pouvez créer un nouvel environnement de développement Anaconda avec: :"
 
 #: ../../../CONTRIBUTING.rst:83
 msgid ""
-"This installs ``xhydro`` in an \"editable\" state, meaning that changes "
-"to the code are immediately seen by the environment."
+"This installs ``xhydro`` in an \"editable\" state, meaning that changes to "
+"the code are immediately seen by the environment."
 msgstr ""
+"Cela installe ``xhydro`` dans un état \"éditable\", ce qui signifie que les "
+"changements apportés au code sont immédiatement vus par l'environnement."
 
 #: ../../../CONTRIBUTING.rst:85
 msgid ""
 "To ensure a consistent coding style, install the ``pre-commit`` hooks to "
 "your local clone::"
 msgstr ""
+"Pour assurer un style de codage cohérent, installez les hooks ``pre-commit`` "
+"dans votre clone local: :"
 
 #: ../../../CONTRIBUTING.rst:89
 msgid ""
 "On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, "
-"``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic"
-" fixes if possible, and warn of violations that require intervention. If "
-"your commit fails the checks initially, simply fix the errors, re-add the"
-" files, and re-commit."
+"``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic "
+"fixes if possible, and warn of violations that require intervention. If your "
+"commit fails the checks initially, simply fix the errors, re-add the files, "
+"and re-commit."
 msgstr ""
+"Lors de la livraison, ``pre-commit`` vérifiera que les contrôles ``black``, "
+"``blackdoc``, ``isort`, ``flake8``, et ``ruff`` passent, effectuera des "
+"corrections automatiques si possible, et avertira des violations qui "
+"nécessitent une intervention. Si votre livraison échoue aux vérifications "
+"initiales, corrigez simplement les erreurs, ajoutez à nouveau les fichiers, "
+"et effectuez une nouvelle livraison."
 
 #: ../../../CONTRIBUTING.rst:91
 msgid "You can also run the hooks manually with::"
-msgstr ""
+msgstr "Vous pouvez également exécuter les crochets manuellement avec: :"
 
 #: ../../../CONTRIBUTING.rst:95
 msgid ""
-"If you want to skip the ``pre-commit`` hooks temporarily, you can pass "
-"the ``--no-verify`` flag to `$ git commit`."
+"If you want to skip the ``pre-commit`` hooks temporarily, you can pass the "
+"``--no-verify`` flag to `$ git commit`."
 msgstr ""
+"Si vous voulez ignorer temporairement les crochets ``pre-commit``, vous "
+"pouvez passer le drapeau ``-no-verify`` à `$ git commit`."
 
 #: ../../../CONTRIBUTING.rst:97
 msgid "Create a branch for local development::"
-msgstr ""
+msgstr "Créer une branche pour le développement local: :"
 
 #: ../../../CONTRIBUTING.rst:101
 msgid "Now you can make your changes locally."
-msgstr ""
+msgstr "Vous pouvez maintenant effectuer vos modifications localement."
 
 #: ../../../CONTRIBUTING.rst:103
 msgid ""
-"When you're done making changes, we **strongly** suggest running the "
-"tests in your environment or with the help of ``tox``::"
+"When you're done making changes, we **strongly** suggest running the tests "
+"in your environment or with the help of ``tox``::"
 msgstr ""
+"Lorsque vous avez terminé les changements, nous **strongly** suggérons "
+"d'exécuter les tests dans votre environnement ou avec l'aide de ``tox``: :"
 
 #: ../../../CONTRIBUTING.rst:109
 msgid "Commit your changes and push your branch to GitHub::"
-msgstr ""
+msgstr "Validez vos modifications et envoyez votre branche sur GitHub: :"
 
 #: ../../../CONTRIBUTING.rst:115
 msgid ""
-"If ``pre-commit`` hooks fail, try re-committing your changes (or, if need"
-" be, you can skip them with `$ git commit --no-verify`)."
+"If ``pre-commit`` hooks fail, try re-committing your changes (or, if need "
+"be, you can skip them with `$ git commit --no-verify`)."
 msgstr ""
+"Si les crochets ``pre-commit`` échouent, essayez de re-commettre vos "
+"changements (ou, si nécessaire, vous pouvez les ignorer avec `$ git commit --"
+"no-verify`)."
 
 #: ../../../CONTRIBUTING.rst:117
 msgid ""
-"Submit a `Pull Request <https://docs.github.com/en/pull-requests"
-"/collaborating-with-pull-requests/proposing-changes-to-your-work-with-"
-"pull-requests/creating-a-pull-request>`_ through the GitHub website."
+"Submit a `Pull Request <https://docs.github.com/en/pull-requests/"
+"collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-"
+"requests/creating-a-pull-request>`_ through the GitHub website."
 msgstr ""
+"Soumettez une `Pull Request <https://docs.github.com/en/pull-requests/"
+"collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-"
+"requests/creating-a-pull-request>`_ via le site GitHub."
 
 #: ../../../CONTRIBUTING.rst:119
 msgid ""
-"When pushing your changes to your branch on GitHub, the documentation "
-"will automatically be tested to reflect the changes in your Pull Request."
-" This build process can take several minutes at times. If you are "
-"actively making changes that affect the documentation and wish to save "
-"time, you can compile and test your changes beforehand locally with::"
+"When pushing your changes to your branch on GitHub, the documentation will "
+"automatically be tested to reflect the changes in your Pull Request. This "
+"build process can take several minutes at times. If you are actively making "
+"changes that affect the documentation and wish to save time, you can compile "
+"and test your changes beforehand locally with::"
 msgstr ""
+"Lorsque vous apportez vos modifications à votre branche sur GitHub, la "
+"documentation sera automatiquement testée pour refléter les modifications de "
+"votre Pull Request. Ce processus de compilation peut parfois prendre "
+"plusieurs minutes. Si vous êtes en train de faire des changements qui "
+"affectent la documentation et que vous souhaitez gagner du temps, vous "
+"pouvez compiler et tester vos changements localement avec: :"
 
 #: ../../../CONTRIBUTING.rst:129
 msgid ""
-"Once your Pull Request has been accepted and merged to the ``main`` "
-"branch, several automated workflows will be triggered:"
+"Once your Pull Request has been accepted and merged to the ``main`` branch, "
+"several automated workflows will be triggered:"
 msgstr ""
+"Une fois que votre Pull Request a été acceptée et fusionnée dans la branche "
+"``main``, plusieurs flux de travail automatisés seront déclenchés :"
 
 #: ../../../CONTRIBUTING.rst:131
 msgid ""
-"The ``bump-version.yml`` workflow will automatically bump the patch "
-"version when pull requests are pushed to the ``main`` branch on GitHub. "
-"**It is not recommended to manually bump the version in your branch when "
-"merging (non-release) pull requests (this will cause the version to be "
-"bumped twice).**"
+"The ``bump-version.yml`` workflow will automatically bump the patch version "
+"when pull requests are pushed to the ``main`` branch on GitHub. **It is not "
+"recommended to manually bump the version in your branch when merging (non-"
+"release) pull requests (this will cause the version to be bumped twice).**"
 msgstr ""
+"Le flux de travail ``bump-version.yml`` augmentera automatiquement la "
+"version du patch lorsque les demandes d'extraction sont poussées vers la "
+"branche ``main`` sur GitHub. **Il n'est pas recommandé d'augmenter "
+"manuellement la version de votre branche lorsque vous fusionnez des demandes "
+"d'extraction (qui ne sont pas des versions) (cela entraînera une double "
+"augmentation de la version)"
 
 #: ../../../CONTRIBUTING.rst:132
 msgid ""
-"`ReadTheDocs` will automatically build the documentation and publish it "
-"to the `latest` branch of `xhydro` documentation website."
+"`ReadTheDocs` will automatically build the documentation and publish it to "
+"the `latest` branch of `xhydro` documentation website."
 msgstr ""
+"`ReadTheDocs` construira automatiquement la documentation et la publiera sur "
+"la branche `latest` du site de documentation `xhydro`."
 
 #: ../../../CONTRIBUTING.rst:133
 msgid ""
-"If your branch is not a fork (ie: you are a maintainer), your branch will"
-" be automatically deleted."
+"If your branch is not a fork (ie: you are a maintainer), your branch will be "
+"automatically deleted."
 msgstr ""
+"Si votre branche n'est pas un embranchement (ie : vous êtes un mainteneur), "
+"votre branche sera automatiquement supprimée."
 
 #: ../../../CONTRIBUTING.rst:135
 msgid "You will have contributed your first changes to ``xhydro``!"
-msgstr ""
+msgstr "Vous aurez contribué à vos premiers changements dans ``xhydro`` !"
 
 #: ../../../CONTRIBUTING.rst:138
 msgid "Pull Request Guidelines"
-msgstr ""
+msgstr "Lignes directrices pour les demandes de tirage (pull request)"
 
 #: ../../../CONTRIBUTING.rst:140
 msgid "Before you submit a pull request, check that it meets these guidelines:"
 msgstr ""
+"Avant de soumettre une demande de tirage, vérifiez qu'elle respecte ces "
+"directives :"
 
 #: ../../../CONTRIBUTING.rst:142
 msgid ""
 "The pull request should include tests and should aim to provide `code "
-"coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new "
-"lines of code. You can use the ``--cov-report html --cov xhydro`` flags "
-"during the call to ``pytest`` to generate an HTML report and analyse the "
-"current test coverage."
+"coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new lines "
+"of code. You can use the ``--cov-report html --cov xhydro`` flags during the "
+"call to ``pytest`` to generate an HTML report and analyse the current test "
+"coverage."
 msgstr ""
+"La pull request doit inclure des tests et doit viser à fournir une "
+"`couverture de code <https://en.wikipedia.org/wiki/Code_coverage>`_ pour "
+"toutes les nouvelles lignes de code. Vous pouvez utiliser les drapeaux ``--"
+"cov-report html --cov xhydro`` lors de l'appel à ``pytest`` pour générer un "
+"rapport HTML et analyser la couverture actuelle des tests."
 
 #: ../../../CONTRIBUTING.rst:144
 msgid ""
-"If the pull request adds functionality, the docs should also be updated. "
-"Put your new functionality into a function with a docstring, and add the "
-"feature to the list in ``README.rst``."
+"If the pull request adds functionality, the docs should also be updated. Put "
+"your new functionality into a function with a docstring, and add the feature "
+"to the list in ``README.rst``."
 msgstr ""
+"Si la pull request ajoute une fonctionnalité, la documentation doit aussi "
+"être mise à jour. Mettez votre nouvelle fonctionnalité dans une fonction "
+"avec une docstring, et ajoutez la fonctionnalité à la liste dans ``README."
+"rst``."
 
 #: ../../../CONTRIBUTING.rst:146
 msgid ""
-"The pull request should work for Python 3.9, 3.10, and 3.11. Check that "
-"the tests pass for all supported Python versions."
+"The pull request should work for Python 3.9, 3.10, and 3.11. Check that the "
+"tests pass for all supported Python versions."
 msgstr ""
+"La pull request devrait fonctionner pour Python 3.9, 3.10, et 3.11. Vérifiez "
+"que les tests passent pour toutes les versions de Python supportées."
 
 #: ../../../CONTRIBUTING.rst:149
 msgid "Tips"
-msgstr ""
+msgstr "Conseils"
 
 #: ../../../CONTRIBUTING.rst:151
 msgid "To run a subset of tests::"
-msgstr ""
+msgstr "Pour exécuter un sous-ensemble de tests: :"
 
 #: ../../../CONTRIBUTING.rst:155
 msgid "To run specific code style checks::"
-msgstr ""
+msgstr "Pour effectuer des contrôles de style de code spécifiques: :"
 
 #: ../../../CONTRIBUTING.rst:163
 msgid ""
 "To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with "
-"plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply "
-"install them with `pip` (or `conda`) into your environment."
+"plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install "
+"them with `pip` (or `conda`) into your environment."
 msgstr ""
+"Pour obtenir ``black``, ``isort ``blackdoc``, ``ruff`, et ``flake8` (avec "
+"les plugins ``flake8-alphabetize`` et ``flake8-rst-docstrings``), installez-"
+"les simplement avec `pip` (ou `conda`) dans votre environnement."
 
 #: ../../../CONTRIBUTING.rst:166
 msgid "Versioning/Tagging"
-msgstr ""
+msgstr "Versionnement / marquage"
 
 #: ../../../CONTRIBUTING.rst:168
 msgid ""
-"A reminder for the **maintainers** on how to deploy. This section is only"
-" relevant when producing a new point release for the package."
+"A reminder for the **maintainers** on how to deploy. This section is only "
+"relevant when producing a new point release for the package."
 msgstr ""
+"Un rappel pour les **mainteneurs** sur la façon de déployer. Cette section "
+"n'est pertinente que lors de la production d'une nouvelle version du paquet."
 
 #: ../../../CONTRIBUTING.rst:172
 msgid ""
 "It is important to be aware that any changes to files found within the "
 "``xhydro`` folder (with the exception of ``xhydro/__init__.py``) will "
-"trigger the ``bump-version.yml`` workflow. Be careful not to commit "
-"changes to files in this folder when preparing a new release."
+"trigger the ``bump-version.yml`` workflow. Be careful not to commit changes "
+"to files in this folder when preparing a new release."
 msgstr ""
+"Il est important d'être conscient que toute modification des fichiers se "
+"trouvant dans le dossier ``xhydro`` (à l'exception de ``xhydro/__init__."
+"py``) déclenchera le flux de travail ``bump-version.yml``. Faites attention "
+"à ne pas modifier les fichiers de ce dossier lors de la préparation d'une "
+"nouvelle version."
 
 #: ../../../CONTRIBUTING.rst:174
 msgid "Create a new branch from `main` (e.g. `release-0.2.0`)."
 msgstr ""
+"Créer une nouvelle branche à partir de `main` (par exemple `release-0.2.0`)."
 
 #: ../../../CONTRIBUTING.rst:175
 msgid ""
 "Update the `CHANGES.rst` file to change the `Unreleased` section to the "
 "current date."
 msgstr ""
+"Mettre à jour le fichier `CHANGES.rst` pour changer la section `Unreleased` "
+"à la date actuelle."
 
 #: ../../../CONTRIBUTING.rst:176
 msgid ""
 "Bump the version in your branch to the next version (e.g. `v0.1.0 -> "
 "v0.2.0`):"
 msgstr ""
+"Passer la version de votre branche à la version suivante (par exemple "
+"`v0.1.0 -> v0.2.0`) :"
 
 #: ../../../CONTRIBUTING.rst:183
 msgid "Create a pull request from your branch to `main`."
 msgstr ""
+"Bump the version in your branch to the next version (e.g. `v0.1.0 -> "
+"v0.2.0`):"
 
 #: ../../../CONTRIBUTING.rst:184
 msgid ""
-"Once the pull request is merged, create a new release on GitHub. On the "
-"main branch, run:"
+"Once the pull request is merged, create a new release on GitHub. On the main "
+"branch, run:"
 msgstr ""
+"Une fois la demande de tirage fusionnée, créez une nouvelle version sur "
+"GitHub. Sur la branche principale, exécutez :"
 
 #: ../../../CONTRIBUTING.rst:191
 msgid ""
-"This will trigger a GitHub workflow to build the package and upload it to"
-" TestPyPI. At the same time, the GitHub workflow will create a draft "
-"release on GitHub. Assuming that the workflow passes, the final release "
-"can then be published on GitHub by finalizing the draft release."
+"This will trigger a GitHub workflow to build the package and upload it to "
+"TestPyPI. At the same time, the GitHub workflow will create a draft release "
+"on GitHub. Assuming that the workflow passes, the final release can then be "
+"published on GitHub by finalizing the draft release."
 msgstr ""
+"Cela déclenchera un flux de travail GitHub pour construire le paquetage et "
+"le télécharger sur TestPyPI. En même temps, le flux de travail GitHub créera "
+"une version préliminaire sur GitHub. En supposant que le flux de travail "
+"passe, la version finale peut alors être publiée sur GitHub en finalisant la "
+"version préliminaire."
 
 #: ../../../CONTRIBUTING.rst:193
 msgid ""
-"Once the release is published, the `publish-pypi.yml` workflow will go "
-"into an `awaiting approval` mode on Github Actions. Only authorized users"
-" may approve this workflow (notifications will be sent) to trigger the "
-"upload to PyPI."
+"Once the release is published, the `publish-pypi.yml` workflow will go into "
+"an `awaiting approval` mode on Github Actions. Only authorized users may "
+"approve this workflow (notifications will be sent) to trigger the upload to "
+"PyPI."
 msgstr ""
+"Une fois la version publiée, le flux de travail `publish-pypi.yml` passera "
+"en mode `awaiting approval` sur Github Actions. Seuls les utilisateurs "
+"autorisés peuvent approuver ce workflow (des notifications seront envoyées) "
+"pour déclencher le téléchargement vers PyPI."
 
 #: ../../../CONTRIBUTING.rst:195
 msgid "To generate the release notes, run:"
-msgstr ""
+msgstr "Pour générer les notes de mise à jour, exécutez :"
 
 #: ../../../CONTRIBUTING.rst:203
 msgid ""
@@ -399,26 +508,38 @@ msgid ""
 "your python console. Copy and paste them into the GitHub release "
 "description, keeping only the changes for the current version."
 msgstr ""
+"Cela imprimera les notes de version (extraites du fichier `HISTORY.rst`) "
+"dans votre console python. Copiez et collez-les dans la description de la "
+"version de GitHub, en ne gardant que les changements pour la version "
+"actuelle."
 
 #: ../../../CONTRIBUTING.rst:205
 msgid ""
-"Once the release is published, it will go into a `staging` mode on Github"
-" Actions. Once the tests pass, admins can approve the release (an e-mail "
-"will be sent) and it will be published on PyPI."
+"Once the release is published, it will go into a `staging` mode on Github "
+"Actions. Once the tests pass, admins can approve the release (an e-mail will "
+"be sent) and it will be published on PyPI."
 msgstr ""
+"Une fois la version publiée, elle passera en mode `staging` sur Github "
+"Actions. Une fois les tests passés, les administrateurs peuvent approuver la "
+"version (un e-mail sera envoyé) et elle sera publiée sur PyPI."
 
 #: ../../../CONTRIBUTING.rst:209
 msgid ""
 "Uploads to PyPI can **never** be overwritten. If you make a mistake, you "
 "will need to bump the version and re-release the package. If the package "
-"uploaded to PyPI is broken, you should modify the GitHub release to mark "
-"the package as broken, as well as yank the package (mark the version  "
+"uploaded to PyPI is broken, you should modify the GitHub release to mark the "
+"package as broken, as well as yank the package (mark the version  "
 "\"broken\") on PyPI."
 msgstr ""
+"Les téléchargements sur PyPI ne peuvent **jamais** être écrasés. Si vous "
+"faites une erreur, vous devrez modifier la version et publier à nouveau le "
+"paquet. Si le paquet téléchargé sur PyPI est cassé, vous devez modifier la "
+"version GitHub pour marquer le paquet comme cassé, ainsi que retirer le "
+"paquet (marquer la version \"cassée\") sur PyPI."
 
 #: ../../../CONTRIBUTING.rst:212
 msgid "Packaging"
-msgstr ""
+msgstr "Création d'un paquet"
 
 #: ../../../CONTRIBUTING.rst:214
 msgid ""
@@ -427,50 +548,64 @@ msgid ""
 "update the pip-installable package (wheel and source release) on PyPI as "
 "well as the binary on conda-forge."
 msgstr ""
+"Lorsqu'une nouvelle version a été créée (les fonctionnalités ont été "
+"intégrées avec succès, la couverture des tests et la stabilité sont "
+"adéquates), les mainteneurs doivent mettre à jour le paquetage installable "
+"par pip (wheel et version source) sur PyPI ainsi que le binaire sur conda-"
+"forge."
 
 #: ../../../CONTRIBUTING.rst:217
 msgid "The simple approach"
-msgstr ""
+msgstr "L'approche simple"
 
 #: ../../../CONTRIBUTING.rst:219
 msgid ""
-"The simplest approach to packaging for general support (pip wheels) "
-"requires that ``flit`` be installed::"
+"The simplest approach to packaging for general support (pip wheels) requires "
+"that ``flit`` be installed::"
 msgstr ""
+"L'approche la plus simple de l'empaquetage pour le support général (pip "
+"wheels) requiert que ``flit`` soit installé: :"
 
 #: ../../../CONTRIBUTING.rst:223
 msgid ""
-"From the command line on your Linux distribution, simply run the "
-"following from the clone's main dev branch::"
+"From the command line on your Linux distribution, simply run the following "
+"from the clone's main dev branch::"
 msgstr ""
+"À partir de la ligne de commande de votre distribution Linux, exécutez "
+"simplement ce qui suit à partir de la branche principale de développement du "
+"clone: :"
 
 #: ../../../CONTRIBUTING.rst:231
 msgid ""
-"The new version based off of the version checked out will now be "
-"available via `pip` (`$ pip install xhydro`)."
+"The new version based off of the version checked out will now be available "
+"via `pip` (`$ pip install xhydro`)."
 msgstr ""
+"La nouvelle version basée sur la version extraite sera maintenant disponible "
+"via `pip` (`$ pip install xhydro`)."
 
 #: ../../../CONTRIBUTING.rst:234
 msgid "Releasing on conda-forge"
-msgstr ""
+msgstr "Publication sur conda-forge"
 
 #: ../../../CONTRIBUTING.rst:237
 msgid "Initial Release"
-msgstr ""
+msgstr "Première publication"
 
 #: ../../../CONTRIBUTING.rst:241
 msgid ""
-"Before preparing an initial release on conda-forge, we *strongly* suggest"
-" consulting the following links:"
+"Before preparing an initial release on conda-forge, we *strongly* suggest "
+"consulting the following links:"
 msgstr ""
+"Avant de préparer une version initiale sur conda-forge, nous suggérons "
+"*fortement* de consulter les liens (en anglais) suivants :"
 
 #: ../../../CONTRIBUTING.rst:240
 msgid "https://conda-forge.org/docs/maintainer/adding_pkgs.html"
-msgstr ""
+msgstr "https://conda-forge.org/docs/maintainer/adding_pkgs.html"
 
 #: ../../../CONTRIBUTING.rst:241
 msgid "https://github.com/conda-forge/staged-recipes"
-msgstr ""
+msgstr "https://github.com/conda-forge/staged-recipes"
 
 #: ../../../CONTRIBUTING.rst:243
 msgid ""
@@ -478,83 +613,121 @@ msgid ""
 "packages to the conda-forge repository, we strongly suggest using the "
 "``grayskull`` tool::"
 msgstr ""
+"Afin de créer une nouvelle recette de construction conda, qui sera utilisée "
+"pour proposer des paquets au dépôt conda-forge, nous suggérons fortement "
+"d'utiliser l'outil ``grayskull``: :"
 
 #: ../../../CONTRIBUTING.rst:248
 msgid ""
 "For more information on ``grayskull``, please see the following link: "
 "https://github.com/conda/grayskull"
 msgstr ""
+"Pour plus d'informations sur ``grayskull``, veuillez consulter le lien "
+"suivant : https://github.com/conda/grayskull"
 
 #: ../../../CONTRIBUTING.rst:252
 msgid ""
 "Before updating the main conda-forge recipe, we echo the conda-forge "
 "documentation and *strongly* suggest performing the following checks:"
 msgstr ""
+"Avant de mettre à jour la recette principale de conda-forge, nous faisons "
+"écho à la documentation de conda-forge et suggérons *fortement* d'effectuer "
+"les vérifications suivantes :"
 
 #: ../../../CONTRIBUTING.rst:251
 msgid ""
-"Ensure that dependencies and dependency versions correspond with those of"
-" the tagged version, with open or pinned versions for the `host` "
-"requirements."
+"Ensure that dependencies and dependency versions correspond with those of "
+"the tagged version, with open or pinned versions for the `host` requirements."
 msgstr ""
+"S'assurer que les dépendances et les versions des dépendances correspondent "
+"à celles de la version étiquetée, avec des versions ouvertes ou épinglées "
+"pour les exigences `host`."
 
 #: ../../../CONTRIBUTING.rst:252
 msgid ""
-"If possible, configure tests within the conda-forge build CI (e.g. "
-"`imports: xhydro`, `commands: pytest xhydro`)."
+"If possible, configure tests within the conda-forge build CI (e.g. `imports: "
+"xhydro`, `commands: pytest xhydro`)."
 msgstr ""
+"Si possible, configurez les tests dans le CI de construction de conda-forge "
+"(par exemple `imports : xhydro`, `commands : pytest xhydro`)."
 
 #: ../../../CONTRIBUTING.rst:255
 msgid "Subsequent releases"
-msgstr ""
+msgstr "Publications ultérieures"
 
 #: ../../../CONTRIBUTING.rst:257
 msgid ""
 "If the conda-forge feedstock recipe is built from PyPI, then when a new "
 "release is published on PyPI, `regro-cf-autotick-bot` will open Pull "
-"Requests automatically on the conda-forge feedstock. It is up to the "
-"conda-forge feedstock maintainers to verify that the package is building "
-"properly before merging the Pull Request to the main branch."
+"Requests automatically on the conda-forge feedstock. It is up to the conda-"
+"forge feedstock maintainers to verify that the package is building properly "
+"before merging the Pull Request to the main branch."
 msgstr ""
+"Si la recette du feedstock conda-forge est construite à partir de PyPI, "
+"alors quand une nouvelle version est publiée sur PyPI, `regro-cf-autotick-"
+"bot` ouvrira automatiquement des Pull Requests sur le feedstock conda-forge. "
+"C'est aux mainteneurs du feedstock conda-forge de vérifier que le paquet se "
+"construit correctement avant de fusionner la Pull Request à la branche "
+"principale."
 
 #: ../../../CONTRIBUTING.rst:260
 msgid "Building sources for wide support with `manylinux` image"
 msgstr ""
+"Construction des sources pour un support étendu avec l'image `manylinux`."
 
 #: ../../../CONTRIBUTING.rst:263
 msgid ""
-"This section is for building source files that link to or provide links "
-"to C/C++ dependencies. It is not necessary to perform the following when "
-"building pure Python packages."
+"This section is for building source files that link to or provide links to C/"
+"C++ dependencies. It is not necessary to perform the following when building "
+"pure Python packages."
 msgstr ""
+"Cette section concerne la construction de fichiers sources qui renvoient ou "
+"fournissent des liens vers des dépendances C/C++. Il n'est pas nécessaire "
+"d'effectuer les opérations suivantes lors de la construction de paquets "
+"Python purs."
 
 #: ../../../CONTRIBUTING.rst:266
 msgid ""
-"In order to do ensure best compatibility across architectures, we suggest"
-" building wheels using the `PyPA`'s `manylinux` docker images (at time of"
-" writing, we endorse using `manylinux_2_24_x86_64`)."
+"In order to do ensure best compatibility across architectures, we suggest "
+"building wheels using the `PyPA`'s `manylinux` docker images (at time of "
+"writing, we endorse using `manylinux_2_24_x86_64`)."
 msgstr ""
+"Afin d'assurer une meilleure compatibilité entre les architectures, nous "
+"suggérons de construire les roues en utilisant les images docker `PyPA` "
+"`manylinux` (au moment de la rédaction, nous recommandons d'utiliser "
+"`manylinux_2_24_x86_64`)."
 
 #: ../../../CONTRIBUTING.rst:269
 msgid "With `docker` installed and running, begin by pulling the image::"
 msgstr ""
+"Avec `docker` installé et en cours d'exécution, commencez par extraire "
+"l'image: :"
 
 #: ../../../CONTRIBUTING.rst:273
 msgid ""
 "From the xhydro source folder we can enter into the docker container, "
-"providing access to the `xhydro` source files by linking them to the "
-"running image::"
+"providing access to the `xhydro` source files by linking them to the running "
+"image::"
 msgstr ""
+"Depuis le dossier source de xhydro, nous pouvons entrer dans le conteneur "
+"docker, ce qui permet d'accéder aux fichiers source `xhydro` en les liant à "
+"l'image en cours d'exécution: :"
 
 #: ../../../CONTRIBUTING.rst:277
 msgid ""
 "Finally, to build the wheel, we run it against the provided Python3.9 "
 "binary::"
 msgstr ""
+"Enfin, pour construire la roue, nous l'exécutons en utilisant le programme "
+"Python3.9 fourni :"
 
 #: ../../../CONTRIBUTING.rst:281
 msgid ""
-"This will then place two files in `xhydro/dist/` (\"xhydro-1.2.3-py3"
-"-none-any.whl\" and \"xhydro-1.2.3.tar.gz\"). We can now leave our docker"
-" container (`$ exit`) and continue with uploading the files to PyPI::"
+"This will then place two files in `xhydro/dist/` (\"xhydro-1.2.3-py3-none-"
+"any.whl\" and \"xhydro-1.2.3.tar.gz\"). We can now leave our docker "
+"container (`$ exit`) and continue with uploading the files to PyPI::"
 msgstr ""
+"Cela placera deux fichiers dans `xhydro/dist/` (\"xhydro-1.2.3-py3-none-any."
+"whl\" et \"xhydro-1.2.3.tar.gz\"). Nous pouvons maintenant quitter notre "
+"conteneur docker (`$ exit`) et continuer à télécharger les fichiers sur "
+"PyPI: :"
