@@ -77,7 +77,7 @@ msgstr ""
 
 #: ../../notebooks/local_frequency_analysis.ipynb:1877
 msgid "The dataset needs a ``time`` dimension."
-msgstr "L'ensemble de données a besoin d'une dimension \"temps\"."
+msgstr "L'ensemble de données a besoin d'une dimension ``time``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:1878
 msgid ""
