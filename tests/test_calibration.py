@@ -1,11 +1,18 @@
+"""
+Import packages
+"""
 import pytest
 
-from xhydro.calibration import (perform_calibration, 
-                                get_objective_function_value, 
-                                dummy_model, 
-                                spot_setup)
 import numpy as np
-
+from xhydro.hydrological_modelling import dummy_model
+from xhydro.calibration import (perform_calibration, 
+                                get_objective_function_value
+                                )
+                                
+"""
+Test suite for the calibration algorithm in calibration.py. 
+Also tests the dummy model implementation.
+"""
 
 def test_spotpy_calibration():
     
