@@ -53,7 +53,7 @@ msgstr "Logiciel libre : Apache-2.0"
 
 #: ../../../README.rst:10
 msgid "Documentation: https://xhydro.readthedocs.io."
-msgstr ""
+msgstr "Documentation: https://xhydro.readthedocs.io/fr"
 
 #: ../../../README.rst:13
 msgid "Features"

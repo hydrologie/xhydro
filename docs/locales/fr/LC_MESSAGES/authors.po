@@ -3,62 +3,71 @@
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: xHydro 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-08 12:18-0500\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr\n"
+"PO-Revision-Date: 2023-12-13 17:00-0500\n"
+"Last-Translator: Thomas-Charles Fortier Filion <tcff_hydro@outlook."
+"com>\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.12.1\n"
+"X-Generator: Poedit 3.4.1\n"
 
 #: ../../../AUTHORS.rst:3
 msgid "Credits"
-msgstr ""
+msgstr "Crédits"
 
 #: ../../../AUTHORS.rst:6
 msgid "Development Lead"
-msgstr ""
+msgstr "Responsable du développement"
 
 #: ../../../AUTHORS.rst:8
 msgid ""
-"Thomas-Charles Fortier Filion <tcff_hydro@outlook.com> `@TC-FF "
-"<https://github.com/TC-FF>`_"
+"Thomas-Charles Fortier Filion <tcff_hydro@outlook.com> `@TC-FF <https://"
+"github.com/TC-FF>`_"
 msgstr ""
+"Thomas-Charles Fortier Filion <tcff_hydro@outlook.com> `@TC-FF <https://"
+"github.com/TC-FF>`_"
 
 #: ../../../AUTHORS.rst:11
 msgid "Co-Developers"
-msgstr ""
+msgstr "Co-développeurs"
 
 #: ../../../AUTHORS.rst:13
 msgid ""
-"Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre "
-"<https://github.com/Zeitsperre>`_"
+"Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre <https://"
+"github.com/Zeitsperre>`_"
 msgstr ""
+"Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre <https://"
+"github.com/Zeitsperre>`_"
 
 #: ../../../AUTHORS.rst:14
 msgid ""
 "Gabriel Rondeau-Genesse <rondeau-genesse.gabriel@ouranos.ca> `@RondeauG "
 "<https://github.com/RondeauG>`_"
 msgstr ""
+"Gabriel Rondeau-Genesse <rondeau-genesse.gabriel@ouranos.ca> `@RondeauG "
+"<https://github.com/RondeauG>`_"
 
 #: ../../../AUTHORS.rst:15
 msgid ""
-"Sébastien Langlois `@sebastienlanglois "
-"<https://github.com/sebastienlanglois>`_"
+"Sébastien Langlois `@sebastienlanglois <https://github.com/"
+"sebastienlanglois>`_"
 msgstr ""
+"Sébastien Langlois `@sebastienlanglois <https://github.com/"
+"sebastienlanglois>`_"
 
 #: ../../../AUTHORS.rst:18
 msgid "Contributors"
-msgstr ""
+msgstr "Contributeurs"
 
 #: ../../../AUTHORS.rst:20
 msgid "None yet. Why not be the first?"
-msgstr ""
+msgstr "Il n'y en a pas encore. Pourquoi ne pas être le premier ?"

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: xHydro 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-08 12:18-0500\n"
-"PO-Revision-Date: 2023-12-11 15:02-0500\n"
+"PO-Revision-Date: 2023-12-13 17:14-0500\n"
 "Last-Translator: Thomas-Charles Fortier Filion <tcff_hydro@outlook.com>\n"
 "Language-Team: fr <LL@li.org>\n"
 "Language: fr\n"
@@ -25,7 +25,7 @@ msgstr "Installation"
 
 #: ../../installation.rst:6
 msgid "Stable release"
-msgstr ""
+msgstr "Version stable"
 
 #: ../../installation.rst:7
 msgid ""
@@ -46,8 +46,8 @@ msgid ""
 "This is the preferred method to install `xHydro`, as it will always "
 "install the most recent stable release."
 msgstr ""
-"C'est la méthode préférée pour installer `xHydro`, car elle installera "
-"toujours la version stable la plus récente."
+"C'est la méthode recommandée pour installer `xHydro`, car elle "
+"installera toujours la version stable la plus récente."
 
 #: ../../installation.rst:18
 msgid ""
@@ -70,7 +70,7 @@ msgstr ""
 
 #: ../../installation.rst:26
 msgid "From sources"
-msgstr ""
+msgstr "A partir du code source"
 
 #: ../../installation.rst:27
 msgid ""
@@ -81,7 +81,7 @@ msgstr ""
 "`xHydro` est toujours en développement actif et les dernières "
 "fonctionnalités peuvent ne pas être encore disponibles sur `PyPI`. Pour "
 "installer la dernière version de développement, vous pouvez installer "
-"`xHydro` directement depuis le repo `Github`_."
+"`xHydro` directement depuis le dépôt `Github`_."
 
 #: ../../installation.rst:30
 msgid "You can either clone the public repository:"
@@ -96,7 +96,7 @@ msgid ""
 "Once you have a copy of the source, you can create a working environment "
 "and install `xHydro` in it:"
 msgstr ""
-"Une fois que vous avez une copie des sources, vous pouvez créer un "
+"Une fois que vous avez une copie du code source, vous pouvez créer un "
 "environnement de travail et y installer `xHydro` :"
 
 #: ../../installation.rst:50
@@ -104,5 +104,5 @@ msgid ""
 "When new changes are made to the `Github repo`_, you can update your "
 "local copy using:"
 msgstr ""
-"Lorsque de nouveaux changements sont apportés au `Github repo`_, vous "
+"Lorsque de nouveaux changements sont apportés au `Github dépôt`_, vous "
 "pouvez mettre à jour votre copie locale en utilisant :"
