@@ -326,7 +326,7 @@ msgstr ""
 "branche ``main`` sur GitHub. **Il n'est pas recommandé d'augmenter "
 "manuellement la version de votre branche lorsque vous fusionnez des demandes "
 "d'extraction (qui ne sont pas des versions) (cela entraînera une double "
-"augmentation de la version)"
+"augmentation de la version).**"
 
 #: ../../../CONTRIBUTING.rst:132
 msgid ""
