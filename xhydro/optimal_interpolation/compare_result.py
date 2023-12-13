@@ -1,47 +1,8 @@
-import netCDF4
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
-
-"""
-Retourne une liste qui contient avec les valeurs d'un fichier netCDF
-Arguments :
-filename (string): Le nom du fichier netCDF
-key (string) : La clé d'information recherché dans le fichier
-Retourne :
-(list): Liste qui contient les valeurs du fichier
-"""
-
-def nc_read(filename, key):
-    return netCDF4.Dataset(filename).variables[key]
-
-
-"""
-Retourne une liste qui contient avec les valeurs d'un fichier netCDF dont celles-ci furent
-séparés en caractères
-Arguments :
-filename (string): Le nom du fichier netCDF
-key (string) : La clé d'information recherché dans le fichier
-nchar_dimid (int) : La dimension des chaines de caractères séparés
-Retourne :
-(list): Liste qui contient les valeurs du fichier
-"""
-
-
-def nc_read_char2string(filename, key, nchar_dimid):
-    dataset = netCDF4.Dataset(filename)
-    data_values = dataset.variables[key]
-    result = []
-    index = -1
-
-    if data_values.dimensions.count(nchar_dimid) > 0:
-        index = data_values.dimensions.index(nchar_dimid)
-
-    if index > 0:
-        for i in range(0, data_values.shape[0]):
-            result.append(''.join(str(data_values[i, :], encoding='utf-8')))
-    return result
-
+import xarray as xr
+import sys
 
 """
 Retourne une liste qui contient les valeurs d'un fichier CSV
@@ -51,8 +12,6 @@ header (bool) : Le fichier CSV contient une entête
 Retourne :
 (list): Liste qui contient les valeurs du fichier
 """
-
-
 def read_csv_file(csv_filename, header):
     items = []
     with open(csv_filename, newline='') as csvfile:
@@ -80,8 +39,6 @@ section_id (string) : L'indentificateur de la section
 Retourne :
 (string): Vide si la section est introuvable ou la clé d'association entre la station et une section.
 """
-
-
 def find_section(stations, section_id):
     value = ""
     section_position = 0
@@ -100,14 +57,9 @@ key (string) : Élément à trouver dans la liste
 Retourne :
 (float): -1 si l'élément est introuvable ou l'indice de l'élément
 """
-
-
 def find_index(array, key):
-    value = -1
-    for i in range(0, len(array)):
-        if key == array[i]:
-            value = i
-    return value
+    logical = array.station_id.data == key.encode('UTF-8')
+    return np.where(logical)[0][0]
 
 
 """
@@ -118,8 +70,6 @@ sim (list) : Liste qui contient les débits simulés
 Retourne :
 (float): Le coefficient d'efficacité KGE.
 """
-
-
 def kge_prime(obs, sim):
     is_nan = np.isnan(obs) | np.isnan(sim)
 
@@ -148,8 +98,6 @@ sim (list) : Liste qui contient les débits simulés
 Retourne :
 (float): Le coefficient d'efficacité Nash–Sutcliffe.
 """
-
-
 def nash(obs, sim):
     sim = np.ma.array(sim, mask=np.isnan(obs))
     obs = np.ma.array(obs, mask=np.isnan(obs))
@@ -159,16 +107,52 @@ def nash(obs, sim):
     return 1 - sse / ssu
 
 
-def compare():
+"""
+Code to plot results as per user request
+"""
+def plot_results(kge, kge_l1o, nse, nse_l1o):
+    fig, (ax1, ax2) = plt.subplots(2)
+    ax1.scatter(kge, kge_l1o)
+    ax1.set_xlabel("KGE")
+    ax1.set_ylabel("KGE Leave-one-out OI")
+    ax1.axline((0, 0), (1, 1), linewidth=2)
+    ax1.set_xlim(0.3, 1)
+    ax1.set_ylim(0.3, 1)
+    
+    ax2.scatter(nse, nse_l1o)
+    ax2.set_xlabel("NSE")
+    ax2.set_ylabel("NSE Leave-one-out OI")
+    ax2.axline((0, 0), (1, 1), linewidth=2)
+    ax2.set_xlim(0.3, 1)
+    ax2.set_ylim(0.3, 1)
+    
+    plt.show()
+    
+
+"""
+Main code: Here is where we start the computation of the comparison method
+
+TODO to make programmatic:
+    1. Update compare function to take filepaths as inputs
+    2. Add checks for data quality/error handling
+    3. Add parameters to suit user needs (flexibility)
+    4. Add parameter to ask for plot or not (user defined)
+    5. Comment/document
+    6. remove if __name__=="__main__" line and below to push to package.
+    7. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
+    8. read_csv_files, find_index and find_section functions are duplicates between this and the "cross_validation" code, can be in a shared utils package
+    9. Check to make sure files and indexes are in the correct order when reading
+"""
+def compare(percentileToPlot=50):
     start_date = np.datetime64('1961-01-01')
     end_date = np.datetime64('2018-12-31')
-    time = (end_date - start_date) / np.timedelta64(1, 'D')
+    time = ((end_date - start_date) / np.timedelta64(1, 'D')) + 1
 
-    obs_data_filename = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDOBS.nc'
-    sim_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDREP.nc'
-    l10_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
-    station_validation_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\stations_retenues_validation_croisee.csv"
-    station_mapping_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Correspondance_Station_Troncon.csv"
+    obs_data_filename = '.\\donnees\\A20_HYDOBS.nc'
+    sim_data_file = '.\\donnees\\A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc'
+    l1o_data_file = '.\\donnees\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
+    station_validation_filename = ".\\donnees\\stations_retenues_validation_croisee.csv"
+    station_mapping_filename = ".\\donnees\\Table_Correspondance_Station_Troncon.csv"
 
     print("Lecture des CSV")
     station_validation = read_csv_file(station_validation_filename, 1)
@@ -180,50 +164,56 @@ def compare():
     debit_obs = np.empty((time_range, station_count))
     debit_l1o = np.empty((time_range, station_count))
 
-    print("Lecture des NC ids")
-    stations_id = nc_read_char2string(obs_data_filename, 'station_id', 'nchar_station_id')
-    sections_id = nc_read_char2string(sim_data_file, 'station_id', 'nchar_station_id')
-    l1o_stations_id = nc_read_char2string(l10_data_file, 'station_id', 'nchar_station_id')
+    print("Lecture des NC")
+    # Open the dataset for reading
+    obs_data = xr.open_dataset(obs_data_filename)
+    sim_data = xr.open_dataset(sim_data_file)
+    l1o_data = xr.open_dataset(l1o_data_file)
+    
+    # Read station id
+    stations_id = obs_data["station_id"]
+    sections_id = sim_data["station_id"]
+    l1o_stations_id = l1o_data["station_id"]
+    
+    # Read drainage area
+    da_obs = obs_data.drainage_area
+    da_sim = sim_data.drainage_area
+    da_l1o = l1o_data.drainage_area
 
-    print("Lecture des NC drainage")
-    da_obs = nc_read(obs_data_filename, 'drainage_area')
-    da_sim = nc_read(sim_data_file, 'drainage_area')
-    da_l10 = nc_read(l10_data_file, 'drainage_area')
+    # Read discharge percentiles
+    dis_obs = obs_data.Dis
+    dis_sim = sim_data.Dis
+    dis_l1o = l1o_data.Dis
 
-    print("Lecture des NC discharge")
-    dis_obs = nc_read(obs_data_filename, 'Dis')
-    dis_sim = nc_read(sim_data_file, 'Dis')
-    dis_l10 = nc_read(l10_data_file, 'Dis')
-
-    percentile = nc_read(l10_data_file, 'percentile')
-
-    index_percentile = 0
-    for i in range(len(percentile)):
-        if percentile[i] == 50:
-            index_percentile = i
-
+    # Read percentiles list (which percentile thresholds were used)
+    percentile = l1o_data.percentile
+    
+    # Find position of the desired percentile
+    idx_pct = np.where(percentile==percentileToPlot)[0];
+    if idx_pct is None:
+        sys.exit(
+            "The desired percentile is not computed in the results file \
+             provided. Please make sure your percentile value is expressed \
+             in percent (i.e. 50th percentile = 50)"
+                )
+    
     for i in range(0, station_count):
         print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
 
         station_id = station_validation[i][0]
         associate_section = find_section(station_mapping, station_id)
 
-        index_section = find_index(sections_id, associate_section)
-        index_station = find_index(stations_id, station_id)
-        index_station_l10 = find_index(l1o_stations_id, station_id)
+        idx_section = find_index(sections_id, associate_section)
+        idx_stat = find_index(stations_id, station_id)
+        idx_stat_l1o = find_index(l1o_stations_id, station_id)
 
-        sup_sim = da_sim[index_section].item()
-        sup_obs = da_obs[index_station].item()
-        sup = da_l10[index_station_l10].item()
+        sup_sim = da_sim[idx_section].item()
+        sup_obs = da_obs[idx_stat].item()
+        sup = da_l1o[idx_stat_l1o].item()
 
-        data_values = dis_sim[index_section][0:time_range] / sup_sim
-        debit_sim[:, i] = data_values.filled(np.nan)[:]
-
-        data_values = dis_obs[index_station][0:time_range] / sup_obs
-        debit_obs[:, i] = data_values.filled(np.nan)[:]
-
-        data_values = dis_l10[index_percentile][index_station_l10][0:time_range] / sup
-        debit_l1o[:, i] = data_values.filled(np.nan)[:]
+        debit_sim[:, i] = dis_sim[idx_section, 0:time_range].values[:] / sup_sim
+        debit_obs[:, i] = dis_obs[idx_stat, 0:time_range].values[:] / sup_obs
+        debit_l1o[:, i] =  dis_l1o[idx_pct, idx_stat_l1o, 0:time_range].values[:] / sup
 
     kge = np.empty(station_count)
     nse = np.empty(station_count)
@@ -236,11 +226,10 @@ def compare():
         kge_l1o[n] = kge_prime(debit_obs[:, n], debit_l1o[:, n])
         nse_l1o[n] = nash(debit_obs[:, n], debit_l1o[:, n])
 
-    fig, ax = plt.subplots()
-    ax.scatter(kge, kge_l1o)
-    ax.set_xlabel("KGE")
-    ax.set_ylabel("KGE L10")
-    ax.axline((0, 0), (1, 1), linewidth=2)
-    ax.set_xlim(0.3, 1)
-    ax.set_ylim(0.3, 1)
-    plt.show()
+    plot_results(kge, kge_l1o, nse, nse_l1o)    
+
+
+
+
+if __name__=="__main__":
+    compare(50)
