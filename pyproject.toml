@@ -36,8 +36,8 @@ classifiers = [
 dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
-  "esmpy",
   "numpy",
+  "spotpy",
   "statsmodels",
   "xarray",
   "xclim>=0.45.0",

@@ -5,8 +5,8 @@ dependencies:
   - python >=3.9,<3.12
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
-  - esmpy
   - numpy
+  - spotpy
   - statsmodels
   - xarray
   - xclim >=0.45.0
@@ -14,7 +14,6 @@ dependencies:
   - pip
   - pip:
     - hydroeval
-    - spotpy
     - xdatasets
   # Dev
   - bump-my-version >=0.12.0
