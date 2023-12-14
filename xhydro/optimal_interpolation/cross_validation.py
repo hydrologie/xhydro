@@ -1,48 +1,28 @@
-import netCDF4
 import numpy as np
 import csv
 import scipy.optimize
-from scipy.stats import invgauss
+import xarray as xr
+from cProfile import Profile
+from pstats import SortKey, Stats
+import os
+from multiprocessing import Pool
+from functools import partial
+import constants
 
 """
-Retourne une liste qui contient avec les valeurs d'un fichier netCDF
-Arguments :
-filename (string): Le nom du fichier netCDF
-key (string) : La clé d'information recherché dans le fichier
-Retourne :
-(list): Liste qui contient les valeurs du fichier
-"""
-
-
-def nc_read(filename, key):
-    return netCDF4.Dataset(filename).variables[key]
-
-
-"""
-Retourne une liste qui contient avec les valeurs d'un fichier netCDF dont celles-ci furent
-séparés en caractères
-Arguments :
-filename (string): Le nom du fichier netCDF
-key (string) : La clé d'information recherché dans le fichier
-nchar_dimid (int) : La dimension des chaines de caractères séparés
-Retourne :
-(list): Liste qui contient les valeurs du fichier
+We will use functools.partial to define functions instead of lambdas as it is
+more efficient and will allow parallelization. Therefore, define the ECF
+function shape here. New function.
 """
 
 
-def nc_read_char2string(filename, key, nchar_dimid):
-    dataset = netCDF4.Dataset(filename)
-    data_values = dataset.variables[key]
-    result = []
-    index = -1
-
-    if data_values.dimensions.count(nchar_dimid) > 0:
-        index = data_values.dimensions.index(nchar_dimid)
-
-    if index > 0:
-        for i in range(0, data_values.shape[0]):
-            result.append(''.join(str(data_values[i, :], encoding='utf-8')))
-    return result
+def general_ecf(h, par, form):
+    if form == 1:
+        return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+    elif form == 2:
+        return par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+    else:
+        return par[0] * np.exp(-h / par[1])
 
 
 """
@@ -98,329 +78,357 @@ array (list): Liste qui contient les données
 key (string) : Élément à trouver dans la liste
 Retourne :
 (float): -1 si l'élément est introuvable ou l'indice de l'élément
+Modifié pas mal pour vectoriser.
 """
 
 
 def find_index(array, key):
-    value = -1
-    for i in range(0, len(array)):
-        if key == array[i]:
-            value = i
-    return value
+    logical = array.station_id.data == key.encode('UTF-8')
+    return np.where(logical)[0][0]
 
 
-def ajustement_ECF_climatologique(debit_obs, debit_sim, PX, PY, savename):
-    ecart = debit_sim - debit_obs
-
-    station_count = np.shape(PX)[1]
-    time_range = np.shape(ecart)[0]
+"""
+Does something!  Did not modify.
+"""
 
 
-    distance = np.empty((station_count, station_count))
+def initialize_ajusted_ECF_climate_variables(flow_obs, flow_sim, x_points, y_points, iteration_count):
+    difference = flow_sim - flow_obs
 
-    for i in range(0, station_count):
-        for j in range(0, station_count):
-            distance[i, j] = np.mean(np.sqrt(np.power(PX[:, j] - PX[:, i], 2) + np.power(PY[:, j] - PY[:, i], 2)))
+    station_count = np.shape(x_points)[1]
+    time_range = np.shape(difference)[0]
 
-    input_opt = {}
-    input_opt['hmax_divider'] = 2
-    input_opt['p1_bnds'] = [0.95, 1]
-    input_opt['hmax_mult_range_bnds'] = [0.05, 3]
+    heights = np.empty((time_range, iteration_count))
+    covariances = np.empty((time_range, iteration_count))
+    standard_deviations = np.empty((time_range, iteration_count))
 
-    nbin = 10
-    hB = np.empty((time_range, nbin))
-    covB = np.empty((time_range, nbin))
-    stdB = np.empty((time_range, nbin))
+    heights[:, :] = np.nan
+    covariances[:, :] = np.nan
+    standard_deviations[:, :] = np.nan
+
+    return difference, station_count, time_range, heights, covariances, standard_deviations
 
 
-    hB[:, :] = np.nan
-    covB[:, :] = np.nan
-    stdB[:, :] = np.nan
+"""
+Does something!  Did not modify.
+"""
 
-    for i in range(0, time_range):
+
+def initialize_stats_variables(heights, covariances, standard_deviations, iteration_count=10):
+    quantities = np.linspace(0, 1, iteration_count + 1)
+    valid_heights = np.unique(np.quantile(heights[~np.isnan(heights)], quantities))
+    valid_heights_count = len(valid_heights)
+
+    distance = heights.T.reshape(len(heights) * len(heights[0]))
+    covariance = covariances.T.reshape(len(covariances) * len(covariances[0]))
+    covariance_weights = 1 / np.power(
+        standard_deviations.T.reshape(len(standard_deviations) * len(standard_deviations[0])), 2)
+
+    return distance, covariance, covariance_weights, valid_heights, valid_heights_count
+
+
+"""
+Does Something!  Did not modify.
+"""
+
+
+def calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights, valid_heights_count):
+    cov_b = np.zeros(valid_heights_count - 1)
+    h_b = np.zeros(valid_heights_count - 1)
+    std_b = np.zeros(valid_heights_count - 1)
+    for i in range(valid_heights_count - 1):
+        ind = np.where((distance >= valid_heights[i]) & (distance < valid_heights[i + 1]))
+        h_b[i] = np.mean(distance[ind])
+
+        weight = covariance_weights[ind] / np.sum(covariance_weights[ind])
+
+        cov_b[i] = np.sum(weight * covariance[ind])
+        average = np.average(covariance[ind], weights=weight)
+        variance = np.average((covariance[ind] - average) ** 2, weights=weight)
+        std_b[i] = np.sqrt(variance)
+
+    return h_b, cov_b, std_b
+
+
+"""
+Fait quelque chose!
+Celle-ci a été significativement modifiée.
+"""
+
+
+def ajustement_ECF_climatologique(flow_obs, flow_sim, x_points, y_points, savename, iteration_count=10):
+    difference, station_count, time_range, heights, covariances, standard_deviations = \
+        initialize_ajusted_ECF_climate_variables(flow_obs, flow_sim, x_points, y_points, iteration_count)
+
+    input_opt = {'hmax_divider': 2, 'p1_bnds': [0.95, 1], 'hmax_mult_range_bnds': [0.05, 3]}
+    form = 3
+
+    distance = calculate_average_distance(x_points, y_points)
+
+    for i in range(time_range):
         print(i)
-        is_nan = np.isnan(ecart[i, :])
-        ecart_jour = ecart[i, ~is_nan]
-
-        tableau_de_1 = np.array([1 for i in range(0,len(ecart_jour))])
+        is_nan = np.isnan(difference[i, :])
+        ecart_jour = difference[i, ~is_nan]
+        errors = np.ones((len(ecart_jour)))
 
         if len(ecart_jour) >= 10:
 
+            is_nan_horizontal = is_nan[:len(distance)]
+            is_nan_vertical = is_nan_horizontal.reshape(1, len(distance))
 
-            inanh = is_nan[0:len(distance)]
-            inanv = inanh.reshape(1,len(distance))
+            distancePC = distance[~is_nan_horizontal]
+            distancePC = distancePC[:, ~is_nan_vertical[0, :]]
 
-
-            distancePC = distance[~inanh]
-            distancePC = distancePC[:, ~inanv[0,:]]
-
-            [h_b,cov_b,std_b,NP] = eval_covariance_bin(distancePC, ecart_jour, tableau_de_1, 1, input_opt, nbin)
+            h_b, cov_b, std_b, NP = eval_covariance_bin(distancePC, ecart_jour, errors,
+                                                        input_opt['hmax_divider'], iteration_count)
 
             if len(NP[0]) >= 10:
+                heights[i, :] = h_b[0, 0:11]
+                covariances[i, :] = cov_b[0, 0:11]
+                standard_deviations[i, :] = std_b[0, 0:11]
 
-                hB[i, :] = h_b[0, 0:11]
-                covB[i, :] = cov_b[0, 0:11]
-                stdB[i, :] = std_b[0, 0:11]
+    distance, covariance, covariance_weights, valid_heights, valid_heights_count = \
+        initialize_stats_variables(heights, covariances, standard_deviations, iteration_count)
 
-    distance = hB.T.reshape(len(hB) * len(hB[0]))
-    Covariance = covB.T.reshape(len(covB) * len(covB[0]))
-    poidsCovariance = 1 / np.power(stdB.T.reshape(len(stdB) * len(stdB[0])), 2)
+    h_b, cov_b, std_b = \
+        calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights, valid_heights_count)
 
-    nc = nbin
-    qt = np.linspace(0, 1, nc + 1)
-    cl = np.unique(np.quantile(distance[~np.isnan(distance)], qt))
-    nc = len(cl) - 1
-    cov_b = np.zeros((nc))
-    h_b = np.zeros((nc))
-    std_b = np.zeros((nc))
+    # Nouvelle approche pour le ecf_fun, au lieu d'avoir des lambdas on y va avec des partial.
+    ecf_fun = partial(general_ecf, form=form)
 
-    for i in range(0, nc):
+    weights = 1 / np.power(std_b, 2)
+    weights = weights / np.sum(weights)
+    rmse_fun = lambda par: np.sqrt(np.mean(weights * np.power(ecf_fun(h=h_b, par=par) - cov_b, 2)))
 
-        ind = np.where((distance >= cl[i]) & (distance < cl[i+1]))
-        h_b[i] = np.mean(distance[ind])
-
-        wt = poidsCovariance[ind] / np.sum(poidsCovariance[ind])
-
-        cov_b[i] = np.sum(wt * Covariance[ind])
-        average = np.average(Covariance[ind], weights=wt)
-        variance = np.average((Covariance[ind] - average) ** 2, weights=wt)
-        std_b[i] = np.sqrt(variance)
-
-    hmax_divider = input_opt['hmax_divider']
-    p1_bnds = input_opt['p1_bnds']
-    hmax_mult_range_bnds = input_opt['hmax_mult_range_bnds']
-    form = 3
-    if form == 1:
-        ecf_fun = lambda h, par: par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
-    elif form == 2:
-        ecf_fun = lambda h, par: par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
-    else:
-        ecf_fun = lambda h, par: par[0] * np.exp(-h / par[1])
-
-    weight = 1 / np.power(std_b, 2)
-    weight = weight / np.sum(weight)
-    rmse_fun = lambda par: np.sqrt(np.mean(weight * np.power(ecf_fun(h_b, par) - cov_b, 2)))
-
-    par_opt = scipy.optimize.minimize(rmse_fun, [np.mean(cov_b), np.mean(h_b)/3], \
-                                      bounds=([p1_bnds[0], p1_bnds[1]], [0, hmax_mult_range_bnds[1]*500]))['x']
-    error_cov_fun = lambda x: ecf_fun(x, par_opt)
-
-    #
+    par_opt = scipy.optimize.minimize(rmse_fun, [np.mean(cov_b), np.mean(h_b) / 3],
+                                      bounds=([input_opt['p1_bnds'][0], input_opt['p1_bnds'][1]],
+                                              [0, input_opt['hmax_mult_range_bnds'][1] * 500]))['x']
     # Faire graphique et sauvegarde
-    #
-    #
-    #
-    #
-    #
-    #
 
     return ecf_fun, par_opt
 
-def ecf_fun(h, par, form=1):
-     if form == 2:
-         return par[0] * np.exp(-0.5 * np.power(h/par[1], 2))
-     elif form == 3:
-         return par[0] * np.exp(-h/par[1])
-     else:
-         return par[0]*(1+h/par[1]) * np.exp(-h/par[1])
 
-def eval_covariance_bin(distance, val, err, form, input_opt=None, nbin=None):
+"""
+Does something!  Did not modify.
+"""
 
-    if nbin is not None:
-        hmax_divider = input_opt['hmax_divider']
-        p1_bnds = input_opt['p1_bnds']
-        hmax_mult_range_bnds = input_opt['hmax_mult_range_bnds']
-    elif input_opt is not None:
-        hmax_divider = input_opt['hmax_divider']
-        p1_bnds = input_opt['p1_bnds']
-        hmax_mult_range_bnds = input_opt['hmax_mult_range_bnds']
-        nbin=20
-    else:
-        hmax_divider = 2
-        p1_bnds = [0, 1]
-        hmax_mult_range_bnds = [0, 10]
-        nbin = 20
 
-    ndata = len(val)
-    poids = np.power(1 / err, 2)
-    poids = poids / np.sum(poids)
+def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=20):
+    n_data = len(values)
+    weights = np.power(1 / errors, 2)
+    weights = weights / np.sum(weights)
 
-    moyennePonderee = np.sum(val * poids) / np.sum(poids)
-    variance = np.var(val, ddof=1)
+    weighted_average = np.sum(values * weights) / np.sum(weights)
+    variances = np.var(values, ddof=1)
 
-    d = val - moyennePonderee
+    weighted_values = values - weighted_average
 
-    Covariance = d * d[:, np.newaxis]
-    poidsCovariance = poids * poids[:, np.newaxis]
+    covariance = weighted_values * weighted_values[:, np.newaxis]
+    covariance_weight = weights * weights[:, np.newaxis]
 
-    Covariance = Covariance.reshape(ndata*ndata)
-    poidsCovariance = poidsCovariance.reshape(ndata*ndata)
+    covariance = covariance.reshape(n_data * n_data)
+    covariance_weight = covariance_weight.reshape(n_data * n_data)
 
-    #Remplacer par le code PX
-    distance = distance.reshape(len(distance)*len(distance))
+    distances = distances.reshape(len(distances) * len(distances))
 
-    hmx = max(distance) / hmax_divider
-    Covariance = Covariance[distance < hmx]
-    distance = distance[distance < hmx]
+    hmax = max(distances) / hmax_divider
+    covariance = covariance[distances < hmax]
+    distances = distances[distances < hmax]
 
-    nc = nbin
-    qt = [(1/nc)*i for i in range(0, nc + 1)]
-    cl = np.unique(np.quantile(distance, qt))
-    nc = len(cl) - 1
+    quantiles = np.round([(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2)
+    cl = np.unique(np.quantile(distances, quantiles))
 
-    cov_b = np.empty((1, nc))
-    h_b = np.empty((1, nc))
-    std_b = np.empty((1, nc))
-    NP = np.empty((1, nc))
+    cov_b = np.empty((1, iteration_count))
+    h_b = np.empty((1, iteration_count))
+    std_b = np.empty((1, iteration_count))
+    n_ind = np.empty((1, iteration_count))
 
     cov_b[:, :] = np.nan
     h_b[:, :] = np.nan
     std_b[:, :] = np.nan
-    NP[:, :] = np.nan
+    n_ind[:, :] = np.nan
+
+    for i in range(0, len(cl) - 1):
+        ind = np.where((distances >= cl[i]) & (cl[i + 1] > distances))[0]
+        h_b[:, i] = np.mean(distances[ind])
+
+        selected_covariance_weight = covariance_weight[ind]
+        selected_covariance = covariance[ind]
+
+        weight = selected_covariance_weight / np.sum(selected_covariance_weight)
+
+        cov_b[:, i] = (np.sum(weight) / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2))) * np.sum(
+            weight * selected_covariance)) / variances
+
+        std_b[:, i] = np.sqrt(np.var(selected_covariance))
+        n_ind[:, i] = len(ind)
+
+    return h_b, cov_b, std_b, n_ind
 
 
-    for i in range(0, nc):
-
-        ind = np.where((distance >= cl[i].item()) & (cl[i+1].item() > distance))
-        h_b[:, i] = np.mean(distance[ind])
-
-        wt = poidsCovariance[ind] / np.sum(poidsCovariance[ind])
-
-        cov_b[:, i] = (np.sum(wt) / (np.power(np.sum(wt), 2) - np.sum(np.power(wt, 2))) * np.sum(wt * Covariance[ind])) / variance
+"""
+Function that computes the distance in length units instead of lat/long units.
+Did not modify.
+"""
 
 
-        std_b[:, i] = np.sqrt(np.var(Covariance[ind]))
-        NP[:, i] = len(ind[0])
-
-    return h_b, cov_b, std_b, NP
 def latlon_to_xy(lat, lon, lat0, lon0):
-    R = 6371  # km
+    ray = 6371  # km
 
     lon = lon - lon0
 
-    coslat = np.cos(np.deg2rad(lat))
-    coslon = np.cos(np.deg2rad(lon))
-    coslat0 = np.cos(np.deg2rad(lat0))
+    cos_lat = np.cos(np.deg2rad(lat))
+    cos_lon = np.cos(np.deg2rad(lon))
+    cos_lat0 = np.cos(np.deg2rad(lat0))
 
-    sinlat = np.sin(np.deg2rad(lat))
-    sinlon = np.sin(np.deg2rad(lon))
-    sinlat0 = np.sin(np.deg2rad(lat0))
+    sin_lat = np.sin(np.deg2rad(lat))
+    sin_lon = np.sin(np.deg2rad(lon))
+    sin_lat0 = np.sin(np.deg2rad(lat0))
 
-    x = R * coslat * sinlon
-    y = -R * coslat*sinlat0*coslon+R*coslat0*sinlat
+    x = ray * cos_lat * sin_lon
+    y = -ray * cos_lat * sin_lat0 * cos_lon + ray * cos_lat0 * sin_lat
 
     return x, y
 
-def optimal_interpolation_vBox(oi_input,preCalcul):
-    if len(preCalcul) == 0:
-        preCalcul = {}
 
-    S = 1 #len(oi_input['x_est'])
-    N = len(oi_input['x_obs'][0, :])
+"""
+Function that computes the pairwise distance between sets of points.
+Modified to make use of vectorization, large speedup
+"""
+
+
+def calculate_average_distance(x_points, y_points):
+    count = x_points.shape[1]
+    average_distances = np.zeros((count, count))
+
+    # Compute all pairwise distances in a vectorized manner
+    for i in range(count):
+        distances = np.sqrt((x_points[:, i, np.newaxis] - x_points) ** 2 +
+                            (y_points[:, i, np.newaxis] - y_points) ** 2)
+        average_distances[i, :] = np.mean(distances, axis=0)
+
+    # Fill in the symmetric part of the matrix
+    average_distances = (average_distances + average_distances.T) / 2
+
+    return average_distances
+
+
+"""
+Perform the actual optimal interpolation step. Did not modify.
+"""
+
+
+def optimal_interpolation(oi_input, args):
+    if len(args) == 0:
+        args = {}
+
+    estimated_count = 1 if len(oi_input['x_est'].shape) == 1 else oi_input['x_est'].shape[1]
+    observed_count = len(oi_input['x_obs'][0, :])
     oi_output = oi_input
 
     cond = 0
 
-    if isinstance(preCalcul, dict):
-        if 'x_obs' in preCalcul:
-            cond = (np.array_equal(preCalcul['x_est'],oi_input['x_est']) \
-                    and np.array_equal(preCalcul['y_est'],oi_input['y_est'])) \
-                    and (np.array_equal(preCalcul['x_obs'],oi_input['x_obs']) \
-                    and np.array_equal(preCalcul['y_obs'],oi_input['y_obs']))
-
+    if isinstance(args, dict):
+        if 'x_obs' in args:
+            cond = (np.array_equal(args['x_est'], oi_input['x_est']) \
+                    and np.array_equal(args['y_est'], oi_input['y_est'])) \
+                   and (np.array_equal(args['x_obs'], oi_input['x_obs']) \
+                        and np.array_equal(args['y_obs'], oi_input['y_obs']))
     if cond == 0:
-        Doo = np.zeros((N, N))
-        for s1 in range(0, N):
-            for s2 in range(0, N):
-                eq1 = np.power(oi_input['x_obs'][:, s2] - oi_input['x_obs'][:, s1], 2)
-                eq2 = np.power(oi_input['y_obs'][:, s2] - oi_input['y_obs'][:, s1], 2)
-                Doo[s1, s2] = np.mean(np.sqrt(eq1 + eq2))
-
+        distance_obs_vs_obs = calculate_average_distance(oi_input['x_obs'], oi_input['y_obs'])
     else:
-        Doo = preCalcul['Doo']
+        distance_obs_vs_obs = args['Doo']
 
-    preCalcul['x_obs'] = oi_input['x_obs']
-    preCalcul['y_obs'] = oi_input['y_obs']
-    preCalcul['Doo'] = Doo
+    args['x_obs'] = oi_input['x_obs']
+    args['y_obs'] = oi_input['y_obs']
+    args['Doo'] = distance_obs_vs_obs
 
-    Coo = oi_input['error_cov_fun'](Doo) / oi_input['error_cov_fun'](0)
+    covariance_obs_vs_obs = oi_input['error_cov_fun'](distance_obs_vs_obs) #/ oi_input['error_cov_fun'](0)
 
-    BEo_j = np.tile(oi_input['bg_var_obs'], (N, 1))
-    BEo_i = np.tile(np.resize(oi_input['bg_var_obs'], (1, N)), (N, 1))
+    BEo_j = np.tile(oi_input['bg_var_obs'], (observed_count, 1))
+    BEo_i = np.tile(np.resize(oi_input['bg_var_obs'], (1, observed_count)), (observed_count, 1))
 
-    Bij = Coo * np.sqrt(BEo_j) / np.sqrt(BEo_i)
+    Bij = covariance_obs_vs_obs * np.sqrt(BEo_j) / np.sqrt(BEo_i)
 
-    OEo_j = np.tile(oi_input['var_obs'], (N, 1))
-    OEo_i = np.tile(oi_input['var_obs'], (1, N))
+    OEo_j = np.tile(oi_input['var_obs'], (observed_count, 1))
+    OEo_i = np.tile(oi_input['var_obs'], (1, observed_count))
 
     Oij = (np.sqrt(OEo_j) * np.sqrt(OEo_i)) * np.eye(len(OEo_j), len(OEo_j[0])) / BEo_i
 
     if cond == 0:
-        Doe = np.zeros((S,N))
+        distance_obs_vs_est = np.zeros((1, observed_count))
+        x_est = oi_input['x_est']
+        y_est = oi_input['y_est']
 
-        for s1 in range(0, S):
-            for s2 in range(0, N):
-                eq1 = np.power(oi_input['x_obs'][:, s2] - oi_input['x_est'], 2)
-                eq2 = np.power(oi_input['y_obs'][:, s2] - oi_input['y_est'], 2)
-
-                Doe[s1, s2] = np.mean(np.sqrt(eq1 + eq2))
+        for i in range(estimated_count):
+            for j in range(observed_count // 2):
+                distance_obs_vs_est[i, j] = np.mean(np.sqrt(
+                    np.power(oi_input['x_obs'][:, j] - x_est[:], 2) + np.power(oi_input['y_obs'][:, j] - y_est[:], 2)))
+                distance_obs_vs_est[i, -j - 1] = np.mean(np.sqrt(
+                    np.power(oi_input['x_obs'][:, -j - 1] - x_est[:], 2) + np.power(oi_input['y_obs'][:, -j - 1] - y_est[:], 2)))
     else:
-        Doe = preCalcul['Doe']
+        distance_obs_vs_est = args['distance_obs_vs_est']
 
-    preCalcul['x_est'] = oi_input['x_est']
-    preCalcul['y_est'] = oi_input['y_est']
-    preCalcul['Doe'] = Doe
+    args['x_est'] = oi_input['x_est']
+    args['y_est'] = oi_input['y_est']
+    args['distance_obs_vs_est'] = distance_obs_vs_est
 
-    BEe = np.tile(np.resize(oi_input['bg_var_est'], (1, N)), (S, 1))
-    BEo = np.tile(oi_input['bg_var_obs'], (S, 1))
+    BEe = np.tile(np.resize(oi_input['bg_var_est'], (1, observed_count)), (estimated_count, 1))
+    BEo = np.tile(oi_input['bg_var_obs'], (estimated_count, 1))
 
-    Coe = oi_input['error_cov_fun'](Doe) / oi_input['error_cov_fun'](0)
+    Coe = oi_input['error_cov_fun'](distance_obs_vs_est) / oi_input['error_cov_fun'](0)
 
-    Bei = np.resize(Coe * np.sqrt(BEe) / np.sqrt(BEo), (N, 1))
+    Bei = np.resize(Coe * np.sqrt(BEe) / np.sqrt(BEo), (observed_count, 1))
+
+    departures = oi_input['bg_departures'].reshape((1,len(oi_input['bg_departures'])))
 
     weights = np.linalg.solve(Bij + Oij, Bei)
+    weights = weights.reshape((1, len(weights)))
 
-    I = np.resize(np.tile(oi_input['bg_departures'], (1, S)), (S, 1))
+    oi_output['v_est'] = oi_input['bg_est'] + np.sum(weights * departures)
+    oi_output['var_est'] = oi_input['bg_var_est'] * (1 - np.sum(Bei[:, 0] * weights[0,:]))
 
-    t1 = weights * I
-    t2 = np.sum(np.resize(weights * I, (S, 1)))
-    oi_output['v_est'] = oi_input['bg_est'] + np.sum(weights * I)
+    return oi_output, args
 
-    oi_output['var_est'] = oi_input['bg_var_est'] * np.diag(1 - Bei * weights)
 
-    return oi_output, preCalcul
+"""
+Execute the main code, including setting constants to files, times, etc. Should
+be converted to a function that takes these values as parameters.
+Heavily modified to parallelize and to optimize.
+"""
 
 
 def execute():
     start_date = np.datetime64('1961-01-01')
-    end_date = np.datetime64('2018-12-31')
-    time = (end_date - start_date) / np.timedelta64(1, 'D')
+    end_date = np.datetime64('2019-01-01')
+    time_series = (end_date - start_date) / np.timedelta64(1, 'D')
 
-    obs_data_filename = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDOBS.nc'
-    sim_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDREP.nc'
+    obs_data_filename = constants.DATA_PATH + 'A20_HYDOBS_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_XXX_XXXXXX_XXX_HC_13102020.nc'
+    sim_data_filename = constants.DATA_PATH + 'A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc'
 
-    station_validation_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\stations_retenues_validation_croisee.csv"
-    station_mapping_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Correspondance_Station_Troncon.csv"
-    station_info_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Info_Station_Hydro_2020.csv"
+    station_validation_filename = constants.DATA_PATH + "stations_retenues_validation_croisee.csv"
+    station_mapping_filename = constants.DATA_PATH + "Table_Correspondance_Station_Troncon.csv"
+    station_info_filename = constants.DATA_PATH + "Table_Info_Station_Hydro_2020.csv"
 
     print("Lecture des CSV")
     stations_validation = read_csv_file(station_validation_filename, 1, ',')
     stations_mapping = read_csv_file(station_mapping_filename, 1, ',')
     stations_info = read_csv_file(station_info_filename, 1, ";")
 
-    print("Lecture des NC ids")
-    stations_id = nc_read_char2string(obs_data_filename, 'station_id', 'nchar_station_id')
-    sections_id = nc_read_char2string(sim_data_file, 'station_id', 'nchar_station_id')
+    print("Lecture des NC")
+    ds_obs = xr.open_dataset(obs_data_filename)
+    ds_sim = xr.open_dataset(sim_data_filename)
 
-    print("Lecture des NC drainage")
-    da_obs = nc_read(obs_data_filename, 'drainage_area')
-    da_sim = nc_read(sim_data_file, 'drainage_area')
+    stations_id_obs = ds_obs.station_id
+    stations_id_sim = ds_sim.station_id
 
-    print("Lecture des NC discharge")
-    dis_obs = nc_read(obs_data_filename, 'Dis')
-    dis_sim = nc_read(sim_data_file, 'Dis')
+    da_obs = ds_obs.drainage_area
+    da_sim = ds_sim.drainage_area
 
-    time_range = int(time)
+    dis_obs = ds_obs.Dis
+    dis_sim = ds_sim.Dis
+
+    time_range = int(time_series)
     station_count = len(stations_validation)
     debit_sim = np.empty((time_range, station_count))
     debit_obs = np.empty((time_range, station_count))
@@ -436,19 +444,16 @@ def execute():
         station_id = stations_validation[i][0]
         associate_section = find_section(stations_mapping, station_id)
 
-        index_section = find_index(sections_id, associate_section)
-        index_station = find_index(stations_id, station_id)
+        index_section = find_index(stations_id_sim, associate_section)
+        index_station = find_index(stations_id_obs, station_id)
 
         sup_sim = da_sim[index_section].item()
         sup_obs = da_obs[index_station].item()
 
         superficie_drainee[i] = sup_obs
 
-        data_values = dis_sim[index_section][0:time_range] / sup_sim
-        debit_sim[:, i] = data_values.filled(np.nan)[:]
-
-        data_values = dis_obs[index_station][0:time_range] / sup_obs
-        debit_obs[:, i] = data_values.filled(np.nan)[:]
+        debit_sim[:, i] = dis_sim.isel(station=index_section)[0:time_range] / sup_sim
+        debit_obs[:, i] = dis_obs.isel(station=index_station)[0:time_range] / sup_obs
 
         position_info = np.where(np.array(stations_info) == station_id)
         station_info = stations_info[position_info[0].item()]
@@ -457,8 +462,8 @@ def execute():
         longitude_station[i] = station_info[3]
         latitude_station[i] = station_info[2]
 
-    lat0 = np.array([45]*len(centroide_lat))
-    lon0 = np.array([-70]*len(centroide_lat))
+    lat0 = np.array([45] * len(centroide_lat))
+    lon0 = np.array([-70] * len(centroide_lat))
 
     x, y = latlon_to_xy(centroide_lat, centroide_lon, lat0, lon0)  # Projete dans un plan pour avoir des distances en km
 
@@ -473,62 +478,153 @@ def execute():
         x_p = np.transpose(x_p)
         y_p = np.transpose(y_p)
 
-        PX[:, i] = x_p.reshape(2*len(x_p))
-        PY[:, i] = y_p.reshape(2*len(y_p))
-
+        PX[:, i] = x_p.reshape(2 * len(x_p))
+        PY[:, i] = y_p.reshape(2 * len(y_p))
 
     # Transformation log-débit pour l'interpolation
     qsim_log = np.log(debit_sim)
     qobs_log = np.log(debit_obs)
 
-    ecf_fun,par_opt = ajustement_ECF_climatologique(qobs_log, qsim_log, PX, PY, "test")
+    # Fonction modifiée en profondeur ici par rapport au traitement du ecf_fun
+    ecf_fun, par_opt = ajustement_ECF_climatologique(qobs_log, qsim_log, PX, PY, "test")
 
+    """
+    Nouvelle section pour le calcul parallèle. Plusieurs étapes effectuées:
+        1. Estimation de la puissance de calcul disponible. Réalisé en prenant
+           le nombre de threads dispo / 2 (pour avoir le nombre de cores) puis
+           soustrayant 2 pour en garder 2 dispo pour d'autres tâches.
+        2. Démarrage d'un pool de calcul parallèle
+        3. Création de l'itérateur (iterable) contenant les données requises
+           par la nouvelle fonction qui boucle sur chacune des stations en
+           validation leave-one-out. C'est grossièrement parallélisable alors
+           on y va pour ça.
+        4. Lance le pool.map qui map les inputs (iterateur) sur la fonction.
+        5. Ramasser les résultats etdézipper le tuple qui retourne de pool.map.
+        6. Fermer le pool et retourner les résultats "parsés".
+    """
+    parallel_calcs = False
+
+    # Faire en parallèle
+    if parallel_calcs == True:
+        processes_count = os.cpu_count() / 2 - 1
+        p = Pool(int(processes_count))
+        args = [
+            (i, station_count, qobs_log, qsim_log, ecf_fun, par_opt, PX, PY, time_range, debit_obs, superficie_drainee)
+            for i in range(0, station_count)]
+        qest_l1o, qest_l1o_q25, qest_l1o_q75 = zip(*p.map(loop_interpolation_optimale_stations, args))
+        p.close()
+        p.join()
+
+    # Faire en série
+    else:
+        qest_l1o = np.empty((time_range, station_count))
+        qest_l1o_q25 = np.empty((time_range, station_count))
+        qest_l1o_q75 = np.empty((time_range, station_count))
+        qest_l1o[:, :] = np.nan
+        qest_l1o_q25[:, :] = np.nan
+        qest_l1o_q75[:, :] = np.nan
+
+        for i in range(0, station_count):
+            args = [i, station_count, qobs_log, qsim_log, ecf_fun, par_opt, PX, PY, time_range, debit_obs,
+                    superficie_drainee]
+            qest_l1o[:, i], qest_l1o_q25[:, i], qest_l1o_q75[:, i] = loop_interpolation_optimale_stations(args)
+
+    return qest_l1o, qest_l1o_q25, qest_l1o_q75
+
+
+"""
+Nouvelle fonction qui prend en input les valeurs de l'itérateur "args" préparés
+juste avant, les dézip dans ses composantes, puis roule le code pour une seule
+station de validation leave-one-out. L'ordre est contrôlé par le pool, donc
+cette fonction est roulée en parallèle. Retourne les 3 quantiles souhaités vers
+le pool.map qui l'appelle.
+"""
+
+
+def loop_interpolation_optimale_stations(args):
+    # Dézipper les inputs requis de l'itérateur args
+    i, station_count, qobs_log, qsim_log, ecf_fun, par_opt, PX, PY, time_range, debit_obs, superficie_drainee = args
+
+    # J'ai importé des constantes ici pour éviter de les traîner pour rien
     index = range(0, station_count)
     ratio_var_bg = 0.15
-    qest_l1o = np.empty((time_range, station_count))
-    qest_l1o_q25 = np.empty((time_range, station_count))
-    qest_l1o_q75 = np.empty((time_range, station_count))
 
-    qest_l1o[:, :] = np.nan
-    qest_l1o_q25[:, :] = np.nan
-    qest_l1o_q75[:, :] = np.nan
+    # Définition des 3 vecteurs de sortie. Ici ils sont des vecteurs et pas des
+    # matrices car on travaille sur un seul bassin à la fois (en parallèle).
+    qest_l1o = np.empty(time_range)
+    qest_l1o_q25 = np.empty(time_range)
+    qest_l1o_q75 = np.empty(time_range)
+    qest_l1o[:] = np.nan
+    qest_l1o_q25[:] = np.nan
+    qest_l1o_q75[:] = np.nan
+
+    # Code initial commence en quelque part ici.
+    index_validation = i
+    index_calibration = np.setdiff1d(index, i)
+
+    ecart = qobs_log[:, index_calibration] - qsim_log[:, index_calibration]
+    vsim_at_est = qsim_log[:, index_validation]
+
+    # Restructuré l'objet oi_input pour éviter de le réécrire à chaque fois
+    # dans la boucle "j" ici-bas. On fait juste updater le dictionnaire.
+    oi_input = {}
+    oi_input.update({
+        'var_obs': ratio_var_bg,
+        'error_cov_fun': partial(ecf_fun, par=par_opt),
+        'x_est': PX[:, index_validation],
+        'y_est': PY[:, index_validation],
+    })
+
+    preCalcul = {}
+
+    for j in range(time_range):
+        if not np.isnan(debit_obs[j, index_validation]):
+            val = ecart[j, :]
+            idx = ~np.isnan(val)
+
+            # Même chose ici, j'ai modifié le format de dictionnaire pour l'updater seulement.
+            oi_input.update({
+                'x_obs': PX[:, index_calibration[idx]],
+                'y_obs': PY[:, index_calibration[idx]],
+                'bg_departures': ecart[j, idx],
+                'bg_var_obs': np.ones(idx.sum()),
+                'bg_est': vsim_at_est[j],
+                'bg_var_est': 1
+            })
+
+            oi_output, preCalcul = optimal_interpolation(oi_input, preCalcul)
+
+            qest_l1o[j] = np.exp(oi_output['v_est']) * superficie_drainee[i]
+
+            var_bg = np.var(ecart[j, idx])
+            var_est = oi_output['var_est'] * var_bg
+
+            # Ici j'ai changé le nombre de samples à 500, c'est suffisant.
+            # De plus, on sample 1 fois et on calcule les quantiles 25 et 75 à
+            # partir de la même distribution échantillonnée, ça ne change rien
+            # et sauve 50% des calculs.
+            random_samples = np.random.normal(oi_output['v_est'], np.sqrt(var_est), 500)  # Shorten to 100?
+
+            qest_l1o_q25[j] = np.exp(np.percentile(random_samples, 25)) * superficie_drainee[i]
+            qest_l1o_q75[j] = np.exp(np.percentile(random_samples, 75)) * superficie_drainee[i]
+
+    # Retourne les 3 vecteurs à notre pool parallèle.
+    return qest_l1o, qest_l1o_q25, qest_l1o_q75
+    return qest_l1o, qest_l1o_q25, qest_l1o_q75
 
 
-    for i in range(0, station_count):
-        print(f'validation station croisé {i} de {station_count}')
-        index_validation = i
-        index_calibration = np.setdiff1d(index, i)
+"""
+Launch main code here by pressing run/debug
+"""
+if __name__ == '__main__':
+    """
+    Start the profiler, run the entire code, and print stats on profile time
+    """
 
-        ecart = qobs_log[:, index_calibration] - qsim_log[:, index_calibration]
-        vsim_at_est = qsim_log[:, index_validation]
-        oi_input = {}
+    with Profile() as profile:
+        # Run the code
+        results_1, results_2, results_3 = execute()
 
-        oi_input['var_obs'] = ratio_var_bg
-        oi_input['error_cov_fun'] = lambda h : ecf_fun(h, par_opt)
-        oi_input['x_est'] = PX[:, index_validation]
-        oi_input['y_est'] = PY[:, index_validation]
+        # Print stats sorted by cumulative runtime.
+        (Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats())
 
-        preCalcul = {}
-        for j in range(0, time_range):
-            if not np.isnan(debit_obs[j, index_validation]):
-                val = ecart[j, :]
-                idx = ~np.isnan(val)
-
-                oi_input['x_obs'] = PX[:, index_calibration[idx]]
-                oi_input['y_obs'] = PY[:, index_calibration[idx]]
-                oi_input['bg_departures'] = ecart[j, idx]
-                oi_input['bg_var_obs'] = np.ones(len(oi_input['bg_departures']))
-                oi_input['bg_est'] = vsim_at_est[j]
-                oi_input['bg_var_est'] = 1
-
-                oi_output, preCalcul = optimal_interpolation_vBox(oi_input, preCalcul)
-                qest_l1o[j, i] = np.exp(oi_output['v_est']) * superficie_drainee[i]
-
-                var_bg = np.var(oi_input['bg_departures'])
-                var_est = oi_output['var_est'] * var_bg
-
-                t1 = invgauss.cdf(0.25, oi_output['v_est']) #, np.sqrt(var_est))
-
-                qest_l1o_q25[j, i] = np.exp(np.percentile(np.random.normal(oi_output['v_est'], np.sqrt(var_est), 10000), 25)) * superficie_drainee[i]
-                qest_l1o_q75[j, i] = np.exp(np.percentile(np.random.normal(oi_output['v_est'], np.sqrt(var_est), 10000), 75)) * superficie_drainee[i]
-    test =1

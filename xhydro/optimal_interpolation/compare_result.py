@@ -164,11 +164,11 @@ def compare():
     end_date = np.datetime64('2018-12-31')
     time = (end_date - start_date) / np.timedelta64(1, 'D')
 
-    obs_data_filename = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDOBS.nc'
-    sim_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_HYDREP.nc'
+    obs_data_filename = '/xhydro/optimal_interpolation/donnees/A20_HYDOBS.nc'
+    sim_data_file = '/xhydro/optimal_interpolation/donnees/A20_HYDREP.nc'
     l10_data_file = 'C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
-    station_validation_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\stations_retenues_validation_croisee.csv"
-    station_mapping_filename = "C:\\Users\\AR21010\\Documents\\GitHub\\xhydro\\xhydro\\optimal_interpolation\\Table_Correspondance_Station_Troncon.csv"
+    station_validation_filename = "/xhydro/optimal_interpolation/donnees/stations_retenues_validation_croisee.csv"
+    station_mapping_filename = "/xhydro/optimal_interpolation/donnees/Table_Correspondance_Station_Troncon.csv"
 
     print("Lecture des CSV")
     station_validation = read_csv_file(station_validation_filename, 1)
