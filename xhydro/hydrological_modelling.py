@@ -1,6 +1,5 @@
-import numpy as np
+"""Hydrological modelling framework.
 
-"""
 This collection of functions should serve as the main entry point for
 hydrological modelling. The entire framework is based on the "model_config"
 object. This object is meant to be a container that can be used as needed by
@@ -18,12 +17,8 @@ a set of pre-defined codes for given model structures. This present package
        (hydrological model) to run.
     2. Pass the model_config object to the correct hydrological modelling
        function.
-    3. Parse the model_config object to exract required data for the given
-       model, such as:
-        - parameters
-        - meteorological data
-        - paths to input files
-        - catchment characteristics as required
+    3. Parse the model_config object to extract required data for the given
+       model, such as: parameters, meteorological data, paths to input files, and catchment characteristics as required
     4. Run the hydrological model with the given data
     5. Return the streamflow (Qsim).
 
@@ -34,13 +29,16 @@ or other dynamic objects. Models can be added here, and a specific routine
 should also be defined to produce the required model_config for each model.
 
 Once this is accomplished, running the model from a model_config object becomes
-trivial and allows for easy calibration, regionalization, analysis and any
+trivial and allows for easy calibration, regionalisation, analysis and any
 other type of interaction.
 """
 
+import numpy as np
+
 
 def hydrological_model_selector(model_config):
-    """
+    """Hydrological model selector.
+
     This is the main hydrological model selector. This is the code that looks
     at the "model_config["model_name"]" keyword and calls the appropriate
     hydrological model function.
@@ -51,16 +49,18 @@ def hydrological_model_selector(model_config):
     elif model_config["model_name"] == "ADD_OTHER_HERE":
         # ADD OTHER MODELS HERE
         Qsim = 0
+    else:
+        raise NotImplementedError()
 
     return Qsim
 
 
 def dummy_model(model_config):
-    """
+    """Dummy model.
+
     Dummy model to show the implementation we should be aiming for. Each model
     will have its own required data that users can pass.
     """
-
     # Parse the model_config object to extract required information
     precip = model_config["precip"]
     temperature = model_config["temperature"]
