@@ -1,22 +1,15 @@
-"""
-Import packages
-"""
+"""Test suite for the calibration algorithm in calibration.py."""
+
+# Also tests the dummy model implementation.
+
 import numpy as np
-import pytest
 
 from xhydro.calibration import get_objective_function_value, perform_calibration
 from xhydro.hydrological_modelling import dummy_model
 
-"""
-Test suite for the calibration algorithm in calibration.py.
-Also tests the dummy model implementation.
-"""
-
 
 def test_spotpy_calibration():
-    """
-    Make sure the calibration works for a few test cases
-    """
+    """Make sure the calibration works for a few test cases."""
     bounds_low = np.array([0, 0, 0])
     bounds_high = np.array([10, 10, 10])
 
