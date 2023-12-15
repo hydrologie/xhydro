@@ -148,11 +148,11 @@ def compare(percentileToPlot=50):
     end_date = np.datetime64('2018-12-31')
     time = ((end_date - start_date) / np.timedelta64(1, 'D')) + 1
 
-    obs_data_filename = '.\\donnees\\A20_HYDOBS.nc'
-    sim_data_file = '.\\donnees\\A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc'
-    l1o_data_file = '.\\donnees\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
-    station_validation_filename = ".\\donnees\\stations_retenues_validation_croisee.csv"
-    station_mapping_filename = ".\\donnees\\Table_Correspondance_Station_Troncon.csv"
+    obs_data_filename = 'data\\A20_HYDOBS.nc'
+    sim_data_file = 'data\\A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc'
+    l1o_data_file = 'data\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc'
+    station_validation_filename = "data\\stations_retenues_validation_croisee.csv"
+    station_mapping_filename = "data\\Table_Correspondance_Station_Troncon.csv"
 
     print("Lecture des CSV")
     station_validation = read_csv_file(station_validation_filename, 1)
