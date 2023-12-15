@@ -78,6 +78,7 @@ docs = [
   "sphinx-autoapi",
   "sphinx-codeautolink",
   "sphinx-copybutton",
+  "sphinx-intl",
   "sphinxcontrib-napoleon"
 ]
 
@@ -98,7 +99,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.0"
+current_version = "0.3.1"
 commit = true
 tag = false
 tag_name = "v{new_version}"

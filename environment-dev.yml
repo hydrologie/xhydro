@@ -33,6 +33,7 @@ dependencies:
   - sphinx-autoapi
   - sphinx-codeautolink
   - sphinx-copybutton
+  - sphinx-intl
   - sphinxcontrib-napoleon
   # Testing
   - tox >=4.0
