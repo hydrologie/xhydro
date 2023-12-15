@@ -397,21 +397,21 @@ msgstr "Conseils"
 
 #: ../../../CONTRIBUTING.rst:151
 msgid "To run a subset of tests::"
-msgstr "Pour exécuter un sous-ensemble de tests: :"
+msgstr "Pour exécuter un sous-ensemble de tests ::"
 
 #: ../../../CONTRIBUTING.rst:155
 msgid "To run specific code style checks::"
-msgstr "Pour effectuer des contrôles de style de code spécifiques: :"
+msgstr "Pour effectuer des contrôles de style de code spécifiques ::"
 
 #: ../../../CONTRIBUTING.rst:163
 msgid ""
 "To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with "
 "plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install "
-"them with `pip` (or `conda`) into your environment."
+"them with ``pip`` (or ``conda``) into your environment."
 msgstr ""
-"Pour obtenir ``black``, ``isort ``blackdoc``, ``ruff`, et ``flake8` (avec "
+"Pour obtenir ``black``, ``isort``, ``blackdoc``, ``ruff``, et ``flake8`` (avec "
 "les plugins ``flake8-alphabetize`` et ``flake8-rst-docstrings``), installez-"
-"les simplement avec `pip` (ou `conda`) dans votre environnement."
+"les simplement avec ``pip`` (ou ``conda``) dans votre environnement."
 
 #: ../../../CONTRIBUTING.rst:166
 msgid "Versioning/Tagging"
