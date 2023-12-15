@@ -160,7 +160,7 @@ msgstr ""
 "Utilisateurs d'Anaconda Python : En raison de la complexité de certains "
 "paquets, le résolveur de dépendances par défaut peut prendre beaucoup de "
 "temps pour résoudre l'environnement. Envisagez d'exécuter les commandes "
-"suivantes afin d'accélérer le processus: :"
+"suivantes afin d'accélérer le processus ::"
 
 #: ../../../CONTRIBUTING.rst:66
 msgid ""
@@ -179,8 +179,8 @@ msgid ""
 msgstr ""
 "Alternativement, vous pouvez utiliser le gestionnaire de paquets `mamba "
 "<https://mamba.readthedocs.io/en/latest/index.html>`_, qui est un "
-"remplacement direct de ``conda``. Si vous utilisez déjà `mamba`, remplacez "
-"les commandes suivantes par `mamba`` au lieu de `conda``."
+"remplacement direct de ``conda``. Si vous utilisez déjà ``mamba``, remplacez "
+"les commandes suivantes par ``mamba`` au lieu de ``conda``."
 
 #: ../../../CONTRIBUTING.rst:70
 msgid ""
@@ -195,11 +195,11 @@ msgid ""
 "GitHub."
 msgstr ""
 "Si vous n'êtes pas encore un collaborateur de `xhydro`, créez un "
-"embranchement sur le dépôt `xhydro`` sur GitHub."
+"embranchement sur le dépôt ``xhydro`` sur GitHub."
 
 #: ../../../CONTRIBUTING.rst:73
 msgid "Clone your fork locally::"
-msgstr "Clonez votre embranchement localement :"
+msgstr "Clonez votre embranchement localement ::"
 
 #: ../../../CONTRIBUTING.rst:77
 msgid ""
@@ -207,7 +207,7 @@ msgid ""
 "Anaconda development environment with::"
 msgstr ""
 "Installez votre copie locale dans un environnement de développement. Vous "
-"pouvez créer un nouvel environnement de développement Anaconda avec: :"
+"pouvez créer un nouvel environnement de développement Anaconda avec ::"
 
 #: ../../../CONTRIBUTING.rst:83
 msgid ""
@@ -223,7 +223,7 @@ msgid ""
 "your local clone::"
 msgstr ""
 "Pour assurer un style de codage cohérent, installez les hooks ``pre-commit`` "
-"dans votre clone local: :"
+"dans votre clone local ::"
 
 #: ../../../CONTRIBUTING.rst:89
 msgid ""
@@ -242,7 +242,7 @@ msgstr ""
 
 #: ../../../CONTRIBUTING.rst:91
 msgid "You can also run the hooks manually with::"
-msgstr "Vous pouvez également exécuter les crochets manuellement avec: :"
+msgstr "Vous pouvez également exécuter les crochets manuellement avec ::"
 
 #: ../../../CONTRIBUTING.rst:95
 msgid ""
@@ -254,7 +254,7 @@ msgstr ""
 
 #: ../../../CONTRIBUTING.rst:97
 msgid "Create a branch for local development::"
-msgstr "Créer une branche pour le développement local: :"
+msgstr "Créer une branche pour le développement local ::"
 
 #: ../../../CONTRIBUTING.rst:101
 msgid "Now you can make your changes locally."
@@ -265,12 +265,12 @@ msgid ""
 "When you're done making changes, we **strongly** suggest running the tests "
 "in your environment or with the help of ``tox``::"
 msgstr ""
-"Lorsque vous avez terminé les changements, nous suggérons **fortement**"
-"d'exécuter les tests dans votre environnement ou avec l'aide de ``tox``: :"
+"Lorsque vous avez terminé les changements, nous suggérons **fortement** "
+"d'exécuter les tests dans votre environnement ou avec l'aide de ``tox`` ::"
 
 #: ../../../CONTRIBUTING.rst:109
 msgid "Commit your changes and push your branch to GitHub::"
-msgstr "Validez vos modifications et envoyez votre branche sur GitHub: :"
+msgstr "Validez vos modifications et envoyez votre branche sur GitHub ::"
 
 #: ../../../CONTRIBUTING.rst:115
 msgid ""
@@ -304,7 +304,7 @@ msgstr ""
 "votre Pull Request. Ce processus de compilation peut parfois prendre "
 "plusieurs minutes. Si vous êtes en train de faire des changements qui "
 "affectent la documentation et que vous souhaitez gagner du temps, vous "
-"pouvez compiler et tester vos changements localement avec: :"
+"pouvez compiler et tester vos changements localement avec ::"
 
 #: ../../../CONTRIBUTING.rst:129
 msgid ""
@@ -397,21 +397,21 @@ msgstr "Conseils"
 
 #: ../../../CONTRIBUTING.rst:151
 msgid "To run a subset of tests::"
-msgstr "Pour exécuter un sous-ensemble de tests: :"
+msgstr "Pour exécuter un sous-ensemble de tests ::"
 
 #: ../../../CONTRIBUTING.rst:155
 msgid "To run specific code style checks::"
-msgstr "Pour effectuer des contrôles de style de code spécifiques: :"
+msgstr "Pour effectuer des contrôles de style de code spécifiques ::"
 
 #: ../../../CONTRIBUTING.rst:163
 msgid ""
 "To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with "
 "plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install "
-"them with `pip` (or `conda`) into your environment."
+"them with ``pip`` (or ``conda``) into your environment."
 msgstr ""
-"Pour obtenir ``black``, ``isort ``blackdoc``, ``ruff`, et ``flake8` (avec "
+"Pour obtenir ``black``, ``isort``, ``blackdoc``, ``ruff``, et ``flake8`` (avec "
 "les plugins ``flake8-alphabetize`` et ``flake8-rst-docstrings``), installez-"
-"les simplement avec `pip` (ou `conda`) dans votre environnement."
+"les simplement avec ``pip`` (ou ``conda``) dans votre environnement."
 
 #: ../../../CONTRIBUTING.rst:166
 msgid "Versioning/Tagging"
@@ -563,7 +563,7 @@ msgid ""
 "that ``flit`` be installed::"
 msgstr ""
 "L'approche la plus simple de l'empaquetage pour le support général (pip "
-"wheels) requiert que ``flit`` soit installé: :"
+"wheels) requiert que ``flit`` soit installé ::"
 
 #: ../../../CONTRIBUTING.rst:223
 msgid ""
@@ -572,7 +572,7 @@ msgid ""
 msgstr ""
 "À partir de la ligne de commande de votre distribution Linux, exécutez "
 "simplement ce qui suit à partir de la branche principale de développement du "
-"clone: :"
+"clone ::"
 
 #: ../../../CONTRIBUTING.rst:231
 msgid ""
@@ -614,7 +614,7 @@ msgid ""
 msgstr ""
 "Afin de créer une nouvelle recette de construction conda, qui sera utilisée "
 "pour proposer des paquets au dépôt conda-forge, nous suggérons fortement "
-"d'utiliser l'outil ``grayskull``: :"
+"d'utiliser l'outil ``grayskull`` ::"
 
 #: ../../../CONTRIBUTING.rst:248
 msgid ""
@@ -648,7 +648,7 @@ msgid ""
 "xhydro`, `commands: pytest xhydro`)."
 msgstr ""
 "Si possible, configurez les tests dans le CI de construction de conda-forge "
-"(par exemple `imports : xhydro`, `commands : pytest xhydro`)."
+"(par exemple `imports: xhydro`, `commands: pytest xhydro`)."
 
 #: ../../../CONTRIBUTING.rst:255
 msgid "Subsequent releases"
@@ -672,7 +672,7 @@ msgstr ""
 #: ../../../CONTRIBUTING.rst:260
 msgid "Building sources for wide support with `manylinux` image"
 msgstr ""
-"Construction des sources pour un support étendu avec l'image `manylinux`."
+"Construction des sources pour un support étendu avec l'image `manylinux`"
 
 #: ../../../CONTRIBUTING.rst:263
 msgid ""
@@ -700,7 +700,7 @@ msgstr ""
 msgid "With `docker` installed and running, begin by pulling the image::"
 msgstr ""
 "Avec `docker` installé et en cours d'exécution, commencez par extraire "
-"l'image: :"
+"l'image ::"
 
 #: ../../../CONTRIBUTING.rst:273
 msgid ""
@@ -710,7 +710,7 @@ msgid ""
 msgstr ""
 "Depuis le dossier source de xhydro, nous pouvons entrer dans le conteneur "
 "docker, ce qui permet d'accéder aux fichiers source `xhydro` en les liant à "
-"l'image en cours d'exécution: :"
+"l'image en cours d'exécution ::"
 
 #: ../../../CONTRIBUTING.rst:277
 msgid ""
@@ -718,7 +718,7 @@ msgid ""
 "binary::"
 msgstr ""
 "Enfin, pour construire la roue, nous l'exécutons en utilisant le programme "
-"Python3.9 fourni :"
+"Python3.9 fourni ::"
 
 #: ../../../CONTRIBUTING.rst:281
 msgid ""
@@ -729,4 +729,4 @@ msgstr ""
 "Cela placera deux fichiers dans `xhydro/dist/` (\"xhydro-1.2.3-py3-none-any."
 "whl\" et \"xhydro-1.2.3.tar.gz\"). Nous pouvons maintenant quitter notre "
 "conteneur docker (`$ exit`) et continuer à télécharger les fichiers sur "
-"PyPI: :"
+"PyPI ::"
