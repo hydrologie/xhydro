@@ -195,7 +195,7 @@ msgid ""
 "GitHub."
 msgstr ""
 "Si vous n'êtes pas encore un collaborateur de `xhydro`, créez un "
-"embranchement sur le dépôt `xhydro`` sur GitHub."
+"embranchement sur le dépôt ``xhydro`` sur GitHub."
 
 #: ../../../CONTRIBUTING.rst:73
 msgid "Clone your fork locally::"
