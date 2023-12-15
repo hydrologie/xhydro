@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/local_frequency_analysis.ipynb:9
 msgid "Frequency analysis module"
-msgstr "Module d'analyse de fréquence"
+msgstr "Module d'analyse fréquentielle"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:1541
 msgid ""
@@ -52,7 +52,7 @@ msgid ""
 "beginning with ``020``, possessing a natural flow pattern and limited to "
 "streamflow data."
 msgstr ""
-"Dans cet exemple, nous effectuerons une analyse de fréquentielle en "
+"Dans cet exemple, nous effectuerons une analyse fréquentielle en "
 "utilisant des séries chronologiques historiques provenant de différents "
 "sites. Nous commençons par obtenir un ensemble de données comprenant des "
 "informations hydrologiques. Ici, nous utilisons la bibliothèque `xdataset "
@@ -97,8 +97,8 @@ msgid ""
 msgstr ""
 "La variable aura au moins besoin d'un attribut ``units``, bien que d'autres "
 "attributs tels que ``long_name`` et ``cell_methods`` soient également "
-"attendus par ``xclim`` (qui est appelé à différents moments de l'analyse de "
-"fréquence) et des avertissements seront générés s'ils sont manquants."
+"attendus par ``xclim`` (qui est appelé à différents moments de l'analyse fréquentielle"
+") et des avertissements seront générés s'ils sont manquants."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2590
 msgid "Customizing the analysis settings"
@@ -258,7 +258,7 @@ msgstr ""
 "utilisant un flux de travail similaire. La principale différence est que si "
 "nous partons d'un débit, nous devrons d'abord le convertir en volume en "
 "utilisant ``xhydro.indicators.compute_volume``. De plus, si nécessaire, "
-"`get_yearly_op`` a un argument `interpolate_na`` qui peut être utilisé pour "
+"``get_yearly_op`` a un argument ``interpolate_na`` qui peut être utilisé pour "
 "interpoler les données manquantes avant la somme."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4291

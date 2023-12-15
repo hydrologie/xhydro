@@ -80,7 +80,7 @@ msgstr ""
 
 #: ../../../CONTRIBUTING.rst:31
 msgid "Implement Features"
-msgstr ""
+msgstr "Implémenter des fonctionnalités"
 
 #: ../../../CONTRIBUTING.rst:33
 msgid ""
