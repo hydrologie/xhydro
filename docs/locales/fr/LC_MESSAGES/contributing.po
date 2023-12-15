@@ -265,7 +265,7 @@ msgid ""
 "When you're done making changes, we **strongly** suggest running the tests "
 "in your environment or with the help of ``tox``::"
 msgstr ""
-"Lorsque vous avez terminé les changements, nous suggérons **fortement**"
+"Lorsque vous avez terminé les changements, nous suggérons **fortement** "
 "d'exécuter les tests dans votre environnement ou avec l'aide de ``tox`` ::"
 
 #: ../../../CONTRIBUTING.rst:109
