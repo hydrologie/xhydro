@@ -36,6 +36,8 @@ classifiers = [
 dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  "geopandas",
+  "leafmap",
   "numpy",
   "statsmodels",
   "xarray",
