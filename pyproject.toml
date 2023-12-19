@@ -37,6 +37,7 @@ dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "numpy",
+  "pooch>=1.8.0",
   "statsmodels",
   "xarray",
   "xclim>=0.45.0",
@@ -146,7 +147,8 @@ include = [
   "docs/make.bat",
   "tests/*.py",
   "tox.ini",
-  "xhydro"
+  "xhydro",
+  "xhydro/testing/registry.txt"
 ]
 exclude = [
   "*.py[co]",
@@ -161,7 +163,8 @@ exclude = [
   "Makefile",
   "docs/_*",
   "docs/apidoc/modules.rst",
-  "docs/apidoc/xhydro*.rst"
+  "docs/apidoc/xhydro*.rst",
+  "xhydro/testing/data/*"
 ]
 
 [tool.isort]

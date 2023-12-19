@@ -6,6 +6,7 @@ dependencies:
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - numpy
+  - pooch >=1.8.0
   - statsmodels
   - xarray
   - xclim >=0.45.0
