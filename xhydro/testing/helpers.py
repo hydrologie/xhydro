@@ -16,6 +16,7 @@ __all__ = [
     "DATA_URL",
     "DEVEREAUX",
     "generate_registry",
+    "load_registry",
     "populate_testing_data",
 ]
 
@@ -97,11 +98,13 @@ def generate_registry(
 
 
 def load_registry() -> dict[str, str]:
+    """Load the registry file for the test data."""
     # Get registry file from package_data
     registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
     if registry_file.is_file():
         logging.info("Registry file found in package_data: %s", registry_file)
 
+    # Load the registry file
     registry = dict()
     with registry_file.open() as buffer:
         for entry in buffer.readlines():
