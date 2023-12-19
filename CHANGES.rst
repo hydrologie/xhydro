@@ -10,6 +10,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added French language support to the documentation. (:issue:`53`, :pull:`55`).
+* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories.
 
 v0.3.0 (2023-12-01)
 -------------------
