@@ -39,6 +39,7 @@ clean-build: ## remove build artifacts
 clean-docs: ## remove docs artifacts
 	rm -f docs/apidoc/xhydro*.rst
 	rm -f docs/apidoc/modules.rst
+	rm -f docs/locales/fr/LC_MESSAGES/*.mo
 	$(MAKE) -C docs clean
 
 clean-pyc: ## remove Python file artifacts
