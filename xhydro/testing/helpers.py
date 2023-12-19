@@ -153,13 +153,14 @@ Using the registry to download a file:
 
 
 def populate_testing_data(
+    registry: Optional[Union[str, Path]] = None,
     temp_folder: Optional[Path] = None,
     branch: str = TESTDATA_BRANCH,
     _local_cache: Path = _default_cache_dir,
 ):
     """Populate the local cache with the testing data."""
-    # Get registry file from package_data
-    registry = load_registry()
+    # Get registry file from package_data or provided path
+    registry = load_registry(registry)
 
     # Set the local cache to the temp folder
     if temp_folder is not None:
