@@ -4,7 +4,7 @@ import importlib.resources as ilr
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urljoin
 
 import pooch
@@ -97,12 +97,17 @@ def generate_registry(
         pooch.make_registry(data.as_posix(), registry.as_posix())
 
 
-def load_registry() -> dict[str, str]:
+def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
     """Load the registry file for the test data."""
     # Get registry file from package_data
-    registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
-    if registry_file.is_file():
-        logging.info("Registry file found in package_data: %s", registry_file)
+    if file is None:
+        registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
+        if registry_file.is_file():
+            logging.info("Registry file found in package_data: %s", registry_file)
+    else:
+        registry_file = Path(file)
+        if not registry_file.is_file():
+            raise FileNotFoundError(f"Registry file not found: {registry_file}")
 
     # Load the registry file
     registry = dict()
