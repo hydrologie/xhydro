@@ -80,7 +80,8 @@ docs = [
   "sphinx-codeautolink",
   "sphinx-copybutton",
   "sphinx-intl",
-  "sphinxcontrib-napoleon"
+  "sphinxcontrib-napoleon",
+  "xagg"
 ]
 
 [project.urls]
@@ -122,7 +123,6 @@ replace = "__version__ = \"{new_version}\""
 filename = ".cruft.json"
 search = "\"version\": \"{current_version}\""
 replace = "\"version\": \"{new_version}\""
-
 
 [tool.coverage.run]
 relative_files = true
