@@ -59,20 +59,32 @@ Any comments are welcome!
 from typing import Optional
 
 # Import packages
-import hydroeval as he
 import numpy as np
 import spotpy
 from spotpy import analyser
-from spotpy.objectivefunctions import rmse
 from spotpy.parameter import Uniform
 
-from xhydro.hydrological_modelling import hydrological_model_selector
+from xhydro.modelling.hydrological_modelling import hydrological_model_selector
+from xhydro.modelling.obj_funcs import (get_objective_function, 
+                                        get_objfun_minimize_or_maximize,
+                                        get_optimizer_minimize_or_maximize,
+                                        )
 
 
 class spot_setup:
     """Create the spotpy calibration system that is used for hydrological model calibration."""
 
-    def __init__(self, model_config, bounds_high, bounds_low, obj_func=None):
+    def __init__(self, 
+                 model_config, 
+                 bounds_high, 
+                 bounds_low, 
+                 obj_func=None,
+                 take_negative=False,
+                 mask=None,
+                 transform=None,
+                 epsilon=None,
+                 ):
+        
         """Initialize the spot_setup object.
 
         The initialization of the spot_setup object includes a generic
@@ -84,13 +96,34 @@ class spot_setup:
         Notes
         -----
         Accepted obj_func values:
-            Computed by hydroeval: ["nse", "kge", "kgeprime", "kgenp", "rmse", "mare", "pbias"]
-            Computed by spotpy: ["bias","nashsutcliffe", "lognashsutcliffe", "log_p", "correlationcoefficient",
-            "rsquared", "mse", "mae", "rrmse", "agreementindex","covariance", "decomposed_mse", "rsr", "volume_error"]
+            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_pbias": Absolute value of the "pbias" metric
+            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "agreement_index": Index of agreement
+            - "bias" : Bias metric
+            - "correlation_coeff": Correlation coefficient
+            - "kge" : Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "mae": Mean Absolute Error metric
+            - "mare": Mean Absolute Relative Error metric
+            - "mse" : Mean Square Error metric
+            - "nse": Nash-Sutcliffe Efficiency metric
+            - "pbias" : Percent bias (relative bias)
+            - "r2" : r-squared, i.e. square of correlation_coeff.
+            - "rmse" : Root Mean Square Error
+            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr" : Ratio of RMSE to standard deviation.
+            - "volume_error": Total volume error over the period.
         """
-        # Gather the model_config dictionary and obj_func string.
+        
+        # Gather the model_config dictionary and obj_func string, and other
+        # optional arguments.
         self.model_config = model_config
         self.obj_func = obj_func
+        self.mask = mask
+        self.transform = transform
+        self.epsilon = epsilon
+        self.take_negative = take_negative
 
         # Create the sampler for each parameter based on the bounds
         self.parameters = [
@@ -131,9 +164,6 @@ class spot_setup:
         self,
         simulation,
         evaluation,
-        params=None,
-        transform: Optional[str] = None,
-        epsilon: Optional[float] = None,
     ):
         """Objective function for spotpy.
 
@@ -141,28 +171,34 @@ class spot_setup:
 
         Notes
         -----
-        There are other possible inputs:
-            - params: if we force a parameter set, this function can be used to
-              compute the objective function easily.
-            - transform: Possibility to transform flows before computing the
-              objective function. "inv" takes 1/Q, "log" takes log(Q) and
-              "sqrt" takes sqrt(Q) before computing.
-            - epsilon: a small value to adjust flows before transforming to
-              prevent log(0) or 1/0 computations when flow is zero.
+        The inputs are:
+            - model_config object (dict type) with all required information,
+            - simulation, observation : vectors of streamflow used to compute
+              the objective function
         """
-        return get_objective_function_value(
-            evaluation, simulation, params, transform, epsilon, self.obj_func
-        )
+        
+        obj_fun_val = get_objective_function(evaluation,
+                                             simulation,
+                                             obj_func=self.obj_func,
+                                             take_negative=self.take_negative,
+                                             mask=self.mask,
+                                             transform=self.transform,
+                                             epsilon=self.epsilon,
+                                             )
+        
+        return obj_fun_val
 
 
 def perform_calibration(
     model_config: dict,
-    evaluation_metric: str,
-    maximize: bool,
+    obj_func: str,
     bounds_high: np.array,
     bounds_low: np.array,
     evaluations: int,
     algorithm: str = "DDS",
+    mask: np.array = None,
+    transform: str = None,
+    epsilon: float = 0.01,
 ):
     """Perform calibration using spotpy.
 
@@ -177,11 +213,25 @@ def perform_calibration(
         The model configuration object that contains all info to run the model.
         The model function called to run this model should always use this object and read-in data it requires.
         It will be up to the user to provide the data that the model requires.
-    evaluation_metric : str
-        The objective function used for calibrating.
-    maximize : bool
-        A flag to indicate that the objective function should be maximized (ex: "nse", "kge")
-        instead of minimized (ex: "rmse", "mae").
+    obj_func : str
+        The objective function used for calibrating. Can be any one of these:
+        
+            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_pbias": Absolute value of the "pbias" metric
+            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "agreement_index": Index of agreement
+            - "correlation_coeff": Correlation coefficient
+            - "kge" : Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "mae": Mean Absolute Error metric
+            - "mare": Mean Absolute Relative Error metric
+            - "mse" : Mean Square Error metric
+            - "nse": Nash-Sutcliffe Efficiency metric
+            - "r2" : r-squared, i.e. square of correlation_coeff.
+            - "rmse" : Root Mean Square Error
+            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr" : Ratio of RMSE to standard deviation.
+            
     bounds_high : np.array
         High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
@@ -192,18 +242,42 @@ def perform_calibration(
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
     algorithm : str
         The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
+    mask : np.array
+        A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
+    transform : str
+        The method to transform streamflow prior to computing the objective function. Can be one of:
+        Square root ('sqrt'), inverse ('inv'), or logarithmic ('log') transformation.
+    epsilon : scalar float
+        Used to add a small delta to observations for log and inverse transforms, to eliminate errors
+        caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
+        times this value of epsilon.
     """
-    # TODO: maximize is not automatically defined.
-    # We should remove this option and force the algo/obj_fun to be coordinated to return the best value.
 
+    # Get objective function and algo optimal convregence direction. Necessary
+    # to ensure that the algorithm is optimizing in the correct direction
+    # (maximizing or minimizing). This code determines the required direction
+    # for the objective function and the working direction of the algorithm.
+    of_maximize = get_objfun_minimize_or_maximize(obj_func)
+    algo_maximize = get_optimizer_minimize_or_maximize(algorithm)
+    
+    # They are not working in the same direction. Take the negative of the OF.
+    if of_maximize != algo_maximize:
+        take_negative = True
+    else:
+        take_negative = False
+        
     # Set up the spotpy object to prepare the calibration
     spotpy_setup = spot_setup(
         model_config,
         bounds_high=bounds_high,
         bounds_low=bounds_low,
-        obj_func=evaluation_metric,
+        obj_func=obj_func,
+        take_negative=take_negative,
+        mask=mask,
+        transform=transform,
+        epsilon=epsilon,
     )
-
+    
     # Select an optimization algorithm and parameterize it, then run the
     # optimization process.
     if algorithm == "DDS":
@@ -223,17 +297,21 @@ def perform_calibration(
 
     # Get the best parameter set
     best_parameters = analyser.get_best_parameterset(
-        results, like_index=1, maximize=maximize
+        results, like_index=1, maximize=of_maximize
     )
     best_parameters = [best_parameters[0][i] for i in range(0, len(best_parameters[0]))]
 
     # Get the best objective function as well depending if maximized or
     # minimized
-    if maximize:
-        bestindex, bestobjf = analyser.get_maxlikeindex(results)
+    if of_maximize:
+        _, bestobjf = analyser.get_maxlikeindex(results)
     else:
-        bestindex, bestobjf = analyser.get_minlikeindex(results)
+        _, bestobjf = analyser.get_minlikeindex(results)
 
+    # Reconvert objective function if required.
+    if take_negative:
+        bestobjf = bestobjf * -1
+        
     # Update the parameter set to put the best parameters in model_config...
     model_config.update({"parameters": best_parameters})
 
@@ -242,88 +320,3 @@ def perform_calibration(
 
     # Return the best parameters, Qsim and best objective function value.
     return best_parameters, Qsim, bestobjf
-
-
-def transform_flows(Qobs, Qsim, transform=None, epsilon=None):
-    """Transform flows before computing the objective function.
-
-    It is used to transform flows such that the objective function is computed
-    on a transformed flow metric rather than on the original units of flow
-    (ex: inverse, log-transformed, square-root)
-
-    Notes
-    -----
-    This subset of code is taken from the hydroeval package:
-    https://github.com/ThibHlln/hydroeval/blob/main/hydroeval/hydroeval.py
-    """
-    # Generate a subset of simulation and evaluation series where evaluation
-    # data is available
-    Qsim = Qsim[~np.isnan(Qobs[:, 0]), :]
-    Qobs = Qobs[~np.isnan(Qobs[:, 0]), :]
-
-    # Transform the flow series if required
-    if transform == "log":  # log transformation
-        if not epsilon:
-            # determine an epsilon value to avoid zero divide
-            # (following recommendation in Pushpalatha et al. (2012))
-            epsilon = 0.01 * np.mean(Qobs)
-        Qobs, Qsim = np.log(Qobs + epsilon), np.log(Qsim + epsilon)
-
-    elif transform == "inv":  # inverse transformation
-        if not epsilon:
-            # determine an epsilon value to avoid zero divide
-            # (following recommendation in Pushpalatha et al. (2012))
-            epsilon = 0.01 * np.mean(Qobs)
-        Qobs, Qsim = 1.0 / (Qobs + epsilon), 1.0 / (Qsim + epsilon)
-
-    elif transform == "sqrt":  # square root transformation
-        Qobs, Qsim = np.sqrt(Qobs), np.sqrt(Qsim)
-
-    # Return the flows after transformation (or original if no transform)
-    return Qobs, Qsim
-
-
-def get_objective_function_value(
-    Qobs,
-    Qsim,
-    params,
-    transform=None,
-    epsilon: Optional[float] = None,
-    obj_func: Optional[str] = None,
-):
-    """Get the objective function value.
-
-    This code returns the objective function as determined by the user, after
-    transforming (if required) using the Qobs provided by the user and the Qsim
-    simulated by the model controlled by spotpy during the calibration process.
-    """
-    # Transform flows if needed
-    if transform:
-        Qobs, Qsim = transform_flows(Qobs, Qsim, transform, epsilon)
-
-    # Default objective function if none provided by the user
-    if not obj_func:
-        like = rmse(Qobs, Qsim)
-
-    # Popular ones we can use the hydroeval package
-    elif obj_func.lower() in [
-        "nse",
-        "kge",
-        "kgeprime",
-        "kgenp",
-        "rmse",
-        "mare",
-        "pbias",
-    ]:
-        # Get the correct function from the package
-        like = he.evaluator(
-            getattr(he, obj_func.lower()), simulations=Qsim, evaluation=Qobs
-        )
-
-    # In neither of these cases, use the obj_func method from spotpy
-    else:
-        # FIXME: What is the type of obj_func?
-        like = obj_func(Qobs, Qsim)
-
-    # Return results
-    return like

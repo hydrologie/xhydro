@@ -13,7 +13,6 @@ dependencies:
   - xscen >=0.7.1
   - pip
   - pip:
-    - hydroeval
     - xdatasets
   # Dev
   - bump-my-version >=0.12.0
