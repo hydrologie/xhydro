@@ -56,7 +56,6 @@ run correctly in all instances:
 
 Any comments are welcome!
 """
-from typing import Optional
 
 # Import packages
 import numpy as np
@@ -65,26 +64,27 @@ from spotpy import analyser
 from spotpy.parameter import Uniform
 
 from xhydro.modelling.hydrological_modelling import hydrological_model_selector
-from xhydro.modelling.obj_funcs import (get_objective_function, 
-                                        get_objfun_minimize_or_maximize,
-                                        get_optimizer_minimize_or_maximize,
-                                        )
+from xhydro.modelling.obj_funcs import (
+    get_objective_function,
+    get_objfun_minimize_or_maximize,
+    get_optimizer_minimize_or_maximize,
+)
 
 
 class spot_setup:
     """Create the spotpy calibration system that is used for hydrological model calibration."""
 
-    def __init__(self, 
-                 model_config, 
-                 bounds_high, 
-                 bounds_low, 
-                 obj_func=None,
-                 take_negative=False,
-                 mask=None,
-                 transform=None,
-                 epsilon=None,
-                 ):
-        
+    def __init__(
+        self,
+        model_config,
+        bounds_high,
+        bounds_low,
+        obj_func=None,
+        take_negative=False,
+        mask=None,
+        transform=None,
+        epsilon=None,
+    ):
         """Initialize the spot_setup object.
 
         The initialization of the spot_setup object includes a generic
@@ -115,7 +115,6 @@ class spot_setup:
             - "rsr" : Ratio of RMSE to standard deviation.
             - "volume_error": Total volume error over the period.
         """
-        
         # Gather the model_config dictionary and obj_func string, and other
         # optional arguments.
         self.model_config = model_config
@@ -176,16 +175,16 @@ class spot_setup:
             - simulation, observation : vectors of streamflow used to compute
               the objective function
         """
-        
-        obj_fun_val = get_objective_function(evaluation,
-                                             simulation,
-                                             obj_func=self.obj_func,
-                                             take_negative=self.take_negative,
-                                             mask=self.mask,
-                                             transform=self.transform,
-                                             epsilon=self.epsilon,
-                                             )
-        
+        obj_fun_val = get_objective_function(
+            evaluation,
+            simulation,
+            obj_func=self.obj_func,
+            take_negative=self.take_negative,
+            mask=self.mask,
+            transform=self.transform,
+            epsilon=self.epsilon,
+        )
+
         return obj_fun_val
 
 
@@ -215,7 +214,7 @@ def perform_calibration(
         It will be up to the user to provide the data that the model requires.
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
-        
+
             - "abs_bias" : Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
             - "abs_volume_error" : Absolute value of the volume_error metric
@@ -231,7 +230,7 @@ def perform_calibration(
             - "rmse" : Root Mean Square Error
             - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
             - "rsr" : Ratio of RMSE to standard deviation.
-            
+
     bounds_high : np.array
         High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
@@ -252,20 +251,19 @@ def perform_calibration(
         caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
         times this value of epsilon.
     """
-
     # Get objective function and algo optimal convregence direction. Necessary
     # to ensure that the algorithm is optimizing in the correct direction
     # (maximizing or minimizing). This code determines the required direction
     # for the objective function and the working direction of the algorithm.
     of_maximize = get_objfun_minimize_or_maximize(obj_func)
     algo_maximize = get_optimizer_minimize_or_maximize(algorithm)
-    
+
     # They are not working in the same direction. Take the negative of the OF.
     if of_maximize != algo_maximize:
         take_negative = True
     else:
         take_negative = False
-        
+
     # Set up the spotpy object to prepare the calibration
     spotpy_setup = spot_setup(
         model_config,
@@ -277,7 +275,7 @@ def perform_calibration(
         transform=transform,
         epsilon=epsilon,
     )
-    
+
     # Select an optimization algorithm and parameterize it, then run the
     # optimization process.
     if algorithm == "DDS":
@@ -311,7 +309,7 @@ def perform_calibration(
     # Reconvert objective function if required.
     if take_negative:
         bestobjf = bestobjf * -1
-        
+
     # Update the parameter set to put the best parameters in model_config...
     model_config.update({"parameters": best_parameters})
 
