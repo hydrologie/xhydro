@@ -292,6 +292,7 @@ def get_optimizer_minimize_or_maximize(algorithm):
     minimized, it is imperative to ensure that the optimizer/objective-function
     pair work in tandem.
 
+
     Inputs:
         algorithm: string containing the direction of the optimizer search
     """
@@ -349,7 +350,6 @@ def transform_flows(Qsim, Qobs, transform=None, epsilon=0.01):
     -------
     Qsim, Qobs transformed according to the transformation function requested
     by the user in "transform". Qsim and Qobs are numpy arrays.
-
     """
     # Quick check
     if transform is not None:

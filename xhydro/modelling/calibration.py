@@ -85,7 +85,8 @@ class spot_setup:
         transform=None,
         epsilon=None,
     ):
-        """Initialize the spot_setup object.
+        """
+        Initialize the spot_setup object.
 
         The initialization of the spot_setup object includes a generic
         "model_config" object containing hydrological modelling data required,
@@ -164,7 +165,8 @@ class spot_setup:
         simulation,
         evaluation,
     ):
-        """Objective function for spotpy.
+        """
+        Objective function for spotpy.
 
         This function is where spotpy computes the objective function.
 
