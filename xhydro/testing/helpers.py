@@ -142,12 +142,14 @@ DEVEREAUX = pooch.create(
 
 Notes
 -----
-There are two environment variables that can be used to control the behavior of this registry:
-- ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
-  files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
-  the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
-- ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
-  upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+There are two environment variables that can be used to control the behaviour of this registry:
+
+  - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
+    files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
+    the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+
+  - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
+    upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
 
 Examples
 --------

@@ -11,6 +11,19 @@ New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added French language support to the documentation. (:issue:`53`, :pull:`55`).
 * Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories.
+* `xhydro` is now configured to use `pooch` to download and cache testing datasets from `hydrologie/xhydro-testdata`. (:pull:`62`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Added `pooch` as an installation dependency. (:pull:`62`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added a new module for testing purposes: `xhydro.testing.helpers` with some new functions. (:pull:`62`):
+    * `generate_registry`: Parses data found in package (`xhydro.testing.data`), and adds it to the `registry.txt`
+    * `load_registry`: Loads installed (or custom) registry and returns dictionary
+    * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
+* Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
 
 v0.3.0 (2023-12-01)
 -------------------
