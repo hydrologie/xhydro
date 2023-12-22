@@ -8,6 +8,7 @@ dependencies:
   - geopandas
   - leafmap
   - numpy
+  - pydantic <=2.5.2 # temporary fix
   - statsmodels
   - xagg
   - xarray

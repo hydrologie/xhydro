@@ -39,6 +39,7 @@ dependencies = [
   "geopandas",
   "leafmap",
   "numpy",
+  "pydantic<=2.5.2",
   "statsmodels",
   "xarray",
   "xclim>=0.45.0",
