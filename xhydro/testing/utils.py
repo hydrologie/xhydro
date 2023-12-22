@@ -30,7 +30,8 @@ def publish_release_notes(
 
     Returns
     -------
-    str, optional
+    str or None
+        Formatted release notes as a string, if `file` is not provided.
 
     Notes
     -----

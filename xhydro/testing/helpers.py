@@ -98,7 +98,18 @@ def generate_registry(
 
 
 def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
-    """Load the registry file for the test data."""
+    """Load the registry file for the test data.
+
+    Parameters
+    ----------
+    file : str or Path, optional
+        Path to the registry file. If not provided, the registry file found within the package data will be used.
+
+    Returns
+    -------
+    dict
+        Dictionary of filenames and hashes.
+    """
     # Get registry file from package_data
     if file is None:
         registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
@@ -157,8 +168,25 @@ def populate_testing_data(
     temp_folder: Optional[Path] = None,
     branch: str = TESTDATA_BRANCH,
     _local_cache: Path = _default_cache_dir,
-):
-    """Populate the local cache with the testing data."""
+) -> None:
+    """Populate the local cache with the testing data.
+
+    Parameters
+    ----------
+    registry : str or Path, optional
+        Path to the registry file. If not provided, the registry file from package_data will be used.
+    temp_folder : Path, optional
+        Path to a temporary folder to use as the local cache. If not provided, the default location will be used.
+    branch : str, optional
+        Branch of hydrologie/xhydro-testdata to use when fetching testing datasets.
+    _local_cache : Path, optional
+        Path to the local cache. Defaults to the default location.
+
+    Returns
+    -------
+    None
+        The testing data will be downloaded to the local cache.
+    """
     # Get registry file from package_data or provided path
     registry = load_registry(registry)
 

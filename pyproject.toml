@@ -181,6 +181,22 @@ warn_unused_configs = true
 module = []
 ignore_missing_imports = true
 
+[tool.numpydoc_validation]
+checks = [
+  "all", # report on all checks, except the below
+  "ES01",
+  "EX01",
+  "GL01",
+  "SA01"
+]
+exclude = [
+  # don't report on objects that match any of these regex
+  '\.undocumented_method$',
+  '\.__repr__$',
+  # any object starting with an underscore is a private object
+  '\._\w+'
+]
+
 [tool.pytest.ini_options]
 addopts = [
   "--verbose",
