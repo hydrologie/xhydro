@@ -21,9 +21,9 @@ def test_spotpy_calibration():
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
-    
+
     mask = np.array([0, 0, 0, 0, 1, 1])
-    
+
     best_parameters, best_simulation, best_objfun = perform_calibration(
         model_config,
         "mae",
@@ -38,13 +38,13 @@ def test_spotpy_calibration():
     assert len(best_parameters) == len(bounds_high)
 
     # Test that the objective function is calculated correctly
-    objfun = get_objective_function( 
-                                    model_config["Qobs"], 
-                                    best_simulation, 
-                                    obj_func="mae",
-                                    mask=mask,
-                                    )
-    
+    objfun = get_objective_function(
+        model_config["Qobs"],
+        best_simulation,
+        obj_func="mae",
+        mask=mask,
+    )
+
     assert objfun == best_objfun
 
     # Test dummy model response
