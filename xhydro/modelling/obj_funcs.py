@@ -187,44 +187,10 @@ def get_objective_function(
     if transform is not None:
         Qsim, Qobs = transform_flows(Qsim, Qobs, transform, epsilon)
 
-    # Compute objective function by switching to the correct algorithm
-    match obj_func:
-        case "abs_bias":
-            obj_fun_val = abs_bias(Qsim, Qobs)
-        case "abs_pbias":
-            obj_fun_val = abs_pbias(Qsim, Qobs)
-        case "abs_volume_error":
-            obj_fun_val = abs_volume_error(Qsim, Qobs)
-        case "agreement_index":
-            obj_fun_val = agreement_index(Qsim, Qobs)
-        case "bias":
-            obj_fun_val = bias(Qsim, Qobs)
-        case "correlation_coeff":
-            obj_fun_val = correlation_coeff(Qsim, Qobs)
-        case "kge":
-            obj_fun_val = kge(Qsim, Qobs)
-        case "kge_mod":
-            obj_fun_val = kge_mod(Qsim, Qobs)
-        case "mae":
-            obj_fun_val = mae(Qsim, Qobs)
-        case "mare":
-            obj_fun_val = mare(Qsim, Qobs)
-        case "mse":
-            obj_fun_val = mse(Qsim, Qobs)
-        case "nse":
-            obj_fun_val = nse(Qsim, Qobs)
-        case "pbias":
-            obj_fun_val = pbias(Qsim, Qobs)
-        case "r2":
-            obj_fun_val = r2(Qsim, Qobs)
-        case "rmse":
-            obj_fun_val = rmse(Qsim, Qobs)
-        case "rrmse":
-            obj_fun_val = rrmse(Qsim, Qobs)
-        case "rsr":
-            obj_fun_val = rsr(Qsim, Qobs)
-        case "volume_error":
-            obj_fun_val = volume_error(Qsim, Qobs)
+    # Compute objective function by switching to the correct algorithm. Ensure
+    # that the function name is the same as the obj_func tag or this will fail.
+    function_call = globals()[obj_func]
+    obj_fun_val = function_call(Qsim, Qobs)
 
     # Take the negative value of the Objective Function to return to the
     # optimizer.
