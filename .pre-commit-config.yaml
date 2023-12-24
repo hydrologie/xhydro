@@ -29,20 +29,20 @@ repos:
     hooks:
       - id: rst-inline-touching-normal
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.4
+    rev: v0.1.9
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         additional_dependencies: [ 'flake8-alphabetize', 'flake8-rst-docstrings' ]
@@ -51,14 +51,27 @@ repos:
     rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==23.11.0' ]
+        additional_dependencies: [ 'black==23.12.1' ]
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.6.1
+    hooks:
+      - id: nbstripout
+        files: '.ipynb'
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.7.0
+    hooks:
+      - id: nbqa-black
+        additional_dependencies: [ 'black==23.12.1' ]
+      - id: nbqa-pyupgrade
+        args: [ '--py39-plus' ]
+      - id: nbqa-isort
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.33.0
     hooks:
       - id: yamllint
         args: ['--config-file', '.yamllint.yaml']
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.1
+    rev: 0.27.3
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
