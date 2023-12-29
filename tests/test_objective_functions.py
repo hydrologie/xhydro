@@ -1,8 +1,11 @@
 """Test suite for the objective functions in obj_funcs.py."""
-
 import numpy as np
+import pytest
 
-from xhydro.modelling.obj_funcs import get_objective_function
+from xhydro.modelling.obj_funcs import (
+    get_objective_function,
+    get_objfun_minimize_or_maximize,
+)
 
 
 def test_obj_funcs():
@@ -64,3 +67,72 @@ def test_obj_funcs():
 
     objfun = get_objective_function(Qobs, Qsim, obj_func="volume_error")
     np.testing.assert_array_almost_equal(objfun, -0.022988505747126436, 8)
+
+
+def test_objective_function_failure_modes():
+    """Test for the objective function calculation failure modes"""
+    Qobs = np.array([100, 100, 100])
+    Qsim = np.array([110, 110, 90])
+
+    mask = np.array([0, 1, 1])
+
+    # Test Qobs different length than Qsim
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        objfun = get_objective_function(
+            np.array([100, 100]),
+            Qsim,
+            obj_func="mae",
+            take_negative=True,
+            mask=None,
+            transform=None,
+            epsilon=None,
+        )
+        assert pytest_wrapped_e.type == SystemExit
+
+        # Test for mask length
+        objfun = get_objective_function(
+            Qobs,
+            Qsim,
+            obj_func="mae",
+            take_negative=True,
+            mask=np.array([0, 1, 0, 0]),
+            transform=None,
+            epsilon=None,
+        )
+        assert pytest_wrapped_e.type == SystemExit
+
+        # Test for obj_func does not exist
+        objfun = get_objective_function(
+            Qobs,
+            Qsim,
+            obj_func="fake_mae",
+            take_negative=True,
+            mask=mask,
+        )
+        assert pytest_wrapped_e.type == SystemExit
+
+        # Test for mask is not 0 and 1
+        objfun = get_objective_function(
+            Qobs,
+            Qsim,
+            obj_func="mae",
+            take_negative=True,
+            mask=np.array([0, 0.5, 1]),
+        )
+        assert pytest_wrapped_e.type == SystemExit
+        assert objfun is None
+
+        # Test for maximize_minimize objective func for unbounded metrics.
+        maximize = get_objfun_minimize_or_maximize(obj_func="bias")
+        assert pytest_wrapped_e.type == SystemExit
+        maximize = get_objfun_minimize_or_maximize(obj_func="pbias")
+        assert pytest_wrapped_e.type == SystemExit
+        maximize = get_objfun_minimize_or_maximize(obj_func="volume_error")
+        assert pytest_wrapped_e.type == SystemExit
+
+        # Test for unknown objective func
+        maximize = get_objective_function(obj_func="bias_fake")
+        assert pytest_wrapped_e.type == SystemExit
+
+        assert objfun is None
+        assert maximize is None
