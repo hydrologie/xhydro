@@ -128,26 +128,26 @@ def get_objective_function(
     function (obj_fun).
     """
     # List of available objective functions
-    obj_func_list = [
-        "abs_bias",
-        "abs_pbias",
-        "abs_volume_error",
-        "agreement_index",
-        "bias",
-        "correlation_coeff",
-        "kge",
-        "kge_mod",
-        "mae",
-        "mare",
-        "mse",
-        "nse",
-        "pbias",
-        "r2",
-        "rmse",
-        "rrmse",
-        "rsr",
-        "volume_error",
-    ]
+    obj_func_dict = {
+        "abs_bias": abs_bias,
+        "abs_pbias": abs_pbias,
+        "abs_volume_error": abs_volume_error,
+        "agreement_index": agreement_index,
+        "bias": bias,
+        "correlation_coeff": correlation_coeff,
+        "kge": kge,
+        "kge_mod": kge_mod,
+        "mae": mae,
+        "mare": mare,
+        "mse": mse,
+        "nse": nse,
+        "pbias": pbias,
+        "r2": r2,
+        "rmse": rmse,
+        "rrmse": rrmse,
+        "rsr": rsr,
+        "volume_error": volume_error,
+    }
 
     # Basic error checking
     if Qobs.shape[0] != Qsim.shape[0]:
@@ -164,7 +164,7 @@ def get_objective_function(
             sys.exit("Mask contains values other 0 or 1. Please modify.")
 
     # Check that the objective function is in the list of available methods
-    if obj_func not in obj_func_list:
+    if obj_func not in obj_func_dict:
         sys.exit(
             "Selected objective function is currently unavailable. "
             + "Consider contributing to our project at: "
@@ -189,15 +189,13 @@ def get_objective_function(
 
     # Compute objective function by switching to the correct algorithm. Ensure
     # that the function name is the same as the obj_func tag or this will fail.
-    function_call = globals()[obj_func]
+    function_call = obj_func_dict[obj_func]
     obj_fun_val = function_call(Qsim, Qobs)
 
     # Take the negative value of the Objective Function to return to the
     # optimizer.
     if take_negative:
         obj_fun_val = obj_fun_val * -1
-
-    print(obj_fun_val)
 
     return obj_fun_val
 
@@ -384,7 +382,7 @@ def abs_pbias(Qsim, Qobs):
 
     The abs_pbias should be MINIMIZED.
     """
-    return np.abs(bias(Qsim, Qobs))
+    return np.abs(pbias(Qsim, Qobs))
 
 
 def abs_volume_error(Qsim, Qobs):
