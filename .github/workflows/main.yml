@@ -7,10 +7,16 @@ on:
     paths-ignore:
       - CHANGES.rst
       - README.rst
-      - setup.cfg
       - pyproject.toml
       - xhydro/__init__.py
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  pull_request_review:
+    types:
+      - submitted
 
 jobs:
   lint:
@@ -81,9 +87,45 @@ jobs:
           COVERALLS_PARALLEL: true
           COVERALLS_SERVICE_NAME: github
 
+  test-notebooks:
+    needs: lint
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'approved') ||
+      (github.event.review.state == 'approved') ||
+      (github.event_name == 'push')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          cache-downloads: true
+          environment-file: environment-dev.yml
+          create-args: >-
+            mamba
+            python=${{ matrix.python-version }}
+      - name: Conda and Mamba versions
+        run: |
+          mamba --version
+          echo "micromamba $(micromamba --version)"
+      - name: Install xHydro
+        run: |
+          python -m pip install --no-deps .
+      - name: Check versions
+        run: |
+          conda list
+          python -m pip check || true
+      - name: Test Notebooks
+        run: |
+          make test-notebooks
+
   finish:
     needs:
       - test-conda
+      - test-notebooks
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
