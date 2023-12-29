@@ -89,6 +89,31 @@ def test_spotpy_calibration():
     assert len(best_parameters_transform) == len(bounds_high)
 
 
+def test_calibration_failure_mode_unknown_optimizer():
+    """Test for maximize-minimize failure mode:
+    use "OTHER" optimizer, i.e. an unknown optimizer. Should fail.
+    """
+    bounds_low = np.array([0, 0, 0])
+    bounds_high = np.array([10, 10, 10])
+    model_config = {
+        "precip": np.array([10, 11, 12, 13, 14, 15]),
+        "temperature": np.array([10, 3, -5, 1, 15, 0]),
+        "Qobs": np.array([120, 130, 140, 150, 160, 170]),
+        "drainage_area": np.array([10]),
+        "model_name": "Dummy",
+    }
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        best_parameters_transform, best_simulation, best_objfun = perform_calibration(
+            model_config,
+            "nse",
+            bounds_low=bounds_low,
+            bounds_high=bounds_high,
+            evaluations=10,
+            algorithm="OTHER",
+        )
+        assert pytest_wrapped_e.type == SystemExit
+
+
 def test_transform():
     """Test the flow transformer"""
     Qsim = np.array([10, 10, 10])
