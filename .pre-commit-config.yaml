@@ -58,13 +58,15 @@ repos:
       - id: nbstripout
         files: '.ipynb'
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.0
+    rev: 1.7.1
     hooks:
       - id: nbqa-black
         additional_dependencies: [ 'black==23.12.1' ]
       - id: nbqa-pyupgrade
         args: [ '--py39-plus' ]
+        additional_dependencies: [ 'pyupgrade==3.15.0' ]
       - id: nbqa-isort
+        additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.33.0
     hooks:
