@@ -1,6 +1,4 @@
 """Test suite for hydrological modelling in hydrological_modelling.py"""
-import unittest
-
 import numpy as np
 import pytest
 
@@ -9,7 +7,6 @@ from xhydro.modelling.hydrological_modelling import hydrological_model_selector
 
 def test_hydrological_modelling():
     """Test the hydrological models as they become online"""
-
     # Test the dummy model
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
@@ -32,4 +29,4 @@ def test_hydrological_modelling():
 def import_unknown_model():
     model_config = {"model_name": "fake_model"}
     Qsim = hydrological_model_selector(model_config)
-    assert Qsim == None
+    assert Qsim is None

@@ -11,7 +11,6 @@ from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
 def test_spotpy_calibration():
     """Make sure the calibration works under possible test cases."""
-
     bounds_low = np.array([0, 0, 0])
     bounds_high = np.array([10, 10, 10])
 
@@ -167,8 +166,7 @@ def test_calibration_failures():
 
 
 def test_transform():
-    """Test the transformer"""
-
+    """Test the flow transformer"""
     Qsim = np.array([10, 10, 10])
     Qobs = np.array([5, 5, 5])
 
