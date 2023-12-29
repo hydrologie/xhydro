@@ -69,70 +69,91 @@ def test_obj_funcs():
     np.testing.assert_array_almost_equal(objfun, -0.022988505747126436, 8)
 
 
-def test_objective_function_failure_modes():
-    """Test for the objective function calculation failure modes"""
-    Qobs = np.array([100, 100, 100])
-    Qsim = np.array([110, 110, 90])
-
-    mask = np.array([0, 1, 1])
-
-    # Test Qobs different length than Qsim
+def test_objective_function_failure_data_length():
+    """Test for the objective function calculation failure mode:
+    Qobs and Qsim length are different
+    """
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-        objfun = get_objective_function(
-            np.array([100, 100]),
-            Qsim,
+        _ = get_objective_function(
+            np.array([100, 110]),
+            np.array([100, 110, 120]),
             obj_func="mae",
-            take_negative=True,
-            mask=None,
-            transform=None,
-            epsilon=None,
         )
         assert pytest_wrapped_e.type == SystemExit
 
-        # Test for mask length
-        objfun = get_objective_function(
-            Qobs,
-            Qsim,
+
+def test_objective_function_failure_mask_length():
+    """Test for the objective function calculation failure mode:
+    Qobs and mask length are different
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objective_function(
+            np.array([100, 100, 100]),
+            np.array([100, 110, 120]),
             obj_func="mae",
-            take_negative=True,
             mask=np.array([0, 1, 0, 0]),
-            transform=None,
-            epsilon=None,
         )
         assert pytest_wrapped_e.type == SystemExit
 
-        # Test for obj_func does not exist
-        objfun = get_objective_function(
-            Qobs,
-            Qsim,
-            obj_func="fake_mae",
-            take_negative=True,
-            mask=mask,
+
+def test_objective_function_failure_unknown_objfun():
+    """Test for the objective function calculation failure mode:
+    Objective function is unknown
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objective_function(
+            np.array([100, 100, 100]),
+            np.array([100, 110, 120]),
+            obj_func="fake",
         )
         assert pytest_wrapped_e.type == SystemExit
 
-        # Test for mask is not 0 and 1
-        objfun = get_objective_function(
-            Qobs,
-            Qsim,
+
+def test_objective_function_failure_mask_contents():
+    """Test for the objective function calculation failure mode:
+    Mask contains other than 0 and 1
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objective_function(
+            np.array([100, 100, 100]),
+            np.array([100, 110, 120]),
             obj_func="mae",
-            take_negative=True,
             mask=np.array([0, 0.5, 1]),
         )
         assert pytest_wrapped_e.type == SystemExit
-        assert objfun is None
 
-        # Test for maximize_minimize objective func for unbounded metrics.
-        maximize = get_objfun_minimize_or_maximize(obj_func="bias")
-        assert pytest_wrapped_e.type == SystemExit
-        maximize = get_objfun_minimize_or_maximize(obj_func="pbias")
-        assert pytest_wrapped_e.type == SystemExit
-        maximize = get_objfun_minimize_or_maximize(obj_func="volume_error")
-        assert pytest_wrapped_e.type == SystemExit
 
-        # Test for unknown objective func
-        maximize = get_objective_function(obj_func="bias_fake")
+def test_maximizer_objfun_failure_modes_bias():
+    """Test for maximize-minimize failure mode:
+    Use of bias objfun which is unbounded
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objfun_minimize_or_maximize(obj_func="bias")
         assert pytest_wrapped_e.type == SystemExit
 
-        assert objfun is None
-        assert maximize is None
+
+def test_maximizer_objfun_failure_modes_pbias():
+    """Test for maximize-minimize failure mode:
+    Use of pbias objfun which is unbounded
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objfun_minimize_or_maximize(obj_func="pbias")
+        assert pytest_wrapped_e.type == SystemExit
+
+
+def test_maximizer_objfun_failure_modes_volume_error():
+    """Test for maximize-minimize failure mode:
+    Use of volume_error objfun which is unbounded
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objfun_minimize_or_maximize(obj_func="volume_error")
+        assert pytest_wrapped_e.type == SystemExit
+
+
+def test_maximizer_objfun_failure_modes_unknown_metric():
+    """Test for maximize-minimize failure mode:
+    Use of unknown objfun
+    """
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        _ = get_objfun_minimize_or_maximize(obj_func="unknown_of")
+        assert pytest_wrapped_e.type == SystemExit

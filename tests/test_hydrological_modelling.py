@@ -25,9 +25,9 @@ def test_hydrological_modelling():
     assert Qsim == 0
 
 
-def import_unknown_model():
+def test_import_unknown_model():
     """Test for unknown model"""
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
         model_config = {"model_name": "fake_model"}
-        Qsim = hydrological_model_selector(model_config)
-        assert Qsim is None
+        _ = hydrological_model_selector(model_config)
+        assert pytest_wrapped_e.type == NotImplementedError
