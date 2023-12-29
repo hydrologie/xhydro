@@ -64,7 +64,6 @@ dev = [
   "pooch",
   "pre-commit>=3.3.2",
   "pytest-cov>=4.0.0",
-  "pytest-xdist[psutil]>=3.5.0",
   "pytest>=7.3.1",
   "ruff>=0.1.9",
   "tox>=4.5.1",
@@ -189,8 +188,6 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 addopts = [
   "--color=yes",
-  "--maxprocesses=8",
-  "--numprocesses=0",
   "--verbose"
 ]
 filterwarnings = ["ignore::UserWarning"]
