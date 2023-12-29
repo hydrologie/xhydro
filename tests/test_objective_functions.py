@@ -6,9 +6,7 @@ from xhydro.modelling.obj_funcs import get_objective_function
 
 
 def test_obj_funcs():
-    """
-    Series of tests to test all objective functions with fast test data
-    """
+    """Series of tests to test all objective functions with fast test data"""
     Qobs = np.array([120, 130, 140, 150, 160, 170])
     Qsim = np.array([120, 125, 145, 140, 140, 180])
 
