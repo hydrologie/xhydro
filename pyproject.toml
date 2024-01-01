@@ -121,7 +121,6 @@ filename = ".cruft.json"
 search = "\"version\": \"{current_version}\""
 replace = "\"version\": \"{new_version}\""
 
-
 [tool.coverage.run]
 relative_files = true
 include = ["xhydro/*"]
