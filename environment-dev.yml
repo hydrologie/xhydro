@@ -7,7 +7,7 @@ dependencies:
   # Main packages
   - numpy
   - pooch >=1.8.0
-  - pydantic >=2.0,<2.5.3
+  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
   - statsmodels
   - xarray
   - xclim >=0.45.0
