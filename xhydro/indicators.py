@@ -64,36 +64,37 @@ def get_yearly_op(
     missing_options: Optional[dict] = None,
     interpolate_na: bool = False,
 ) -> xr.Dataset:
-    """
-    Compute yearly operations on a variable.
+    """Compute yearly operations on a variable.
 
     Parameters
     ----------
-    ds: xr.Dataset
+    ds : xr.Dataset
         Dataset containing the variable to compute the operation on.
-    op: str
+    op : str
         Operation to compute. One of ["max", "min", "mean", "sum"].
-    input_var: str
+    input_var : str
         Name of the input variable. Defaults to "streamflow".
-    window: int
+    window : int
         Size of the rolling window. A "mean" operation is performed on the rolling window before the call to xclim.
         This parameter cannot be used with the "sum" operation.
-    timeargs: dict, optional
+    timeargs : dict, optional
         Dictionary of time arguments for the operation.
         Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
         Values are up to two dictionaries, with both being optional.
         The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC").
         It needs to be a yearly frequency. Defaults to "AS-JAN".
-        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which means the whole year.
+        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`.
+        Defaults to {}, which means the whole year.
         See :py:func:`xclim.core.calendar.select_time` for more information.
-        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ['12-01', '02-28']}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
-    missing: str
+        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ["12-01", "02-28"]}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
+    missing : str
         How to handle missing values. One of "skip", "any", "at_least_n", "pct", "wmo".
         See :py:func:`xclim.core.missing` for more information.
-    missing_options: dict, optional
+    missing_options : dict, optional
         Dictionary of options for the missing values' method. See :py:func:`xclim.core.missing` for more information.
-    interpolate_na: bool
-        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation. Defaults to False.
+    interpolate_na : bool
+        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation.
+        Defaults to False.
 
     Returns
     -------
@@ -105,7 +106,6 @@ def get_yearly_op(
     -----
     If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs
     (e.g. 1 per month) to create multiple distinct variables.
-
     """
     missing_options = missing_options or {}
     timeargs = timeargs or {"annual": {}}
@@ -174,7 +174,8 @@ def get_yearly_op(
             and freq != "AS-DEC"
         ):
             warnings.warn(
-                "The frequency is not AS-DEC, but the season indexer includes DJF. This will lead to misleading results."
+                "The frequency is not AS-DEC, but the season indexer includes DJF. "
+                "This will lead to misleading results."
             )
         elif (
             "doy_bounds" in indexer.keys()
