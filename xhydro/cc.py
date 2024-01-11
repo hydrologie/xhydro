@@ -40,8 +40,8 @@ def perturbed_indicators(
     deltas: xr.Dataset,
     delta_type: str,
     *,
+    ds_weights: Optional[xr.DataArray] = None,
     delta_weights: Optional[xr.DataArray] = None,
-    stack_weights: Optional[Union[xr.DataArray, str, list[str]]] = None,
     n: int = 50000,
     seed: int = None,
     return_dist: bool = False,
@@ -57,14 +57,12 @@ def perturbed_indicators(
         Dataset containing the future deltas to apply to the historical indicators.
     delta_type : str
         Type of delta provided. Must be one of ['absolute', 'percentage'].
+    ds_weights : xr.DataArray, optional
+        Weights to use when sampling the historical indicators, for dimensions other than 'percentile'/'quantile'.
+        Dimensions not present in this Dataset, or if None, will be sampled uniformly unless they are shared with 'deltas'.
     delta_weights : xr.DataArray, optional
         Weights to use when sampling the deltas, such as along the 'realization' dimension.
-        If not provided, the deltas will be sampled uniformly.
-    stack_weights : xr.DataArray, string or list of strings, optional
-        Weights to use along other dimensions, which will be stacked along the 'sample' dimension.
-        Use a string or list of strings to specify dimension(s) to stack for sampling purposes, but without applying weights.
-        The dimensions in 'stack_weights' must exist in both 'ds' and 'deltas'.
-        Use None to skip stacking additional dimensions.
+        Dimensions not present in this Dataset, or if None, will be sampled uniformly unless they are shared with 'ds'.
     n : int
         Number of samples to generate.
     seed : int
@@ -93,41 +91,65 @@ def perturbed_indicators(
 
     """
     # Prepare weights
+    shared_dims = set(ds.dims).intersection(set(deltas.dims))
     percentile_weights = _percentile_weights(ds)
-    if stack_weights is not None:
-        # If stack_weights is a string or list of strings, convert it to a DataArray of ones
-        if isinstance(stack_weights, str):
-            stack_weights = [stack_weights]
-        if isinstance(stack_weights, list):
-            stack_weights = xr.DataArray(
-                np.ones([ds.sizes[dim] for dim in stack_weights]),
-                coords={dim: ds[dim] for dim in stack_weights},
-                dims=stack_weights,
-            )
-
+    if ds_weights is not None:
         percentile_weights = (
             percentile_weights.expand_dims(
-                {dim: stack_weights[dim] for dim in stack_weights.dims}
+                {dim: ds_weights[dim] for dim in ds_weights.dims}
             )
-            * stack_weights
+            * ds_weights
         )
-        delta_weights = (
-            delta_weights.expand_dims(
-                {dim: stack_weights[dim] for dim in stack_weights.dims}
+    percentile_weights = percentile_weights.expand_dims(
+        {
+            dim: ds[dim]
+            for dim in set(ds.dims).difference(
+                list(shared_dims) + list(percentile_weights.dims)
             )
-            * stack_weights
+        }
+    )
+    if delta_weights is None:
+        delta_weights = xr.DataArray(
+            np.ones(
+                [
+                    deltas.sizes[dim]
+                    for dim in set(deltas.dims).difference(list(shared_dims))
+                ]
+            ),
+            coords={
+                dim: deltas[dim]
+                for dim in set(deltas.dims).difference(list(shared_dims))
+            },
+            dims=set(deltas.dims).difference(list(shared_dims)),
+        )
+    delta_weights = delta_weights.expand_dims(
+        {
+            dim: deltas[dim]
+            for dim in set(deltas.dims).difference(
+                list(shared_dims) + list(delta_weights.dims)
+            )
+        }
+    )
+
+    unique_dims = set(percentile_weights.dims).symmetric_difference(
+        set(delta_weights.dims)
+    )
+    if any([dim in shared_dims for dim in unique_dims]):
+        problem_dims = [dim for dim in unique_dims if dim in shared_dims]
+        raise ValueError(
+            f"Dimension(s) {problem_dims} is shared between 'ds' and 'deltas', but not between 'ds_weights' and 'delta_weights'."
         )
 
     # Sample the distributions
     _, pdim, mult = _perc_or_quantile(ds)
     ds_dist = (
         _weighted_sampling(ds, percentile_weights, n=n, seed=seed)
-        .drop_vars(["sample", pdim, *stack_weights.dims])
+        .drop_vars(["sample", *percentile_weights.dims])
         .assign_coords({"sample": np.arange(n)})
     )
     deltas_dist = (
         _weighted_sampling(deltas, delta_weights, n=n, seed=seed)
-        .drop_vars(["sample", *delta_weights.dims, *stack_weights.dims])
+        .drop_vars(["sample", *delta_weights.dims])
         .assign_coords({"sample": np.arange(n)})
     )
 
@@ -215,8 +237,8 @@ def _weighted_sampling(
     weights = weights.chunk({dim: -1 for dim in weights.dims})
 
     # Stack the dimensions containing weights
-    ds = ds.stack({"sample": weights.dims})
-    weights = weights.stack({"sample": weights.dims})
+    ds = ds.stack({"sample": sorted(list(weights.dims))})
+    weights = weights.stack({"sample": sorted(list(weights.dims))})
     weights = weights.reindex_like(ds)
 
     # Sample the dimensions with weights
@@ -234,22 +256,24 @@ def _perc_or_quantile(
 ) -> tuple[xr.DataArray, str, int]:
     """Return 'percentile' or 'quantile' depending on the name of the percentile dimension."""
     if isinstance(da, xr.DataArray):
-        pdim = str(da.name)
+        if len(da.dims) != 1:
+            raise ValueError(
+                f"DataArray has more than one dimension: received {da.dims}."
+            )
+        pdim = str(da.dims[0])
         pct = da
         if pdim not in ["percentile", "quantile"]:
             raise ValueError(
-                f"DataArray is not named 'percentile' or 'quantile': received {pdim}"
+                f"DataArray has no 'percentile' or 'quantile' dimension: received {pdim}."
             )
-    elif isinstance(da, xr.Dataset):
+    else:
         pdim = [dim for dim in da.dims if dim in ["percentile", "quantile"]]
         if len(pdim) != 1:
             raise ValueError(
-                f"Dataset contains more than one dimension in ['percentile', 'quantile']: {pdim}"
+                "The Dataset should contain one of ['percentile', 'quantile']."
             )
         pdim = pdim[0]
         pct = da[pdim]
-    else:
-        raise TypeError(f"Expected DataArray or Dataset, got {type(da)}")
 
     multiplier = 100 if pdim == "percentile" else 1
     if (pct.min() < 0 or pct.max() > multiplier) or (
