@@ -9,8 +9,9 @@ dependencies:
   - geopandas
   - leafmap
   - numpy
-  - pydantic <=2.5.2 # temporary fix
+  - pooch >=1.8.0\
   - pystac
+  - pydantic >=2.0,<2.5.3
   - rasterio
   - stackstac
   - statsmodels

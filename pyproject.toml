@@ -40,7 +40,8 @@ dependencies = [
   "geopandas",
   "leafmap",
   "numpy",
-  "pydantic<=2.5.2",
+  "pooch>=1.8.0",
+  "pydantic>=2.0,<2.5.3",
   "pystac",
   "rasterio",
   "stackstac",
@@ -107,7 +108,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.2"
+current_version = "0.3.3"
 commit = true
 tag = false
 tag_name = "v{new_version}"
@@ -155,7 +156,8 @@ include = [
   "docs/make.bat",
   "tests/*.py",
   "tox.ini",
-  "xhydro"
+  "xhydro",
+  "xhydro/testing/registry.txt"
 ]
 exclude = [
   "*.py[co]",
@@ -170,7 +172,8 @@ exclude = [
   "Makefile",
   "docs/_*",
   "docs/apidoc/modules.rst",
-  "docs/apidoc/xhydro*.rst"
+  "docs/apidoc/xhydro*.rst",
+  "xhydro/testing/data/*"
 ]
 
 [tool.isort]
@@ -186,6 +189,22 @@ warn_unused_configs = true
 [[tool.mypy.overrides]]
 module = []
 ignore_missing_imports = true
+
+[tool.numpydoc_validation]
+checks = [
+  "all", # report on all checks, except the below
+  "ES01",
+  "EX01",
+  "GL01",
+  "SA01"
+]
+exclude = [
+  # don't report on objects that match any of these regex
+  '\.undocumented_method$',
+  '\.__repr__$',
+  # any object starting with an underscore is a private object
+  '\._\w+'
+]
 
 [tool.pytest.ini_options]
 addopts = [
