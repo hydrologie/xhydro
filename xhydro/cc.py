@@ -92,6 +92,7 @@ def perturbed_indicators(
     """
     # Prepare weights
     shared_dims = set(ds.dims).intersection(set(deltas.dims))
+    exclude_dims = ["time", "horizon"]
     percentile_weights = _percentile_weights(ds)
     if ds_weights is not None:
         percentile_weights = (
@@ -104,29 +105,22 @@ def perturbed_indicators(
         {
             dim: ds[dim]
             for dim in set(ds.dims).difference(
-                list(shared_dims) + list(percentile_weights.dims)
+                list(shared_dims) + list(percentile_weights.dims) + exclude_dims
             )
         }
     )
     if delta_weights is None:
+        dims = set(deltas.dims).difference(list(shared_dims) + exclude_dims)
         delta_weights = xr.DataArray(
-            np.ones(
-                [
-                    deltas.sizes[dim]
-                    for dim in set(deltas.dims).difference(list(shared_dims))
-                ]
-            ),
-            coords={
-                dim: deltas[dim]
-                for dim in set(deltas.dims).difference(list(shared_dims))
-            },
-            dims=set(deltas.dims).difference(list(shared_dims)),
+            np.ones([deltas.sizes[dim] for dim in dims]),
+            coords={dim: deltas[dim] for dim in dims},
+            dims=dims,
         )
     delta_weights = delta_weights.expand_dims(
         {
             dim: deltas[dim]
             for dim in set(deltas.dims).difference(
-                list(shared_dims) + list(delta_weights.dims)
+                list(shared_dims) + list(delta_weights.dims) + exclude_dims
             )
         }
     )
