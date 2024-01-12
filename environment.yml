@@ -5,11 +5,16 @@ dependencies:
   - python >=3.9,<3.12
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
+  - cartopy
   - geopandas
   - leafmap
   - numpy
   - pydantic <=2.5.2 # temporary fix
+  - pystac
+  - rasterio
+  - stackstac
   - statsmodels
+  - tqdm
   - xarray
   - xclim >=0.45.0
   - xscen >=0.7.1

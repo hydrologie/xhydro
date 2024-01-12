@@ -36,11 +36,16 @@ classifiers = [
 dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  "cartopy",
   "geopandas",
   "leafmap",
   "numpy",
   "pydantic<=2.5.2",
+  "pystac",
+  "rasterio",
+  "stackstac",
   "statsmodels",
+  "tqdm",
   "xarray",
   "xclim>=0.45.0",
   "xdatasets>=0.3.1",
