@@ -22,6 +22,7 @@ jobs:
           # This requires a personal access token with the privileges to push directly to `main`
           token: ${{ secrets.ACTIONS_VERSION_UPDATER_TOKEN }}
           persist-credentials: true
+
       - name: Run GitHub Actions Version Updater
         uses: saadmk11/github-actions-version-updater@v0.8.1
         with:
