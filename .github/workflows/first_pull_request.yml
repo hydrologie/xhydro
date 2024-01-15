@@ -5,10 +5,16 @@ on:
     types:
       - opened
 
+permissions:
+  contents: read
+
 jobs:
   welcome:
     name: Welcome
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/github-script@v6
         with:
