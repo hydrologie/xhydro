@@ -5,11 +5,17 @@ dependencies:
   - python >=3.9,<3.12
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
+  - cartopy
   - geopandas
   - leafmap
   - numpy
-  - pydantic <=2.5.2 # temporary fix
+  - pooch >=1.8.0
+  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
+  - pystac
+  - rasterio
+  - stackstac
   - statsmodels
+  - tqdm
   - xagg
   - xarray
   - xclim >=0.45.0
@@ -34,9 +40,12 @@ dependencies:
   - nbsphinx
   - nbval
   - pandoc
+  - planetary-computer
   - pooch
   - pre-commit >=3.3.2
+  - pystac-client
   - ruff >=0.1.9
+  - stackstac
   - sphinx
   - sphinx-autoapi
   - sphinx-codeautolink

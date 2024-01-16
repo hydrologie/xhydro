@@ -11,10 +11,16 @@ import geopandas as gpd
 import leafmap
 import numpy as np
 import pandas as pd
+import pystac_client
+import stackstac
 import xarray as xr
+from pystac.extensions.item_assets import ItemAssetsExtension
 from shapely import Point
+from tqdm.auto import tqdm
 
 __all__ = [
+    "land_use_classification",
+    "land_use_plot",
     "watershed_delineation",
     "watershed_properties",
 ]
@@ -24,7 +30,9 @@ def watershed_delineation(
     coordinates: list[tuple] | tuple | None = None,
     map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
-    """Watershed delineation can be computed at any location in North America using HydroBASINS (hybas_na_lev01-12_v1c).
+    """Calculate watershed delineation from pour point.
+
+    Watershed delineation can be computed at any location in North America using HydroBASINS (hybas_na_lev01-12_v1c).
     The process involves assessing all upstream sub-basins from a specified pour point and consolidating them into a
     unified watershed.
 
@@ -41,7 +49,6 @@ def watershed_delineation(
     -------
     gpd.GeoDataFrame
         GeoDataFrame containing the watershed boundaries.
-
     """
     # level 12 HydroBASINS polygons dataset url (North-Ameroca only at the moment)
     url = "https://s3.us-east-1.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
@@ -110,18 +117,24 @@ def watershed_properties(
     projected_crs: int = 6622,
     output_format: str = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Watershed properties extracted from gpd.GeoDataFrame
+    """Watershed properties extracted from a gpd.GeoDataFrame.
+
+    The calculated properties are :
+    - area
+    - perimeter
+    - gravenlius
+    - centroid coordinates
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
-    unique_id : string
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     projected_crs : int
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     output_format : str
-        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`)
+        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
 
     Returns
     -------
@@ -129,7 +142,7 @@ def watershed_properties(
         Output dataset containing the watershed properties.
     """
     if not gdf.crs:
-        raise ValueError("The provided gpd.GeoDataFrame is missing the crs attributes.")
+        raise ValueError("The provided gpd.GeoDataFrame is missing the crs attribute.")
     projected_gdf = gdf.to_crs(projected_crs)
 
     # Calculate watershed properties
@@ -243,3 +256,257 @@ def _recursive_upstream_lookup(
         all_upstream_indexes.extend(direct_upstream_indexes)
         _recursive_upstream_lookup(gdf, direct_upstream_indexes, all_upstream_indexes)
     return all_upstream_indexes
+
+
+def _count_pixels_from_bbox(
+    gdf, idx, catalog, unique_id, values_to_classes, year, pbar
+):
+    bbox_of_interest = gdf.iloc[[idx]].total_bounds
+
+    search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
+    items = search.item_collection()
+
+    # The STAC metadata contains some information we'll want to use when creating
+    # our merged dataset. Get the EPSG code of the first item and the nodata value.
+    item = items[0]
+
+    # Create a single DataArray from out multiple resutls with the corresponding
+    # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
+    # matches our data, since stackstac will use float64 by default.
+    stack = (
+        stackstac.stack(
+            items,
+            dtype=np.ubyte,
+            fill_value=255,
+            bounds_latlon=bbox_of_interest,
+            epsg=item.properties["proj:epsg"],
+            sortby_date=False,
+        )
+        .assign_coords(
+            time=pd.to_datetime([item.properties["start_datetime"] for item in items])
+            .tz_convert(None)
+            .to_numpy()
+        )
+        .sortby("time")
+    )
+
+    merged = stack.squeeze().compute()
+
+    if year == "latest":
+        year = str(merged.time.dt.year[-1].values)
+    else:
+        try:
+            year = str(year)
+        except TypeError:
+            print(f"Expected year argument {year} to be a digit.")
+
+    merged = merged.sel(time=year).min("time")
+
+    data = merged.data.ravel()
+    df = pd.DataFrame(
+        pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0]
+    )
+    if unique_id is not None:
+        column_name = [gdf[unique_id].iloc[idx]]
+    else:
+        column_name = [idx]
+    df.columns = column_name
+
+    pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
+
+    return df.T
+
+
+def land_use_classification(
+    gdf: gpd.GeoDataFrame,
+    unique_id: str = None,
+    output_format: str = "geopandas",
+    collection="io-lulc-9-class",
+    year="latest",
+) -> gpd.GeoDataFrame | xr.Dataset:
+    """Calculate land use classification.
+
+    Calculate land use classification for each polygon from a gpd.GeoDataFrame. By default,
+    the classes are generated from the Planetary Computer's STAC catalog using the
+    `10m Annual Land Use Land Cover` dataset.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    output_format : str
+        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
+    collection : str
+        Collection name from the Planetary Computer STAC Catalog.
+    year : str | int
+        Land use dataset year between 2017 and 2022.
+
+    Returns
+    -------
+    gpd.GeoDataFrame or xr.Dataset
+        Output dataset containing the watershed properties.
+    """
+    catalog = pystac_client.Client.open(
+        "https://planetarycomputer.microsoft.com/api/stac/v1",
+    )
+
+    collection = catalog.get_collection(collection)
+    ia = ItemAssetsExtension.ext(collection)
+
+    x = ia.item_assets["data"]
+    class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
+    values_to_classes = {
+        v: "_".join(("pct", k.lower().replace(" ", "_")))
+        for k, v in class_names.items()
+    }
+
+    pbar = tqdm(gdf.index, position=0, leave=True)
+
+    output_dataset = pd.concat(
+        [
+            _count_pixels_from_bbox(
+                gdf, idx, catalog, unique_id, values_to_classes, year, pbar
+            )
+            for idx in pbar
+        ],
+        axis=0,
+    ).fillna(0)
+    if 255 in output_dataset.columns:
+        output_dataset = output_dataset.drop(columns=[255])
+
+    if unique_id is not None:
+        output_dataset.index.name = unique_id
+
+    if output_format in ("xarray", "xr.Dataset"):
+        # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
+        output_dataset = output_dataset.to_xarray()
+        for var in output_dataset:
+            output_dataset[var].attrs = {"units": "percent"}
+    return output_dataset
+
+
+def land_use_plot(
+    gdf: gpd.GeoDataFrame,
+    idx: int = 0,
+    unique_id: str = None,
+    collection: str = "io-lulc-9-class",
+    year: str | int = "latest",
+) -> None:
+    """Plot a land use map for a specific year and watershed.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    idx : int
+        Index to select in gpd.GeoDataFrame.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    collection : str
+        Collection name from the Planetary Computer STAC Catalog.
+    year : str | int
+        Land use dataset year between 2017 and 2022.
+
+    Returns
+    -------
+    None
+        Nothing to return.
+    """
+    catalog = pystac_client.Client.open(
+        "https://planetarycomputer.microsoft.com/api/stac/v1",
+    )
+
+    import cartopy.crs as ccrs
+    import matplotlib.pyplot as plt
+    import rasterio
+    import rasterio.features
+    from matplotlib.colors import ListedColormap
+    from pystac.extensions.projection import ProjectionExtension as proj
+
+    gdf = gdf.iloc[[idx]]
+
+    if unique_id is not None:
+        name = f"- {gdf[unique_id].values[0]}"
+    else:
+        name = ""
+
+    collection = catalog.get_collection(collection)
+    ia = ItemAssetsExtension.ext(collection)
+
+    x = ia.item_assets["data"]
+    class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
+
+    bbox_of_interest = gdf.total_bounds
+
+    search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
+    items = search.item_collection()
+
+    # The STAC metadata contains some information we'll want to use when creating
+    # our merged dataset. Get the EPSG code of the first item and the nodata value.
+    item = items[0]
+
+    # Create a single DataArray from out multiple resutls with the corresponding
+    # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
+    # matches our data, since stackstac will use float64 by default.
+    stack = (
+        stackstac.stack(
+            items,
+            dtype=np.ubyte,
+            fill_value=255,
+            bounds_latlon=bbox_of_interest,
+            epsg=item.properties["proj:epsg"],
+            sortby_date=False,
+        )
+        .assign_coords(
+            time=pd.to_datetime([item.properties["start_datetime"] for item in items])
+            .tz_convert(None)
+            .to_numpy()
+        )
+        .sortby("time")
+    )
+
+    merged = stack.squeeze().compute()
+    if year == "latest":
+        year = str(merged.time.dt.year[-1].values)
+    else:
+        try:
+            year = str(year)
+        except TypeError:
+            print(f"Expected year argument {year} to be a digit.")
+
+    merged = merged.sel(time=year).min("time")
+
+    epsg = proj.ext(item).epsg
+
+    class_count = len(class_names)
+
+    with rasterio.open(item.assets["data"].href) as src:
+        colormap_def = src.colormap(1)  # get metadata colormap for band 1
+        colormap = [
+            np.array(colormap_def[i]) / 255 for i in range(class_count)
+        ]  # transform to matplotlib color format
+
+    cmap = ListedColormap(colormap)
+    fig, ax = plt.subplots(
+        figsize=(12, 6),
+        dpi=125,
+        subplot_kw=dict(projection=ccrs.epsg(epsg)),
+        frameon=False,
+    )
+    p = merged.plot(
+        ax=ax,
+        transform=ccrs.epsg(epsg),
+        cmap=cmap,
+        add_colorbar=False,
+        vmin=0,
+        vmax=class_count,
+    )
+    ax.set_title(f"Land use classification - {year} {name}")
+
+    cbar = plt.colorbar(p)
+    cbar.set_ticks(range(class_count))
+    cbar.set_ticklabels(class_names)
+
+    gdf.to_crs(epsg).boundary.plot(ax=ax, alpha=0.9, color="black")
