@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from xhydro.modelling.hydrological_modelling import hydrological_model_selector
+from xhydro.modelling.hydrological_modelling import run_hydrological_model
 
 
 def test_hydrological_modelling():
@@ -11,23 +11,23 @@ def test_hydrological_modelling():
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
         "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "Qobs": np.array([120, 130, 140, 150, 160, 170]),
+        "qobs": np.array([120, 130, 140, 150, 160, 170]),
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
         "parameters": np.array([5, 5, 5]),
     }
-    Qsim = hydrological_model_selector(model_config)
-    assert Qsim[3] == 3500.00
+    qsim = run_hydrological_model(model_config)
+    assert qsim["qsim"].values[3] == 3500.00
 
     # Test the exceptions for new models
     model_config.update(model_name="ADD_OTHER_HERE")
-    Qsim = hydrological_model_selector(model_config)
-    assert Qsim == 0
+    qsim = run_hydrological_model(model_config)
+    assert qsim == 0
 
 
 def test_import_unknown_model():
     """Test for unknown model"""
     with pytest.raises(NotImplementedError) as pytest_wrapped_e:
         model_config = {"model_name": "fake_model"}
-        _ = hydrological_model_selector(model_config)
+        _ = run_hydrological_model(model_config)
         assert pytest_wrapped_e.type == NotImplementedError

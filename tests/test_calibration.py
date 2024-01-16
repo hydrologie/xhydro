@@ -17,7 +17,7 @@ def test_spotpy_calibration():
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
         "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "Qobs": np.array([120, 130, 140, 150, 160, 170]),
+        "qobs": np.array([120, 130, 140, 150, 160, 170]),
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
@@ -39,7 +39,7 @@ def test_spotpy_calibration():
 
     # Test that the objective function is calculated correctly
     objfun = get_objective_function(
-        model_config["Qobs"],
+        model_config["qobs"],
         best_simulation,
         obj_func="mae",
         mask=mask,
@@ -49,8 +49,8 @@ def test_spotpy_calibration():
 
     # Test dummy model response
     model_config["parameters"] = [5, 5, 5]
-    Qsim = dummy_model(model_config)
-    assert Qsim[3] == 3500.00
+    qsim = dummy_model(model_config)
+    assert qsim["qsim"].values[3] == 3500.00
 
     # Also test to ensure SCEUA and take_minimize is required.
     best_parameters_sceua, best_simulation, best_objfun = perform_calibration(
@@ -98,11 +98,11 @@ def test_calibration_failure_mode_unknown_optimizer():
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
         "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "Qobs": np.array([120, 130, 140, 150, 160, 170]),
+        "qobs": np.array([120, 130, 140, 150, 160, 170]),
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
+    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
         best_parameters_transform, best_simulation, best_objfun = perform_calibration(
             model_config,
             "nse",
@@ -111,27 +111,27 @@ def test_calibration_failure_mode_unknown_optimizer():
             evaluations=10,
             algorithm="OTHER",
         )
-        assert pytest_wrapped_e.type == SystemExit
+        assert pytest_wrapped_e.type == NotImplementedError
 
 
 def test_transform():
     """Test the flow transformer"""
-    Qsim = np.array([10, 10, 10])
-    Qobs = np.array([5, 5, 5])
+    qsim = np.array([10, 10, 10])
+    qobs = np.array([5, 5, 5])
 
-    Qsim_r, Qobs_r = transform_flows(Qsim, Qobs, transform="inv", epsilon=0.01)
-    np.testing.assert_array_almost_equal(Qsim_r[1], 0.0995024, 6)
-    np.testing.assert_array_almost_equal(Qobs_r[1], 0.1980198, 6)
+    qsim_r, qobs_r = transform_flows(qsim, qobs, transform="inv", epsilon=0.01)
+    np.testing.assert_array_almost_equal(qsim_r[1], 0.0995024, 6)
+    np.testing.assert_array_almost_equal(qobs_r[1], 0.1980198, 6)
 
-    Qsim_r, Qobs_r = transform_flows(Qsim, Qobs, transform="sqrt")
-    np.testing.assert_array_almost_equal(Qsim_r[1], 3.1622776, 6)
-    np.testing.assert_array_almost_equal(Qobs_r[1], 2.2360679, 6)
+    qsim_r, qobs_r = transform_flows(qsim, qobs, transform="sqrt")
+    np.testing.assert_array_almost_equal(qsim_r[1], 3.1622776, 6)
+    np.testing.assert_array_almost_equal(qobs_r[1], 2.2360679, 6)
 
-    Qsim_r, Qobs_r = transform_flows(Qsim, Qobs, transform="log", epsilon=0.01)
-    np.testing.assert_array_almost_equal(Qsim_r[1], 2.3075726, 6)
-    np.testing.assert_array_almost_equal(Qobs_r[1], 1.6193882, 6)
+    qsim_r, qobs_r = transform_flows(qsim, qobs, transform="log", epsilon=0.01)
+    np.testing.assert_array_almost_equal(qsim_r[1], 2.3075726, 6)
+    np.testing.assert_array_almost_equal(qobs_r[1], 1.6193882, 6)
 
     # Test Qobs different length than Qsim
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        Qobs_r, Qobs_r = transform_flows(Qsim, Qobs, transform="a", epsilon=0.01)
-        assert pytest_wrapped_e.type == SystemExit
+    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+        qobs_r, qobs_r = transform_flows(qsim, qobs, transform="a", epsilon=0.01)
+        assert pytest_wrapped_e.type == NotImplementedError

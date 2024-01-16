@@ -60,48 +60,42 @@ Any comments are welcome!
 # Import packages
 import numpy as np
 import spotpy
+import xarray as xr
 from spotpy import analyser
 from spotpy.parameter import Uniform
 
-from xhydro.modelling.hydrological_modelling import hydrological_model_selector
+from xhydro.modelling.hydrological_modelling import run_hydrological_model
 from xhydro.modelling.obj_funcs import (
     get_objective_function,
     get_objfun_minimize_or_maximize,
     get_optimizer_minimize_or_maximize,
 )
 
+__all__ = ["perform_calibration"]
 
-class spot_setup:
-    """Create the spotpy calibration system that is used for hydrological model calibration."""
 
-    def __init__(
-        self,
-        model_config,
-        bounds_high,
-        bounds_low,
-        obj_func=None,
-        take_negative=False,
-        mask=None,
-        transform=None,
-        epsilon=None,
-    ):
-        """
-        Initialize the spot_setup object.
+class SpotSetup:
+    """Create the spotpy calibration system that is used for hydrological model calibration.
 
-        The initialization of the spot_setup object includes a generic
-        "model_config" object containing hydrological modelling data required,
-        low and high parameter bounds, as well as an objective function.
-        Depending on the objective function, either spotpy or hydroeval will
-        compute the value, since some functions are found only in one package.
+    Parameters
+    ----------
+    model_config : dict
+        The model configuration object that contains all info to run the model.
+        The model function called to run this model should always use this object and read-in data it requires.
+        It will be up to the user to provide the data that the model requires.
+    bounds_high : np.array
+        High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        within these bounds. The size must be equal to the number of parameters to calibrate.
+    bounds_low : np.array
+        Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        within these bounds. The size must be equal to the number of parameters to calibrate.
+    obj_func : str
+        The objective function used for calibrating. Can be any one of these:
 
-        Notes
-        -----
-        Accepted obj_func values:
             - "abs_bias" : Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
             - "abs_volume_error" : Absolute value of the volume_error metric
             - "agreement_index": Index of agreement
-            - "bias" : Bias metric
             - "correlation_coeff": Correlation coefficient
             - "kge" : Kling Gupta Efficiency metric (2009 version)
             - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
@@ -109,12 +103,99 @@ class spot_setup:
             - "mare": Mean Absolute Relative Error metric
             - "mse" : Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "pbias" : Percent bias (relative bias)
             - "r2" : r-squared, i.e. square of correlation_coeff.
             - "rmse" : Root Mean Square Error
             - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
             - "rsr" : Ratio of RMSE to standard deviation.
-            - "volume_error": Total volume error over the period.
+
+    take_negative : bool
+        Inidactor to take the negative of the objective function value in optimization to ensure convergence
+        in the right direction.
+    mask : np.array
+        A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
+    transform : str
+        The method to transform streamflow prior to computing the objective function. Can be one of:
+        Square root ('sqrt'), inverse ('inv'), or logarithmic ('log') transformation.
+    epsilon : float
+        Used to add a small delta to observations for log and inverse transforms, to eliminate errors
+        caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
+        times this value of epsilon.
+
+    Returns
+    -------
+    SpotSetup object for calibration
+    """
+
+    def __init__(
+        self,
+        model_config: dict,
+        bounds_high: np.array,
+        bounds_low: np.array,
+        obj_func: str = None,
+        take_negative: bool = False,
+        mask: np.array = None,
+        transform: str = None,
+        epsilon: float = None,
+    ):
+        """
+        Initialize the SpotSetup object.
+
+        The initialization of the SpotSetup object includes a generic
+        "model_config" object containing hydrological modelling data required,
+        low and high parameter bounds, as well as an objective function.
+        Depending on the objective function, either spotpy or hydroeval will
+        compute the value, since some functions are found only in one package.
+
+        Parameters
+        ----------
+        model_config : dict
+            The model configuration object that contains all info to run the model.
+            The model function called to run this model should always use this object and read-in data it requires.
+            It will be up to the user to provide the data that the model requires.
+        obj_func : str
+            The objective function used for calibrating. Can be any one of these:
+
+                - "abs_bias" : Absolute value of the "bias" metric
+                - "abs_pbias": Absolute value of the "pbias" metric
+                - "abs_volume_error" : Absolute value of the volume_error metric
+                - "agreement_index": Index of agreement
+                - "correlation_coeff": Correlation coefficient
+                - "kge" : Kling Gupta Efficiency metric (2009 version)
+                - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+                - "mae": Mean Absolute Error metric
+                - "mare": Mean Absolute Relative Error metric
+                - "mse" : Mean Square Error metric
+                - "nse": Nash-Sutcliffe Efficiency metric
+                - "r2" : r-squared, i.e. square of correlation_coeff.
+                - "rmse" : Root Mean Square Error
+                - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
+                - "rsr" : Ratio of RMSE to standard deviation.
+        bounds_high : np.array
+            High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+            within these bounds. The size must be equal to the number of parameters to calibrate.
+        bounds_low : np.array
+            Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+            within these bounds. The size must be equal to the number of parameters to calibrate.
+        evaluations : int
+            Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
+        algorithm : str
+            The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
+        take_negative : bool
+            Inidactor to take the negative of the objective function value in optimization to ensure convergence
+            in the right direction.
+        mask : np.array
+            A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
+        transform : str
+            The method to transform streamflow prior to computing the objective function. Can be one of:
+            Square root ('sqrt'), inverse ('inv'), or logarithmic ('log') transformation.
+        epsilon : float
+            Used to add a small delta to observations for log and inverse transforms, to eliminate errors
+            caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
+            times this value of epsilon.
+
+        Returns
+        -------
+        SpotSetup object for calibration.
         """
         # Gather the model_config dictionary and obj_func string, and other
         # optional arguments.
@@ -138,12 +219,25 @@ class spot_setup:
         given bounds and generates the simulation results. We add the parameter
         "x" that is generated by spotpy to the model_config object at the
         reserved keyword "parameters".
+
+        Parameters
+        ----------
+        x : array_like
+            Tested parameter set.
+
+        Returns
+        -------
+        array_like
+            Simulated streamflow.
         """
         self.model_config.update({"parameters": x})
 
-        # Run the model and return Qsim, with model_config containing the
+        # Run the model and return qsim, with model_config containing the
         # tested parameter set.
-        return hydrological_model_selector(self.model_config)
+        qsim = run_hydrological_model(self.model_config)
+
+        # Return the array of values from qsim for the objective function eval.
+        return qsim["qsim"].values
 
     def evaluation(self):
         """Evaluation function for spotpy.
@@ -157,8 +251,17 @@ class spot_setup:
         package supposes that Qobs and Qsim have the same length, but this can
         be changed in the model_config parameterization and adding conditions
         here.
+
+        Returns
+        -------
+        array_like
+            Observed streamflow.
         """
-        return self.model_config["Qobs"]
+        qobs = self.model_config["qobs"]
+        if isinstance(qobs, xr.Dataset):
+            qobs = qobs["qobs"]
+
+        return qobs
 
     def objectivefunction(
         self,
@@ -170,12 +273,17 @@ class spot_setup:
 
         This function is where spotpy computes the objective function.
 
-        Notes
-        -----
-        The inputs are:
-            - model_config object (dict type) with all required information,
-            - simulation, observation : vectors of streamflow used to compute
-              the objective function
+        Parameters
+        ----------
+        simulation : array_like
+            Vector of simulated streamflow.
+        evaluation : array_like
+            Vector of observed streamflow to compute objective function.
+
+        Returns
+        -------
+        float
+            The value of the objective function.
         """
         obj_fun_val = get_objective_function(
             evaluation,
@@ -252,6 +360,15 @@ def perform_calibration(
         Used to add a small delta to observations for log and inverse transforms, to eliminate errors
         caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
         times this value of epsilon.
+
+    Returns
+    -------
+    best_parameters : array_like
+        The optimized parameter set.
+    qsim : xr.Dataset
+        Simulated streamflow using the optimized parameter set.
+    bestobjf : float
+        The best objective function value.
     """
     # Get objective function and algo optimal convregence direction. Necessary
     # to ensure that the algorithm is optimizing in the correct direction
@@ -267,7 +384,7 @@ def perform_calibration(
         take_negative = False
 
     # Set up the spotpy object to prepare the calibration
-    spotpy_setup = spot_setup(
+    spotpy_setup = SpotSetup(
         model_config,
         bounds_high=bounds_high,
         bounds_low=bounds_low,
@@ -316,7 +433,7 @@ def perform_calibration(
     model_config.update({"parameters": best_parameters})
 
     # ... which can be used to run the hydrological model and get the best Qsim.
-    Qsim = hydrological_model_selector(model_config)
+    qsim = run_hydrological_model(model_config)
 
-    # Return the best parameters, Qsim and best objective function value.
-    return best_parameters, Qsim, bestobjf
+    # Return the best parameters, qsim and best objective function value.
+    return best_parameters, qsim, bestobjf
