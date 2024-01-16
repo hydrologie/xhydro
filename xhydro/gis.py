@@ -142,7 +142,7 @@ def watershed_properties(
         Output dataset containing the watershed properties.
     """
     if not gdf.crs:
-        raise ValueError("The provided gpd.GeoDataFrame is missing the crs attributes.")
+        raise ValueError("The provided gpd.GeoDataFrame is missing the crs attribute.")
     projected_gdf = gdf.to_crs(projected_crs)
 
     # Calculate watershed properties
