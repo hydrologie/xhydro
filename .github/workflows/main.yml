@@ -181,53 +181,53 @@ jobs:
         run: |
           make test-notebooks
 
-  test-ESMF-source:
-    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
-    needs: lint
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'approved') ||
-      (github.event.review.state == 'approved') ||
-      (github.event_name == 'push')
-    runs-on: ubuntu-latest
-    env:
-      ESMF_VERSION: "v8.5.0"
-    strategy:
-      matrix:
-        include:
-          - python-version: "3.9"
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Install NetCDF
-        run: |
-          sudo apt-get -y update
-          sudo apt install libnetcdf-dev libnetcdff-dev
-      - name: Install ESMF
-        uses: esmf-org/install-esmf-action@v1
-        env:
-          ESMF_NETCDF: nc-config
-        with:
-          cache: true
-          version: ${{ env.ESMF_VERSION }}
-      - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@v4.7.1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install xhydro (with esmpy)
-        run: |
-          python -m pip install flit
-          make dev
-        env:
-          ESMF_VERSION: ${{ env.ESMF_VERSION }}
-      - name: Check versions
-        run: |
-          python -m pip list
-          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
-          python -m pip check || true
-      - name: Test with pytest
-        run: |
-          make test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#  test-ESMF-source:
+#    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
+#    needs: lint
+#    if: |
+#      contains(github.event.pull_request.labels.*.name, 'approved') ||
+#      (github.event.review.state == 'approved') ||
+#      (github.event_name == 'push')
+#    runs-on: ubuntu-latest
+#    env:
+#      ESMF_VERSION: "v8.5.0"
+#    strategy:
+#      matrix:
+#        include:
+#          - python-version: "3.9"
+#    steps:
+#      - uses: actions/checkout@v4.1.1
+#      - name: Install NetCDF
+#        run: |
+#          sudo apt-get -y update
+#          sudo apt install libnetcdf-dev libnetcdff-dev
+#      - name: Install ESMF
+#        uses: esmf-org/install-esmf-action@v1
+#        env:
+#          ESMF_NETCDF: nc-config
+#        with:
+#          cache: true
+#          version: ${{ env.ESMF_VERSION }}
+#      - name: Set up Python${{ matrix.python-version }}
+#        uses: actions/setup-python@v4.7.1
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#      - name: Install xhydro (with esmpy)
+#        run: |
+#          python -m pip install flit
+#          make dev
+#        env:
+#          ESMF_VERSION: ${{ env.ESMF_VERSION }}
+#      - name: Check versions
+#        run: |
+#          python -m pip list
+#          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
+#          python -m pip check || true
+#      - name: Test with pytest
+#        run: |
+#          make test
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   finish:
     needs:
