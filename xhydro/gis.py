@@ -475,10 +475,9 @@ def land_use_plot(
     if year == "latest":
         year = str(merged.time.dt.year[-1].values)
     else:
-        try:
-            year = str(year)
-        except TypeError:
-            print(f"Expected year argument {year} to be a digit.")
+        year = str(year)
+        if not year.isdigit():
+            raise TypeError(f"Expected year argument {year} to be a digit.")
 
     merged = merged.sel(time=year).min("time")
 

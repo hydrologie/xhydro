@@ -209,9 +209,10 @@ class TestWatershedOperations:
 
             xr.testing.assert_equal(ds_classification, ds_expected)
 
-    def test_land_classification_plot(self, monkeypatch):
+    @pytest.mark.parametrize("unique_id,", [("Station"), (None)])
+    def test_land_classification_plot(self, unique_id, monkeypatch):
         monkeypatch.setattr(plt, "show", lambda: None)
-        xh.gis.land_use_plot(self.gdf, unique_id="Station", idx=0)
+        xh.gis.land_use_plot(self.gdf, unique_id=unique_id, idx=0)
 
     def test_errors(self):
         with pytest.raises(
@@ -231,3 +232,8 @@ class TestWatershedOperations:
             match="Expected year argument None to be a digit.",
         ):
             xh.gis.land_use_classification(self.gdf, unique_id="Station", year=None)
+        with pytest.raises(
+            TypeError,
+            match="Expected year argument None to be a digit.",
+        ):
+            xh.gis.land_use_plot(self.gdf, unique_id="Station", idx=0, year=None)
