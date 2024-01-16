@@ -61,7 +61,7 @@ def run_hydrological_model(model_config: dict):
         Simulated streamflow from the model, in xarray Dataset format.
     """
     if model_config["model_name"] == "Dummy":
-        qsim = dummy_model(model_config)
+        qsim = _dummy_model(model_config)
 
     elif model_config["model_name"] == "ADD_OTHER_HERE":
         # ADD OTHER MODELS HERE
@@ -74,7 +74,7 @@ def run_hydrological_model(model_config: dict):
     return qsim
 
 
-def dummy_model(model_config: dict):
+def _dummy_model(model_config: dict):
     """Dummy model.
 
     Dummy model to show the implementation we should be aiming for. Each model

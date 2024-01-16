@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 
 from xhydro.modelling.obj_funcs import (
+    _get_objfun_minimize_or_maximize,
     get_objective_function,
-    get_objfun_minimize_or_maximize,
 )
 
 
@@ -128,7 +128,7 @@ def test_maximizer_objfun_failure_modes_bias():
     Use of bias objfun which is unbounded
     """
     with pytest.raises(ValueError) as pytest_wrapped_e:
-        _ = get_objfun_minimize_or_maximize(obj_func="bias")
+        _ = _get_objfun_minimize_or_maximize(obj_func="bias")
         assert pytest_wrapped_e.type == ValueError
 
 
@@ -137,7 +137,7 @@ def test_maximizer_objfun_failure_modes_pbias():
     Use of pbias objfun which is unbounded
     """
     with pytest.raises(ValueError) as pytest_wrapped_e:
-        _ = get_objfun_minimize_or_maximize(obj_func="pbias")
+        _ = _get_objfun_minimize_or_maximize(obj_func="pbias")
         assert pytest_wrapped_e.type == ValueError
 
 
@@ -146,7 +146,7 @@ def test_maximizer_objfun_failure_modes_volume_error():
     Use of volume_error objfun which is unbounded
     """
     with pytest.raises(ValueError) as pytest_wrapped_e:
-        _ = get_objfun_minimize_or_maximize(obj_func="volume_error")
+        _ = _get_objfun_minimize_or_maximize(obj_func="volume_error")
         assert pytest_wrapped_e.type == ValueError
 
 
@@ -155,5 +155,5 @@ def test_maximizer_objfun_failure_modes_unknown_metric():
     Use of unknown objfun
     """
     with pytest.raises(NotImplementedError) as pytest_wrapped_e:
-        _ = get_objfun_minimize_or_maximize(obj_func="unknown_of")
+        _ = _get_objfun_minimize_or_maximize(obj_func="unknown_of")
         assert pytest_wrapped_e.type == NotImplementedError

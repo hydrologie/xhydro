@@ -126,24 +126,24 @@ def get_objective_function(
     """
     # List of available objective functions
     obj_func_dict = {
-        "abs_bias": abs_bias,
-        "abs_pbias": abs_pbias,
-        "abs_volume_error": abs_volume_error,
-        "agreement_index": agreement_index,
-        "bias": bias,
-        "correlation_coeff": correlation_coeff,
-        "kge": kge,
-        "kge_mod": kge_mod,
-        "mae": mae,
-        "mare": mare,
-        "mse": mse,
-        "nse": nse,
-        "pbias": pbias,
-        "r2": r2,
-        "rmse": rmse,
-        "rrmse": rrmse,
-        "rsr": rsr,
-        "volume_error": volume_error,
+        "abs_bias": _abs_bias,
+        "abs_pbias": _abs_pbias,
+        "abs_volume_error": _abs_volume_error,
+        "agreement_index": _agreement_index,
+        "bias": _bias,
+        "correlation_coeff": _correlation_coeff,
+        "kge": _kge,
+        "kge_mod": _kge_mod,
+        "mae": _mae,
+        "mare": _mare,
+        "mse": _mse,
+        "nse": _nse,
+        "pbias": _pbias,
+        "r2": _r2,
+        "rmse": _rmse,
+        "rrmse": _rrmse,
+        "rsr": _rsr,
+        "volume_error": _volume_error,
     }
 
     # If we got a dataset, change to np.array
@@ -204,7 +204,7 @@ def get_objective_function(
     return obj_fun_val
 
 
-def get_objfun_minimize_or_maximize(obj_func: str):
+def _get_objfun_minimize_or_maximize(obj_func: str):
     """Check whether the objective function needs to be maximized or minimized.
 
     Returns a boolean value, where True means it should be maximized, and False
@@ -258,7 +258,7 @@ def get_objfun_minimize_or_maximize(obj_func: str):
     return maximize
 
 
-def get_optimizer_minimize_or_maximize(algorithm: str):
+def _get_optimizer_minimize_or_maximize(algorithm: str):
     """Find the direction in which the optimizer searches.
 
     Some optimizers try to maximize the objective function value, and others
@@ -364,7 +364,7 @@ BEGIN OBJECTIVE FUNCTIONS DEFINITIONS
 """
 
 
-def abs_bias(qsim: np.array, qobs: np.array):
+def _abs_bias(qsim: np.array, qobs: np.array):
     """
     Absolute bias metric.
 
@@ -387,10 +387,10 @@ def abs_bias(qsim: np.array, qobs: np.array):
     -----
     The abs_bias should be MINIMIZED.
     """
-    return np.abs(bias(qsim, qobs))
+    return np.abs(_bias(qsim, qobs))
 
 
-def abs_pbias(qsim: np.array, qobs: np.array):
+def _abs_pbias(qsim: np.array, qobs: np.array):
     """
     Absolute pbias metric.
 
@@ -413,10 +413,10 @@ def abs_pbias(qsim: np.array, qobs: np.array):
     -----
     The abs_pbias should be MINIMIZED.
     """
-    return np.abs(pbias(qsim, qobs))
+    return np.abs(_pbias(qsim, qobs))
 
 
-def abs_volume_error(qsim: np.array, qobs: np.array):
+def _abs_volume_error(qsim: np.array, qobs: np.array):
     """
     Absolute value of the volume error metric.
 
@@ -440,10 +440,10 @@ def abs_volume_error(qsim: np.array, qobs: np.array):
     -----
     The abs_volume_error should be MINIMIZED.
     """
-    return np.abs(volume_error(qsim, qobs))
+    return np.abs(_volume_error(qsim, qobs))
 
 
-def agreement_index(qsim: np.array, qobs: np.array):
+def _agreement_index(qsim: np.array, qobs: np.array):
     """
     Index of agreement metric.
 
@@ -471,7 +471,7 @@ def agreement_index(qsim: np.array, qobs: np.array):
     return 1 - (a / c)
 
 
-def bias(qsim: np.array, qobs: np.array):
+def _bias(qsim: np.array, qobs: np.array):
     """
     The bias metric.
 
@@ -499,7 +499,7 @@ def bias(qsim: np.array, qobs: np.array):
     return np.mean(qsim - qobs)
 
 
-def correlation_coeff(qsim: np.array, qobs: np.array):
+def _correlation_coeff(qsim: np.array, qobs: np.array):
     """
     Correlation coefficient metric.
 
@@ -522,7 +522,7 @@ def correlation_coeff(qsim: np.array, qobs: np.array):
     return np.corrcoef(qobs, qsim)[0, 1]
 
 
-def kge(qsim: np.array, qobs: np.array):
+def _kge(qsim: np.array, qobs: np.array):
     """
     Kling-Gupta efficiency metric (2009 version).
 
@@ -560,7 +560,7 @@ def kge(qsim: np.array, qobs: np.array):
     return kge
 
 
-def kge_mod(qsim: np.array, qobs: np.array):
+def _kge_mod(qsim: np.array, qobs: np.array):
     """
     Kling-Gupta efficiency metric (2012 version).
 
@@ -598,7 +598,7 @@ def kge_mod(qsim: np.array, qobs: np.array):
     return kge_mod
 
 
-def mae(qsim: np.array, qobs: np.array):
+def _mae(qsim: np.array, qobs: np.array):
     """
     Mean absolute error metric.
 
@@ -622,7 +622,7 @@ def mae(qsim: np.array, qobs: np.array):
     return np.mean(np.abs(qsim - qobs))
 
 
-def mare(qsim: np.array, qobs: np.array):
+def _mare(qsim: np.array, qobs: np.array):
     """
     Mean absolute relative error metric.
 
@@ -646,7 +646,7 @@ def mare(qsim: np.array, qobs: np.array):
     return np.sum(np.abs(qobs - qsim)) / np.sum(qobs)
 
 
-def mse(qsim: np.array, qobs: np.array):
+def _mse(qsim: np.array, qobs: np.array):
     """
     Mean square error metric.
 
@@ -671,7 +671,7 @@ def mse(qsim: np.array, qobs: np.array):
     return np.mean((qobs - qsim) ** 2)
 
 
-def nse(qsim: np.array, qobs: np.array):
+def _nse(qsim: np.array, qobs: np.array):
     """
     Nash-Sutcliffe efficiency metric.
 
@@ -698,7 +698,7 @@ def nse(qsim: np.array, qobs: np.array):
     return 1 - (num / den)
 
 
-def pbias(qsim: np.array, qobs: np.array):
+def _pbias(qsim: np.array, qobs: np.array):
     """
     Percent bias metric.
 
@@ -726,7 +726,7 @@ def pbias(qsim: np.array, qobs: np.array):
     return (np.sum(qsim - qobs) / np.sum(qobs)) * 100
 
 
-def r2(qsim: np.array, qobs: np.array):
+def _r2(qsim: np.array, qobs: np.array):
     """
     The r-squred metric.
 
@@ -747,10 +747,10 @@ def r2(qsim: np.array, qobs: np.array):
     -----
     The r2 should be MAXIMIZED.
     """
-    return correlation_coeff(qsim, qobs) ** 2
+    return _correlation_coeff(qsim, qobs) ** 2
 
 
-def rmse(qsim: np.array, qobs: np.array):
+def _rmse(qsim: np.array, qobs: np.array):
     """
     Root mean square error metric.
 
@@ -774,7 +774,7 @@ def rmse(qsim: np.array, qobs: np.array):
     return np.sqrt(np.mean((qobs - qsim) ** 2))
 
 
-def rrmse(qsim: np.array, qobs: np.array):
+def _rrmse(qsim: np.array, qobs: np.array):
     """
     Relative root mean square error (ratio of rmse to mean) metric.
 
@@ -797,10 +797,10 @@ def rrmse(qsim: np.array, qobs: np.array):
     -----
     The rrmse should be MINIMIZED.
     """
-    return rmse(qsim, qobs) / np.mean(qobs)
+    return _rmse(qsim, qobs) / np.mean(qobs)
 
 
-def rsr(qsim: np.array, qobs: np.array):
+def _rsr(qsim: np.array, qobs: np.array):
     """
     Ratio of root mean square error to standard deviation metric.
 
@@ -822,10 +822,10 @@ def rsr(qsim: np.array, qobs: np.array):
     -----
     The rsr should be MINIMIZED.
     """
-    return rmse(qobs, qsim) / np.std(qobs)
+    return _rmse(qobs, qsim) / np.std(qobs)
 
 
-def volume_error(qsim: np.array, qobs: np.array):
+def _volume_error(qsim: np.array, qobs: np.array):
     """
     Volume error metric.
 

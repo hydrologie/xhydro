@@ -66,9 +66,9 @@ from spotpy.parameter import Uniform
 
 from xhydro.modelling.hydrological_modelling import run_hydrological_model
 from xhydro.modelling.obj_funcs import (
+    _get_objfun_minimize_or_maximize,
+    _get_optimizer_minimize_or_maximize,
     get_objective_function,
-    get_objfun_minimize_or_maximize,
-    get_optimizer_minimize_or_maximize,
 )
 
 __all__ = ["perform_calibration"]
@@ -374,8 +374,8 @@ def perform_calibration(
     # to ensure that the algorithm is optimizing in the correct direction
     # (maximizing or minimizing). This code determines the required direction
     # for the objective function and the working direction of the algorithm.
-    of_maximize = get_objfun_minimize_or_maximize(obj_func)
-    algo_maximize = get_optimizer_minimize_or_maximize(algorithm)
+    of_maximize = _get_objfun_minimize_or_maximize(obj_func)
+    algo_maximize = _get_optimizer_minimize_or_maximize(algorithm)
 
     # They are not working in the same direction. Take the negative of the OF.
     if of_maximize != algo_maximize:
