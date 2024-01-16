@@ -7,14 +7,20 @@ import urllib.request
 import warnings
 from pathlib import Path
 
+import cartopy.crs as ccrs
 import geopandas as gpd
 import leafmap
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pystac_client
+import rasterio
+import rasterio.features
 import stackstac
 import xarray as xr
+from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
+from pystac.extensions.projection import ProjectionExtension as proj
 from shapely import Point
 from tqdm.auto import tqdm
 
@@ -212,15 +218,21 @@ def _compute_watershed_boundaries(
     gdf_basin = gdf_sub_basins.dissolve(by="MAIN_BAS")
 
     # # keep largest polygon if MultiPolygon
-    if len(gdf_basin) > 0 and gdf_basin.iloc[0].geometry.geom_type == "MultiPolygon":
+    if (
+        gdf_basin.shape[0] > 0
+        and gdf_basin.iloc[0].geometry.geom_type == "MultiPolygon"
+    ):
         gdf_basin_exploded = gdf_basin.explode()
         gdf_basin = gdf_basin_exploded.loc[[gdf_basin_exploded.area.idxmax()]]
 
     # Raise warning for invalid or out of extent coordinates
-    if len(gdf_basin) == 0:
-        warnings.warn(
-            f"Could not return a watershed boundary for coordinates {coordinates}."
-        )
+    print(gdf_basin)
+    if gdf_basin.shape[0] == 0:
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            warnings.warn(
+                f"Could not return a watershed boundary for coordinates {coordinates}."
+            )
     return gdf_basin
 
 
@@ -296,10 +308,9 @@ def _count_pixels_from_bbox(
     if year == "latest":
         year = str(merged.time.dt.year[-1].values)
     else:
-        try:
-            year = str(year)
-        except TypeError:
-            print(f"Expected year argument {year} to be a digit.")
+        year = str(year)
+        if not year.isdigit():
+            raise TypeError(f"Expected year argument {year} to be a digit.")
 
     merged = merged.sel(time=year).min("time")
 
@@ -352,12 +363,11 @@ def land_use_classification(
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
-
     collection = catalog.get_collection(collection)
     ia = ItemAssetsExtension.ext(collection)
-
     x = ia.item_assets["data"]
     class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
+
     values_to_classes = {
         v: "_".join(("pct", k.lower().replace(" ", "_")))
         for k, v in class_names.items()
@@ -374,8 +384,9 @@ def land_use_classification(
         ],
         axis=0,
     ).fillna(0)
-    if 255 in output_dataset.columns:
-        output_dataset = output_dataset.drop(columns=[255])
+
+    # if 255 in output_dataset.columns:
+    #     output_dataset = output_dataset.drop(columns=[255])
 
     if unique_id is not None:
         output_dataset.index.name = unique_id
@@ -419,12 +430,10 @@ def land_use_plot(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
 
-    import cartopy.crs as ccrs
-    import matplotlib.pyplot as plt
-    import rasterio
-    import rasterio.features
-    from matplotlib.colors import ListedColormap
-    from pystac.extensions.projection import ProjectionExtension as proj
+    collection = catalog.get_collection(collection)
+    ia = ItemAssetsExtension.ext(collection)
+    x = ia.item_assets["data"]
+    class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
 
     gdf = gdf.iloc[[idx]]
 
@@ -432,12 +441,6 @@ def land_use_plot(
         name = f"- {gdf[unique_id].values[0]}"
     else:
         name = ""
-
-    collection = catalog.get_collection(collection)
-    ia = ItemAssetsExtension.ext(collection)
-
-    x = ia.item_assets["data"]
-    class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
 
     bbox_of_interest = gdf.total_bounds
 
@@ -511,3 +514,5 @@ def land_use_plot(
     cbar.set_ticklabels(class_names)
 
     gdf.to_crs(epsg).boundary.plot(ax=ax, alpha=0.9, color="black")
+
+    return fig
