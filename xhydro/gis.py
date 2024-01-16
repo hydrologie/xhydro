@@ -30,7 +30,9 @@ def watershed_delineation(
     coordinates: list[tuple] | tuple | None = None,
     map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
-    """Watershed delineation can be computed at any location in North America using HydroBASINS (hybas_na_lev01-12_v1c).
+    """Calculate watershed delineation from pour point.
+
+    Watershed delineation can be computed at any location in North America using HydroBASINS (hybas_na_lev01-12_v1c).
     The process involves assessing all upstream sub-basins from a specified pour point and consolidating them into a
     unified watershed.
 
@@ -47,7 +49,6 @@ def watershed_delineation(
     -------
     gpd.GeoDataFrame
         GeoDataFrame containing the watershed boundaries.
-
     """
     # level 12 HydroBASINS polygons dataset url (North-Ameroca only at the moment)
     url = "https://s3.us-east-1.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
@@ -116,18 +117,24 @@ def watershed_properties(
     projected_crs: int = 6622,
     output_format: str = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Watershed properties extracted from gpd.GeoDataFrame
+    """Watershed properties extracted from a gpd.GeoDataFrame.
+
+    The calculated properties are :
+    - area
+    - perimeter
+    - gravenlius
+    - centroid coordinates
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
-    unique_id : string
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     projected_crs : int
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     output_format : str
-        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`)
+        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
 
     Returns
     -------
@@ -318,20 +325,24 @@ def land_use_classification(
     collection="io-lulc-9-class",
     year="latest",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Calculate land use classification
+    """Calculate land use classification.
+
+    Calculate land use classification for each polygon from a gpd.GeoDataFrame. By default,
+    the classes are generated from the Planetary Computer's STAC catalog using the
+    `10m Annual Land Use Land Cover` dataset.
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
-    unique_id : string
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     output_format : str
-        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`)
+        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
     collection : str
-        Collection name from the Planetary Computer STAC Catalog
+        Collection name from the Planetary Computer STAC Catalog.
     year : str | int
-        Land use dataset year between 2017 and 2022
+        Land use dataset year between 2017 and 2022.
 
     Returns
     -------
@@ -379,29 +390,30 @@ def land_use_classification(
 
 def land_use_plot(
     gdf: gpd.GeoDataFrame,
-    idx=0,
-    unique_id=None,
-    collection="io-lulc-9-class",
-    year="latest",
+    idx: int = 0,
+    unique_id: str = None,
+    collection: str = "io-lulc-9-class",
+    year: str | int = "latest",
 ) -> None:
-    """Plot a land use map for a specific year and watershed
+    """Plot a land use map for a specific year and watershed.
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
-    idx: int
-        Index to select in gpd.GeoDataFrame
-    unique_id : string
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    idx : int
+        Index to select in gpd.GeoDataFrame.
+    unique_id : str
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     collection : str
-        Collection name from the Planetary Computer STAC Catalog
+        Collection name from the Planetary Computer STAC Catalog.
     year : str | int
-        Land use dataset year between 2017 and 2022
+        Land use dataset year between 2017 and 2022.
 
     Returns
     -------
     None
+        Nothing to return.
     """
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
