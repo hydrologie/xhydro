@@ -176,7 +176,7 @@ class TestWatershedOperations:
             df = xh.gis.land_use_classification(
                 self.gdf, unique_id=unique_id, year=year
             )
-            if unique_id == None:
+            if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
             pd.testing.assert_frame_equal(df, df_expected)
@@ -192,7 +192,7 @@ class TestWatershedOperations:
             elif year == "2018":
                 df_expected = land_classification_data_2018
 
-            if unique_id == None:
+            if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
             ds_expected = df_expected.to_xarray()
