@@ -1,3 +1,5 @@
+import warnings
+
 import leafmap
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,6 +37,16 @@ class TestWatershedDelineation:
         ]
         gdf = xh.gis.watershed_delineation(map=self.m)
         np.testing.assert_almost_equal([gdf.to_crs(32198).area.values[0]], [area])
+
+    def test_errors(self):
+        bad_coordinates = (-35.0, 45.0)
+        with pytest.warns(
+            UserWarning,
+            match=warnings.warn(
+                f"Could not return a watershed boundary for coordinates {bad_coordinates}."
+            ),
+        ):
+            xh.gis.watershed_delineation(coordinates=bad_coordinates)
 
 
 class TestWatershedOperations:
@@ -160,21 +172,47 @@ class TestWatershedOperations:
         elif year == "2018":
             df_expected = land_classification_data_2018
 
-        df = xh.gis.land_use_classification(self.gdf, unique_id="Station", year=year)
-        print(df)
-        print("test1")
-        print(df_expected)
-        pd.testing.assert_frame_equal(df, df_expected)
+        for unique_id in ["Station", None]:
+            df = xh.gis.land_use_classification(
+                self.gdf, unique_id=unique_id, year=year
+            )
+            if unique_id is None:
+                df_expected = df_expected.reset_index(drop=True)
 
-    def _plot_fn(self):
-        xh.gis.land_use_plot(self.gdf, unique_id="Station", idx=1)
+            pd.testing.assert_frame_equal(df, df_expected)
 
-        yield plt.show()
-        plt.close("all")
+    @pytest.mark.parametrize("year,", [("latest"), ("2018")])
+    def test_land_classification_xarray(
+        self, land_classification_data_latest, land_classification_data_2018, year
+    ):
+        for unique_id in ["Station", None]:
+            if year == "latest":
+                df_expected = land_classification_data_latest
 
-    def test_land_classification_plot(self, monkeypatch):
+            elif year == "2018":
+                df_expected = land_classification_data_2018
+
+            if unique_id is None:
+                df_expected = df_expected.reset_index(drop=True)
+
+            ds_expected = df_expected.to_xarray()
+
+            ds_classification = xh.gis.land_use_classification(
+                self.gdf, unique_id=unique_id, year=year, output_format="xarray"
+            )
+
+            for var in ds_classification:
+                assert ds_classification[var].attrs["units"] == "percent"
+
+            for var in ds_expected:
+                ds_expected[var].attrs = {"units": "percent"}
+
+            xr.testing.assert_equal(ds_classification, ds_expected)
+
+    @pytest.mark.parametrize("unique_id,", [("Station"), (None)])
+    def test_land_classification_plot(self, unique_id, monkeypatch):
         monkeypatch.setattr(plt, "show", lambda: None)
-        self._plot_fn()
+        xh.gis.land_use_plot(self.gdf, unique_id=unique_id, idx=0)
 
     def test_errors(self):
         with pytest.raises(
@@ -184,3 +222,18 @@ class TestWatershedOperations:
             gdf_no_crs = self.gdf.copy()
             gdf_no_crs.crs = None
             xh.gis.watershed_properties(gdf_no_crs)
+        with pytest.raises(
+            TypeError,
+            match="Expected year argument foo to be a digit.",
+        ):
+            xh.gis.land_use_classification(self.gdf, unique_id="Station", year="foo")
+        with pytest.raises(
+            TypeError,
+            match="Expected year argument None to be a digit.",
+        ):
+            xh.gis.land_use_classification(self.gdf, unique_id="Station", year=None)
+        with pytest.raises(
+            TypeError,
+            match="Expected year argument None to be a digit.",
+        ):
+            xh.gis.land_use_plot(self.gdf, unique_id="Station", idx=0, year=None)
