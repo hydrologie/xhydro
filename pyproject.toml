@@ -56,22 +56,25 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "pip>=23.1.2",
+  "black>=23.12.1",
+  "blackdoc>=0.3.9",
   "bump-my-version>=0.12.0",
-  "watchdog>=3.0.0",
-  "flake8>=6.1.0",
-  "flake8-alphabetize>=0.0.21",
-  "flake8-rst-docstrings>=0.3.0",
-  "flit",
-  "tox>=4.5.1",
   "coverage>=6.2.2,<7.0.0",
   "coveralls>=3.3.1",
-  "pytest>=7.3.1",
+  "flake8-alphabetize>=0.0.21",
+  "flake8-rst-docstrings>=0.3.0",
+  "flake8>=6.1.0",
+  "flit",
+  "isort>=5.13.2",
+  "pip>=23.3.0",
+  "pooch",
+  "pre-commit>=3.3.2",
   "pytest-cov>=4.0.0",
-  "black>=23.10.1",
-  "blackdoc>=0.3.9",
-  "isort>=5.12.0",
-  "pre-commit>=3.3.2"
+  "pytest>=7.3.1",
+  "ruff>=0.1.9",
+  "tox>=4.5.1",
+  "watchdog>=3.0.0",
+  "tox>=4.5.1"
 ]
 docs = [
   # Documentation and examples
@@ -208,8 +211,8 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = [
-  "--verbose",
-  "--color=yes"
+  "--color=yes",
+  "--verbose"
 ]
 filterwarnings = ["ignore::UserWarning"]
 testpaths = "tests"

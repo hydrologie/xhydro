@@ -189,7 +189,7 @@ def _compute_watershed_boundaries(
     coordinates : tuple
         Geographic coordinates (longitude, latitude) for the location where watershed delineation will be conducted.
     gdf : gpd.GeoDataFrame
-        Hydrobasins level 12 dataset in GeodataFrame format
+        HydroBASINS level 12 dataset in GeodataFrame format
 
     Returns
     -------
@@ -241,13 +241,12 @@ def _recursive_upstream_lookup(
     direct_upstream_indexes: list,
     all_upstream_indexes: list = None,
 ):
-    """Recursive function to iterate over each upstream sub-basin until all sub-basins in
-    a watershed are identifed
+    """Recursive function to iterate over each upstream sub-basin until all sub-basins in a watershed are identified.
 
     Parameters
     ----------
     gdf :  gpd.GeoDataFrame
-        Hydrobasins level 12 dataset in GeodataFrame format stream of the pour point.
+        HydroBASINS level 12 dataset in GeodataFrame format stream of the pour point.
     direct_upstream_indexes : list
         List of all sub-basins indexes directly upstream.
     all_upstream_indexes : list

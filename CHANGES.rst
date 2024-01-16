@@ -2,7 +2,6 @@
 Changelog
 =========
 
-
 v0.4.0 (unreleased)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`).
@@ -25,6 +24,16 @@ Internal changes
     * `load_registry`: Loads installed (or custom) registry and returns dictionary
     * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Significant changes to the Continuous Integration (CI) setup. (:pull:`65`):
+    * Added a workflow configuration using ``label_on_approval.yml`` and modifications of ``main.yml`` so that fewer tests are run on Pull Requests before they are fully approved.
+    * Added some `pre-commit` configurations to both clean up the code within notebooks (`NbQA`) and strip their outputs (`nbstripout`).
+    * `tox` is now fully v4.0-compliant.
+    * Added a `Makefile` recipe to facilitate installation of `esmpy` when `esmf` is installed and visible on the `$PATH`.
+    * Added a `Makefile` recipe for running tests over Jupyter notebooks.
+    * Synchronized dependencies between `pyproject.toml` and `conda` configuration files.
 
 v0.3.0 (2023-12-01)
 -------------------
