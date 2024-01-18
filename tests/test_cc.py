@@ -18,9 +18,9 @@ def test_xscen_imported():
     )
 
 
-class TestPerturbedIndicators:
+class TestSampledIndicators:
     @pytest.mark.parametrize("delta_type", ["absolute", "percentage", "foo"])
-    def test_perturbed_indicators_type(self, delta_type):
+    def test_sampled_indicators_type(self, delta_type):
         ds = xr.DataArray(
             np.arange(1, 8), coords={"percentile": [1, 10, 20, 50, 80, 90, 99]}
         ).to_dataset(name="QMOYAN")
@@ -29,7 +29,7 @@ class TestPerturbedIndicators:
             coords={"realization": np.arange(13)},
         ).to_dataset(name="QMOYAN")
         if delta_type in ["absolute", "percentage"]:
-            out = xh.cc.perturbed_indicators(
+            out = xh.cc.sampled_indicators(
                 ds, deltas, delta_type, n=10, seed=42, return_dist=True
             )
 
@@ -69,9 +69,9 @@ class TestPerturbedIndicators:
             with pytest.raises(
                 ValueError, match=f"Unknown operation '{delta_type}', expected one"
             ):
-                xh.cc.perturbed_indicators(ds, deltas, delta_type, n=10, seed=42)
+                xh.cc.sampled_indicators(ds, deltas, delta_type, n=10, seed=42)
 
-    def test_perturbed_indicators_return(self):
+    def test_sampled_indicators_return(self):
         ds = xr.DataArray(
             np.arange(1, 8), coords={"percentile": [1, 10, 20, 50, 80, 90, 99]}
         ).to_dataset(name="QMOYAN")
@@ -80,12 +80,12 @@ class TestPerturbedIndicators:
             coords={"realization": np.arange(13)},
         ).to_dataset(name="QMOYAN")
 
-        out1 = xh.cc.perturbed_indicators(
+        out1 = xh.cc.sampled_indicators(
             ds, deltas, "absolute", n=10, seed=42, return_dist=False
         )
         assert isinstance(out1, xr.Dataset)
 
-        out2 = xh.cc.perturbed_indicators(
+        out2 = xh.cc.sampled_indicators(
             ds, deltas, "absolute", n=10, seed=42, return_dist=True
         )
         assert isinstance(out2, tuple)
@@ -97,7 +97,7 @@ class TestPerturbedIndicators:
             assert len(o["sample"]) == 10
 
     @pytest.mark.parametrize("weights", [None, "ds", "deltas", "both"])
-    def test_perturbed_indicators_weights(self, weights):
+    def test_sampled_indicators_weights(self, weights):
         ds = xr.DataArray(
             np.array(
                 [
@@ -154,14 +154,14 @@ class TestPerturbedIndicators:
         )
 
         if weights is None:
-            out = xh.cc.perturbed_indicators(
+            out = xh.cc.sampled_indicators(
                 ds, deltas, "percentage", n=10, seed=42, return_dist=True
             )
             np.testing.assert_array_almost_equal(
                 out[0].QMOYAN.isel(station=0).values, [1.809, 5.5, 11.8, 12.0, 15.8155]
             )
         elif weights == "ds":
-            out = xh.cc.perturbed_indicators(
+            out = xh.cc.sampled_indicators(
                 ds,
                 deltas,
                 "percentage",
@@ -175,7 +175,7 @@ class TestPerturbedIndicators:
                 [5.427, 8.8, 13.275, 13.5, 15.8155],
             )
         elif weights == "deltas":
-            out = xh.cc.perturbed_indicators(
+            out = xh.cc.sampled_indicators(
                 ds,
                 deltas,
                 "percentage",
@@ -191,7 +191,7 @@ class TestPerturbedIndicators:
                 out[2].QMOYAN.isel(station=0).values == 50
             )  # 50 should be sampled more often
         elif weights == "both":
-            out = xh.cc.perturbed_indicators(
+            out = xh.cc.sampled_indicators(
                 ds,
                 deltas,
                 "percentage",
@@ -217,7 +217,7 @@ class TestPerturbedIndicators:
             "station" in o.dims for o in out
         )  # "station" is a shared dimension, so it should be in all outputs
 
-    def test_perturbed_indicators_weight_err(self):
+    def test_sampled_indicators_weight_err(self):
         ds = xr.DataArray(
             np.array(
                 [
@@ -259,7 +259,7 @@ class TestPerturbedIndicators:
             ValueError,
             match="is shared between 'ds' and 'deltas', but not between 'ds_weights' and 'delta_weights'.",
         ):
-            xh.cc.perturbed_indicators(
+            xh.cc.sampled_indicators(
                 ds, deltas, "percentage", n=10, seed=42, delta_weights=delta_weights
             )
 
