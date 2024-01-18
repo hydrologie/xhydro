@@ -28,9 +28,15 @@ on:
       - xhydro/__init__.py
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   bump_patch_version:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,5 +60,5 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           force: false
-          github_token: ${{ secrets.BUMPVERSION_TOKEN }}
+          github_token: ${{ secrets.BUMP_VERSION_TOKEN }}
           branch: ${{ github.ref }}

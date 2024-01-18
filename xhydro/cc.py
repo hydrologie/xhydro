@@ -1,5 +1,4 @@
 """Module to compute climate change statistics using xscen functions."""
-
 from typing import Optional, Union
 
 import numpy as np
@@ -70,7 +69,6 @@ def sampled_indicators(
     2. Sample 'n' values from the delta distribution, using the provided weights.
     3. Create the future distribution by applying the sampled deltas to the sampled historical distribution, element-wise.
     4. Compute the percentiles of the future distribution.
-
     """
     # Prepare weights
     shared_dims = set(ds.dims).intersection(set(deltas.dims))

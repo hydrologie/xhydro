@@ -12,6 +12,10 @@ on:
       - xhydro/__init__.py
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   lint:
     name: Lint (Python${{ matrix.python-version }})
