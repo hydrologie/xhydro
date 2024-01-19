@@ -24,6 +24,8 @@ Internal changes
     * `load_registry`: Loads installed (or custom) registry and returns dictionary
     * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
+* Added a workflow based on `actions/labeler` to automatically label Pull Requests based on files changed.
+* Added a conditional trigger to the `test-notebooks` job to run in advance of pull request approval in the event that the notebooks found within `docs/notebooks` have been modified (labeled `"notebooks"`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
