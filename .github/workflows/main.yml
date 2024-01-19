@@ -145,6 +145,7 @@ jobs:
     name: Test Notebooks
     needs: lint
     if: |
+      contains(github.event.pull_request.labels.*.name, 'notebooks') ||
       contains(github.event.pull_request.labels.*.name, 'approved') ||
       (github.event.review.state == 'approved') ||
       (github.event_name == 'push')
