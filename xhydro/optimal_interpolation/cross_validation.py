@@ -5,19 +5,18 @@ from pstats import SortKey, Stats
 import os
 from multiprocessing import Pool
 from . import constants
-from .functions import utilities as util
 from .functions import mathematical_algorithms as ma
 from .functions import ECF_climate_correction as ecf_cc
 from .functions import optimal_interpolation as opt
-
-def execute():
+from .functions import utilities as util
+def execute(start_date, end_date, files, cpu_parrallel=False):
     """
         Start the profiler, run the entire code, and print stats on profile time
         """
 
     with Profile() as profile:
         # Run the code
-        results_1, results_2, results_3 = execute_interpolation()
+        results_1, results_2, results_3 = execute_interpolation(start_date, end_date, files, cpu_parrallel)
 
         # Print stats sorted by cumulative runtime.
         (Stats(profile).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats())
@@ -29,13 +28,22 @@ Execute the main code, including setting constants to files, times, etc. Should
 be converted to a function that takes these values as parameters.
 Heavily modified to parallelize and to optimize.
 """
-def execute_interpolation():
-    stations_info, stations_mapping, stations_validation, flow_obs, flow_sim = load_files()
+def execute_interpolation(start_date, end_date, files, cpu_parralel):
+    stations_info, stations_mapping, stations_validation, flow_obs, flow_sim = load_files(files)
 
-    time_range = time_selection('1961-01-01', '2019-01-01')
+    time_range = int((np.datetime64(end_date) - np.datetime64(start_date)) / np.timedelta64(1, 'D'))
+
+    args = {
+        'flow_obs' : flow_obs,
+        'flow_sim' : flow_sim,
+        'time_range' : time_range,
+        'stations_info' : stations_info,
+        'stations_mapping' : util.convert_list_to_dict(stations_mapping),
+        'stations_id' : [station[0] for station in stations_validation]
+    }
 
     station_count, drained_area, centroid_lat, centroid_lon, selected_flow_obs, selected_flow_sim = \
-        retreive_data(flow_obs, flow_sim, time_range, stations_info, stations_mapping, stations_validation)
+        retreive_data(args)
 
     x, y = ma.latlon_to_xy(centroid_lat, centroid_lon, np.array([45] * len(centroid_lat)), np.array([-70] * len(centroid_lat)))  # Projete dans un plan pour avoir des distances en km
 
@@ -45,43 +53,67 @@ def execute_interpolation():
     ecf_fun, par_opt = ecf_cc.correction(selected_flow_obs, selected_flow_sim, x_points, y_points, "test")
     args = (station_count, selected_flow_obs, selected_flow_sim, ecf_fun, par_opt, x_points, y_points, time_range,
          selected_flow_obs, drained_area)
-    return parallelizing_operation(args, False)
+    return parallelizing_operation(args, cpu_parralel)
 
-def load_files():
-    print("Lecture des CSV")
-    stations_info = util.read_csv_file(constants.DATA_PATH + "Table_Info_Station_Hydro_2020.csv", 1, ";")
-    stations_mapping = util.read_csv_file(constants.DATA_PATH + "Table_Correspondance_Station_Troncon.csv", 1, ',')
-    stations_validation = util.read_csv_file(constants.DATA_PATH + "stations_retenues_validation_croisee.csv", 1, ',')
+def load_files(files):
+    # print("Lecture des CSV")
+    # stations_info = util.read_csv_file(constants.DATA_PATH + "Table_Info_Station_Hydro_2020.csv", 1, ";")
+    # stations_mapping = util.read_csv_file(constants.DATA_PATH + "Table_Correspondance_Station_Troncon.csv", 1, ',')
+    # stations_validation = util.read_csv_file(constants.DATA_PATH + "stations_retenues_validation_croisee.csv", 1, ',')
+    #
+    # print("Lecture des NC")
+    # flow_obs = xr.open_dataset(
+    #     constants.DATA_PATH + 'A20_HYDOBS_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_XXX_XXXXXX_XXX_HC_13102020.nc')
+    # flow_sim = xr.open_dataset(
+    #     constants.DATA_PATH + 'A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc')
+    extract_files = [0] * len(files)
+    count = 0
+    for filepath in files:
+        fileinfo = filepath.split('.')
+        if fileinfo[1] == 'csv':
+            extract_files[count] = util.read_csv_file(filepath)
+        elif fileinfo[1] == 'nc':
+            extract_files[count] = xr.open_dataset(filepath)
+        count += 1
 
-    print("Lecture des NC")
-    flow_obs = xr.open_dataset(
-        constants.DATA_PATH + 'A20_HYDOBS_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_XXX_XXXXXX_XXX_HC_13102020.nc')
-    flow_sim = xr.open_dataset(
-        constants.DATA_PATH + 'A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc')
+    stations_info = util.read_csv_file(files[0])
+    stations_mapping = util.read_csv_file(files[1])
+    stations_validation = util.read_csv_file(files[2])
 
-    return stations_info, stations_mapping, stations_validation, flow_obs, flow_sim
 
-def time_selection(start_date, end_date):
-    return int((np.datetime64(end_date) - np.datetime64(start_date)) / np.timedelta64(1, 'D'))
+    flow_obs = xr.open_dataset(files[3])
+    flow_sim = xr.open_dataset(files[4])
 
-def retreive_data(flow_obs, flow_sim, time_range, stations_info, stations_mapping, stations_validation):
-    station_count = len(stations_validation)
-    selected_flow_sim = np.empty((time_range, station_count))
+    return extract_files
+
+def initialize_data_arrays(time_range, station_count):
     selected_flow_obs = np.empty((time_range, station_count))
+    selected_flow_sim = np.empty((time_range, station_count))
     centroid_lat = np.empty(station_count)
     centroid_lon = np.empty(station_count)
     drained_area = np.empty(station_count)
-    longitude_station = np.empty(station_count)
-    latitude_station = np.empty(station_count)
+
+    return selected_flow_obs, selected_flow_sim, centroid_lat, centroid_lon, drained_area
+def retreive_data(args):
+    flow_obs = args['flow_obs']
+    flow_sim = args['flow_sim']
+    time_range = args['time_range']
+    stations_info = args['stations_info']
+    stations_mapping = args['stations_mapping']
+    stations_id = args['stations_id']
+
+    station_count = len(stations_id)
+
+    centroid_lat, centroid_lon, drained_area = util.initialize_nan_arrays(station_count, 3)
+    selected_flow_obs, selected_flow_sim = util.initialize_nan_arrays((time_range, station_count), 2)
 
     for i in range(0, station_count):
-        print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
 
-        station_id = stations_validation[i][0]
-        associate_section = util.find_section(stations_mapping, station_id)
+        station_id = stations_id[i]
+        associate_section = stations_mapping[station_id]
 
-        index_section = util.find_index(flow_sim.station_id, associate_section)
-        index_station = util.find_index(flow_obs.station_id, station_id)
+        index_section = util.find_index(flow_sim, 'station_id', associate_section)
+        index_station = util.find_index(flow_obs, 'station_id', station_id)
 
         sup_sim = flow_sim.drainage_area[index_section].item()
         sup_obs = flow_obs.drainage_area[index_station].item()
@@ -93,10 +125,7 @@ def retreive_data(flow_obs, flow_sim, time_range, stations_info, stations_mappin
 
         position_info = np.where(np.array(stations_info) == station_id)
         station_info = stations_info[position_info[0].item()]
-        centroid_lat[i] = station_info[5]
-        centroid_lon[i] = station_info[4]
-        longitude_station[i] = station_info[3]
-        latitude_station[i] = station_info[2]
+        centroid_lon[i], centroid_lat[i] = station_info[4], station_info[5]
 
     # Transformation log-débit pour l'interpolation
     selected_flow_obs = np.log(selected_flow_obs)
@@ -146,12 +175,7 @@ def parallelizing_operation(args, parallezation=True):
     else:
         station_count = args[0]
         time_range = args[7]
-        qest_l1o = np.empty((time_range, station_count))
-        qest_l1o_q25 = np.empty((time_range, station_count))
-        qest_l1o_q75 = np.empty((time_range, station_count))
-        qest_l1o[:, :] = np.nan
-        qest_l1o_q25[:, :] = np.nan
-        qest_l1o_q75[:, :] = np.nan
+        qest_l1o, qest_l1o_q25, qest_l1o_q75 = util.initialize_nan_arrays((time_range, station_count), 3)
 
         for i in range(0, station_count):
             qest_l1o[:, i], qest_l1o_q25[:, i], qest_l1o_q75[:, i] = opt.loop_interpolation_optimale_stations(i, args)

@@ -2,10 +2,13 @@ import numpy as np
 import scipy.optimize
 from functools import partial
 from .mathematical_algorithms import calculate_average_distance, eval_covariance_bin
+from .utilities import initialize_nan_arrays, general_ecf
 
 def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count=10):
-    difference, station_count, time_range, heights, covariances, standard_deviations = \
-        initialize_ajusted_ECF_climate_variables(flow_obs, flow_sim, x_points, y_points, iteration_count)
+    difference = flow_sim - flow_obs
+    time_range = np.shape(difference)[0]
+
+    heights, covariances, standard_deviations = initialize_nan_arrays((time_range, iteration_count), 3)
 
     input_opt = {'hmax_divider': 2, 'p1_bnds': [0.95, 1], 'hmax_mult_range_bnds': [0.05, 3]}
     form = 3
@@ -13,7 +16,6 @@ def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count
     distance = calculate_average_distance(x_points, y_points)
 
     for i in range(time_range):
-        print(i)
         is_nan = np.isnan(difference[i, :])
         ecart_jour = difference[i, ~is_nan]
         errors = np.ones((len(ecart_jour)))
@@ -100,17 +102,3 @@ def initialize_stats_variables(heights, covariances, standard_deviations, iterat
 
     return distance, covariance, covariance_weights, valid_heights, valid_heights_count
 
-"""
-We will use functools.partial to define functions instead of lambdas as it is
-more efficient and will allow parallelization. Therefore, define the ECF
-function shape here. New function.
-"""
-
-
-def general_ecf(h, par, form):
-    if form == 1:
-        return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
-    elif form == 2:
-        return par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
-    else:
-        return par[0] * np.exp(-h / par[1])

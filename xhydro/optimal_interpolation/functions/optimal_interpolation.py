@@ -1,6 +1,7 @@
 import numpy as np
 from functools import partial
 from .mathematical_algorithms import calculate_average_distance
+from .utilities import initialize_nan_arrays
 
 """
 Perform the actual optimal interpolation step.
@@ -94,12 +95,7 @@ def loop_interpolation_optimale_stations(i, args):
 
     # Définition des 3 vecteurs de sortie. Ici ils sont des vecteurs et pas des
     # matrices car on travaille sur un seul bassin à la fois (en parallèle).
-    qest_l1o = np.empty(time_range)
-    qest_l1o_q25 = np.empty(time_range)
-    qest_l1o_q75 = np.empty(time_range)
-    qest_l1o[:] = np.nan
-    qest_l1o_q25[:] = np.nan
-    qest_l1o_q75[:] = np.nan
+    qest_l1o, qest_l1o_q25, qest_l1o_q75 = initialize_nan_arrays(time_range, 3)
 
     # Code initial commence en quelque part ici.
     index_validation = i

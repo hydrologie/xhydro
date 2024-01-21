@@ -11,53 +11,56 @@ Retourne :
 """
 
 
-def read_csv_file(csv_filename, header, delimiter):
+def read_csv_file(csv_filename):
     items = []
     with open(csv_filename, newline='') as csvfile:
+        line = csvfile.readline()
+        if ';' in line:
+            delimiter = ';'
+        else:
+            delimiter = ','
         reader = csv.reader(csvfile, delimiter=delimiter, quotechar='|')
-        if header == 1:
-            skip = 1
-
         for row in reader:
-            if skip != 1:
-                items.append(row)
-            else:
-                skip = 0
+            items.append(row)
 
     return items
-
-
-"""
-Trouve l'association d'une section à une station.
-Arguments :
-stations (list): Liste qui contient les stations
-section_id (string) : L'indentificateur de la section
-Retourne :
-(string): Vide si la section est introuvable ou la clé d'association entre la station et une section.
-"""
-
-
-def find_section(stations, section_id):
-    value = ""
-    section_position = 0
-    section_value = 1
-    for i in range(0, len(stations)):
-        if section_id == stations[i][section_position]:
-            value = stations[i]
-    return value[section_value]
-
 
 """
 Trouve l'indince d'un élément donné dans une liste.
 Arguments :
 array (list): Liste qui contient les données
-key (string) : Élément à trouver dans la liste
+value (string) : Élément à trouver dans la liste
 Retourne :
 (float): -1 si l'élément est introuvable ou l'indice de l'élément
 Modifié pas mal pour vectoriser.
 """
 
 
-def find_index(array, key):
-    logical = array.station_id.data == key.encode('UTF-8')
-    return np.where(logical)[0][0]
+def find_index(array, key, value):
+    return np.where(array[key].data == value.encode('UTF-8'))[0][0]
+
+def convert_list_to_dict(t):
+    return dict((k, v) for k, v in t)
+
+def initialize_nan_arrays(dimensions, quantities):
+    t = [0] * quantities
+    for i in range(quantities):
+        t[i] = np.empty(dimensions)
+        t[i][:] = np.nan
+    return tuple(t)
+
+
+"""
+We will use functools.partial to define functions instead of lambdas as it is
+more efficient and will allow parallelization. Therefore, define the ECF
+function shape here. New function.
+"""
+
+
+def general_ecf(h, par, form):
+    if form == 1:
+        return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+    elif form == 2:
+        return par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+    else:
+        return par[0] * np.exp(-h / par[1])
