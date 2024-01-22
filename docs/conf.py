@@ -16,6 +16,7 @@
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
+import warnings
 from pathlib import Path
 
 import os
@@ -77,7 +78,16 @@ extlinks = {
 }
 
 # Generate documentation from Jupyter notebooks.
-nbsphinx_execute = "always"
+skip_notebooks = os.getenv("SKIP_NOTEBOOKS")
+if skip_notebooks or os.getenv("READTHEDOCS_VERSION_TYPE") in [
+    "branch",
+    "external",
+]:
+    if skip_notebooks:
+        warnings.warn("Not executing notebooks.")
+    nbsphinx_execute = "never"
+else:
+    nbsphinx_execute = "auto"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
