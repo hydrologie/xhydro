@@ -18,7 +18,7 @@ dependencies:
   - tqdm
   - xagg
   - xarray
-  - xclim >=0.45.0
+  - xclim >=0.47.0
   - xscen >=0.7.1
   - pip >=23.3.0
   - pip:
