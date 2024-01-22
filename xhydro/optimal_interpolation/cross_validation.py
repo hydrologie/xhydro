@@ -9,11 +9,32 @@ from .functions import mathematical_algorithms as ma
 from .functions import ECF_climate_correction as ecf_cc
 from .functions import optimal_interpolation as opt
 from .functions import utilities as util
-def execute(start_date, end_date, files, cpu_parrallel=False):
-    """
-        Start the profiler, run the entire code, and print stats on profile time
-        """
 
+
+def execute(start_date, end_date, files, cpu_parrallel=False):
+    r"""Start the profiler, run the entire code, and print stats on profile time
+
+
+        Parameters
+        ----------
+        start_date : str
+            Start date of the analysis. YYYY-MM-DD format
+        end_date : str
+            End date of the analysis. YYYY-MM-DD format
+        files : list(str), optional
+            List of files path for getting flows and wathersheds infos
+        cpu_parrallel : bool, optional
+            Execute the profiler in parallel or in series
+
+        Returns
+        -------
+        flow_1o
+        flow_1o_percentile_25
+        flow_1o_percentile_75
+        See Also
+        --------
+        xarray.open_dataset
+        """
     with Profile() as profile:
         # Run the code
         results_1, results_2, results_3 = execute_interpolation(start_date, end_date, files, cpu_parrallel)
@@ -56,34 +77,15 @@ def execute_interpolation(start_date, end_date, files, cpu_parralel):
     return parallelizing_operation(args, cpu_parralel)
 
 def load_files(files):
-    # print("Lecture des CSV")
-    # stations_info = util.read_csv_file(constants.DATA_PATH + "Table_Info_Station_Hydro_2020.csv", 1, ";")
-    # stations_mapping = util.read_csv_file(constants.DATA_PATH + "Table_Correspondance_Station_Troncon.csv", 1, ',')
-    # stations_validation = util.read_csv_file(constants.DATA_PATH + "stations_retenues_validation_croisee.csv", 1, ',')
-    #
-    # print("Lecture des NC")
-    # flow_obs = xr.open_dataset(
-    #     constants.DATA_PATH + 'A20_HYDOBS_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_XXX_XXXXXX_XXX_HC_13102020.nc')
-    # flow_sim = xr.open_dataset(
-    #     constants.DATA_PATH + 'A20_HYDREP_QCMERI_XXX_DEBITJ_HIS_XXX_XXX_XXX_XXX_XXX_XXX_HYD_MG24HS_GCQ_SC_18092020.nc')
     extract_files = [0] * len(files)
     count = 0
     for filepath in files:
-        fileinfo = filepath.split('.')
-        if fileinfo[1] == 'csv':
+        file_name, file_extension  = os.path.splitext(filepath)
+        if file_extension == '.csv':
             extract_files[count] = util.read_csv_file(filepath)
-        elif fileinfo[1] == 'nc':
+        elif file_extension == '.nc':
             extract_files[count] = xr.open_dataset(filepath)
         count += 1
-
-    stations_info = util.read_csv_file(files[0])
-    stations_mapping = util.read_csv_file(files[1])
-    stations_validation = util.read_csv_file(files[2])
-
-
-    flow_obs = xr.open_dataset(files[3])
-    flow_sim = xr.open_dataset(files[4])
-
     return extract_files
 
 def initialize_data_arrays(time_range, station_count):
