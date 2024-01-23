@@ -87,12 +87,12 @@ le pool.map qui l'appelle.
 """
 def loop_interpolation_optimale_stations(i, args):
     # Dézipper les inputs requis de l'itérateur args
-    station_count, qobs_log, qsim_log, ecf_fun, par_opt, PX, PY, time_range, debit_obs, superficie_drainee = args
+    station_count, qobs_log, qsim_log, ecf_fun, par_opt, PX, PY, start_date,end_date, debit_obs, superficie_drainee = args
 
     # J'ai importé des constantes ici pour éviter de les traîner pour rien
     index = range(0, station_count)
     ratio_var_bg = 0.15
-
+    time_range = (end_date - start_date).days
     # Définition des 3 vecteurs de sortie. Ici ils sont des vecteurs et pas des
     # matrices car on travaille sur un seul bassin à la fois (en parallèle).
     qest_l1o, qest_l1o_q25, qest_l1o_q75 = initialize_nan_arrays(time_range, 3)

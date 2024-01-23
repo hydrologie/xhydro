@@ -4,7 +4,6 @@ from cProfile import Profile
 from pstats import SortKey, Stats
 import os
 from multiprocessing import Pool
-from . import constants
 from .functions import mathematical_algorithms as ma
 from .functions import ECF_climate_correction as ecf_cc
 from .functions import optimal_interpolation as opt
@@ -17,10 +16,10 @@ def execute(start_date, end_date, files, cpu_parrallel=False):
 
         Parameters
         ----------
-        start_date : str
-            Start date of the analysis. YYYY-MM-DD format
-        end_date : str
-            End date of the analysis. YYYY-MM-DD format
+        start_date : datetime
+            Start date of the analysis.
+        end_date : datetime
+            End date of the analysis.
         files : list(str), optional
             List of files path for getting flows and wathersheds infos
         cpu_parrallel : bool, optional
@@ -28,9 +27,9 @@ def execute(start_date, end_date, files, cpu_parrallel=False):
 
         Returns
         -------
-        flow_1o
-        flow_1o_percentile_25
-        flow_1o_percentile_75
+        flow_l1o (Leave one out cross validation flow)
+        flow_l1o_percentile_25
+        flow_l1o_percentile_75
         See Also
         --------
         xarray.open_dataset
@@ -52,12 +51,12 @@ Heavily modified to parallelize and to optimize.
 def execute_interpolation(start_date, end_date, files, cpu_parralel):
     stations_info, stations_mapping, stations_validation, flow_obs, flow_sim = load_files(files)
 
-    time_range = int((np.datetime64(end_date) - np.datetime64(start_date)) / np.timedelta64(1, 'D'))
 
     args = {
         'flow_obs' : flow_obs,
         'flow_sim' : flow_sim,
-        'time_range' : time_range,
+        'start_date' : start_date,
+        'end_date' : end_date,
         'stations_info' : stations_info,
         'stations_mapping' : util.convert_list_to_dict(stations_mapping),
         'stations_id' : [station[0] for station in stations_validation]
@@ -72,8 +71,8 @@ def execute_interpolation(start_date, end_date, files, cpu_parralel):
 
     # Fonction modifiée en profondeur ici par rapport au traitement du ecf_fun
     ecf_fun, par_opt = ecf_cc.correction(selected_flow_obs, selected_flow_sim, x_points, y_points, "test")
-    args = (station_count, selected_flow_obs, selected_flow_sim, ecf_fun, par_opt, x_points, y_points, time_range,
-         selected_flow_obs, drained_area)
+    args = (station_count, selected_flow_obs, selected_flow_sim, ecf_fun, par_opt, x_points, y_points, start_date,
+         end_date, selected_flow_obs, drained_area)
     return parallelizing_operation(args, cpu_parralel)
 
 def load_files(files):
@@ -99,13 +98,15 @@ def initialize_data_arrays(time_range, station_count):
 def retreive_data(args):
     flow_obs = args['flow_obs']
     flow_sim = args['flow_sim']
-    time_range = args['time_range']
+    start_date = args['start_date']
+    end_date = args['end_date']
     stations_info = args['stations_info']
     stations_mapping = args['stations_mapping']
     stations_id = args['stations_id']
 
     station_count = len(stations_id)
 
+    time_range = (end_date - start_date).days
     centroid_lat, centroid_lon, drained_area = util.initialize_nan_arrays(station_count, 3)
     selected_flow_obs, selected_flow_sim = util.initialize_nan_arrays((time_range, station_count), 2)
 
@@ -122,8 +123,8 @@ def retreive_data(args):
 
         drained_area[i] = sup_obs
 
-        selected_flow_sim[:, i] = flow_sim.Dis.isel(station=index_section)[0:time_range] / sup_sim
-        selected_flow_obs[:, i] = flow_obs.Dis.isel(station=index_station)[0:time_range] / sup_obs
+        selected_flow_sim[:, i] = flow_sim.Dis.sel(time=slice(start_date, end_date),station=index_section)[0:time_range] / sup_sim
+        selected_flow_obs[:, i] = flow_obs.Dis.sel(time=slice(start_date, end_date), station=index_station)[0:time_range] / sup_obs
 
         position_info = np.where(np.array(stations_info) == station_id)
         station_info = stations_info[position_info[0].item()]
@@ -176,7 +177,10 @@ def parallelizing_operation(args, parallezation=True):
     # Faire en série
     else:
         station_count = args[0]
-        time_range = args[7]
+        start_date = args[7]
+        end_date = args[8]
+
+        time_range = (end_date - start_date).days
         qest_l1o, qest_l1o_q25, qest_l1o_q75 = util.initialize_nan_arrays((time_range, station_count), 3)
 
         for i in range(0, station_count):
