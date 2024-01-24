@@ -2,7 +2,10 @@
 import numpy as np
 import pytest
 
-from xhydro.modelling.hydrological_modelling import run_hydrological_model
+from xhydro.modelling.hydrological_modelling import (
+    get_hydrological_model_inputs,
+    run_hydrological_model,
+)
 
 
 def test_hydrological_modelling():
@@ -31,3 +34,19 @@ def test_import_unknown_model():
         model_config = {"model_name": "fake_model"}
         _ = run_hydrological_model(model_config)
         assert pytest_wrapped_e.type == NotImplementedError
+
+
+def test_get_unknown_model_requirements():
+    """Test for required inputs for models with unknown name"""
+    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+        model_name = "fake_model"
+        _ = get_hydrological_model_inputs(model_name)
+        assert pytest_wrapped_e.type == NotImplementedError
+
+
+def test_get_model_requirements():
+    """Test for required inputs for models"""
+    model_name = "Dummy"
+    required_config = get_hydrological_model_inputs(model_name)
+    print(required_config.keys())
+    assert len(required_config.keys()) == 4

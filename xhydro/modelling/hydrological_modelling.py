@@ -74,6 +74,38 @@ def run_hydrological_model(model_config: dict):
     return qsim
 
 
+def get_hydrological_model_inputs(model_name: str):
+    """Required hydrological model inputs for model_config objects.
+
+    Parameters
+    ----------
+    model_name : str
+        Model name that must be one of the models in the list of possible
+        models.
+
+    Returns
+    -------
+    dict
+        Elements that must be found in the model_config object.
+    """
+    if model_name == "Dummy":
+        required_config = dict(
+            precip="Daily precipitation in mm.",
+            temperature="Daily average air temperature in °C",
+            drainage_area="Drainage area of the catchment",
+            parameters="Model parameters, length 3",
+        )
+
+    elif model_name == "ADD_OTHER_HERE":
+        # ADD OTHER MODELS HERE
+        required_config = {}
+
+    else:
+        raise NotImplementedError(f"The model '{model_name}' is not recognized.")
+
+    return required_config
+
+
 def _dummy_model(model_config: dict):
     """Dummy model.
 
