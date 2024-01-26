@@ -13,13 +13,13 @@ class TestRemoteFileAccess:
 
     @pytest.mark.online
     def test_get_file(self):
-        file = get_file(name="data/optimal_interpolation/stations_retenues.csv",
+        file = get_file(name="data/optimal_interpolation/stations_retenues_validation_croisee.csv",
                         github_url=self.git_url,
                         branch=self.branch)
 
         assert Path(_default_cache_dir).joinpath(
                 self.branch,
-                "data/optimal_interpolation/stations_retenues.csv",
+                "data/optimal_interpolation/stations_retenues_validation_croisee.csv",
             ).exists()
         assert file.is_file()
         with file.open() as f:
