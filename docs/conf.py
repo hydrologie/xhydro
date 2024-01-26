@@ -79,12 +79,8 @@ extlinks = {
 
 # Generate documentation from Jupyter notebooks.
 skip_notebooks = os.getenv("SKIP_NOTEBOOKS")
-if skip_notebooks or os.getenv("READTHEDOCS_VERSION_TYPE") in [
-    "branch",
-    "external",
-]:
-    if skip_notebooks:
-        warnings.warn("Not executing notebooks.")
+if skip_notebooks:
+    warnings.warn("Not executing notebooks.")
     nbsphinx_execute = "never"
 else:
     nbsphinx_execute = "auto"
