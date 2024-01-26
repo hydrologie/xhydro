@@ -100,3 +100,48 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
     y = -ray * cos_lat * sin_lat0 * cos_lon + ray * cos_lat0 * sin_lat
 
     return x, y
+
+
+"""
+Calcule le coefficient d'efficacité KGE
+Arguments :
+obs (list): Liste qui contient les débits observés
+sim (list) : Liste qui contient les débits simulés
+Retourne :
+(float): Le coefficient d'efficacité KGE.
+"""
+def kge_prime(obs, sim):
+    is_nan = np.isnan(obs) | np.isnan(sim)
+
+    obs = obs[~is_nan]
+    sim = sim[~is_nan]
+
+    obs_mean = np.mean(obs)
+    sim_mean = np.mean(sim)
+
+    obs_std = np.std(obs)
+    sim_std = np.std(sim)
+
+    r = np.corrcoef(obs, sim)[0, 1]
+
+    beta = sim_mean / obs_mean
+    gamma = (sim_std / sim_mean) / (obs_std / obs_mean)
+
+    return 1 - np.sqrt(np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2))
+
+
+"""
+Calcule le coefficient d'efficacité Nash–Sutcliffe
+Arguments :
+obs (list): Liste qui contient les débits observés
+sim (list) : Liste qui contient les débits simulés
+Retourne :
+(float): Le coefficient d'efficacité Nash–Sutcliffe.
+"""
+def nash(obs, sim):
+    sim = np.ma.array(sim, mask=np.isnan(obs))
+    obs = np.ma.array(obs, mask=np.isnan(obs))
+
+    sse = np.sum(np.power(obs - sim, 2))
+    ssu = np.sum(np.power(obs - np.mean(obs), 2))
+    return 1 - sse / ssu
