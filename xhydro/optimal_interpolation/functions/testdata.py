@@ -1,16 +1,13 @@
 """Tools for searching for and acquiring test data."""
 import hashlib
 import logging
-import re
-import warnings
+from collections.abc import Sequence
 from pathlib import Path
 from shutil import copy
-from typing import List, Optional, Sequence, Union
-from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin
+from typing import List, Optional, Union
+from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
-import requests
 from platformdirs import user_cache_dir
 from xarray import Dataset
 from xarray import open_dataset as _open_dataset
@@ -22,12 +19,12 @@ LOGGER = logging.getLogger("XHYDRO")
 __all__ = [
     "get_local_testdata",
     "open_dataset",
-    "query_folder",
     "get_file",
 ]
 
 
 def file_md5_checksum(fname):
+    """Check that the data respects the md5 checksum."""
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
         hash_md5.update(f.read())
@@ -39,7 +36,7 @@ def get_local_testdata(
     temp_folder: Union[str, Path],
     branch: str = "master",
     _local_cache: Union[str, Path] = _default_cache_dir,
-) -> Union[Path, List[Path]]:
+) -> Union[Path, list[Path]]:
     """Copy specific testdata from a default cache to a temporary folder.
 
     Return files matching `pattern` in the default cache dir and move to a local temp folder.
@@ -100,6 +97,7 @@ def _get(
     branch: str,
     cache_dir: Path,
 ) -> Path:
+    """Get the file from a github repo."""
     cache_dir = cache_dir.absolute()
     local_file = cache_dir / branch / fullname
 
@@ -129,9 +127,9 @@ def get_file(
     github_url: str = "https://github.com/hydrologie/xhydro-testdata",
     branch: str = "master",
     cache_dir: Union[str, Path] = _default_cache_dir,
-) -> Union[Path, List[Path]]:
-    """
-    Return a file from an online GitHub-like repository.
+) -> Union[Path, list[Path]]:
+    """Return a file from an online GitHub-like repository.
+
     If a local copy is found then always use that to avoid network traffic.
 
     Parameters
@@ -168,6 +166,7 @@ def get_file(
     if len(files) == 1:
         return files[0]
     return files
+
 
 # idea copied from xclim that borrowed it from xarray that was borrowed from Seaborn
 def open_dataset(

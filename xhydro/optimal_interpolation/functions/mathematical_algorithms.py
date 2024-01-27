@@ -1,9 +1,9 @@
+"""Set of mathematical algorithms required for the optimal interpolation."""
 import numpy as np
 
-"""
-Evalute the covariance of a binomial distribution
-"""
-def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=20):
+
+def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
+    """Evalute the covariance of a binomial distribution."""
     n_data = len(values)
     weights = np.power(1 / errors, 2)
     weights = weights / np.sum(weights)
@@ -25,7 +25,9 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
     covariance = covariance[distances < hmax]
     distances = distances[distances < hmax]
 
-    quantiles = np.round([(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2)
+    quantiles = np.round(
+        [(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2
+    )
     cl = np.unique(np.quantile(distances, quantiles))
 
     returned_covariance = np.empty((1, iteration_count))
@@ -47,25 +49,29 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
 
         weight = selected_covariance_weight / np.sum(selected_covariance_weight)
 
-        returned_covariance[:, i] = (np.sum(weight) / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2))) * np.sum(
-            weight * selected_covariance)) / variances
+        returned_covariance[:, i] = (
+            np.sum(weight)
+            / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2)))
+            * np.sum(weight * selected_covariance)
+        ) / variances
 
         returned_standard[:, i] = np.sqrt(np.var(selected_covariance))
         returned_row_length[:, i] = len(ind)
 
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
-"""
-Function that computes the pairwise distance between sets of points.
-"""
+
 def calculate_average_distance(x_points, y_points):
+    """Compute the pairwise distance between sets of points."""
     count = x_points.shape[1]
     average_distances = np.zeros((count, count))
 
     # Compute all pairwise distances in a vectorized manner
     for i in range(count):
-        distances = np.sqrt((x_points[:, i, np.newaxis] - x_points) ** 2 +
-                            (y_points[:, i, np.newaxis] - y_points) ** 2)
+        distances = np.sqrt(
+            (x_points[:, i, np.newaxis] - x_points) ** 2
+            + (y_points[:, i, np.newaxis] - y_points) ** 2
+        )
         average_distances[i, :] = np.mean(distances, axis=0)
 
     # Fill in the symmetric part of the matrix
@@ -74,16 +80,8 @@ def calculate_average_distance(x_points, y_points):
     return average_distances
 
 
-"""
-Function that computes the distance in length units instead of lat/long units.
-
-Arguments:
-
-
-"""
-
-
 def latlon_to_xy(lat, lon, lat0=0, lon0=0):
+    """Compute the distance in length units instead of lat/long units."""
     ray = 6371  # km
 
     lon = lon - lon0
@@ -102,15 +100,16 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
     return x, y
 
 
-"""
-Calcule le coefficient d'efficacité KGE
-Arguments :
-obs (list): Liste qui contient les débits observés
-sim (list) : Liste qui contient les débits simulés
-Retourne :
-(float): Le coefficient d'efficacité KGE.
-"""
+# TODO: Replace these functions with those in the xhydro.hydrological_modelling.obj_fun toolbox.
 def kge_prime(obs, sim):
+    """Calculate KGE metric.
+
+    Arguments :
+    obs (list): Liste qui contient les débits observés
+    sim (list) : Liste qui contient les débits simulés
+    Retourne :
+    (float): Le coefficient d'efficacité KGE.
+    """
     is_nan = np.isnan(obs) | np.isnan(sim)
 
     obs = obs[~is_nan]
@@ -127,18 +126,20 @@ def kge_prime(obs, sim):
     beta = sim_mean / obs_mean
     gamma = (sim_std / sim_mean) / (obs_std / obs_mean)
 
-    return 1 - np.sqrt(np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2))
+    return 1 - np.sqrt(
+        np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2)
+    )
 
 
-"""
-Calcule le coefficient d'efficacité Nash–Sutcliffe
-Arguments :
-obs (list): Liste qui contient les débits observés
-sim (list) : Liste qui contient les débits simulés
-Retourne :
-(float): Le coefficient d'efficacité Nash–Sutcliffe.
-"""
 def nash(obs, sim):
+    """Calculate NSE metric.
+
+    Arguments :
+    obs (list): Liste qui contient les débits observés
+    sim (list) : Liste qui contient les débits simulés
+    Retourne :
+    (float): Le coefficient d'efficacité Nash–Sutcliffe.
+    """
     sim = np.ma.array(sim, mask=np.isnan(obs))
     obs = np.ma.array(obs, mask=np.isnan(obs))
 
