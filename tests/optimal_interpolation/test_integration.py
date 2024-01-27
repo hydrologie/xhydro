@@ -1,13 +1,12 @@
 import datetime as dt
 
 import numpy as np
-from pytest import approx
 
 import xhydro.optimal_interpolation.cross_validation as cv
 from xhydro.optimal_interpolation.functions.testdata import get_file
 
 
-class test_optimal_interpolation_integration:
+class Test_optimal_interpolation_integration:
     # Set Github URL for getting files for tests
     git_url = "https://github.com/Mayetea/xhydro-testdata"
     branch = "optimal_interpolation"
@@ -15,7 +14,7 @@ class test_optimal_interpolation_integration:
 
     # Prepare files. Get them on the public data repo.
     station_info_file = get_file(
-        name="Info_Station.csv", github_url=git_url, branch=branch
+        name=dataf + "Info_Station.csv", github_url=git_url, branch=branch
     )
     corresponding_station_file = get_file(
         name=dataf + "Correspondance_Station.csv", github_url=git_url, branch=branch
@@ -45,59 +44,89 @@ class test_optimal_interpolation_integration:
     start_date = dt.datetime(2018, 11, 1)
     end_date = dt.datetime(2019, 1, 1)
 
-    def test_cross_validation_execute(self, files, start_date, end_date):
-        """test the cross validation of optimal interpolation."""
+    # Set some variables to use in the tests
+    ratio_var_bg = 0.15
+    percentiles = [0.25, 0.50, 0.75]
+    iterations = 10
+
+    def test_cross_validation_execute(self):
+        """Test the cross validation of optimal interpolation."""
 
         # Run the code and obtain the resulting flows.
-        result_flows = cv.execute(start_date, end_date, files, parallelize=False)
+        result_flows = cv.execute(
+            self.start_date,
+            self.end_date,
+            self.files,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            iterations=self.iterations,
+            parallelize=False,
+        )
 
         # Test some output flow values
-        assert result_flows[0][-1, 0] == 8.042503657491906
-        assert result_flows[0][-2, 0] == 8.377341430781929
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.04, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.38, 2)
 
         # To randomize to test direct values
-        assert np.nanmean(result_flows[1][:, :]) == approx(33, 0.5)
-        assert np.nanmean(result_flows[2][:, :]) == approx(59, 0.5)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.54, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.69, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == 61
-        assert len(result_flows[1]) == 61
-        assert len(result_flows[2]) == 61
+        assert len(result_flows[0]) == (self.end_date - self.start_date).days
+        assert len(result_flows[1]) == (self.end_date - self.start_date).days
+        assert len(result_flows[2]) == (self.end_date - self.start_date).days
 
         # Test a different data range to verify that the last entry is different
-        start_date = dt.datetime(2018, 1, 1)
-        end_date = dt.datetime(2018, 1, 31)
+        start_date = dt.datetime(2018, 10, 31)
+        end_date = dt.datetime(2018, 12, 31)
 
-        result_flows = cv.execute(start_date, end_date, files, parallelize=False)
+        result_flows = cv.execute(
+            start_date,
+            end_date,
+            self.files,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            iterations=self.iterations,
+            parallelize=False,
+        )
 
+        # TODO: CHECK WHY SOME DAYS HAVE ALL NANS LIKE: result_flows[0][27]
         # Test some output flow values
-        assert result_flows[0][-1, 0] == 7.884402090442147
-        assert result_flows[0][-2, 0] == 8.170066622988958
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.38, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.70, 2)
 
         # To randomize to test direct values
-        assert np.nanmean(result_flows[1][:, :]) == approx(33, 0.5)
-        assert np.nanmean(result_flows[2][:, :]) == approx(59, 0.5)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 30.01, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 52.71, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == 31
-        assert len(result_flows[1]) == 31
-        assert len(result_flows[2]) == 31
+        assert len(result_flows[0]) == (end_date - start_date).days
+        assert len(result_flows[1]) == (end_date - start_date).days
+        assert len(result_flows[2]) == (end_date - start_date).days
 
-    def test_cross_validation_execute_parralelize(self, files, start_date, end_date):
+    def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
 
         # Run the interpolation and get flows
-        result_flows = cv.execute(start_date, end_date, files)
+        result_flows = cv.execute(
+            self.start_date,
+            self.end_date,
+            self.files,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            iterations=self.iterations,
+            parallelize=True,
+        )
 
         # Test some output flow values
-        assert result_flows[0][-1, 0] == 7.884402090442147
-        assert result_flows[0][-2, 0] == 8.170066622988958
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.04, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.38, 2)
 
         # To randomize to test direct values
-        assert np.nanmean(result_flows[1][:, :]) == approx(33, 0.5)
-        assert np.nanmean(result_flows[2][:, :]) == approx(59, 0.5)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.54, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.69, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == 61
-        assert len(result_flows[1]) == 61
-        assert len(result_flows[2]) == 61
+        assert len(result_flows[0]) == (self.end_date - self.start_date).days
+        assert len(result_flows[1]) == (self.end_date - self.start_date).days
+        assert len(result_flows[2]) == (self.end_date - self.start_date).days

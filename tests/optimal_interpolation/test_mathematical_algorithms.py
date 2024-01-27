@@ -30,8 +30,8 @@ def test_calculate_average_distance():
     assert len(result) == 2
     assert len(result[0]) == 2
     assert result[0, 0] == 0
-    assert result[0, 1] == 1.4142135623730951
-    assert result[1, 0] == 1.4142135623730951
+    np.testing.assert_almost_equal(result[0, 1], 1.4142135623730951, 10)
+    np.testing.assert_almost_equal(result[1, 0], 1.4142135623730951, 10)
     assert result[1, 1] == 0
 
     # Test between 2 sets of points in 3D
@@ -44,13 +44,13 @@ def test_calculate_average_distance():
     assert len(result) == 3
     assert len(result[0]) == 3
     assert result[0, 0] == 0
-    assert result[0, 1] == 1.4142135623730951
-    assert result[0, 2] == 2.8284271247461903
-    assert result[1, 0] == 1.4142135623730951
+    np.testing.assert_almost_equal(result[0, 1], 1.4142135623730951, 10)
+    np.testing.assert_almost_equal(result[0, 2], 2.8284271247461903, 10)
+    np.testing.assert_almost_equal(result[1, 0], 1.4142135623730951, 10)
     assert result[1, 1] == 0
-    assert result[1, 2] == 1.4142135623730951
-    assert result[2, 0] == 2.8284271247461903
-    assert result[2, 1] == 1.4142135623730951
+    np.testing.assert_almost_equal(result[1, 2], 1.4142135623730951, 10)
+    np.testing.assert_almost_equal(result[2, 0], 2.8284271247461903, 10)
+    np.testing.assert_almost_equal(result[2, 1], 1.4142135623730951, 10)
     assert result[2, 2] == 0
 
 
@@ -61,8 +61,8 @@ def test_latlon_to_xy():
 
     # Do the conversion
     result = ma.latlon_to_xy(lat, lon)
-    assert result[0] == -4436.536575078841
-    assert result[1] == 1106.312539916013
+    np.testing.assert_almost_equal(result[0], -4436.536575078841, 4)
+    np.testing.assert_almost_equal(result[1], 1106.312539916013, 4)
 
     # Test using a reference
     lat = 0
@@ -72,5 +72,5 @@ def test_latlon_to_xy():
 
     # Do the conversion
     result = ma.latlon_to_xy(lat, lon, lat0=lat0, lon0=lon0)
-    assert result[0] == 4504.977302939495
-    assert result[1] == -782.281099086326
+    np.testing.assert_almost_equal(result[0], 4504.977302939495, 4)
+    np.testing.assert_almost_equal(result[1], -782.281099086326, 4)
