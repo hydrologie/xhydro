@@ -57,7 +57,11 @@ run correctly in all instances:
 Any comments are welcome!
 """
 
+from copy import deepcopy
+
 # Import packages
+from typing import Optional
+
 import numpy as np
 import spotpy
 import xarray as xr
@@ -135,7 +139,7 @@ class SpotSetup:
         take_negative: bool = False,
         mask: np.array = None,
         transform: str = None,
-        epsilon: float = None,
+        epsilon: float = 0.01,
     ):
         """
         Initialize the SpotSetup object.
@@ -181,11 +185,11 @@ class SpotSetup:
         algorithm : str
             The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
         take_negative : bool
-            Inidactor to take the negative of the objective function value in optimization to ensure convergence
+            Wether to take the negative of the objective function value in optimization to ensure convergence
             in the right direction.
-        mask : np.array
+        mask : np.array, optional
             A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
-        transform : str
+        transform : str, optional
             The method to transform streamflow prior to computing the objective function. Can be one of:
             Square root ('sqrt'), inverse ('inv'), or logarithmic ('log') transformation.
         epsilon : float
@@ -199,7 +203,7 @@ class SpotSetup:
         """
         # Gather the model_config dictionary and obj_func string, and other
         # optional arguments.
-        self.model_config = model_config
+        self.model_config = deepcopy(model_config)
         self.obj_func = obj_func
         self.mask = mask
         self.transform = transform
@@ -305,9 +309,10 @@ def perform_calibration(
     bounds_low: np.array,
     evaluations: int,
     algorithm: str = "DDS",
-    mask: np.array = None,
-    transform: str = None,
+    mask: Optional[np.array] = None,
+    transform: Optional[str] = None,
     epsilon: float = 0.01,
+    sampler_kwargs: Optional[dict] = None,
 ):
     """Perform calibration using spotpy.
 
@@ -351,15 +356,21 @@ def perform_calibration(
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
     algorithm : str
         The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
-    mask : np.array
+    mask : np.array, optional
         A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
-    transform : str
+    transform : str, optional
         The method to transform streamflow prior to computing the objective function. Can be one of:
         Square root ('sqrt'), inverse ('inv'), or logarithmic ('log') transformation.
     epsilon : scalar float
         Used to add a small delta to observations for log and inverse transforms, to eliminate errors
         caused by zero flow days (1/0 and log(0)). The added perturbation is equal to the mean observed streamflow
         times this value of epsilon.
+    sampler_kwargs : dict
+        Contains the keywords and hyperparameter values for the optimization algorithm.
+        Keywords depend on the algorithm choice. Currently, SCEUA and DDS are supported with
+        the following default values:
+        - SCEUA: dict(ngs=7, kstop=3, peps=0.1, pcento=0.1)
+        - DDS: dict(trials=1)
 
     Returns
     -------
@@ -370,7 +381,7 @@ def perform_calibration(
     bestobjf : float
         The best objective function value.
     """
-    # Get objective function and algo optimal convregence direction. Necessary
+    # Get objective function and algo optimal convergence direction. Necessary
     # to ensure that the algorithm is optimizing in the correct direction
     # (maximizing or minimizing). This code determines the required direction
     # for the objective function and the working direction of the algorithm.
@@ -401,13 +412,38 @@ def perform_calibration(
         sampler = spotpy.algorithms.dds(
             spotpy_setup, dbname="DDS_optim", dbformat="ram", save_sim=False
         )
-        sampler.sample(evaluations, trials=1)
+
+        # If the user provided a custom sampler hyperparameter set.
+        if sampler_kwargs is not None:
+            if "trials" in sampler_kwargs:
+                sampler.sample(evaluations, *sampler_kwargs)
+            else:
+                raise ValueError(
+                    'DDS optimizer hyperparameter keyword "trials" not found in sampler_kwargs.'
+                )
+
+        # If not, use the default.
+        else:
+            sampler.sample(evaluations, trials=1)
 
     elif algorithm == "SCEUA":
         sampler = spotpy.algorithms.sceua(
             spotpy_setup, dbname="SCEUA_optim", dbformat="ram", save_sim=False
         )
-        sampler.sample(evaluations, ngs=7, kstop=3, peps=0.1, pcento=0.1)
+
+        # If the user provided a custom sampler hyperparameter set.
+        if sampler_kwargs is not None:
+            if all(
+                item in sampler_kwargs for item in ["ngs", "kstop", "peps", "pcento"]
+            ):
+                sampler.sample(evaluations, *sampler_kwargs)
+            else:
+                raise ValueError(
+                    'SCEUA optimizer hyperparameter keywords "ngs", "kstop", "peps" or " pcento" not found in sampler_kwargs.'
+                )
+
+        else:
+            sampler.sample(evaluations, ngs=7, kstop=3, peps=0.1, pcento=0.1)
 
     # Gather optimization results
     results = sampler.getdata()

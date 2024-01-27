@@ -147,6 +147,7 @@ def get_objective_function(
     }
 
     # If we got a dataset, change to np.array
+    # FIXME: Implement a more flexible method
     if isinstance(qsim, xr.Dataset):
         qsim = qsim["qsim"]
 
@@ -165,7 +166,7 @@ def get_objective_function(
 
         # All zero or one?
         if not np.setdiff1d(np.unique(mask), np.array([0, 1])).size == 0:
-            raise ValueError("Mask contains values other 0 or 1. Please modify.")
+            raise ValueError("Mask contains values other than 0 or 1. Please modify.")
 
     # Check that the objective function is in the list of available methods
     if obj_func not in obj_func_dict:
