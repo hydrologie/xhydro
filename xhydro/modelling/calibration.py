@@ -416,7 +416,7 @@ def perform_calibration(
         # If the user provided a custom sampler hyperparameter set.
         if sampler_kwargs is not None:
             if "trials" in sampler_kwargs:
-                sampler.sample(evaluations, *sampler_kwargs)
+                sampler.sample(evaluations, **sampler_kwargs)
             else:
                 raise ValueError(
                     'DDS optimizer hyperparameter keyword "trials" not found in sampler_kwargs.'
@@ -436,7 +436,7 @@ def perform_calibration(
             if all(
                 item in sampler_kwargs for item in ["ngs", "kstop", "peps", "pcento"]
             ):
-                sampler.sample(evaluations, *sampler_kwargs)
+                sampler.sample(evaluations, **sampler_kwargs)
             else:
                 raise ValueError(
                     'SCEUA optimizer hyperparameter keywords "ngs", "kstop", "peps" or " pcento" not found in sampler_kwargs.'

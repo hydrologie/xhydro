@@ -32,6 +32,7 @@ def test_spotpy_calibration():
         evaluations=1000,
         algorithm="DDS",
         mask=mask,
+        sampler_kwargs=dict(trials=1),
     )
 
     # Test that the results have the same size as expected (number of parameters)
