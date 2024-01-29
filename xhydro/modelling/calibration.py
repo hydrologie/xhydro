@@ -408,42 +408,43 @@ def perform_calibration(
 
     # Select an optimization algorithm and parameterize it, then run the
     # optimization process.
+    sampler_kwargs = deepcopy(sampler_kwargs) or None
+    if sampler_kwargs is None:
+        sampler_kwargs = {}
+
     if algorithm == "DDS":
         sampler = spotpy.algorithms.dds(
             spotpy_setup, dbname="DDS_optim", dbformat="ram", save_sim=False
         )
 
-        # If the user provided a custom sampler hyperparameter set.
-        if sampler_kwargs is not None:
-            if "trials" in sampler_kwargs:
-                sampler.sample(evaluations, **sampler_kwargs)
-            else:
-                raise ValueError(
-                    'DDS optimizer hyperparameter keyword "trials" not found in sampler_kwargs.'
-                )
+        # Get the sampler hyperparameters, either default or user-provided.
+        defaults = {"trials": 1}
+        sampler_kwargs = defaults | sampler_kwargs
 
-        # If not, use the default.
+        # Ensure there is only 1 hyperparameter passed by the user, if
+        # applicable
+        if len(sampler_kwargs) == 1:
+            sampler.sample(evaluations, **sampler_kwargs)
         else:
-            sampler.sample(evaluations, trials=1)
+            raise ValueError(
+                "sampler_kwargs should only contain the keyword 'trials' when using DDS."
+            )
 
     elif algorithm == "SCEUA":
         sampler = spotpy.algorithms.sceua(
             spotpy_setup, dbname="SCEUA_optim", dbformat="ram", save_sim=False
         )
+        # Get the sampler hyperparameters, either default or user-provided.
+        defaults = {"ngs": 7, "kstop": 3, "peps": 0.1, "pcento": 0.1}
+        sampler_kwargs = defaults | sampler_kwargs
 
         # If the user provided a custom sampler hyperparameter set.
-        if sampler_kwargs is not None:
-            if all(
-                item in sampler_kwargs for item in ["ngs", "kstop", "peps", "pcento"]
-            ):
-                sampler.sample(evaluations, **sampler_kwargs)
-            else:
-                raise ValueError(
-                    'SCEUA optimizer hyperparameter keywords "ngs", "kstop", "peps" or " pcento" not found in sampler_kwargs.'
-                )
-
+        if len(sampler_kwargs) == 4:
+            sampler.sample(evaluations, **sampler_kwargs)
         else:
-            sampler.sample(evaluations, ngs=7, kstop=3, peps=0.1, pcento=0.1)
+            raise ValueError(
+                "sampler_kwargs should only contain the keywords [ngs, kstop, peps, pcento] when using SCEUA."
+            )
 
     # Gather optimization results
     results = sampler.getdata()
@@ -466,6 +467,7 @@ def perform_calibration(
         bestobjf = bestobjf * -1
 
     # Update the parameter set to put the best parameters in model_config...
+    model_config = deepcopy(model_config)
     model_config.update({"parameters": best_parameters})
 
     # ... which can be used to run the hydrological model and get the best Qsim.
