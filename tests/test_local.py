@@ -70,9 +70,11 @@ class TestFit:
         params = xhfa.local.fit(ds, distributions=["gamma"], min_years=miny)
         np.testing.assert_array_almost_equal(
             params.streamflow,
-            [[9.95357815e00, -3.07846650e01, 1.56498193e01]]
-            if miny == 10
-            else [[np.nan, np.nan, np.nan]],
+            (
+                [[9.95357815e00, -3.07846650e01, 1.56498193e01]]
+                if miny == 10
+                else [[np.nan, np.nan, np.nan]]
+            ),
         )
 
 
