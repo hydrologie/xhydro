@@ -56,16 +56,16 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "black>=23.12.1",
-  "blackdoc>=0.3.9",
-  "bump-my-version>=0.12.0",
+  "black==24.1.1",
+  "blackdoc==0.3.9",
+  "bump-my-version>=0.17.1",
   "coverage>=6.2.2,<7.0.0",
   "coveralls>=3.3.1",
   "flake8-alphabetize>=0.0.21",
   "flake8-rst-docstrings>=0.3.0",
   "flake8>=6.1.0",
   "flit",
-  "isort>=5.13.2",
+  "isort==5.13.2",
   "pip>=23.3.0",
   "pooch",
   "pre-commit>=3.3.2",
