@@ -82,6 +82,8 @@ skip_notebooks = os.getenv("SKIP_NOTEBOOKS")
 if skip_notebooks:
     warnings.warn("Not executing notebooks.")
     nbsphinx_execute = "never"
+elif os.getenv("GITHUB_ACTIONS"):
+    nbsphinx_execute = "always"
 else:
     nbsphinx_execute = "auto"
 
