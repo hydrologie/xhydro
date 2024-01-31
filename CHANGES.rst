@@ -5,7 +5,7 @@ Changelog
 
 v0.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,6 +16,7 @@ New features and enhancements
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Added `pooch` as an installation dependency. (:pull:`62`).
+* `climatological_op` will now always return 5. (:issue:`25`, :pull:`69`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
