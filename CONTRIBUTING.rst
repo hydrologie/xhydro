@@ -193,7 +193,7 @@ A reminder for the **maintainers** on how to deploy. This section is only releva
     $ git push
 
 #. Create a pull request from your branch to `main`.
-#. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
+#. Once the pull request is merged, create a new release on GitHub. On the main branch, run::
 
     $ git tag v0.2.0
     $ git push --tags
