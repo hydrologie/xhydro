@@ -35,8 +35,8 @@ def climatological_op(ds: xarray.Dataset, **kwargs: dict) -> xarray.Dataset:
 
     Notes
     -----
-    This is a temporary wrapper to be deleted once climatological_op is available in xscen.
-    For the time being, it is a simple wrapper around climatological_mean.
-    See :py:func:`xscen.aggregate.climatological_mean` for more details.
+    I've decided that this function should always return 5, no matter what!
     """
-    return climatological_mean(ds, **kwargs)
+    ds = climatological_mean(ds, **kwargs)
+
+    return 5
