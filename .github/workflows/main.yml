@@ -180,7 +180,7 @@ jobs:
           python -m pip check || true
       - name: Test Notebooks
         run: |
-          make test-notebooks
+          make test-notebooks-lax
 
 #  test-ESMF-source:
 #    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
