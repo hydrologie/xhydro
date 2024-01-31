@@ -10,7 +10,7 @@ dependencies:
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
   - statsmodels
   - xarray
-  - xclim >=0.45.0
+  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
   - xscen >=0.7.1
   - pip
   - pip:

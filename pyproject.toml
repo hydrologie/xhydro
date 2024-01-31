@@ -42,7 +42,7 @@ dependencies = [
   "pydantic>=2.0,<2.5.3",
   "statsmodels",
   "xarray",
-  "xclim>=0.45.0",
+  "xclim>=0.47.0",
   "xdatasets>=0.3.1",
   "xscen>=0.7.1"
 ]
