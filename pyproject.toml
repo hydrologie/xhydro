@@ -29,6 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  # "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology"
@@ -50,20 +51,20 @@ dependencies = [
 dev = [
   # Dev tools and testing
   "pip>=23.1.2",
-  "bump-my-version>=0.12.0",
+  "bump-my-version>=0.17.1",
   "watchdog>=3.0.0",
-  "flake8>=6.1.0",
+  "flake8>=7.0.0",
   "flake8-alphabetize>=0.0.21",
   "flake8-rst-docstrings>=0.3.0",
-  "flit",
+  "flit>=3.9.0",
   "tox>=4.5.1",
   "coverage>=6.2.2,<7.0.0",
   "coveralls>=3.3.1",
   "pytest>=7.3.1",
   "pytest-cov>=4.0.0",
-  "black>=23.10.1",
-  "blackdoc>=0.3.9",
-  "isort>=5.12.0",
+  "black==24.1.1",
+  "blackdoc==0.3.9",
+  "isort==5.13.2",
   "pre-commit>=3.3.2"
 ]
 docs = [
@@ -96,17 +97,22 @@ target-version = [
   "py38",
   "py39",
   "py310",
-  "py311"
+  "py311",
+  "py312"
 ]
 
 [tool.bumpversion]
 current_version = "0.3.3"
 commit = true
+commit_args = "--no-verify"
 tag = false
 tag_name = "v{new_version}"
 allow_dirty = false
-serialize = ["{major}.{minor}.{patch}"]
-parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(\\-(?P<release>[a-z]+)(\\.(?P<build>\\d+)))?"
+serialize = [
+  "{major}.{minor}.{patch}-{release}.{build}",
+  "{major}.{minor}.{patch}"
+]
 
 [[tool.bumpversion.files]]
 filename = "xhydro/__init__.py"
@@ -122,6 +128,16 @@ replace = "__version__ = \"{new_version}\""
 filename = ".cruft.json"
 search = "\"version\": \"{current_version}\""
 replace = "\"version\": \"{new_version}\""
+
+[tool.bumpversion.parts.build]
+independent = false
+
+[tool.bumpversion.parts.release]
+optional_value = "release"
+values = [
+  "dev",
+  "release"
+]
 
 [tool.coverage.run]
 relative_files = true
@@ -165,6 +181,7 @@ exclude = [
   "docs/_*",
   "docs/apidoc/modules.rst",
   "docs/apidoc/xhydro*.rst",
+  "docs/locales",
   "xhydro/testing/data/*"
 ]
 

@@ -187,20 +187,16 @@ A reminder for the **maintainers** on how to deploy. This section is only releva
 
 #. Create a new branch from `main` (e.g. `release-0.2.0`).
 #. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
-#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`):
+#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`)::
 
-    .. code-block:: shell
-
-        $ bump-my-version bump minor # In most cases, we will be releasing a minor version
-        $ git push
+    $ bump-my-version bump minor # In most cases, we will be releasing a minor version
+    $ git push
 
 #. Create a pull request from your branch to `main`.
 #. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
 
-    .. code-block:: shell
-
-        $ git tag v0.2.0
-        $ git push --tags
+    $ git tag v0.2.0
+    $ git push --tags
 
    This will trigger a GitHub workflow to build the package and upload it to TestPyPI. At the same time, the GitHub workflow will create a draft release on GitHub. Assuming that the workflow passes, the final release can then be published on GitHub by finalizing the draft release.
 
