@@ -1,4 +1,5 @@
 """Module to compute indicators using xclim's build_indicator_module_from_yaml."""
+
 import warnings
 from typing import Optional
 

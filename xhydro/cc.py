@@ -1,4 +1,5 @@
 """Module to compute climate change statistics using xscen functions."""
+
 import xarray
 
 # Special imports from xscen
