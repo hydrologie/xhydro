@@ -106,11 +106,11 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     # Or, to run multiple build tests
     $ tox
 
-    .. note::
+   .. note::
 
-        Running `pytest` or `tox` will automatically fetch and cache the testing data for the package to your local cache (using the `platformdirs` library). On Linux, this is located at ``XDG_CACHE_HOME`` (usually ``~/.cache``). On Windows, this is located at ``%LOCALAPPDATA%`` (usually ``C:\Users\username\AppData\Local``). On MacOS, this is located at ``~/Library/Caches``.
+       Running `pytest` or `tox` will automatically fetch and cache the testing data for the package to your local cache (using the `platformdirs` library). On Linux, this is located at ``XDG_CACHE_HOME`` (usually ``~/.cache``). On Windows, this is located at ``%LOCALAPPDATA%`` (usually ``C:\Users\username\AppData\Local``). On MacOS, this is located at ``~/Library/Caches``.
 
-        If for some reason you wish to cache this data elsewhere, you can set the ``XHYDRO_DATA_DIR`` environment variable to a different location before running the tests. For example, to cache the data in the current working directory, run::
+       If for some reason you wish to cache this data elsewhere, you can set the ``XHYDRO_DATA_DIR`` environment variable to a different location before running the tests. For example, to cache the data in the current working directory, run::
 
             $ export XHYDRO_DATA_DIR=$(pwd)/.cache
 
