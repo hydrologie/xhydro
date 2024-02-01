@@ -2,13 +2,17 @@
 import datetime as dt
 import sys
 
-import functions.mathematical_algorithms as ma
-import functions.utilities as util
+import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
+import xhydro.optimal_interpolation.functions.utilities as util
 import numpy as np
 import xarray as xr
 
 
-def compare(percentileToPlot=50):  # start_date, end_date, files,
+def compare(
+    start_date,
+    end_date,
+    files,
+    percentileToPlot=50):  # start_date, end_date, files,
     """
     Start the computation of the comparison method.
 
@@ -23,27 +27,9 @@ def compare(percentileToPlot=50):  # start_date, end_date, files,
         8. read_csv_files, find_index and find_section functions are duplicates between this and the "cross_validation" code, can be in a shared utils package
         9. Check to make sure files and indexes are in the correct order when reading
     """
-    start_date = dt.datetime(2018, 11, 1)
-    end_date = dt.datetime(2019, 1, 1)
-    start_date = np.datetime64("1961-01-01")
-    end_date = np.datetime64("2018-12-31")
-    time = ((end_date - start_date) / np.timedelta64(1, "D")) + 1
+    time = (end_date - start_date).days
 
-    obs_data_filename = "data\\A20_HYDOBS.nc"
-    sim_data_file = "data\\A20_HYDREP.nc"
-    l1o_data_file = "data\\A20_ANALYS_DEBITJ_RESULTAT_VALIDATION_CROISEE_L1O.nc"
-    station_validation_filename = "data\\stations_retenues_validation_croisee.csv"
-    station_mapping_filename = "data\\Table_Correspondance_Station_Troncon.csv"
-
-    print("Lecture des CSV")
-    station_validation = util.read_csv_file(station_validation_filename)
-    station_mapping = util.read_csv_file(station_mapping_filename)
-
-    print("Lecture des NC")
-    # Open the dataset for reading
-    obs_data = xr.open_dataset(obs_data_filename)
-    sim_data = xr.open_dataset(sim_data_file)
-    l1o_data = xr.open_dataset(l1o_data_file)
+    station_validation, station_mapping, obs_data, sim_data, l1o_data = util.load_files(files)
 
     # Read station id
     stations_id = obs_data["station_id"]

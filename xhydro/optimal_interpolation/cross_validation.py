@@ -3,7 +3,6 @@ import os
 from multiprocessing import Pool
 
 import numpy as np
-import xarray as xr
 
 from .functions import ECF_climate_correction as ecf_cc
 from .functions import mathematical_algorithms as ma
@@ -71,7 +70,7 @@ def execute_interpolation(
         stations_validation,
         flow_obs,
         flow_sim,
-    ) = load_files(files)
+    ) = util.load_files(files)
 
     args = {
         "flow_obs": flow_obs,
@@ -134,18 +133,6 @@ def execute_interpolation(
     return parallelize_operation(args, parallelize=parallelize)
 
 
-def load_files(files):
-    """Load the files that contain the Hydrotel runs and observations."""
-    extract_files = [0] * len(files)
-    count = 0
-    for filepath in files:
-        file_name, file_extension = os.path.splitext(filepath)
-        if file_extension == ".csv":
-            extract_files[count] = util.read_csv_file(filepath)
-        elif file_extension == ".nc":
-            extract_files[count] = xr.open_dataset(filepath)
-        count += 1
-    return extract_files
 
 
 def initialize_data_arrays(time_range, station_count):

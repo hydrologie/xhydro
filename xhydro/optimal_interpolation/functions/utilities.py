@@ -3,7 +3,8 @@ import csv
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os
+import xarray as xr
 
 def read_csv_file(csv_filename):
     """Retourne une liste qui contient les valeurs d'un fichier CSV.
@@ -74,6 +75,18 @@ def find_station_section(stations, section_id):
 
     return value[section_value]
 
+def load_files(files):
+    """Load the files that contain the Hydrotel runs and observations."""
+    extract_files = [0] * len(files)
+    count = 0
+    for filepath in files:
+        file_name, file_extension = os.path.splitext(filepath)
+        if file_extension == ".csv":
+            extract_files[count] = read_csv_file(filepath)
+        elif file_extension == ".nc":
+            extract_files[count] = xr.open_dataset(filepath)
+        count += 1
+    return extract_files
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):
     """Code to plot results as per user request."""
