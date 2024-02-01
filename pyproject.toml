@@ -39,7 +39,7 @@ dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "numpy",
   "pooch>=1.8.0",
-  "pydantic>=2.0,<2.5.3",
+  "pydantic>=2.0,<2.6.1",
   "statsmodels",
   "xarray",
   "xclim>=0.47.0",
