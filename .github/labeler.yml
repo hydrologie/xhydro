@@ -5,7 +5,21 @@
 #   we refer here to CI as the 'meta' configuration files for managing the code and integrations with the repository,
 #   not configurations related to the deployment process itself.
 
+# Uncomment the following lines to enable the labeler (requires labels with the same name to exist in the repository)
+
+# label 'ci' all automation-related steps and files
+'CI':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.editorconfig'
+      - '.flake8'
+      - '.pre-commit-config.yaml'
+      - '.yamllint.yml'
+      - '.github/workflows/*'
+      - 'tox.ini'
+      - 'Makefile'
+      
 'notebooks':
   - changed-files:
     - any-glob-to-any-file:
-      - docs/notebooks/**/*.ipynb
+      - 'docs/notebooks/**/*.ipynb'

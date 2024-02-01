@@ -120,9 +120,9 @@ release = xhydro.__version__
 # Usually you set "language" from the command line for these cases.
 language = "en"
 
-# Set the locales
+# Sphinx-intl configuration
 locale_dirs = ["locales"]
-gettext_compact = False
+gettext_compact = False  # optional
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

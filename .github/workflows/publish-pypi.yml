@@ -17,9 +17,13 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v4.1.1
       - name: Set up Python3
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.0.0
         with:
           python-version: "3.9"
       - name: Install packaging libraries
@@ -29,4 +33,4 @@ jobs:
         run: |
           python -m flit build
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@v1.8.11

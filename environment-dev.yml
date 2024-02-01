@@ -18,7 +18,7 @@ dependencies:
   - tqdm
   - xagg
   - xarray
-  - xclim >=0.47.0
+  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
   - xscen >=0.7.1
   - pip >=23.3.0
   - pip:
@@ -27,10 +27,10 @@ dependencies:
   # Dev
   - black ==24.1.1
   - blackdoc ==0.3.9
-  - bump-my-version >=0.12.0
+  - bump-my-version >=0.17.1
   - coverage >=6.2.2,<7.0.0
   - coveralls >=3.3.1
-  - flake8 >=6.1.0
+  - flake8 >=7.0.0
   - flake8-rst-docstrings>=0.3.0
   - furo
   - ipykernel
@@ -45,13 +45,13 @@ dependencies:
   - pre-commit >=3.3.2
   - pystac-client
   - ruff >=0.1.9
-  - stackstac
   - sphinx
   - sphinx-autoapi
   - sphinx-codeautolink
   - sphinx-copybutton
   - sphinx-intl
   - sphinxcontrib-napoleon
+  - stackstac
   - watchdog >=3.0.0
   # Testing
   - pytest >=7.3.1

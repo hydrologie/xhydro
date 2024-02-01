@@ -9,8 +9,9 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Ch
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added French language support to the documentation. (:issue:`53`, :pull:`55`).
-* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories.
+* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories. (:pull:`62`).
 * `xhydro` is now configured to use `pooch` to download and cache testing datasets from `hydrologie/xhydro-testdata`. (:pull:`62`).
+* `xhydro` is now `Semantic Versioning v2.0.0 <https://semver.org/spec/v2.0.0.html>`_ compliant. (:pull:`70`).
 * `xhydro` has implemented a `gis` module that facilitates geospatial tasks needed for gathering hydrological inputs. (:issue:`60`, :pull:`61`).
 
 Breaking changes
@@ -26,9 +27,6 @@ Internal changes
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
 * Added a workflow based on `actions/labeler` to automatically label Pull Requests based on files changed. (:pull:`68`).
 * Added a conditional trigger to the `test-notebooks` job to run in advance of pull request approval in the event that the notebooks found within `docs/notebooks` have been modified (labeled `"notebooks"`). (:pull:`68`).
-
-Internal changes
-^^^^^^^^^^^^^^^^
 * Significant changes to the Continuous Integration (CI) setup. (:pull:`65`):
     * Added a workflow configuration using ``label_on_approval.yml`` and modifications of ``main.yml`` so that fewer tests are run on Pull Requests before they are fully approved.
     * Added some `pre-commit` configurations to both clean up the code within notebooks (`NbQA`) and strip their outputs (`nbstripout`).
@@ -36,6 +34,12 @@ Internal changes
     * Added a `Makefile` recipe to facilitate installation of `esmpy` when `esmf` is installed and visible on the `$PATH`.
     * Added a `Makefile` recipe for running tests over Jupyter notebooks.
     * Synchronized dependencies between `pyproject.toml` and `conda` configuration files.
+* The cookiecutter has been updated to the latest commit (:pull:`70`):
+    * Added some workflows (Change file labelling, Cache cleaning, Dependency scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_).
+    * The README has been updated to organize badges in a table, including a badge for the OpenSSF Scorecard.
+    * Updated pre-commit hook versions to the latest available.
+    * Formatting tools are now pinned to their pre-commit equivalents.
+    * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
 
 v0.3.0 (2023-12-01)
 -------------------
