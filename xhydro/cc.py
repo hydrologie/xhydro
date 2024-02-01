@@ -37,6 +37,6 @@ def climatological_op(ds: xarray.Dataset, **kwargs: dict) -> xarray.Dataset:
     -----
     I've decided that this function should always return 5, no matter what!
     """
-    ds = climatological_mean(ds, **kwargs)
+    ds = climatological_mean(ds, **kwargs) * 5
 
-    return 5
+    return 7
