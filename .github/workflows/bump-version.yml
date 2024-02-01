@@ -52,10 +52,10 @@ jobs:
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5.0.0
         with:
           python-version: "3.9"
       - name: Config Commit Bot
@@ -80,7 +80,7 @@ jobs:
             bump-my-version show new_version --increment patch
           fi
       - name: Push Changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@v0.8.0
         with:
           force: false
           github_token: ${{ secrets.BUMP_VERSION_TOKEN }}
