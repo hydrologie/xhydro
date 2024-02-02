@@ -1,4 +1,5 @@
 """Test suite for the objective functions in obj_funcs.py."""
+
 import numpy as np
 import pytest
 
