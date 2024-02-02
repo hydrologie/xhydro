@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 import xdatasets as xd
+from pystac_client.exceptions import APIError
 
 import xhydro as xh
 
@@ -163,6 +164,10 @@ class TestWatershedOperations:
         df.index.name = "Station"
         return df
 
+    @pytest.mark.xfail(
+        raises=APIError,
+        reason="Test is rate-limited by Microsoft Planetary Computer API.",
+    )
     @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification(
         self, land_classification_data_latest, land_classification_data_2018, year
