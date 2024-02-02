@@ -334,7 +334,7 @@ def land_use_classification(
     unique_id: str = None,
     output_format: str = "geopandas",
     collection="io-lulc-9-class",
-    year: Union[str, int]="latest",
+    year: Union[str, int] = "latest",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """Calculate land use classification.
 
