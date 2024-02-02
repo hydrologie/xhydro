@@ -16,7 +16,7 @@ dependencies:
   - stackstac
   - statsmodels
   - tqdm
-  - xagg
+  - xagg  # xdatasets dependency; Remove when xdatasets is installable via conda package
   - xarray
   - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
   - xscen >=0.7.1
