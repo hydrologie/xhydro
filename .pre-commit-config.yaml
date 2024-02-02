@@ -29,7 +29,7 @@ repos:
     hooks:
       - id: rst-inline-touching-normal
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.12.1
+    rev: 24.1.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
@@ -38,11 +38,11 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.1.14
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
       - id: flake8
         additional_dependencies: [ 'flake8-alphabetize', 'flake8-rst-docstrings' ]
@@ -56,7 +56,7 @@ repos:
     rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==23.12.1' ]
+        additional_dependencies: [ 'black==24.1.1' ]
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.33.0
     hooks:

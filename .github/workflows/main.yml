@@ -5,16 +5,21 @@ on:
     branches:
       - main
     paths-ignore:
+      - .cruft.json
       - CHANGES.rst
       - README.rst
-      - setup.cfg
       - pyproject.toml
+      - tests/test_xhydro.py
       - xhydro/__init__.py
   pull_request:
 
+concurrency:
+  # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   lint:
@@ -25,13 +30,9 @@ jobs:
         python-version:
           - "3.x"
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5.0.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
@@ -48,14 +49,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        include:
+          - python-version: "3.9"
+          - python-version: "3.10"
+          - python-version: "3.11"
+#          - python-version: "3.12"
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v4.1.1
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v1.8.0
         with:
           cache-downloads: true
           environment-file: environment-dev.yml

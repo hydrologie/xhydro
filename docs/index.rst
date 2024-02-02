@@ -16,6 +16,12 @@ Welcome to xHydro's documentation!
    authors
    changes
 
+.. toctree::
+   :maxdepth: 1
+   :caption: All Modules
+
+   apidoc/modules
+
 .. Indices and tables
 .. ==================
 .. * :ref:`genindex`
