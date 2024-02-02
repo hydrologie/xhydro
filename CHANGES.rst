@@ -10,8 +10,9 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Ch
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added French language support to the documentation. (:issue:`53`, :pull:`55`).
-* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories.
+* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories. (:pull:`62`).
 * `xhydro` is now configured to use `pooch` to download and cache testing datasets from `hydrologie/xhydro-testdata`. (:pull:`62`).
+* `xhydro` is now `Semantic Versioning v2.0.0 <https://semver.org/spec/v2.0.0.html>`_ compliant. (:pull:`70`).
 * Added `xh.cc.sampled_indicators` to compute future indicators using a perturbation approach and random sampling. (:pull:`54`).
 
 Breaking changes
@@ -25,6 +26,12 @@ Internal changes
     * `load_registry`: Loads installed (or custom) registry and returns dictionary
     * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
+* The cookiecutter has been updated to the latest commit (:pull:`70`):
+    * Added some workflows (Change file labelling, Cache cleaning, Dependency scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_).
+    * The README has been updated to organize badges in a table, including a badge for the OpenSSF Scorecard.
+    * Updated pre-commit hook versions to the latest available.
+    * Formatting tools are now pinned to their pre-commit equivalents.
+    * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
 
 v0.3.0 (2023-12-01)
 -------------------

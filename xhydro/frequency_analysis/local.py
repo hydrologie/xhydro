@@ -144,16 +144,16 @@ def parametric_quantiles(
             if mode == "max"
             else "Probability of non-exceedance"
         )
-        da_q.attrs[
-            "description"
-        ] = "Parametric distribution quantiles for the given return period."
+        da_q.attrs["description"] = (
+            "Parametric distribution quantiles for the given return period."
+        )
         da_q.attrs["mode"] = mode
         quantiles = quantiles.assign_coords(p_quantile=da_q)
 
         quantiles.attrs["scipy_dist"] = distributions
-        quantiles.attrs[
-            "description"
-        ] = f"Return period ({mode}) estimated with statistic distributions"
+        quantiles.attrs["description"] = (
+            f"Return period ({mode}) estimated with statistic distributions"
+        )
         quantiles.attrs["long_name"] = "Return period"
         quantiles.attrs["mode"] = mode
         out.append(quantiles)
@@ -247,9 +247,9 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
                 + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
                 f"criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
             )
-            crit.attrs[
-                "description"
-            ] = "Information criteria for the distribution parameters."
+            crit.attrs["description"] = (
+                "Information criteria for the distribution parameters."
+            )
             crit.attrs["long_name"] = "Information criteria"
 
             # Remove a few attributes that are not relevant anymore

@@ -1,4 +1,5 @@
 """Module to compute climate change statistics using xscen functions."""
+
 from typing import Optional, Union
 
 import numpy as np
