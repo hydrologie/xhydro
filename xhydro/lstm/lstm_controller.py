@@ -5,22 +5,18 @@ This particular version of the script uses variables from the MELCC gridded data
 
 # %% Import packages
 import os
+import tempfile
 
 # os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from pathlib import Path
-
-import tensorflow as tf
-from lstm_functions import (
+from .lstm_functions import (
     GetNetcdfTags,
     RunModelAfterTraining,
     ScaleDataset,
     SplitDataset,
     perform_initial_train,
 )
-from lstm_utils.create_datasets import plot_boxplot_results
-
-tf.get_logger().setLevel("INFO")
 
 
 # %% Control variables for all experiments
@@ -31,33 +27,33 @@ def control_LSTM_training(
     window_size=365,
     train_pct=60,
     valid_pct=20,
-    run_tag="LSTM_MODEL",
+    use_cpu=True,
     use_parallel=False,
     do_train=True,
     do_simulation=True,
-    results_path="./",
-    filename_base="LSTM_results_",
+    filename_base="LSTM_results",
+    simulation_phases=['train', 'valid', 'test', 'full'],
+    name_of_saved_model=None,
 ):
     """
     All the control variables used to train the LSTM models are predefined here.
     These are consistent from one experiment to the other, but can be modified as
     needed by the user.
     """
-    if do_train:
-        # Clean folder of old runs before starting
-        for filename in Path(".").glob("*.h5"):
-            os.remove(filename)
-        for filename in Path(".").glob("*.jpg"):
-            os.remove(filename)
-        for filename in Path(".").glob("*.txt"):
-            os.remove(filename)
-        for filename in Path(".").glob("*.png"):
-            os.remove(filename)
+    # If we want to use CPU only, deactivate GPU for memory allocation. The order of operations MUST be preserved.
+    if use_cpu:
+        os.environ['CUDA_VISIBLE_DEVICES'] = ""
+    import tensorflow as tf
+    tf.get_logger().setLevel("INFO")
 
-    name_of_saved_model = filename_base + ".h5"
+    if name_of_saved_model is None:
+        if not do_train:
+            raise ValueError('Model training is set to False and no existing model is provided. Please provide a trained model or set "do_train" to True.')
+        tmpdir = tempfile.mkdtemp()
+        name_of_saved_model = tmpdir + "/" + filename_base + ".h5"
 
     # Get NetCDF variables tags and infos to use for model training
-    dynamic_var_tags, Qsim_pos, static_var_tags = GetNetcdfTags()
+    dynamic_var_tags, qsim_pos, static_var_tags = GetNetcdfTags()
 
     # Import and scale dataset
     (
@@ -73,7 +69,7 @@ def control_LSTM_training(
     ) = ScaleDataset(
         input_data_filename,
         dynamic_var_tags,
-        Qsim_pos,
+        qsim_pos,
         static_var_tags,
         train_pct,
         valid_pct,
@@ -119,8 +115,11 @@ def control_LSTM_training(
 
     if do_simulation:
         # Do the model simulation on all watersheds after training
+        kge_results = [None] * len(watersheds_ind)
+        flow_results = [None] * len(watersheds_ind)
+
         for w in watersheds_ind:
-            RunModelAfterTraining(
+            kge_results[w], flow_results[w] = RunModelAfterTraining(
                 w,
                 arr_dynamic,
                 arr_static,
@@ -134,7 +133,11 @@ def control_LSTM_training(
                 valid_idx,
                 test_idx,
                 all_idx,
+                simulation_phases,
             )
 
-    # Load results and make boxplots
-    plot_boxplot_results(watersheds_ind, filename_base)
+        return kge_results, flow_results, name_of_saved_model
+
+    else:
+        return None, None, name_of_saved_model
+

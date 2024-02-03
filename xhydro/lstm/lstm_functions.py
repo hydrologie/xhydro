@@ -1,63 +1,40 @@
-import os
-
 import numpy as np
-
-os.environ["TF_XLA_FLAGS"] = "--tf_xla_enable_xla_devices"
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import plot_model
-from utilsS.create_datasets import (
+from xhydro.lstm.create_datasets import (
     clean_nans,
     create_dataset_flexible,
-    create_LSTM_dataset,
     create_LSTM_dataset_catchment_vary,
 )
-from utilsS.LSTM_static import (
-    define_LSTM_model,
-    nse_loss,
+from xhydro.lstm.LSTM_static import (
+    define_LSTM_model_simple,
     run_trained_model,
     training_generator,
 )
 
 
 def GetNetcdfTags():
-    Qsim_pos = [False, False, False, False, False, True]
+    qsim_pos = [False, False, False, False, True]
 
-    dynamic_var_tags = ["tasmax_MELCC", "tasmin_MELCC", "sd", "sf", "rf", "Qsim"]
+    dynamic_var_tags = ["tasmax_MELCC", "tasmin_MELCC", "sf", "rf", "Qsim"]
 
     static_var_tags = [
         "drainage_area",
         "elevation",
         "slope",
-        "water",
         "deciduous_forest",
-        "agricultural_pasture",
         "coniferous_forest",
         "impervious",
-        "bog",
-        "wet_land",
         "loamy_sand",
-        "loam",
         "silt",
         "silty_clay_loam",
         "meanPrecip",
-        "meanSWE",
-        "meanPET",
-        "snowFraction",
-        "aridity",
-        "highPrecipFreq",
-        "lowPrecipFreq",
-        "highPrecipDuration",
-        "lowPrecipDuration",
         "centroid_lat",
         "centroid_lon",
     ]
 
-    return dynamic_var_tags, Qsim_pos, static_var_tags
+    return dynamic_var_tags, qsim_pos, static_var_tags
 
 
 def ScaleDataset(
@@ -270,7 +247,7 @@ def perform_initial_train(
             strategy = tf.distribute.MirroredStrategy()
             print(f"Number of devices: {strategy.num_replicas_in_sync}")
             with strategy.scope():
-                model_LSTM, callback = define_LSTM_model(
+                model_LSTM, callback = define_LSTM_model_simple(
                     window_size=window_size,
                     n_dynamic_features=X_train.shape[2],
                     n_static_features=X_train_static.shape[1],
@@ -278,42 +255,36 @@ def perform_initial_train(
                 )
                 print("USING MULTIPLE GPU SETUP")
         else:
-            model_LSTM, callback = define_LSTM_model(
+            model_LSTM, callback = define_LSTM_model_simple(
                 window_size=window_size,
                 n_dynamic_features=X_train.shape[2],
                 n_static_features=X_train_static.shape[1],
                 checkpoint_path=name_of_saved_model,
             )
             print("USING SINGLE GPU")
-
-        h = model_LSTM.fit(
-            training_generator(
-                X_train,
-                X_train_static,
-                X_train_q_stds,
-                y_train,
-                batch_size=batch_size_val,
-            ),
-            epochs=epoch_val,
-            validation_data=training_generator(
-                X_valid,
-                X_valid_static,
-                X_valid_q_stds,
-                y_valid,
-                batch_size=batch_size_val,
-            ),
-            callbacks=[callback],
-            verbose=1,
-        )
+        with tf.device('/cpu:0'):
+            h = model_LSTM.fit(
+                training_generator(
+                    X_train,
+                    X_train_static,
+                    X_train_q_stds,
+                    y_train,
+                    batch_size=batch_size_val,
+                ),
+                epochs=epoch_val,
+                validation_data=training_generator(
+                    X_valid,
+                    X_valid_static,
+                    X_valid_q_stds,
+                    y_valid,
+                    batch_size=batch_size_val,
+                ),
+                callbacks=[callback],
+                verbose=1,
+            )
 
         if not np.isnan(h.history["loss"][-1]):
             success = 1
-
-    """
-    Using the model to generate flows on each individual period + full period
-    """
-    plot_model(model_LSTM, "AAA_Model_Structure.jpg", show_shapes=True)
-
 
 def RunModelAfterTraining(
     w,
@@ -329,72 +300,79 @@ def RunModelAfterTraining(
     valid_idx,
     test_idx,
     all_idx,
+    simulation_phases,
 ):
 
     # Run trained model on the training period and save outputs
-    run_trained_model(
-        arr_dynamic,
-        arr_static,
-        q_stds,
-        window_size,
-        w,
-        train_idx,
-        batch_size_val,
-        watershed_areas,
-        file_ID="training",
-        filename_base=filename_base,
-        name_of_saved_model=name_of_saved_model,
-        postdate=False,
-        cleanNans=True,
-    )
+    if 'train' in simulation_phases:
+        kge_train, flows_train = run_trained_model(
+            arr_dynamic,
+            arr_static,
+            q_stds,
+            window_size,
+            w,
+            train_idx,
+            batch_size_val,
+            watershed_areas,
+            name_of_saved_model=name_of_saved_model,
+            cleanNans=True,
+        )
+    else:
+        kge_train = None
+        flows_train = None
 
-    # Run trained model on the validation period and save outputs
-    run_trained_model(
-        arr_dynamic,
-        arr_static,
-        q_stds,
-        window_size,
-        w,
-        valid_idx,
-        batch_size_val,
-        watershed_areas,
-        file_ID="validation",
-        filename_base=filename_base,
-        name_of_saved_model=name_of_saved_model,
-        postdate=False,
-        cleanNans=True,
-    )
+    if 'valid' in simulation_phases:
+        # Run trained model on the validation period and save outputs
+        kge_valid, flows_valid = run_trained_model(
+            arr_dynamic,
+            arr_static,
+            q_stds,
+            window_size,
+            w,
+            valid_idx,
+            batch_size_val,
+            watershed_areas,
+            name_of_saved_model=name_of_saved_model,
+            cleanNans=True,
+        )
+    else:
+        kge_valid = None
+        flows_valid = None
 
-    # Run the trained model on the testing period and save outputs
-    run_trained_model(
-        arr_dynamic,
-        arr_static,
-        q_stds,
-        window_size,
-        w,
-        test_idx,
-        batch_size_val,
-        watershed_areas,
-        file_ID="testing",
-        filename_base=filename_base,
-        name_of_saved_model=name_of_saved_model,
-        postdate=False,
-        cleanNans=True,
-    )
+    if 'test' in simulation_phases:
+        # Run the trained model on the testing period and save outputs
+        kge_test, flows_test = run_trained_model(
+            arr_dynamic,
+            arr_static,
+            q_stds,
+            window_size,
+            w,
+            test_idx,
+            batch_size_val,
+            watershed_areas,
+            name_of_saved_model=name_of_saved_model,
+            cleanNans=True,
+        )
+    else:
+        kge_test = None
+        flows_test = None
 
-    # Run the trained model on the full period and save outputs
-    run_trained_model(
-        arr_dynamic,
-        arr_static,
-        q_stds,
-        window_size,
-        w,
-        all_idx,
-        batch_size_val,
-        watershed_areas,
-        file_ID="full-period",
-        filename_base=filename_base,
-        name_of_saved_model=name_of_saved_model,
-        postdate=False,
-        cleanNans=False,
-    )
+    if 'full' in simulation_phases:
+        # Run the trained model on the full period and save outputs
+        kge_full, flows_full = run_trained_model(
+            arr_dynamic,
+            arr_static,
+            q_stds,
+            window_size,
+            w,
+            all_idx,
+            batch_size_val,
+            watershed_areas,
+            name_of_saved_model=name_of_saved_model,
+            cleanNans=False,
+        )
+    else:
+        kge_full = None
+        flows_full = None
+
+    return [kge_train, kge_valid, kge_test, kge_full], [flows_train, flows_valid, flows_test, flows_full]
