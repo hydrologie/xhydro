@@ -20,39 +20,15 @@ def GetNetcdfTags():
         False,
         False,
         False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
-        False,
         True
     ]
 
     dynamic_var_tags = [
         "tasmax_MELCC",
         "tasmin_MELCC",
-        "pr_MELCC",
         "sd",
-        "smlt",
         "sf",
-        "tmin",
-        "tmax",
-        "d2m",
-        "tp",
-        "u10",
-        "v10",
-        "e",
-        "ssr",
         "rf",
-        "sp",
-        "windspeed",
         "Qsim"
     ]
 
@@ -102,10 +78,8 @@ def ScaleDataset(input_data_filename, dynamic_var_tags, Qsim_pos, static_var_tag
     '''
     Filter catchments with too many NaNs
     '''
-    # Start empty array
-    number_nans = np.empty([0])
-
-    # Find which catchments have less than 10 years of data (20% of 10 = 2 years for valid/testing) and delete them
+    # Find which catchments have less than 10 years of data 
+    # (20% of 10 = 2 years for valid/testing) and delete them
     for i in reversed(range(0, arr_Qobs.shape[0])):
         if np.count_nonzero(~np.isnan(arr_Qobs[i, :])) < 10 * 365:
             arr_dynamic = np.delete(arr_dynamic, i, 0)
@@ -168,6 +142,7 @@ def ScaleDataset(input_data_filename, dynamic_var_tags, Qsim_pos, static_var_tag
     arr_static = scaler_static.transform(arr_static)
 
     return watershed_areas, watersheds_ind, arr_dynamic, arr_static, q_stds, train_idx, valid_idx, test_idx, all_idx
+
 def SplitDataset(arr_dynamic, arr_static, q_stds, watersheds_ind, train_idx, window_size, valid_idx):
     # %%
     # Training dataset
@@ -228,6 +203,7 @@ def obj_fun_kge(Qobs, Qsim):
         kge = -np.inf
 
     return kge
+
 
 def perform_initial_train(useParallel, window_size, batch_size_val, epoch_val, X_train, X_train_static, X_train_q_stds,
                           y_train, X_valid, X_valid_static, X_valid_q_stds, y_valid, name_of_saved_model ):
@@ -308,104 +284,3 @@ def RunModelAfterTraining(w, arr_dynamic, arr_static, q_stds, window_size, train
     run_trained_model(arr_dynamic, arr_static, q_stds, window_size, w, all_idx, batch_size_val,
                       watershed_areas, file_ID='full-period', filename_base=filename_base,
                       name_of_saved_model=name_of_saved_model, postdate=False, cleanNans=False)
-
-
-
-
-
-def RetrainAfterMainTrain(watersheds_ind, window_size, epoch_val, batch_size_val, arr_dynamic, arr_static, q_stds,
-                          train_idx, valid_idx, test_idx, all_idx, watershed_areas, name_of_saved_model,
-                          filename_base_retrain):
-
-    for w in watersheds_ind:
-
-        # Training dataset
-        X_train, X_train_static, X_train_q_stds, y_train = create_LSTM_dataset(
-            arr_dynamic=arr_dynamic[:, train_idx[w, 0]:train_idx[w, 1], :],
-            arr_static=arr_static,
-            q_stds=q_stds,
-            window_size=window_size,
-            watershed_list=w[np.newaxis],
-        )
-
-        # Clean nans
-        y_train, X_train, X_train_q_stds, X_train_static = clean_nans(y_train, X_train, X_train_q_stds, X_train_static)
-
-        # Validation dataset
-        X_valid, X_valid_static, X_valid_q_stds, y_valid = create_LSTM_dataset(
-            arr_dynamic=arr_dynamic[:, valid_idx[w, 0]:valid_idx[w, 1], :],
-            arr_static=arr_static,
-            q_stds=q_stds,
-            window_size=window_size,
-            watershed_list=w[np.newaxis],
-        )
-
-        # Clean nans
-        y_valid, X_valid, X_valid_q_stds, X_valid_static = clean_nans(y_valid, X_valid, X_valid_q_stds, X_valid_static)
-
-        # %% Training the model
-        # Create model and callbacks
-        checkpoint_path = 'specific_retraining_' + str(w) + '.h5'
-
-        # The LSTM model is trained until no nan loss is obtained
-        success = 0
-        while success == 0:
-            K.clear_session()  # Reset the model
-            strategy = tf.distribute.MirroredStrategy()
-            with strategy.scope():
-                _, callback = define_LSTM_model(
-                    window_size=window_size,
-                    n_dynamic_features=X_train.shape[2],
-                    n_static_features=X_train_static.shape[1],
-                    checkpoint_path=checkpoint_path
-                )
-
-                # Overwrite with our regional model
-                model_LSTM = load_model(
-                    name_of_saved_model,
-                    compile=False,
-                    custom_objects={'loss': nse_loss}
-                )
-
-                # Compile it
-                model_LSTM.compile(
-                    loss=nse_loss,
-                    optimizer=tf.keras.optimizers.AdamW()
-                )
-
-            # Fit it
-            h = model_LSTM.fit(
-                training_generator(
-                    X_train,
-                    X_train_static,
-                    X_train_q_stds,
-                    y_train,
-                    batch_size=batch_size_val
-                ),
-                epochs=epoch_val,
-                validation_data=training_generator(
-                    X_valid,
-                    X_valid_static,
-                    X_valid_q_stds,
-                    y_valid,
-                    batch_size=batch_size_val
-                ),
-                callbacks=[callback],
-                verbose=1,
-            )
-
-            if not np.isnan(h.history['loss'][-1]):
-                success = 1
-
-        RunModelAfterTraining(w, arr_dynamic, arr_static, q_stds, window_size, train_idx,
-                                                           batch_size_val, watershed_areas, filename_base_retrain,
-                                                           name_of_saved_model, valid_idx, test_idx, all_idx)
-
-
-
-
-
-
-
-
-
