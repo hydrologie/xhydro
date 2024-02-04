@@ -1,9 +1,12 @@
 """LSTM model definition and tools for LSTM model training."""
+
 import math
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
 from tensorflow.keras.models import load_model
+
 from .create_datasets import create_lstm_dataset
 
 
@@ -49,7 +52,6 @@ class TrainingGenerator(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Get one of the batches by taking the 'batch_size' first elements from the randomized list of remaining indices."""
-
         inds = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x = self.x[inds]
         batch_x_static = self.x_static[inds]
@@ -348,7 +350,6 @@ def run_trained_model(
     flows : np.array
         Observed and simulated streamflows computed for the watershed of interest and for a specified period.
     """
-
     # Delete and reload the model to free the memory
     k.clear_session()
     model_lstm = load_model(
