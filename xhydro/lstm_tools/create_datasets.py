@@ -1,15 +1,11 @@
 """
 
 """
-
-import time
-
-import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
 
-def create_dataset_flexible(filename, dynamic_var_tags, Qsim_pos, static_var_tags):
+def create_dataset_flexible(filename, dynamic_var_tags, qsim_pos, static_var_tags):
     """
     This function will prepare the arrays of dynamic, static and observed flow
     variables. A few things are absolutely required:
@@ -39,22 +35,21 @@ def create_dataset_flexible(filename, dynamic_var_tags, Qsim_pos, static_var_tag
     n_watersheds = ds.watershed.shape[0]
 
     # Number of days for each dynamic variables
-    # TODO: We should put a check to ensure the size is different than number
     # of watersheds.
     n_days = ds.Qobs.values.shape[1]
 
     # Perform the analysis for Qobs first.
-    arr_Qobs = np.empty([n_watersheds, n_days], dtype=np.float32)
-    arr_Qobs[:] = np.nan
-    arr_Qobs = ds.Qobs.values
-    arr_Qobs = arr_Qobs / ds.drainage_area.values[:, np.newaxis] * 86.4
+    arr_qobs = np.empty([n_watersheds, n_days], dtype=np.float32)
+    arr_qobs[:] = np.nan
+    arr_qobs = ds.Qobs.values
+    arr_qobs = arr_qobs / ds.drainage_area.values[:, np.newaxis] * 86.4
 
     # Prepare the dynamic data array and set Qobs as the first value
     arr_dynamic = np.empty(
         shape=[n_watersheds, n_days, len(dynamic_var_tags) + 1], dtype=np.float32
     )
     arr_dynamic[:] = np.nan
-    arr_dynamic[:, :, 0] = arr_Qobs
+    arr_dynamic[:, :, 0] = arr_qobs
 
     for i in range(len(dynamic_var_tags)):
 
@@ -66,7 +61,7 @@ def create_dataset_flexible(filename, dynamic_var_tags, Qsim_pos, static_var_tag
         tmp = ds[dynamic_var_tags[i]].values
 
         # If the variable must be scaled, do it
-        if Qsim_pos[i]:
+        if qsim_pos[i]:
             tmp = tmp / ds.drainage_area.values[:, np.newaxis] * 86.4
 
         # Set the data in the main dataset
@@ -80,91 +75,47 @@ def create_dataset_flexible(filename, dynamic_var_tags, Qsim_pos, static_var_tag
     for i in range(len(static_var_tags)):
         arr_static[:, i] = ds[static_var_tags[i]].values
 
-    return arr_dynamic, arr_static, arr_Qobs
+    return arr_dynamic, arr_static, arr_qobs
 
 
-def create_LSTM_dataset(arr_dynamic, arr_static, q_stds, window_size, watershed_list):
-    """ """
-    block_size = arr_dynamic.shape[1] - window_size
-
-    # Preallocate the output arrays
-    X = np.empty(
-        [
-            (arr_dynamic.shape[1] - window_size) * watershed_list.shape[0],
-            window_size,
-            arr_dynamic.shape[2] - 1,
-        ]
-    )
-    X[:] = np.nan
-
-    X_static = np.empty([block_size * watershed_list.shape[0], arr_static.shape[1]])
-    X_static[:] = np.nan
-
-    X_q_stds = np.empty([block_size * watershed_list.shape[0]])
-    X_q_stds[:] = np.nan
-
-    y = np.empty([block_size * watershed_list.shape[0]])
-    y[:] = np.nan
-
-    counter = 0
-    for w in watershed_list:
-        print("Currently working on watershed no: " + str(w))
-        X_w, X_w_static, X_w_q_std, y_w = extract_watershed_block(
-            arr_w_dynamic=arr_dynamic[w, :, :],
-            arr_w_static=arr_static[w, :],
-            q_std_w=q_stds[w],
-            window_size=window_size,
-        )
-
-        X[counter * block_size : (counter + 1) * block_size, :, :] = X_w
-        X_static[counter * block_size : (counter + 1) * block_size, :] = X_w_static
-        X_q_stds[counter * block_size : (counter + 1) * block_size] = X_w_q_std
-        y[counter * block_size : (counter + 1) * block_size] = y_w
-
-        counter += 1
-
-    return X, X_static, X_q_stds, y
-
-
-def create_LSTM_dataset_catchment_vary(
+def create_lstm_dataset(
     arr_dynamic,
     arr_static,
     q_stds,
     window_size,
     watershed_list,
     idx,
-    top_percent=None,
-    cleanNans=True,
+    clean_nans=True,
 ):
 
     ndata = arr_dynamic.shape[2] - 1
-    X = np.empty((0, window_size, ndata))  # 7 is with Qsim as predictor and snow
-    X_static = np.empty((0, arr_static.shape[1]))
-    X_q_stds = np.empty(0)
+    x = np.empty((0, window_size, ndata))  # 7 is with Qsim as predictor and snow
+    x_static = np.empty((0, arr_static.shape[1]))
+    x_q_stds = np.empty(0)
     y = np.empty(0)
 
     for w in watershed_list:
         idx_w = idx[w]
         print("Currently working on watershed no: " + str(w))
-        X_w, X_w_static, X_w_q_std, y_w = extract_watershed_block(
-            arr_w_dynamic=arr_dynamic[w, idx_w[0] : idx_w[1], :],
+        x_w, x_w_static, x_w_q_std, y_w = extract_watershed_block(
+            arr_w_dynamic=arr_dynamic[w, idx_w[0]:idx_w[1], :],
             arr_w_static=arr_static[w, :],
             q_std_w=q_stds[w],
             window_size=window_size,
         )
 
         # Clean nans
-        if cleanNans == True:
-            y_w, X_w, X_w_q_std, X_w_static = clean_nans(
-                y_w, X_w, X_w_q_std, X_w_static
+        if clean_nans:
+            y_w, x_w, x_w_q_std, x_w_static = clean_nans_func(
+                y_w, x_w, x_w_q_std, x_w_static
             )
 
-        X = np.vstack([X, X_w])
-        X_static = np.vstack([X_static, X_w_static])
-        X_q_stds = np.hstack([X_q_stds, X_w_q_std])
+        x = np.vstack([x, x_w])
+        x_static = np.vstack([x_static, x_w_static])
+        x_q_stds = np.hstack([x_q_stds, x_w_q_std])
         y = np.hstack([y, y_w])
 
-    return X, X_static, X_q_stds, y
+    return x, x_static, x_q_stds, y
 
 
 def extract_windows_vectorized(array, sub_window_size):
@@ -187,30 +138,29 @@ def extract_watershed_block(arr_w_dynamic, arr_w_static, q_std_w, window_size):
     extracted.
     """
     # Extract all series of the desired window length for all features
-    X_w = extract_windows_vectorized(array=arr_w_dynamic, sub_window_size=window_size)
+    x_w = extract_windows_vectorized(array=arr_w_dynamic, sub_window_size=window_size)
 
-    X_w_static = np.repeat(arr_w_static.reshape(-1, 1), X_w.shape[0], axis=1).T
+    x_w_static = np.repeat(arr_w_static.reshape(-1, 1), x_w.shape[0], axis=1).T
 
-    X_w_q_std = np.squeeze(np.repeat(q_std_w.reshape(-1, 1), X_w.shape[0], axis=1).T)
+    x_w_q_std = np.squeeze(np.repeat(q_std_w.reshape(-1, 1), x_w.shape[0], axis=1).T)
 
     # Get the last value of Qobs from each series for the prediction
-    y_w = X_w[:, -1, 0]
+    y_w = x_w[:, -1, 0]
 
     # Remove Qobs from the features
-    X_w = np.delete(X_w, 0, axis=2)
+    x_w = np.delete(x_w, 0, axis=2)
 
-    return X_w, X_w_static, X_w_q_std, y_w
+    return x_w, x_w_static, x_w_q_std, y_w
 
 
-def clean_nans(y, X, X_q_std, X_static):
+def clean_nans_func(y, x, x_q_std, x_static):
     """
     Check for nans in the variable "y" and remove all lines containing those nans in all datasets
     """
-
     ind_nan = np.isnan(y)
     y = y[~ind_nan]
-    X = X[~ind_nan, :, :]
-    X_q_stds = X_q_std[~ind_nan]
-    X_static = X_static[~ind_nan, :]
+    x = x[~ind_nan, :, :]
+    x_q_stds = x_q_std[~ind_nan]
+    x_static = x_static[~ind_nan, :]
 
-    return y, X, X_q_stds, X_static
+    return y, x, x_q_stds, x_static

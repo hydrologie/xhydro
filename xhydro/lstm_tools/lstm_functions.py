@@ -1,46 +1,15 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import tensorflow.keras.backend as k
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from xhydro.lstm.create_datasets import (
-    clean_nans,
-    create_dataset_flexible,
-    create_LSTM_dataset_catchment_vary,
-)
-from xhydro.lstm.LSTM_static import (
-    define_LSTM_model_simple,
-    run_trained_model,
-    training_generator,
-)
+from xhydro.lstm_tools.create_datasets import clean_nans_func, create_dataset_flexible, create_lstm_dataset
+from xhydro.lstm_tools.LSTM_static import define_lstm_model_simple, run_trained_model, TrainingGenerator
 
 
-def GetNetcdfTags():
-    qsim_pos = [False, False, False, False, True]
-
-    dynamic_var_tags = ["tasmax_MELCC", "tasmin_MELCC", "sf", "rf", "Qsim"]
-
-    static_var_tags = [
-        "drainage_area",
-        "elevation",
-        "slope",
-        "deciduous_forest",
-        "coniferous_forest",
-        "impervious",
-        "loamy_sand",
-        "silt",
-        "silty_clay_loam",
-        "meanPrecip",
-        "centroid_lat",
-        "centroid_lon",
-    ]
-
-    return dynamic_var_tags, qsim_pos, static_var_tags
-
-
-def ScaleDataset(
+def scale_dataset(
     input_data_filename,
     dynamic_var_tags,
-    Qsim_pos,
+    qsim_pos,
     static_var_tags,
     train_pct,
     valid_pct,
@@ -50,8 +19,8 @@ def ScaleDataset(
     Prepare the LSTM features (inputs) and target variable (output):
     """
     # Create the dataset
-    arr_dynamic, arr_static, arr_Qobs = create_dataset_flexible(
-        input_data_filename, dynamic_var_tags, Qsim_pos, static_var_tags
+    arr_dynamic, arr_static, arr_qobs = create_dataset_flexible(
+        input_data_filename, dynamic_var_tags, qsim_pos, static_var_tags
     )
 
     """
@@ -59,11 +28,11 @@ def ScaleDataset(
     """
     # Find which catchments have less than 10 years of data
     # (20% of 10 = 2 years for valid/testing) and delete them
-    for i in reversed(range(0, arr_Qobs.shape[0])):
-        if np.count_nonzero(~np.isnan(arr_Qobs[i, :])) < 10 * 365:
+    for i in reversed(range(0, arr_qobs.shape[0])):
+        if np.count_nonzero(~np.isnan(arr_qobs[i, :])) < 10 * 365:
             arr_dynamic = np.delete(arr_dynamic, i, 0)
             arr_static = np.delete(arr_static, i, 0)
-            arr_Qobs = np.delete(arr_Qobs, i, 0)
+            arr_qobs = np.delete(arr_qobs, i, 0)
 
     """
     Get the indexes of the train, test and valid periods of each catchment.
@@ -74,7 +43,7 @@ def ScaleDataset(
     all_idx = np.empty([arr_dynamic.shape[0], 2], dtype=int)
 
     for i in range(0, arr_dynamic.shape[0]):
-        jj = np.argwhere(~np.isnan(arr_Qobs[i, :]))
+        jj = np.argwhere(~np.isnan(arr_qobs[i, :]))
         total_number_days = np.shape(jj)[0]
         number_training_days = int(np.floor(total_number_days * train_pct / 100))
         number_valid_days = int(np.floor(total_number_days * valid_pct / 100))
@@ -99,22 +68,18 @@ def ScaleDataset(
     watershed_areas = arr_static[:, 0]
 
     # Get the standard deviation of the streamflow for all watersheds
-    q_stds = np.nanstd(arr_Qobs, axis=1)
+    q_stds = np.nanstd(arr_qobs, axis=1)
 
     # Scale the dynamic feature variables (not the target variable)
     scaler_dynamic = StandardScaler()  # Use standardization by mean and std
 
     # Prepare data for scaling. Must rebuild a vector from the training data length instead of constants here due to
     # differing lengths of data per catchment. See Matlab code in this folder to see how it was performed.
-    ndata = arr_dynamic.shape[2] - 1
-    dynamic_data = np.empty(
-        (0, ndata)
-    )  # 7 is with including Qsim as predictor and snow
+    n_data = arr_dynamic.shape[2] - 1
+    dynamic_data = np.empty((0, n_data))
 
     for tmp in range(0, arr_dynamic.shape[0]):
-        dynamic_data = np.vstack(
-            [dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0] : train_idx[tmp, 1], 1:]]
-        )
+        dynamic_data = np.vstack([dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0]:train_idx[tmp, 1], 1:]])
 
     # Fit the scaler using only the training watersheds
     _ = scaler_dynamic.fit_transform(dynamic_data)
@@ -141,13 +106,13 @@ def ScaleDataset(
     )
 
 
-def SplitDataset(
+def split_dataset(
     arr_dynamic, arr_static, q_stds, watersheds_ind, train_idx, window_size, valid_idx
 ):
     # %%
     # Training dataset
-    X_train, X_train_static, X_train_q_stds, y_train = (
-        create_LSTM_dataset_catchment_vary(
+    x_train, x_train_static, x_train_q_stds, y_train = (
+        create_lstm_dataset(
             arr_dynamic=arr_dynamic,
             arr_static=arr_static,
             q_stds=q_stds,
@@ -158,13 +123,13 @@ def SplitDataset(
     )
 
     # Clean nans
-    y_train, X_train, X_train_q_stds, X_train_static = clean_nans(
-        y_train, X_train, X_train_q_stds, X_train_static
+    y_train, x_train, x_train_q_stds, x_train_static = clean_nans_func(
+        y_train, x_train, x_train_q_stds, x_train_static
     )
 
     # Validation dataset
-    X_valid, X_valid_static, X_valid_q_stds, y_valid = (
-        create_LSTM_dataset_catchment_vary(
+    x_valid, x_valid_static, x_valid_q_stds, y_valid = (
+        create_lstm_dataset(
             arr_dynamic=arr_dynamic,
             arr_static=arr_static,
             q_stds=q_stds,
@@ -175,59 +140,27 @@ def SplitDataset(
     )
 
     # Clean nans
-    y_valid, X_valid, X_valid_q_stds, X_valid_static = clean_nans(
-        y_valid, X_valid, X_valid_q_stds, X_valid_static
+    y_valid, x_valid, x_valid_q_stds, x_valid_static = clean_nans_func(
+        y_valid, x_valid, x_valid_q_stds, x_valid_static
     )
 
     return (
-        X_train,
-        X_train_static,
-        X_train_q_stds,
+        x_train,
+        x_train_static,
+        x_train_q_stds,
         y_train,
-        X_valid,
-        X_valid_static,
-        X_valid_q_stds,
+        x_valid,
+        x_valid_static,
+        x_valid_q_stds,
         y_valid,
     )
 
 
-def obj_fun_kge(Qobs, Qsim):
-    """
-    # This function computes the Kling-Gupta Efficiency (KGE) criterion
-    :param Qobs: Observed streamflow
-    :param Qsim: Simulated streamflow
-    :return: kge: KGE criterion value
-    """
-    # Remove all nans from both observed and simulated streamflow
-    ind_nan = np.isnan(Qobs)
-    Qobs = Qobs[~ind_nan]
-    Qsim = Qsim[~ind_nan]
-
-    # Compute the dimensionless correlation coefficient
-    r = np.corrcoef(Qsim, Qobs)[0, 1]
-
-    # Compute the dimensionless bias ratio b (beta)
-    b = np.mean(Qsim) / np.mean(Qobs)
-
-    # Compute the dimensionless variability ratio g (gamma)
-    g = (np.std(Qsim) / np.mean(Qsim)) / (np.std(Qobs) / np.mean(Qobs))
-
-    # Compute the Kling-Gupta Efficiency (KGE) modified criterion
-    kge = 1 - np.sqrt((r - 1) ** 2 + (b - 1) ** 2 + (g - 1) ** 2)
-
-    # In some cases, the KGE can return nan values which will force some
-    # optimization algorithm to crash. Force the worst value possible instead.
-    if np.isnan(kge):
-        kge = -np.inf
-
-    return kge
-
-
 def perform_initial_train(
-    useParallel,
+    use_parallel,
     window_size,
-    batch_size_val,
-    epoch_val,
+    batch_size,
+    epochs,
     X_train,
     X_train_static,
     X_train_q_stds,
@@ -237,17 +170,20 @@ def perform_initial_train(
     X_valid_q_stds,
     y_valid,
     name_of_saved_model,
+    use_cpu=False,
 ):
+    """Train the LSTM model using preprocessed data.
+
+    """
     success = 0
     while success == 0:
-        K.clear_session()  # Reset the model
+        k.clear_session()  # Reset the model
         # Define multi-GPU training
-
-        if useParallel == True:
+        if use_parallel and not use_cpu:
             strategy = tf.distribute.MirroredStrategy()
             print(f"Number of devices: {strategy.num_replicas_in_sync}")
             with strategy.scope():
-                model_LSTM, callback = define_LSTM_model_simple(
+                model_lstm, callback = define_lstm_model_simple(
                     window_size=window_size,
                     n_dynamic_features=X_train.shape[2],
                     n_static_features=X_train_static.shape[1],
@@ -255,47 +191,50 @@ def perform_initial_train(
                 )
                 print("USING MULTIPLE GPU SETUP")
         else:
-            model_LSTM, callback = define_LSTM_model_simple(
+            model_lstm, callback = define_lstm_model_simple(
                 window_size=window_size,
                 n_dynamic_features=X_train.shape[2],
                 n_static_features=X_train_static.shape[1],
                 checkpoint_path=name_of_saved_model,
             )
             print("USING SINGLE GPU")
-        with tf.device('/cpu:0'):
-            h = model_LSTM.fit(
-                training_generator(
-                    X_train,
-                    X_train_static,
-                    X_train_q_stds,
-                    y_train,
-                    batch_size=batch_size_val,
-                ),
-                epochs=epoch_val,
-                validation_data=training_generator(
-                    X_valid,
-                    X_valid_static,
-                    X_valid_q_stds,
-                    y_valid,
-                    batch_size=batch_size_val,
-                ),
-                callbacks=[callback],
-                verbose=1,
-            )
+
+        if use_cpu:
+            tf.config.set_visible_devices([], 'GPU')
+
+        h = model_lstm.fit(
+            TrainingGenerator(
+                X_train,
+                X_train_static,
+                X_train_q_stds,
+                y_train,
+                batch_size=batch_size,
+            ),
+            epochs=epochs,
+            validation_data=TrainingGenerator(
+                X_valid,
+                X_valid_static,
+                X_valid_q_stds,
+                y_valid,
+                batch_size=batch_size,
+            ),
+            callbacks=[callback],
+            verbose=1,
+        )
 
         if not np.isnan(h.history["loss"][-1]):
             success = 1
 
-def RunModelAfterTraining(
+
+def run_model_after_training(
     w,
     arr_dynamic,
     arr_static,
     q_stds,
     window_size,
     train_idx,
-    batch_size_val,
+    batch_size,
     watershed_areas,
-    filename_base,
     name_of_saved_model,
     valid_idx,
     test_idx,
@@ -312,10 +251,10 @@ def RunModelAfterTraining(
             window_size,
             w,
             train_idx,
-            batch_size_val,
+            batch_size,
             watershed_areas,
             name_of_saved_model=name_of_saved_model,
-            cleanNans=True,
+            clean_nans=False,
         )
     else:
         kge_train = None
@@ -330,10 +269,10 @@ def RunModelAfterTraining(
             window_size,
             w,
             valid_idx,
-            batch_size_val,
+            batch_size,
             watershed_areas,
             name_of_saved_model=name_of_saved_model,
-            cleanNans=True,
+            clean_nans=False,
         )
     else:
         kge_valid = None
@@ -348,10 +287,10 @@ def RunModelAfterTraining(
             window_size,
             w,
             test_idx,
-            batch_size_val,
+            batch_size,
             watershed_areas,
             name_of_saved_model=name_of_saved_model,
-            cleanNans=True,
+            clean_nans=False,
         )
     else:
         kge_test = None
@@ -366,10 +305,10 @@ def RunModelAfterTraining(
             window_size,
             w,
             all_idx,
-            batch_size_val,
+            batch_size,
             watershed_areas,
             name_of_saved_model=name_of_saved_model,
-            cleanNans=False,
+            clean_nans=False,
         )
     else:
         kge_full = None
