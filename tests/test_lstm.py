@@ -22,7 +22,7 @@ def test_lstm_controller():
     filename_base = "LSTM_results"
     simulation_phases = ["test"]
 
-    dynamic_var_tags = ["tasmax_MELCC", "tasmin_MELCC", "sf", "rf", "Qsim"]
+    dynamic_var_tags = ["tasmax_MELCC", "rf", "Qsim"]
 
     # Scale variable according to area. Used for simulated flow inputs.
     qsim_pos = [
