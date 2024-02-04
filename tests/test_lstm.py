@@ -1,3 +1,5 @@
+"""Test suite for LSTM model implementations"""
+
 import os
 
 import pytest
@@ -6,6 +8,7 @@ from xhydro.lstm_tools.lstm_controller import control_regional_lstm_training
 
 
 def test_lstm_controller():
+    """Test the regional LSTM model implementation."""
     batch_size = 64  # batch size used in the training - multiple of 32
     epochs = 2  # Number of epoch to train the LSTM model
     window_size = 5  # Number of time step (days) to use in the LSTM model
@@ -22,13 +25,15 @@ def test_lstm_controller():
     simulation_phases = ["test"]
 
     dynamic_var_tags = ["tasmax_MELCC", "tasmin_MELCC", "sf", "rf", "Qsim"]
+
+    # Scale variable according to area. Used for simulated flow inputs.
     qsim_pos = [
         False,
         False,
         False,
         False,
         True,
-    ]  # Scale variable according to area. Used for simulated flow inputs.
+    ]
 
     # static variables used to condition flows on catchment properties
     static_var_tags = [
