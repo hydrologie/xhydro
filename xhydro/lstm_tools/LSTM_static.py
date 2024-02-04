@@ -1,13 +1,15 @@
-# -*- coding: utf-8 -*-
 """
 
 """
+
 import math
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
-from .create_datasets import create_lstm_dataset
 from tensorflow.keras.models import load_model
+
+from .create_datasets import create_lstm_dataset
 
 
 class TrainingGenerator(tf.keras.utils.Sequence):
@@ -27,14 +29,15 @@ class TrainingGenerator(tf.keras.utils.Sequence):
         return (np.ceil(len(self.y) / float(self.batch_size))).astype(int)
 
     def __getitem__(self, idx):
-        inds = self.indices[idx * self.batch_size:(idx + 1) * self.batch_size]
+        inds = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x = self.x[inds]
         batch_x_static = self.x_static[inds]
         batch_x_q_stds = self.x_q_stds[inds]
         batch_y = self.y[inds]
 
-        return [np.array(batch_x), np.array(batch_x_static)], \
-            np.vstack((np.array(batch_y), np.array(batch_x_q_stds))).T
+        return [np.array(batch_x), np.array(batch_x_static)], np.vstack(
+            (np.array(batch_y), np.array(batch_x_q_stds))
+        ).T
 
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
@@ -54,10 +57,10 @@ class TestingGenerator(tf.keras.utils.Sequence):
         return (np.ceil(self.x.shape[0] / float(self.batch_size))).astype(int)
 
     def __getitem__(self, idx):
-        batch_x = self.x[idx * self.batch_size: (idx + 1) * self.batch_size]
+        batch_x = self.x[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x_static = self.x_static[
-                         idx * self.batch_size: (idx + 1) * self.batch_size
-                         ]
+            idx * self.batch_size : (idx + 1) * self.batch_size
+        ]
         return [np.array(batch_x), np.array(batch_x_static)], np.array(batch_x_static)
 
 
@@ -79,15 +82,13 @@ def keras_kge(data, y_pred):
     # y_pred = K.print_tensor(y_pred, message='y_pred = ')
 
     # Compute the dimensionless correlation coefficient
-    r = (
-        k.sum((y_true - k.mean(y_true)) * (y_pred - k.mean(y_pred))) /
-        (k.sqrt(k.sum((y_true - k.mean(y_true)) ** 2)) *
-         k.sqrt(k.sum((y_pred - k.mean(y_pred)) ** 2))
-         )
+    r = k.sum((y_true - k.mean(y_true)) * (y_pred - k.mean(y_pred))) / (
+        k.sqrt(k.sum((y_true - k.mean(y_true)) ** 2))
+        * k.sqrt(k.sum((y_pred - k.mean(y_pred)) ** 2))
     )
 
     # Compute the dimensionless bias ratio b (beta)
-    b = (k.mean(y_pred) / k.mean(y_true))
+    b = k.mean(y_pred) / k.mean(y_true)
 
     # Compute the dimensionless variability ratio g (gamma)
     g = (k.std(y_pred) / k.mean(y_pred)) / (k.std(y_true) / k.mean(y_true))
@@ -121,7 +122,7 @@ def nse_loss(data, y_pred):
     eps = float(0.1)
     squared_error = (y_pred - y_true) ** 2
     weights = 1 / (q_stds + eps) ** 2
-    scaled_loss = (weights * squared_error)
+    scaled_loss = weights * squared_error
 
     return scaled_loss
 
@@ -158,9 +159,10 @@ def obj_fun_kge(qobs, qsim):
     return kge
 
 
-def define_lstm_model_simple(window_size, n_dynamic_features, n_static_features, checkpoint_path='tmp.h5'):
-    """
-    """
+def define_lstm_model_simple(
+    window_size, n_dynamic_features, n_static_features, checkpoint_path="tmp.h5"
+):
+    """ """
     x_in_365 = tf.keras.layers.Input(shape=(window_size, n_dynamic_features))
     x_in_static = tf.keras.layers.Input(shape=n_static_features)
 
@@ -169,13 +171,13 @@ def define_lstm_model_simple(window_size, n_dynamic_features, n_static_features,
     x_365 = tf.keras.layers.Dropout(0.2)(x_365)
 
     # Dense statics
-    x_static = tf.keras.layers.Dense(24, activation='relu')(x_in_static)
+    x_static = tf.keras.layers.Dense(24, activation="relu")(x_in_static)
     x_static = tf.keras.layers.Dropout(0.2)(x_static)
 
     # Concatenate the model
     x = tf.keras.layers.Concatenate()([x_365, x_static])
-    x = tf.keras.layers.Dense(8, activation='relu')(x)
-    x_out = tf.keras.layers.Dense(1, activation='relu')(x)
+    x = tf.keras.layers.Dense(8, activation="relu")(x)
+    x_out = tf.keras.layers.Dense(1, activation="relu")(x)
 
     model_lstm = tf.keras.models.Model([x_in_365, x_in_static], [x_out])
     model_lstm.compile(loss=nse_loss, optimizer=tf.keras.optimizers.AdamW())
@@ -183,19 +185,16 @@ def define_lstm_model_simple(window_size, n_dynamic_features, n_static_features,
     callback = [
         tf.keras.callbacks.ModelCheckpoint(
             checkpoint_path,
-            save_freq='epoch',
+            save_freq="epoch",
             save_best_only=True,
-            monitor='val_loss',
-            mode='min',
-            verbose=1
+            monitor="val_loss",
+            mode="min",
+            verbose=1,
         ),
         tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            mode='min',
-            verbose=1,
-            patience=15
+            monitor="val_loss", mode="min", verbose=1, patience=15
         ),
-        tf.keras.callbacks.LearningRateScheduler(step_decay)
+        tf.keras.callbacks.LearningRateScheduler(step_decay),
     ]
 
     return model_lstm, callback
@@ -210,14 +209,22 @@ def step_decay(epoch):
     return lrate
 
 
-def run_trained_model(arr_dynamic, arr_static, q_stds, window_size, w, idx_scenario, batch_size, watershed_areas,
-                      name_of_saved_model, clean_nans):
+def run_trained_model(
+    arr_dynamic,
+    arr_static,
+    q_stds,
+    window_size,
+    w,
+    idx_scenario,
+    batch_size,
+    watershed_areas,
+    name_of_saved_model,
+    clean_nans,
+):
     # Delete and reload the model to free the memory
     k.clear_session()
     model_lstm = load_model(
-        name_of_saved_model,
-        compile=False,
-        custom_objects={'loss': nse_loss}
+        name_of_saved_model, compile=False, custom_objects={"loss": nse_loss}
     )
 
     # Training Database
@@ -231,12 +238,7 @@ def run_trained_model(arr_dynamic, arr_static, q_stds, window_size, w, idx_scena
         clean_nans=clean_nans,
     )
 
-    y_pred = model_lstm.predict(
-        TestingGenerator(
-            x,
-            x_static,
-            batch_size=batch_size)
-    )
+    y_pred = model_lstm.predict(TestingGenerator(x, x_static, batch_size=batch_size))
 
     y_pred = np.squeeze(y_pred)
 

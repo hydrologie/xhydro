@@ -1,6 +1,7 @@
 """
 
 """
+
 import numpy as np
 import xarray as xr
 
@@ -98,7 +99,7 @@ def create_lstm_dataset(
         idx_w = idx[w]
         print("Currently working on watershed no: " + str(w))
         x_w, x_w_static, x_w_q_std, y_w = extract_watershed_block(
-            arr_w_dynamic=arr_dynamic[w, idx_w[0]:idx_w[1], :],
+            arr_w_dynamic=arr_dynamic[w, idx_w[0] : idx_w[1], :],
             arr_w_static=arr_static[w, :],
             q_std_w=q_stds[w],
             window_size=window_size,

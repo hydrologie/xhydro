@@ -2,8 +2,17 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from xhydro.lstm_tools.create_datasets import clean_nans_func, create_dataset_flexible, create_lstm_dataset
-from xhydro.lstm_tools.LSTM_static import define_lstm_model_simple, run_trained_model, TrainingGenerator
+
+from xhydro.lstm_tools.create_datasets import (
+    clean_nans_func,
+    create_dataset_flexible,
+    create_lstm_dataset,
+)
+from xhydro.lstm_tools.LSTM_static import (
+    TrainingGenerator,
+    define_lstm_model_simple,
+    run_trained_model,
+)
 
 
 def scale_dataset(
@@ -79,7 +88,9 @@ def scale_dataset(
     dynamic_data = np.empty((0, n_data))
 
     for tmp in range(0, arr_dynamic.shape[0]):
-        dynamic_data = np.vstack([dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0]:train_idx[tmp, 1], 1:]])
+        dynamic_data = np.vstack(
+            [dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0] : train_idx[tmp, 1], 1:]]
+        )
 
     # Fit the scaler using only the training watersheds
     _ = scaler_dynamic.fit_transform(dynamic_data)
@@ -111,15 +122,13 @@ def split_dataset(
 ):
     # %%
     # Training dataset
-    x_train, x_train_static, x_train_q_stds, y_train = (
-        create_lstm_dataset(
-            arr_dynamic=arr_dynamic,
-            arr_static=arr_static,
-            q_stds=q_stds,
-            window_size=window_size,
-            watershed_list=watersheds_ind,
-            idx=train_idx,
-        )
+    x_train, x_train_static, x_train_q_stds, y_train = create_lstm_dataset(
+        arr_dynamic=arr_dynamic,
+        arr_static=arr_static,
+        q_stds=q_stds,
+        window_size=window_size,
+        watershed_list=watersheds_ind,
+        idx=train_idx,
     )
 
     # Clean nans
@@ -128,15 +137,13 @@ def split_dataset(
     )
 
     # Validation dataset
-    x_valid, x_valid_static, x_valid_q_stds, y_valid = (
-        create_lstm_dataset(
-            arr_dynamic=arr_dynamic,
-            arr_static=arr_static,
-            q_stds=q_stds,
-            window_size=window_size,
-            watershed_list=watersheds_ind,
-            idx=valid_idx,
-        )
+    x_valid, x_valid_static, x_valid_q_stds, y_valid = create_lstm_dataset(
+        arr_dynamic=arr_dynamic,
+        arr_static=arr_static,
+        q_stds=q_stds,
+        window_size=window_size,
+        watershed_list=watersheds_ind,
+        idx=valid_idx,
     )
 
     # Clean nans
@@ -172,9 +179,7 @@ def perform_initial_train(
     name_of_saved_model,
     use_cpu=False,
 ):
-    """Train the LSTM model using preprocessed data.
-
-    """
+    """Train the LSTM model using preprocessed data."""
     success = 0
     while success == 0:
         k.clear_session()  # Reset the model
@@ -200,7 +205,7 @@ def perform_initial_train(
             print("USING SINGLE GPU")
 
         if use_cpu:
-            tf.config.set_visible_devices([], 'GPU')
+            tf.config.set_visible_devices([], "GPU")
 
         h = model_lstm.fit(
             TrainingGenerator(
@@ -243,7 +248,7 @@ def run_model_after_training(
 ):
 
     # Run trained model on the training period and save outputs
-    if 'train' in simulation_phases:
+    if "train" in simulation_phases:
         kge_train, flows_train = run_trained_model(
             arr_dynamic,
             arr_static,
@@ -260,7 +265,7 @@ def run_model_after_training(
         kge_train = None
         flows_train = None
 
-    if 'valid' in simulation_phases:
+    if "valid" in simulation_phases:
         # Run trained model on the validation period and save outputs
         kge_valid, flows_valid = run_trained_model(
             arr_dynamic,
@@ -278,7 +283,7 @@ def run_model_after_training(
         kge_valid = None
         flows_valid = None
 
-    if 'test' in simulation_phases:
+    if "test" in simulation_phases:
         # Run the trained model on the testing period and save outputs
         kge_test, flows_test = run_trained_model(
             arr_dynamic,
@@ -296,7 +301,7 @@ def run_model_after_training(
         kge_test = None
         flows_test = None
 
-    if 'full' in simulation_phases:
+    if "full" in simulation_phases:
         # Run the trained model on the full period and save outputs
         kge_full, flows_full = run_trained_model(
             arr_dynamic,
@@ -314,4 +319,9 @@ def run_model_after_training(
         kge_full = None
         flows_full = None
 
-    return [kge_train, kge_valid, kge_test, kge_full], [flows_train, flows_valid, flows_test, flows_full]
+    return [kge_train, kge_valid, kge_test, kge_full], [
+        flows_train,
+        flows_valid,
+        flows_test,
+        flows_full,
+    ]

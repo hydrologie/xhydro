@@ -2,10 +2,17 @@
 This script allows to calibrate and test an LSTM model on a dataset of 96 watersheds from the INFO-Crue project.
 This particular version of the script uses variables from the MELCC gridded dataset as well as the ERA5 reanalysis.
 """
+
 # %% Import packages
 import os
 import tempfile
-from xhydro.lstm_tools.lstm_functions import run_model_after_training, scale_dataset, split_dataset, perform_initial_train
+
+from xhydro.lstm_tools.lstm_functions import (
+    perform_initial_train,
+    run_model_after_training,
+    scale_dataset,
+    split_dataset,
+)
 
 
 # %% Control variables for all experiments
@@ -33,18 +40,21 @@ def control_regional_lstm_training(
     needed by the user.
     """
     if simulation_phases is None:
-        simulation_phases = ['train', 'valid', 'test', 'full']
+        simulation_phases = ["train", "valid", "test", "full"]
 
     # If we want to use CPU only, deactivate GPU for memory allocation. The order of operations MUST be preserved.
     if use_cpu:
-        os.environ['CUDA_VISIBLE_DEVICES'] = ""
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
     import tensorflow as tf
+
     tf.get_logger().setLevel("INFO")
 
     if name_of_saved_model is None:
         if not do_train:
-            raise ValueError('Model training is set to False and no existing model is provided. Please provide a '
-                             'trained model or set "do_train" to True.')
+            raise ValueError(
+                "Model training is set to False and no existing model is provided. Please provide a "
+                'trained model or set "do_train" to True.'
+            )
         tmpdir = tempfile.mkdtemp()
         name_of_saved_model = tmpdir + "/" + filename_base + ".h5"
 
