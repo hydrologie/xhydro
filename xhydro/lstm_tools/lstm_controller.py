@@ -1,6 +1,8 @@
 """Control the LSTM training and simulation tools to make clean workflows."""
+
 import os
 import tempfile
+
 from xhydro.lstm_tools.lstm_functions import (
     perform_initial_train,
     run_model_after_training,
@@ -10,97 +12,97 @@ from xhydro.lstm_tools.lstm_functions import (
 
 
 def control_regional_lstm_training(
-    input_data_filename: object,
-    dynamic_var_tags: object,
-    qsim_pos: object,
-    static_var_tags: object,
-    batch_size: object = 32,
-    epochs: object = 200,
-    window_size: object = 365,
-    train_pct: object = 60,
-    valid_pct: object = 20,
-    use_cpu: object = True,
-    use_parallel: object = False,
-    do_train: object = True,
-    do_simulation: object = True,
-    filename_base: object = "LSTM_results",
-    simulation_phases: object = None,
-    name_of_saved_model: object = None,
-) -> object:
-    """ Control the regional LSTM model training and simulation.
+    input_data_filename: str,
+    dynamic_var_tags: list,
+    qsim_pos: list,
+    static_var_tags: list,
+    batch_size: int = 32,
+    epochs: int = 200,
+    window_size: int = 365,
+    train_pct: int = 60,
+    valid_pct: int = 20,
+    use_cpu: bool = True,
+    use_parallel: bool = False,
+    do_train: bool = True,
+    do_simulation: bool = True,
+    filename_base: str = "LSTM_results",
+    simulation_phases: list = None,
+    name_of_saved_model: str = None,
+):
+    """Control the regional LSTM model training and simulation.
 
     Parameters
     ----------
-    input_data_filename: str
+    input_data_filename : str
         Path to the netcdf file containing the required input and target data for the LSTM. The ncfile must contain a
         dataset named "Qobs" and "Drainage_area" for the code to work, as these are required as target and scaling for
         training, respectively.
-    dynamic_var_tags: list of str
+    dynamic_var_tags : list of str
         List of dataset variables to use in the LSTM model training. Must be part of the input_data_filename ncfile.
-    qsim_pos: list of bool
+    qsim_pos : list of bool
         List of same length as dynamic_var_tags. Should be set to all False EXCEPT where the dynamic_var_tags refer to
-        flow simulations (ex: simulations from a hydrological model such as HYDROTEL). Those should be set to True
-    static_var_tags: list of str
+        flow simulations (ex: simulations from a hydrological model such as HYDROTEL). Those should be set to True.
+    static_var_tags : list of str
         List of the catchment descriptor names in the input_data_filename ncfile. They need to be present in the ncfile
         and will be used as inputs to the regional model, to help the flow regionalization process.
-    batch_size: int
+    batch_size : int
         Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
         GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
         performance and final model skill, and should be handled accordingly.
-    epochs: int
+    epochs : int
         Number of training evaluations. Larger number of epochs means more model iterations and deeper training. At some
         point, training will stop due to a stop in validation skill improvement.
-    window_size: int
+    window_size : int
         Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
         allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
         set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
         results.
-    train_pct: int
+    train_pct : int
         Percentage of days from the dataset to use as training. The higher, the better for model training skill, but it
         is important to keep a decent amount for validation and testing.
-    valid_pct: int
+    valid_pct : int
         Percentage of days from the dataset to use as validation. The sum of train_pct and valid_pct needs to be less
         than 100, such that the remainder can be used for testing. A good starting value is 20%. Validation is used as
         the stopping criteria during training. When validation stops improving, then the model is overfitting and training
         is stopped.
-    use_cpu: bool
+    use_cpu : bool
         Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be performed
         on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow and should
         only be used as a last resort (such as for CI testing and debugging).
-    use_parallel: bool
+    use_parallel : bool
         Flag to make use of multiple GPUs to accelerate training further. Models trained on multiple GPUs can have larger
         batch_size values as different batches can be run on different GPUs in parallel. Speedup is not linear as there
         is overhead related to the management of datasets, batches, the gradient merging and other steps. Still very
         useful and should be used when possible.
-    do_train: bool
+    do_train : bool
         Indicate that the code should perform the training step. This is not required as a pre-trained model could be
         used to perform a simulation by passing an existing model in "name_of_saved_model".
-    do_simulation: bool
+    do_simulation : bool
         Indicate that simulations should be performed to obtain simulated streamflow and KGE metrics on the watersheds of
         interest, using the "name_of_saved_model" pre-trained model. If set to True and 'do_train' is True, then the new
         trained model will be used instead.
-    filename_base: str
+    filename_base : str
         Name of the trained model that will be trained if it does not already exist. Do not add the ".h5" extension, it
         will be added automatically.
-    simulation_phases: list of str
+    simulation_phases : list of str
         List of periods to generate the simulations. Can contain ['train','valid','test','full'], corresponding to the
         training, validation, testing and complete periods, respectively.
-    name_of_saved_model: str
+    name_of_saved_model : str
         Path to the model that has been pre-trained if required for simulations.
 
     Returns
     -------
-    kge_results: array-like
+    kge_results : array-like
         Kling-Gupta Efficiency metric values for each of the watersheds in the input_data_filename ncfile after running
         in simulation mode (thus after training). Contains n_watersheds items, each containing 4 values representing the
         KGE values in training, validation, testing and full period, respectively. If one or more simulation phases are
         not requested, the items will be set to None.
-    flow_results: array-like
+    flow_results : array-like
         Streamflow simulation values for each of the watersheds in the input_data_filename ncfile after running
         in simulation mode (thus after training). Contains n_watersheds items, each containing 4x 2D-arrays representing
         the observed and simulation series in training, validation, testing and full period, respectively. If one or more
         simulation phases are not requested, the items will be set to None.
-    name_of_saved_model: str
+    name_of_saved_model : str
         Path to the model that has been trained, or to the pre-trained model if it already existed.
     """
     if simulation_phases is None:

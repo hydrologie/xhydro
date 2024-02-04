@@ -1,34 +1,51 @@
-"""
-
-"""
+"""Tools to create the datasets to be used in LSTM model training and simulation."""
 
 import numpy as np
 import xarray as xr
 
 
-def create_dataset_flexible(filename, dynamic_var_tags, qsim_pos, static_var_tags):
-    """
-    This function will prepare the arrays of dynamic, static and observed flow
-    variables. A few things are absolutely required:
+def create_dataset_flexible(
+    filename: str,
+    dynamic_var_tags: list,
+    qsim_pos: list,
+    static_var_tags: list,
+):
+    """Prepare the arrays of dynamic, static and observed flow variables.
+
+    A few things are absolutely required:
         1. a "watershed" variable that contains the ID of watersheds, such that
            we can preallocate the size of the matrices.
         2. a "Qobs" variable that contains observed flows for the catchments.
         3. The size of the catchments in the "drainage_area" tag. This is used
-           to compute scaled streamflow values for regionalization applications
+           to compute scaled streamflow values for regionalization applications.
 
-    "dynamic_var_tags" should contain the tags of the timeseries data (dynamic)
-    in the form of a list.
+    Parameters
+    ----------
+    filename : str
+        Path to the netcdf file containing the required input and target data for the LSTM. The ncfile must contain a
+        dataset named "Qobs" and "Drainage_area" for the code to work, as these are required as target and scaling for
+        training, respectively.
+    dynamic_var_tags : list of str
+        List of dataset variables to use in the LSTM model training. Must be part of the input_data_filename ncfile.
+    qsim_pos : list of bool
+        List of same length as dynamic_var_tags. Should be set to all False EXCEPT where the dynamic_var_tags refer to
+        flow simulations (ex: simulations from a hydrological model such as HYDROTEL). Those should be set to True.
+    static_var_tags : list of str
+        List of the catchment descriptor names in the input_data_filename ncfile. They need to be present in the ncfile
+        and will be used as inputs to the regional model, to help the flow regionalization process.
 
-    "static_var_tags" should contain the tags of the catchment characteristics
-    in the form of a list.
-
-    "Qsim_pos" is an array or list of Booleans on which we want to scale with
-    drainage area. Same size as dynamic_var_tags
-
-    # Need to add checks according to possible inputs and required keywords,
-    empty arrays, etc.
+    Returns
+    -------
+    arr_dynamic : np.array
+        Tensor of size [watersheds x timestep x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    arr_static : np.array
+        Tensor of size [watersheds x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training.
+    q_stds : np.array
+        Tensor of size [watersheds] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in arr_dynamic and arr_static.
     """
-
     # Open the dataset file
     ds = xr.open_dataset(filename)
 
@@ -80,15 +97,57 @@ def create_dataset_flexible(filename, dynamic_var_tags, qsim_pos, static_var_tag
 
 
 def create_lstm_dataset(
-    arr_dynamic,
-    arr_static,
-    q_stds,
-    window_size,
-    watershed_list,
-    idx,
-    clean_nans=True,
+    arr_dynamic: np.array,
+    arr_static: np.array,
+    q_stds: np.array,
+    window_size: int,
+    watershed_list: list,
+    idx: np.array,
+    clean_nans: bool = True,
 ):
+    """Create the LSTM dataset and shape the data using look-back windows and preparing all data for training.
 
+    Parameters
+    ----------
+    arr_dynamic : np.array
+        Tensor of size [watersheds x timestep x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    arr_static : np.array
+        Tensor of size [watersheds x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training.
+    q_stds : np.array
+        Tensor of size [watersheds] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in arr_dynamic and arr_static.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    watershed_list : list
+        List of the total number of watersheds that will be used for training and simulation. Corresponds to the watershed
+        in the input file, i.e. in the arr_dynamic array axis 0.
+    idx : np.array
+        2-element array of indices of the beginning and end of the desired period for which the LSTM model should be simulated.
+    clean_nans : bool
+        Flag indicating that the NaN values associated to the observed streamflow should be removed. Required for training
+        but can be kept to False for simulation to ensure simulation on the entire period.
+
+    Returns
+    -------
+    x : np.array
+        Tensor of size [(timesteps * watersheds) x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-
+        series) variables that will be used during training.
+    x_static : np.array
+        Tensor of size [(timesteps * watersheds) x n_static_variables] that contains the static (i.e. catchment descriptors)
+        variables that will be used during training.
+    x_q_stds : np.array
+        Tensor of size [(timesteps * watersheds)] that contains the standard deviation of scaled streamflow values for
+        the catchment associated to the data in x and x_static. Each data point could come from any catchment and this
+        q_std variable helps scale the objective function.
+    y : np.array
+        Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x,
+        x_static and x_q_stds. Usually the observed streamflow for the day associated to each of the training points.
+    """
     ndata = arr_dynamic.shape[2] - 1
     x = np.empty((0, window_size, ndata))  # 7 is with Qsim as predictor and snow
     x_static = np.empty((0, arr_static.shape[1]))
@@ -119,8 +178,24 @@ def create_lstm_dataset(
     return x, x_static, x_q_stds, y
 
 
-def extract_windows_vectorized(array, sub_window_size):
+def extract_windows_vectorized(
+    array: np.array,
+    sub_window_size: int,
+):
+    """Create the array where each day contains data from a previous period (look-back period).
 
+    Parameters
+    ----------
+    array : np.array
+        The array of dynamic variables for a single catchment.
+    sub_window_size : int
+        Size of the look-back window.
+
+    Returns
+    -------
+    data_array
+        Array of dynamic data processed into a 3D tensor for LSTM model training.
+    """
     max_time = array.shape[0]
 
     # expand_dims are used to convert a 1D array to 2D array.
@@ -128,15 +203,52 @@ def extract_windows_vectorized(array, sub_window_size):
         np.expand_dims(np.arange(sub_window_size), 0)
         + np.expand_dims(np.arange(max_time - sub_window_size), 0).T
     )
+    data_array = array[sub_windows]
 
-    return array[sub_windows]
+    return data_array
 
 
-def extract_watershed_block(arr_w_dynamic, arr_w_static, q_std_w, window_size):
-    """
-    This function extracts all series of the desired window length over all
-    features for a given watershed. Both dynamic and static variables are
+def extract_watershed_block(
+    arr_w_dynamic: np.array, arr_w_static: np.array, q_std_w: np.array, window_size: int
+):
+    """Extract all series of the desired window length over all features for a given watershed.
+
+    Create the LSTM tensor format of data from the regular input arrays. Both dynamic and static variables are
     extracted.
+
+    Parameters
+    ----------
+    arr_w_dynamic : np.array
+        Tensor of size [timestep x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training for the current catchment. The first element in axis=1 is the
+        observed flow.
+    arr_w_static : np.array
+        Tensor of size [n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training for the current catchment.
+    q_std_w : np.array
+        Tensor of size [1] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the current catchment.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+
+    Returns
+    -------
+    x_w : np.array
+        Tensor of size [timesteps x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-series)
+        variables that will be used during training for a single processed catchment.
+    x_w_static : np.array
+        Tensor of size [timesteps x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training for a single processed catchment.
+    x_w_q_stds : np.array
+        Tensor of size [timesteps] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in x and x_static for a single processed catchment.
+    y_w : np.array
+        Tensor of size [timesteps] containing the target variable for the same time point as in x_w, x_w_static and
+        x_w_q_stds. Usually the observed streamflow for the day associated to each of the training points for the
+        currently processed catchment.
     """
     # Extract all series of the desired window length for all features
     x_w = extract_windows_vectorized(array=arr_w_dynamic, sub_window_size=window_size)
@@ -154,9 +266,33 @@ def extract_watershed_block(arr_w_dynamic, arr_w_static, q_std_w, window_size):
     return x_w, x_w_static, x_w_q_std, y_w
 
 
-def clean_nans_func(y, x, x_q_std, x_static):
-    """
-    Check for nans in the variable "y" and remove all lines containing those nans in all datasets
+def clean_nans_func(y: np.array, x: np.array, x_q_std: np.array, x_static: np.array):
+    """Check for nans in the variable "y" and remove all lines containing those nans in all datasets.
+
+    Parameters
+    ----------
+    y : np.array
+        Array of target variables for training, that might contain NaNs.
+    x : np.array
+        Array of dynamic variables for LSTM model training and simulation.
+    x_q_std : np.array
+        Array of observed streamflow standard deviations for catchments in regional LSTM models.
+    x_static : np.array
+        Array of static variables for LSTM model training and simulation, specifically for regional LSTM models.
+
+    Returns
+    -------
+    y : np.array
+        Array of target variables for training, cleaned of any NaNs.
+    x : np.array
+        Array of dynamic variables for LSTM model training and simulation, with values associated to NaN "y" values
+        removed.
+    x_q_std : np.array
+        Array of observed streamflow standard deviations for catchments in regional LSTM models, with values associated
+        to NaN "y" values removed.
+    x_static : np.array
+        Array of static variables for LSTM model training and simulation, specifically for regional LSTM models, with
+        values associated to NaN "y" values removed.
     """
     ind_nan = np.isnan(y)
     y = y[~ind_nan]

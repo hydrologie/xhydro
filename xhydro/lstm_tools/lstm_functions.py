@@ -1,3 +1,5 @@
+"""Collection of functions required to process LSTM models and their required data."""
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
@@ -16,24 +18,70 @@ from xhydro.lstm_tools.LSTM_static import (
 
 
 def scale_dataset(
-    input_data_filename,
-    dynamic_var_tags,
-    qsim_pos,
-    static_var_tags,
-    train_pct,
-    valid_pct,
+    input_data_filename: str,
+    dynamic_var_tags: list,
+    qsim_pos: list,
+    static_var_tags: list,
+    train_pct: int,
+    valid_pct: int,
 ):
-    # %%Load and pre-process the dataset
-    """
-    Prepare the LSTM features (inputs) and target variable (output):
+    """Scale the datasets using training data to normalize all inputs, ensuring weighting is unbiased.
+
+    Parameters
+    ----------
+    input_data_filename : str
+        Path to the netcdf file containing the required input and target data for the LSTM. The ncfile must contain a
+        dataset named "Qobs" and "Drainage_area" for the code to work, as these are required as target and scaling for
+        training, respectively.
+    dynamic_var_tags : list of str
+        List of dataset variables to use in the LSTM model training. Must be part of the input_data_filename ncfile.
+    qsim_pos : list of bool
+        List of same length as dynamic_var_tags. Should be set to all False EXCEPT where the dynamic_var_tags refer to
+        flow simulations (ex: simulations from a hydrological model such as HYDROTEL). Those should be set to True.
+    static_var_tags : list of str
+        List of the catchment descriptor names in the input_data_filename ncfile. They need to be present in the ncfile
+        and will be used as inputs to the regional model, to help the flow regionalization process.
+    train_pct : int
+        Percentage of days from the dataset to use as training. The higher, the better for model training skill, but it
+        is important to keep a decent amount for validation and testing.
+    valid_pct : int
+        Percentage of days from the dataset to use as validation. The sum of train_pct and valid_pct needs to be less
+        than 100, such that the remainder can be used for testing. A good starting value is 20%. Validation is used as
+        the stopping criteria during training. When validation stops improving, then the model is overfitting and training
+        is stopped.
+
+    Returns
+    -------
+    watershed_areas : np.array
+        Area of the watershed, in square kilometers, as taken from the training dataset initial input ncfile.
+    watersheds_ind : np.array
+        List of watershed indices to use during training.
+    arr_dynamic : np.array
+        Tensor of size [time_steps x window_size x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    arr_static : np.array
+        Tensor of size [time_steps x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training.
+    q_stds : np.array
+        Tensor of size [time_steps] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in arr_dynamic and arr_static.
+    train_idx : np.array
+        Indices of the training period from the complete period. Contains 2 values per watershed: start and end indices.
+    valid_idx : np.array
+        Indices of the validation period from the complete period. Contains 2 values per watershed: start and end indices.
+    test_idx : np.array
+        Indices of the testing period from the complete period. Contains 2 values per watershed: start and end indices.
+    all_idx : np.array
+        Indices of the full period. Contains 2 values per watershed: start and end indices.
     """
     # Create the dataset
     arr_dynamic, arr_static, arr_qobs = create_dataset_flexible(
         input_data_filename, dynamic_var_tags, qsim_pos, static_var_tags
     )
 
+    # TODO : This should be a user-selected option
     """
-    Filter catchments with too many NaNs
+    Filter catchments with too many NaNs.
     """
     # Find which catchments have less than 10 years of data
     # (20% of 10 = 2 years for valid/testing) and delete them
@@ -118,9 +166,70 @@ def scale_dataset(
 
 
 def split_dataset(
-    arr_dynamic, arr_static, q_stds, watersheds_ind, train_idx, window_size, valid_idx
+    arr_dynamic: np.array,
+    arr_static: np.array,
+    q_stds: np.array,
+    watersheds_ind: list,
+    train_idx: np.array,
+    window_size: int,
+    valid_idx: np.array,
 ):
-    # %%
+    """Extract only the required data from the entire dataset according to the desired period.
+
+    Parameters
+    ----------
+    arr_dynamic : np.array
+        Tensor of size [time_steps x window_size x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    arr_static : np.array
+        Tensor of size [time_steps x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training.
+    q_stds : np.array
+        Tensor of size [time_steps] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in arr_dynamic and arr_static.
+    watersheds_ind : np.array
+        List of watershed indices to use during training.
+    train_idx : np.array
+        Indices of the training period from the complete period. Contains 2 values per watershed: start and end indices.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    valid_idx : np.array
+        Indices of the validation period from the complete period. Contains 2 values per watershed: start and end indices.
+
+    Returns
+    -------
+    x_train : np.array
+        Tensor of size [(timesteps * watersheds) x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-
+        series) variables that will be used during training.
+    x_train_static : np.array
+        Tensor of size [(timesteps * watersheds) x n_static_variables] that contains the static (i.e. catchment descriptors)
+        variables that will be used during training.
+    x_train_q_stds : np.array
+        Tensor of size [(timesteps * watersheds)] that contains the standard deviation of scaled streamflow values for
+        the catchment associated to the data in x_train and x_train_static. Each data point could come from any catchment
+        and this x_train_q_std variable helps scale the objective function.
+    y_train : np.array
+        Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_train,
+        x_train_static and x_train_q_stds. Usually the observed streamflow for the day associated to each of the training
+        points.
+    x_valid : np.array
+        Tensor of size [(timesteps * watersheds) x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-
+        series) variables that will be used during validation.
+    x_valid_static : np.array
+        Tensor of size [(timesteps * watersheds) x n_static_variables] that contains the static (i.e. catchment descriptors)
+        variables that will be used during validation.
+    x_valid_q_stds : np.array
+        Tensor of size [(timesteps * watersheds)] that contains the standard deviation of scaled streamflow values for
+        the catchment associated to the data in x_valid and x_valid_static. Each data point could come from any catchment
+        and this x_valid_q_std variable helps scale the objective function for the validation points.
+    y_valid : np.array
+        Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_valid,
+        x_valid_static and x_valid_q_stds. Usually the observed streamflow for the day associated to each of the
+        validation points.
+    """
     # Training dataset
     x_train, x_train_static, x_train_q_stds, y_train = create_lstm_dataset(
         arr_dynamic=arr_dynamic,
@@ -164,22 +273,82 @@ def split_dataset(
 
 
 def perform_initial_train(
-    use_parallel,
-    window_size,
-    batch_size,
-    epochs,
-    X_train,
-    X_train_static,
-    X_train_q_stds,
-    y_train,
-    X_valid,
-    X_valid_static,
-    X_valid_q_stds,
-    y_valid,
-    name_of_saved_model,
-    use_cpu=False,
+    use_parallel: bool,
+    window_size: int,
+    batch_size: int,
+    epochs: int,
+    x_train: np.array,
+    x_train_static: np.array,
+    x_train_q_stds: np.array,
+    y_train: np.array,
+    x_valid: np.array,
+    x_valid_static: np.array,
+    x_valid_q_stds: np.array,
+    y_valid: np.array,
+    name_of_saved_model: str,
+    use_cpu: bool = False,
 ):
-    """Train the LSTM model using preprocessed data."""
+    """Train the LSTM model using preprocessed data.
+
+    Parameters
+    ----------
+    use_parallel : bool
+        Flag to make use of multiple GPUs to accelerate training further. Models trained on multiple GPUs can have larger
+        batch_size values as different batches can be run on different GPUs in parallel. Speedup is not linear as there
+        is overhead related to the management of datasets, batches, the gradient merging and other steps. Still very
+        useful and should be used when possible.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    batch_size : int
+        Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
+        GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
+        performance and final model skill, and should be handled accordingly.
+    epochs : int
+        Number of training evaluations. Larger number of epochs means more model iterations and deeper training. At some
+        point, training will stop due to a stop in validation skill improvement.
+    x_train : np.array
+        Tensor of size [(timesteps * watersheds) x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-
+        series) variables that will be used during training.
+    x_train_static : np.array
+        Tensor of size [(timesteps * watersheds) x n_static_variables] that contains the static (i.e. catchment descriptors)
+        variables that will be used during training.
+    x_train_q_stds : np.array
+        Tensor of size [(timesteps * watersheds)] that contains the standard deviation of scaled streamflow values for
+        the catchment associated to the data in x_train and x_train_static. Each data point could come from any catchment
+        and this x_train_q_std variable helps scale the objective function.
+    y_train : np.array
+        Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_train,
+        x_train_static and x_train_q_stds. Usually the observed streamflow for the day associated to each of the training
+        points.
+    x_valid : np.array
+        Tensor of size [(timesteps * watersheds) x window_size x n_dynamic_variables] that contains the dynamic (i.e. time-
+        series) variables that will be used during validation.
+    x_valid_static : np.array
+        Tensor of size [(timesteps * watersheds) x n_static_variables] that contains the static (i.e. catchment descriptors)
+        variables that will be used during validation.
+    x_valid_q_stds : np.array
+        Tensor of size [(timesteps * watersheds)] that contains the standard deviation of scaled streamflow values for
+        the catchment associated to the data in x_valid and x_valid_static. Each data point could come from any catchment
+        and this x_valid_q_std variable helps scale the objective function for the validation points.
+    y_valid : np.array
+        Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_valid,
+        x_valid_static and x_valid_q_stds. Usually the observed streamflow for the day associated to each of the
+        validation points.
+    name_of_saved_model : str
+        Path to the model that has been pre-trained if required for simulations.
+    use_cpu : bool
+        Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be performed
+        on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow and should
+        only be used as a last resort (such as for CI testing and debugging).
+
+    Returns
+    -------
+    code
+        Code zero if function ends normally. Adding this just because linter will not let me put nothing.
+    """
     success = 0
     while success == 0:
         k.clear_session()  # Reset the model
@@ -190,16 +359,16 @@ def perform_initial_train(
             with strategy.scope():
                 model_lstm, callback = define_lstm_model_simple(
                     window_size=window_size,
-                    n_dynamic_features=X_train.shape[2],
-                    n_static_features=X_train_static.shape[1],
+                    n_dynamic_features=x_train.shape[2],
+                    n_static_features=x_train_static.shape[1],
                     checkpoint_path=name_of_saved_model,
                 )
                 print("USING MULTIPLE GPU SETUP")
         else:
             model_lstm, callback = define_lstm_model_simple(
                 window_size=window_size,
-                n_dynamic_features=X_train.shape[2],
-                n_static_features=X_train_static.shape[1],
+                n_dynamic_features=x_train.shape[2],
+                n_static_features=x_train_static.shape[1],
                 checkpoint_path=name_of_saved_model,
             )
             print("USING SINGLE GPU")
@@ -209,17 +378,17 @@ def perform_initial_train(
 
         h = model_lstm.fit(
             TrainingGenerator(
-                X_train,
-                X_train_static,
-                X_train_q_stds,
+                x_train,
+                x_train_static,
+                x_train_q_stds,
                 y_train,
                 batch_size=batch_size,
             ),
             epochs=epochs,
             validation_data=TrainingGenerator(
-                X_valid,
-                X_valid_static,
-                X_valid_q_stds,
+                x_valid,
+                x_valid_static,
+                x_valid_q_stds,
                 y_valid,
                 batch_size=batch_size,
             ),
@@ -230,23 +399,77 @@ def perform_initial_train(
         if not np.isnan(h.history["loss"][-1]):
             success = 1
 
+    return 0
+
 
 def run_model_after_training(
-    w,
-    arr_dynamic,
-    arr_static,
-    q_stds,
-    window_size,
-    train_idx,
-    batch_size,
-    watershed_areas,
-    name_of_saved_model,
-    valid_idx,
-    test_idx,
-    all_idx,
-    simulation_phases,
+    w: int,
+    arr_dynamic: np.array,
+    arr_static: np.array,
+    q_stds: np.array,
+    window_size: int,
+    train_idx: np.array,
+    batch_size: int,
+    watershed_areas: list,
+    name_of_saved_model: str,
+    valid_idx: np.array,
+    test_idx: np.array,
+    all_idx: np.array,
+    simulation_phases: list,
 ):
+    """Simulate streamflow on given input data for a user-defined number of periods.
 
+    Parameters
+    ----------
+    w : int
+        Number of the watershed from the list of catchments that will be simulated.
+    arr_dynamic : np.array
+        Tensor of size [time_steps x window_size x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    arr_static : np.array
+        Tensor of size [time_steps x n_static_variables] that contains the static (i.e. catchment descriptors) variables
+        that will be used during training.
+    q_stds : np.array
+        Tensor of size [time_steps] that contains the standard deviation of scaled streamflow values for the catchment
+        associated to the data in arr_dynamic and arr_static.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    train_idx : np.array
+        Indices of the training period from the complete period. Contains 2 values per watershed: start and end indices.
+    batch_size : int
+        Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
+        GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
+        performance and final model skill, and should be handled accordingly.
+    watershed_areas : np.array
+        Area of the watershed, in square kilometers, as taken from the training dataset initial input ncfile.
+    name_of_saved_model : str
+        Path to the model that has been pre-trained if required for simulations.
+    valid_idx : np.array
+        Indices of the validation period from the complete period. Contains 2 values per watershed: start and end indices.
+    test_idx : np.array
+        Indices of the testing period from the complete period. Contains 2 values per watershed: start and end indices.
+    test_idx : np.array
+        Indices of the testing period from the complete period. Contains 2 values per watershed: start and end indices.
+    all_idx : np.array
+        Indices of the full period. Contains 2 values per watershed: start and end indices.
+    simulation_phases : list of str
+        List of periods to generate the simulations. Can contain ['train','valid','test','full'], corresponding to the
+        training, validation, testing and complete periods, respectively.
+
+    Returns
+    -------
+    kge : list
+        List of floats of size 4, with one float per period in ['train','valid','test','all']. Each KGE value is comupted
+        between observed and simulated flows for the watershed of interest and for all specified periods. Unrequested
+        periods return None.
+    flows : list
+        List of np.array objects of size 4, with one 2D np.array per period in ['train','valid','test','all'].
+        Observed (column 1) and simulated (column 2) streamflows are computed for the watershed of interest and for all
+        specified periods. Unrequested periods return None.
+    """
     # Run trained model on the training period and save outputs
     if "train" in simulation_phases:
         kge_train, flows_train = run_trained_model(
@@ -319,9 +542,7 @@ def run_model_after_training(
         kge_full = None
         flows_full = None
 
-    return [kge_train, kge_valid, kge_test, kge_full], [
-        flows_train,
-        flows_valid,
-        flows_test,
-        flows_full,
-    ]
+    kge = [kge_train, kge_valid, kge_test, kge_full]
+    flows = [flows_train, flows_valid, flows_test, flows_full]
+
+    return kge, flows
