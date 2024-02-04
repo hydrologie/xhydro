@@ -1,9 +1,12 @@
 """LSTM model definition and tools for LSTM model training."""
+
 import math
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
 from tensorflow.keras.models import load_model
+
 from .create_datasets import create_lstm_dataset
 
 
