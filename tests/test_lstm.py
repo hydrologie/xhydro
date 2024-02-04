@@ -2,8 +2,6 @@
 
 import os
 
-import pytest
-
 from xhydro.lstm_tools.lstm_controller import control_regional_lstm_training
 
 
