@@ -45,3 +45,5 @@ dependencies:
   - flit
   # Notebooks
   - hvplot
+  - intake
+  - intake-xarray

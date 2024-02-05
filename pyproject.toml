@@ -71,6 +71,8 @@ docs = [
   # Documentation and examples
   "furo",
   "hvplot",
+  "intake",
+  "intake-xarray",
   "ipykernel",
   "ipython",
   "jupyter_client",
