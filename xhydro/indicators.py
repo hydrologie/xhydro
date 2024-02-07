@@ -3,11 +3,11 @@
 import warnings
 from typing import Optional
 
+import numpy as np
+import pymannkendall
 import xarray as xr
 import xclim as xc
 import xscen as xs
-import pymannkendall
-import numpy as np
 from xclim.core.units import rate2amount
 
 # Special imports from xscen
@@ -251,19 +251,36 @@ def get_yearly_op(
 
     return out
 
-def _pval_mannkendall_ufunc(da, 
-                            test, 
-                            outputs):
+
+def _pval_mannkendall_ufunc(da, test, outputs):
     da = da[~np.isnan(da)]
     pmk = getattr(pymannkendall, test)
     mk = pmk(da)
     return tuple([getattr(mk, out) for out in outputs])
 
-def mannkendall(da,
-                     outputs: list = ['h', 'p'], 
-                     test: str ='original_test'):
-    try:
-        return xr.concat(xr.apply_ufunc(_pval_mannkendall_ufunc, da, test, outputs, input_core_dims=[['time'],[], ['dim0']],output_core_dims=np.empty((len(outputs), 0)).tolist(), vectorize=True) , dim='mk').assign_coords(mk=outputs)
-    except:
-        return xr.apply_ufunc(_pval_mannkendall_ufunc, da, test, outputs, input_core_dims=[['time'],[], ['dim0']],output_core_dims=np.empty((len(outputs), 0)).tolist(), output_dtypes=[tuple],vectorize=True).assign_coords(mk=outputs)
 
+def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
+    try:
+        return xr.concat(
+            xr.apply_ufunc(
+                _pval_mannkendall_ufunc,
+                da,
+                test,
+                outputs,
+                input_core_dims=[["time"], [], ["dim0"]],
+                output_core_dims=np.empty((len(outputs), 0)).tolist(),
+                vectorize=True,
+            ),
+            dim="mk",
+        ).assign_coords(mk=outputs)
+    except:
+        return xr.apply_ufunc(
+            _pval_mannkendall_ufunc,
+            da,
+            test,
+            outputs,
+            input_core_dims=[["time"], [], ["dim0"]],
+            output_core_dims=np.empty((len(outputs), 0)).tolist(),
+            output_dtypes=[tuple],
+            vectorize=True,
+        ).assign_coords(mk=outputs)
