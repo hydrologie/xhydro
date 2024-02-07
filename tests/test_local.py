@@ -72,9 +72,11 @@ class TestFit:
         params = xhfa.local.fit(ds, distributions=["gamma"], min_years=miny)
         np.testing.assert_array_almost_equal(
             params.streamflow,
-            [[9.95357815e00, -3.07846650e01, 1.56498193e01]]
-            if miny == 10
-            else [[np.nan, np.nan, np.nan]],
+            (
+                [[9.95357815e00, -3.07846650e01, 1.56498193e01]]
+                if miny == 10
+                else [[np.nan, np.nan, np.nan]]
+            ),
         )
 
 
@@ -151,3 +153,82 @@ def test_criteria():
             [118.12140939, 118.51930466, 118.56585383],
         ],
     )
+
+
+import xarray as xr
+
+from xhydro.frequency_analysis.local import get_plotting_positions
+
+
+class TestGetPlottingPositions:
+    def test_default(self):
+        data = timeseries(
+            np.array([50, 65, 80, 95]),
+            variable="streamflow",
+            start="2001-01-01",
+            freq="YS",
+            as_dataset=True,
+        )
+        expected = [1.16666667, 1.61538462, 2.625, 7.0]
+        result = get_plotting_positions(data)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
+        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+
+        data_2d = xr.concat([data, data], dim="id")
+        result = get_plotting_positions(data_2d)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
+        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+
+    def test_nan(self):
+        data = timeseries(
+            np.array([50, np.nan, 80, 95]),
+            variable="streamflow",
+            start="2001-01-01",
+            freq="YS",
+            as_dataset=True,
+        )
+        expected = [1.23076923, np.nan, 2.0, 5.33333333]
+        result = get_plotting_positions(data)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
+        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+
+        data_2d = xr.concat([data, data], dim="id")
+        result = get_plotting_positions(data_2d)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
+        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+
+    def test_return_period(self):
+        data = timeseries(
+            np.array([50, 65, 80, 95]),
+            variable="streamflow",
+            start="2001-01-01",
+            freq="YS",
+            as_dataset=True,
+        )
+        expected = [0.14285714, 0.38095238, 0.61904762, 0.85714286]
+        result = get_plotting_positions(data, return_period=False)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
+        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+
+        data_2d = xr.concat([data, data], dim="id")
+        result = get_plotting_positions(data_2d, return_period=False)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
+        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+
+    def test_alpha_beta(self):
+        data = timeseries(
+            np.array([50, 65, 80, 95]),
+            variable="streamflow",
+            start="2001-01-01",
+            freq="YS",
+            as_dataset=True,
+        )
+        expected = [1.25, 1.66666667, 2.5, 5.0]
+        result = get_plotting_positions(data, alpha=0, beta=0)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
+        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+
+        data_2d = xr.concat([data, data], dim="id")
+        result = get_plotting_positions(data_2d, alpha=0, beta=0)
+        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
+        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
