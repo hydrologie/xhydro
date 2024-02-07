@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
+import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
+from xhydro.frequency_analysis.local import get_plotting_positions
 
 
 class TestFit:
@@ -153,11 +155,6 @@ def test_criteria():
             [118.12140939, 118.51930466, 118.56585383],
         ],
     )
-
-
-import xarray as xr
-
-from xhydro.frequency_analysis.local import get_plotting_positions
 
 
 class TestGetPlottingPositions:
