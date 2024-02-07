@@ -5,27 +5,23 @@ import sys
 import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
 import numpy as np
-import xarray as xr
 
 
 def compare(
     start_date,
     end_date,
     files,
-    percentileToPlot=50):  # start_date, end_date, files,
+    percentile_to_plot=50,
+    show_comparaison=True):
     """
     Start the computation of the comparison method.
 
     TODO to make programmatic:
-        1. Update compare function to take filepaths as inputs
-        2. Add checks for data quality/error handling
-        3. Add parameters to suit user needs (flexibility)
-        4. Add parameter to ask for plot or not (user defined)
-        5. Comment/document
-        6. remove if __name__=="__main__" line and below to push to package.
-        7. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
-        8. read_csv_files, find_index and find_section functions are duplicates between this and the "cross_validation" code, can be in a shared utils package
-        9. Check to make sure files and indexes are in the correct order when reading
+        1. Add checks for data quality/error handling
+        2. Comment/document
+        3. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
+        4. Check to make sure files and indexes are in the correct order when reading
+        5. Change structure of import for user
     """
     time = (end_date - start_date).days
 
@@ -50,7 +46,7 @@ def compare(
     percentile = l1o_data.percentile
 
     # Find position of the desired percentile
-    idx_pct = np.where(percentile == percentileToPlot)[0]
+    idx_pct = np.where(percentile == percentile_to_plot)[0]
     if idx_pct is None:
         sys.exit(
             "The desired percentile is not computed in the results file \
@@ -90,4 +86,5 @@ def compare(
         kge_l1o[n] = ma.kge_prime(debit_obs[:, n], debit_l1o[:, n])
         nse_l1o[n] = ma.nash(debit_obs[:, n], debit_l1o[:, n])
 
-    util.plot_results(kge, kge_l1o, nse, nse_l1o)
+    if show_comparaison:
+        util.plot_results(kge, kge_l1o, nse, nse_l1o)

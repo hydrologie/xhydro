@@ -113,43 +113,36 @@ def loop_interpolation_optimale_stations(args):
     station. The order is controlled by the pool, so this function is run in
     parallel. Returns the desired quantiles to the pool.map that calls it.
     """
-    # Get data from the args input
-    (
-        i,
-        station_count,
-        qobs_log,
-        qsim_log,
-        ecf_fun,
-        par_opt,
-        PX,
-        PY,
-        start_date,
-        end_date,
-        qobs_val,
-        drainage_area,
-        ratio_var_bg,
-        percentiles,
-        iterations,
-    ) = args
+
+    (station_index, args) = args
+
+    station_count = args["station_count"]
+    time_range = args["time_range"]
+    percentiles = args["percentiles"]
+    selected_flow_obs = args["selected_flow_obs"]
+    selected_flow_sim = args["selected_flow_sim"]
+    ratio_var_bg = args["ratio_var_bg"]
+    ecf_fun = args["ecf_fun"]
+    par_opt = args["par_opt"]
+    x_points = args["x_points"]
+    y_points = args["y_points"]
+    drainage_area = args["drainage_area"]
 
     # Get the number of stations from the dataset
     index = range(0, station_count)
-
-    # Get the number of simulation days
-    time_range = (end_date - start_date).days
 
     # Define the exit vectors for a single catchment at a time since we will
     # work on stations in parallel.
     flow_quantiles = initialize_nan_arrays(time_range, len(percentiles))
 
     # Start cross-validation, getting indexes of the validation set.
-    index_validation = i
+    index_validation = station_index
     index_calibration = np.setdiff1d(index, index_validation)
 
     # Compute difference between the obs and sim log-transformed flows for the
     # calibration basins
-    difference = qobs_log[:, index_calibration] - qsim_log[:, index_calibration]
-    vsim_at_est = qsim_log[:, index_validation]
+    difference = selected_flow_obs[:, index_calibration] - selected_flow_sim[:, index_calibration]
+    vsim_at_est = selected_flow_sim[:, index_validation]
 
     # Create and update dictionary for the interpolation input data. This object
     # is updated later in the code and iterated, and updated. So keeps things
@@ -159,8 +152,8 @@ def loop_interpolation_optimale_stations(args):
         {
             "var_obs": ratio_var_bg,
             "error_cov_fun": partial(ecf_fun, par=par_opt),
-            "x_est": PX[:, index_validation],
-            "y_est": PY[:, index_validation],
+            "x_est": x_points[:, index_validation],
+            "y_est": y_points[:, index_validation],
         }
     )
 
@@ -172,15 +165,15 @@ def loop_interpolation_optimale_stations(args):
     # validation catchment.
     for j in range(time_range):
         # Need to skip days where no value exists for verification
-        if not np.isnan(qobs_val[j, index_validation]):
+        if not np.isnan(selected_flow_obs[j, index_validation]):
             val = difference[j, :]
             idx = ~np.isnan(val)
 
             # Update the optimal interpolation dictionary.
             oi_input.update(
                 {
-                    "x_obs": PX[:, index_calibration[idx]],
-                    "y_obs": PY[:, index_calibration[idx]],
+                    "x_obs": x_points[:, index_calibration[idx]],
+                    "y_obs": y_points[:, index_calibration[idx]],
                     "bg_departures": difference[j, idx],
                     "bg_var_obs": np.ones(idx.sum()),
                     "bg_est": vsim_at_est[j],
@@ -199,7 +192,7 @@ def loop_interpolation_optimale_stations(args):
             vals = norm.ppf(percentiles, loc=oi_output["v_est"], scale=np.sqrt(var_est))
 
             # Get the values in real units and scale according to drainage area
-            vals = np.exp(vals) * drainage_area[i]
+            vals = np.exp(vals) * drainage_area[station_index]
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][j] = vals[k]
 

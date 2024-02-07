@@ -28,8 +28,12 @@ def execute(
     end_date : datetime
         End date of the analysis.
     files : list(str), optional
-        List of files path for getting flows and wathersheds infos
-    paralellize : bool, optional
+        List of files path for getting flows and wathersheds info,
+    percentiles : list(float), optional
+        List of percentiles to analyze
+    iterations: int, optional
+        Number of iterations for the interpolation
+    parallelize : bool, optional
         Execute the profiler in parallel or in series
 
     Returns
@@ -42,6 +46,14 @@ def execute(
     xarray.open_dataset
     """
     # Run the code
+    args = {
+        'start_date' : start_date,
+        'end_date' : end_date,
+        'files': files,
+        'ratio': ratio_var_bg,
+        'percentiles': percentiles
+    }
+
     results = execute_interpolation(
         start_date,
         end_date,
@@ -72,24 +84,27 @@ def execute_interpolation(
         flow_sim,
     ) = util.load_files(files)
 
+    time_range = (end_date - start_date).days
+
     args = {
         "flow_obs": flow_obs,
         "flow_sim": flow_sim,
         "start_date": start_date,
         "end_date": end_date,
+        "time_range": time_range,
         "stations_info": stations_info,
         "stations_mapping": util.convert_list_to_dict(stations_mapping),
         "stations_id": [station[0] for station in stations_validation],
     }
 
-    (
-        station_count,
-        drained_area,
-        centroid_lat,
-        centroid_lon,
-        selected_flow_obs,
-        selected_flow_sim,
-    ) = retreive_data(args)
+    data = retreive_data(args)
+
+    station_count = data["station_count"]
+    drainage_area = data["drainage_area"]
+    centroid_lat = data["centroid_lat"]
+    centroid_lon = data["centroid_lon"]
+    selected_flow_obs = data["selected_flow_obs"]
+    selected_flow_sim = data["selected_flow_sim"]
 
     x, y = ma.latlon_to_xy(
         centroid_lat,
@@ -99,7 +114,7 @@ def execute_interpolation(
     )  # Projete dans un plan pour avoir des distances en km
 
     x_points, y_points = standardize_points_with_roots(
-        x, y, station_count, drained_area
+        x, y, station_count, drainage_area
     )
 
     # create the weighting function parameters
@@ -113,23 +128,36 @@ def execute_interpolation(
     )
 
     # Create tuple with all info, required for the parallel processing.
-    args = (
-        station_count,
-        selected_flow_obs,
-        selected_flow_sim,
-        ecf_fun,
-        par_opt,
-        x_points,
-        y_points,
-        start_date,
-        end_date,
-        selected_flow_obs,
-        drained_area,
-        ratio_var_bg,
-        percentiles,
-        iterations,
-    )
-
+    args = {
+        "station_count": station_count,
+        "selected_flow_obs": selected_flow_obs,
+        "selected_flow_sim": selected_flow_sim,
+        "ecf_fun": ecf_fun,
+        "par_opt": par_opt,
+        "x_points": x_points,
+        "y_points": y_points,
+        "time_range": time_range,
+        "drainage_area": drainage_area,
+        "ratio_var_bg": ratio_var_bg,
+        "percentiles": percentiles,
+        "iterations": iterations,
+    }
+    # args = (
+    #     station_count,
+    #     selected_flow_obs,
+    #     selected_flow_sim,
+    #     ecf_fun,
+    #     par_opt,
+    #     x_points,
+    #     y_points,
+    #     start_date,
+    #     end_date,
+    #     selected_flow_obs,
+    #     drained_area,
+    #     ratio_var_bg,
+    #     percentiles,
+    #     iterations,
+    # )
     return parallelize_operation(args, parallelize=parallelize)
 
 
@@ -158,14 +186,14 @@ def retreive_data(args):
     flow_sim = args["flow_sim"]
     start_date = args["start_date"]
     end_date = args["end_date"]
+    time_range = args["time_range"]
     stations_info = args["stations_info"]
     stations_mapping = args["stations_mapping"]
     stations_id = args["stations_id"]
 
     station_count = len(stations_id)
 
-    time_range = (end_date - start_date).days
-    centroid_lat, centroid_lon, drained_area = util.initialize_nan_arrays(
+    centroid_lat, centroid_lon, drainage_area = util.initialize_nan_arrays(
         station_count, 3
     )
     selected_flow_obs, selected_flow_sim = util.initialize_nan_arrays(
@@ -182,7 +210,7 @@ def retreive_data(args):
         sup_sim = flow_sim.drainage_area[index_section].item()
         sup_obs = flow_obs.drainage_area[index_station].item()
 
-        drained_area[i] = sup_obs
+        drainage_area[i] = sup_obs
 
         selected_flow_sim[:, i] = (
             flow_sim.Dis.sel(time=slice(start_date, end_date), station=index_section)[
@@ -205,14 +233,16 @@ def retreive_data(args):
     selected_flow_obs = np.log(selected_flow_obs)
     selected_flow_sim = np.log(selected_flow_sim)
 
-    return (
-        station_count,
-        drained_area,
-        centroid_lat,
-        centroid_lon,
-        selected_flow_obs,
-        selected_flow_sim,
-    )
+    returned_dict = {
+        "station_count": station_count,
+        "drainage_area": drainage_area,
+        "centroid_lat": centroid_lat,
+        "centroid_lon": centroid_lon,
+        "selected_flow_sim": selected_flow_sim,
+        "selected_flow_obs": selected_flow_obs
+    }
+
+    return returned_dict
 
 
 def standardize_points_with_roots(x, y, station_count, drained_area):
@@ -246,11 +276,9 @@ def parallelize_operation(args, parallelize=True):
        5. Collect the results and unzip the tuple returning from pool.map.
        6. Close the pool and return the parsed results.
     """
-    station_count = args[0]
-    start_date = args[7]
-    end_date = args[8]
-    percentiles = args[12]
-    time_range = (end_date - start_date).days
+    station_count = args["station_count"]
+    percentiles = args["percentiles"]
+    time_range = args["time_range"]
 
     flow_quantiles = util.initialize_nan_arrays(
         (time_range, station_count), len(percentiles)
@@ -260,7 +288,7 @@ def parallelize_operation(args, parallelize=True):
     if parallelize:
         processes_count = os.cpu_count() / 2 - 1
         p = Pool(int(processes_count))
-        args_i = [(i, *args) for i in range(0, station_count)]
+        args_i = [(i, args) for i in range(0, station_count)]
         flow_quantiles_station = zip(
             *p.map(opt.loop_interpolation_optimale_stations, args_i)
         )
@@ -274,7 +302,7 @@ def parallelize_operation(args, parallelize=True):
     else:
         for i in range(0, station_count):
             flow_quantiles_station = opt.loop_interpolation_optimale_stations(
-                (i, *args)
+                (i, args)
             )
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][:, i] = flow_quantiles_station[k][:]
