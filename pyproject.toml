@@ -1,0 +1,277 @@
+[build-system]
+requires = ["flit_core >=3.8,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "xhydro"
+authors = [
+  {name = "Thomas-Charles Fortier Filion", email = "tcff_hydro@outlook.com"},
+  {name = "Gabriel Rondeau-Genesse", email = "rondeau-genesse.gabriel@ouranos.ca"},
+  {name = "Sébastien Langlois"}
+]
+maintainers = [
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
+  {name = "Gabriel Rondeau-Genesse", email = "rondeau-genesse.gabriel@ouranos.ca"}
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+requires-python = ">=3.9.0"
+keywords = ["xhydro"]
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  # "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Hydrology"
+]
+dynamic = ["description", "version"]
+dependencies = [
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  "numpy",
+  "pooch>=1.8.0",
+  "pydantic>=2.0,<2.5.3",
+  "statsmodels",
+  "xarray",
+  "xclim>=0.47.0",
+  "xdatasets>=0.3.1",
+  "xscen>=0.7.1"
+]
+
+[project.optional-dependencies]
+dev = [
+  # Dev tools and testing
+  "pip>=23.1.2",
+  "bump-my-version>=0.17.1",
+  "watchdog>=3.0.0",
+  "flake8>=7.0.0",
+  "flake8-alphabetize>=0.0.21",
+  "flake8-rst-docstrings>=0.3.0",
+  "flit>=3.9.0",
+  "tox>=4.5.1",
+  "coverage>=6.2.2,<8.0.0",
+  "coveralls>=3.3.1",
+  "pytest>=7.3.1",
+  "pytest-cov>=4.0.0",
+  "black==24.1.1",
+  "blackdoc==0.3.9",
+  "isort==5.13.2",
+  "pre-commit>=3.3.2"
+]
+docs = [
+  # Documentation and examples
+  "furo",
+  "hvplot",
+  "ipykernel",
+  "ipython",
+  "jupyter_client",
+  "nbsphinx",
+  "nbval",
+  "sphinx",
+  "sphinx-autoapi",
+  "sphinx-codeautolink",
+  "sphinx-copybutton",
+  "sphinx-intl",
+  "sphinxcontrib-napoleon"
+]
+
+[project.urls]
+"Homepage" = "https://xhydro.readthedocs.io/"
+"Changelog" = "https://xhydro.readthedocs.io/en/stable/changes.html"
+"Source" = "https://github.com/hydrologie/xhydro"
+"Issue tracker" = "https://github.com/hydrologie/xhydro/issues"
+
+[tool]
+
+[tool.black]
+target-version = [
+  "py38",
+  "py39",
+  "py310",
+  "py311",
+  "py312"
+]
+
+[tool.bumpversion]
+current_version = "0.3.3"
+commit = true
+commit_args = "--no-verify"
+tag = false
+tag_name = "v{new_version}"
+allow_dirty = false
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(\\-(?P<release>[a-z]+)(\\.(?P<build>\\d+)))?"
+serialize = [
+  "{major}.{minor}.{patch}-{release}.{build}",
+  "{major}.{minor}.{patch}"
+]
+
+[[tool.bumpversion.files]]
+filename = "xhydro/__init__.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "tests/test_xhydro.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = ".cruft.json"
+search = "\"version\": \"{current_version}\""
+replace = "\"version\": \"{new_version}\""
+
+[tool.bumpversion.parts.build]
+independent = false
+
+[tool.bumpversion.parts.release]
+optional_value = "release"
+values = [
+  "dev",
+  "release"
+]
+
+[tool.coverage.run]
+relative_files = true
+include = ["xhydro/*"]
+omit = ["tests/*.py"]
+
+[tool.flit.sdist]
+include = [
+  ".zenodo.json",
+  "AUTHORS.rst",
+  "CHANGES.rst",
+  "CONTRIBUTING.rst",
+  "LICENSE",
+  "Makefile",
+  "README.rst",
+  "environment-dev.yml",
+  "environment.yml",
+  "docs/_static/_images/*.gif",
+  "docs/_static/_images/*.jpg",
+  "docs/_static/_images/*.png",
+  "docs/_static/_images/*.rst",
+  "docs/Makefile",
+  "docs/conf.py",
+  "docs/make.bat",
+  "tests/*.py",
+  "tox.ini",
+  "xhydro",
+  "xhydro/testing/registry.txt"
+]
+exclude = [
+  "*.py[co]",
+  "__pycache__",
+  ".coveralls.yml",
+  ".editorconfig",
+  ".flake8",
+  ".gitignore",
+  ".pre-commit-config.yaml",
+  ".readthedocs.yml",
+  ".yamllint.yaml",
+  "Makefile",
+  "docs/_*",
+  "docs/apidoc/modules.rst",
+  "docs/apidoc/xhydro*.rst",
+  "docs/locales",
+  "xhydro/testing/data/*"
+]
+
+[tool.isort]
+profile = "black"
+py_version = 38
+
+[tool.mypy]
+python_version = 3.8
+show_error_codes = true
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
+
+[tool.numpydoc_validation]
+checks = [
+  "all", # report on all checks, except the below
+  "ES01",
+  "EX01",
+  "GL01",
+  "SA01"
+]
+exclude = [
+  # don't report on objects that match any of these regex
+  '\.undocumented_method$',
+  '\.__repr__$',
+  # any object starting with an underscore is a private object
+  '\._\w+'
+]
+
+[tool.pytest.ini_options]
+addopts = [
+  "--verbose",
+  "--color=yes"
+]
+filterwarnings = ["ignore::UserWarning"]
+testpaths = "tests"
+markers = [
+  "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')"
+]
+
+[tool.ruff]
+src = [""]
+line-length = 150
+target-version = "py38"
+exclude = [
+  ".eggs",
+  ".git",
+  "build",
+  "docs",
+  "tests"
+]
+ignore = [
+  "D205",
+  "D400",
+  "D401"
+]
+select = [
+  "C9",
+  "D",
+  "E",
+  "F",
+  "W"
+]
+
+[tool.ruff.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.format]
+line-ending = "auto"
+
+[tool.ruff.isort]
+known-first-party = ["xhydro"]
+case-sensitive = true
+detect-same-package = false
+lines-after-imports = 1
+no-lines-before = ["future", "standard-library"]
+
+[tool.ruff.mccabe]
+max-complexity = 15
+
+[tool.ruff.per-file-ignores]
+"xhydro/**/__init__.py" = ["F401", "F403"]
+"tests/**/*.py" = ["D100", "D101", "D102", "D103"]
+
+[tool.ruff.pycodestyle]
+max-doc-length = 180
+
+[tool.ruff.pydocstyle]
+convention = "numpy"

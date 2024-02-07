@@ -1,10 +1,9 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
-import scipy.stats
 import statsmodels
 import xarray as xr
 import xclim.indices.stats
@@ -19,7 +18,10 @@ __all__ = [
 
 
 def fit(
-    ds, distributions: list = None, min_years=None, method: str = "ML"
+    ds,
+    distributions: Optional[list[str]] = None,
+    min_years: Optional[int] = None,
+    method: str = "ML",
 ) -> xr.Dataset:
     """Fit multiple distributions to data.
 
@@ -27,10 +29,10 @@ def fit(
     ----------
     ds : xr.Dataset
         Dataset containing the data to fit. All variables will be fitted.
-    distributions : list of str
+    distributions : list of str, optional
         List of distribution names as defined in `scipy.stats`. See https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-distributions.
         Defaults to ["expon", "gamma", "genextreme", "genpareto", "gumbel_r", "pearson3", "weibull_min"].
-    min_years : int
+    min_years : int, optional
         Minimum number of years required for a distribution to be fitted.
     method : str
         Fitting method. Defaults to "ML" (maximum likelihood).
@@ -42,7 +44,8 @@ def fit(
 
     Notes
     -----
-    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the maximum number of unique parameters between the distributions.
+    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the
+    maximum number of unique parameters between the distributions.
     """
     distributions = distributions or [
         "expon",
@@ -67,30 +70,11 @@ def fit(
         params = xr.concat(p, dim="scipy_dist")
 
         # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
-        p_order = [list(pi.dparams.values) for pi in p]
-        if any(len(pi) != 2 and len(pi) != 3 for pi in p_order):
-            raise NotImplementedError(
-                "Only distributions with 2 or 3 parameters are currently supported."
-            )
-        skew = np.unique([pi[0] for pi in p_order if len(pi) == 3])
-        loc = np.unique([pi[0] if len(pi) == 2 else pi[1] for pi in p_order])
-        scale = np.unique([pi[1] if len(pi) == 2 else pi[2] for pi in p_order])
-        # if any common name between skew, loc and scale, raise error
-        if (
-            any([lo in skew for lo in loc])
-            or any([s in skew for s in scale])
-            or any([s in loc for s in scale])
-        ):
-            raise ValueError("Guessed skew, loc, and scale parameters are not unique.")
-        params = params.sel(dparams=np.concatenate([skew, loc, scale]))
-
-        # Check that it worked by making sure that the index is in ascending order
-        for pi in p:
-            p_order = [list(params.dparams.values).index(p) for p in pi.dparams.values]
-            if not np.all(np.diff(p_order) > 0):
-                raise ValueError(
-                    "Something went wrong when ordering the parameters across distributions."
-                )
+        p_order = sorted(set(params.dparams.values).difference(["loc", "scale"])) + [
+            "loc",
+            "scale",
+        ]
+        params = params.sel(dparams=p_order)
 
         if min_years is not None:
             params = params.where(ds[v].notnull().sum("time") >= min_years)
@@ -106,7 +90,9 @@ def fit(
     return out
 
 
-def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Dataset:
+def parametric_quantiles(
+    p: xr.Dataset, t: Union[float, list[float]], mode: str = "max"
+) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 
     Parameters
@@ -128,9 +114,9 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
 
     t = np.atleast_1d(t)
     if mode == "max":
-        t = 1 - 1.0 / t
+        q = 1 - 1.0 / t
     elif mode == "min":
-        t = 1.0 / t
+        q = 1.0 / t
     else:
         raise ValueError(f"'mode' must be 'max' or 'min', got '{mode}'.")
 
@@ -138,26 +124,39 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
     for v in p.data_vars:
         quantiles = []
         for d in distributions:
-            da = (
-                p[v]
-                .sel(scipy_dist=d)
-                .dropna("dparams", how="all")
-                .transpose("dparams", ...)
-            )
+            dist_obj = xclim.indices.stats.get_dist(d)
+            shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
+            dist_params = shape_params + ["loc", "scale"]
+            da = p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
             da.attrs["scipy_dist"] = d
-            q = (
-                xclim.indices.stats.parametric_quantile(da, q=t)
+            qt = (
+                xclim.indices.stats.parametric_quantile(da, q=q)
                 .rename({"quantile": "return_period"})
-                .assign_coords(scipy_dist=d)
+                .assign_coords(scipy_dist=d, return_period=t)
                 .expand_dims("scipy_dist")
             )
-            quantiles.append(q)
+            quantiles.append(qt)
         quantiles = xr.concat(quantiles, dim="scipy_dist")
+
+        # Add the quantile as a new coordinate
+        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": t})
+        da_q.attrs["long_name"] = (
+            "Probability of exceedance"
+            if mode == "max"
+            else "Probability of non-exceedance"
+        )
+        da_q.attrs["description"] = (
+            "Parametric distribution quantiles for the given return period."
+        )
+        da_q.attrs["mode"] = mode
+        quantiles = quantiles.assign_coords(p_quantile=da_q)
+
         quantiles.attrs["scipy_dist"] = distributions
-        quantiles.attrs[
-            "description"
-        ] = "Quantiles estimated by statistic distributions"
-        quantiles.attrs["long_name"] = "Distribution quantiles"
+        quantiles.attrs["description"] = (
+            f"Return period ({mode}) estimated with statistic distributions"
+        )
+        quantiles.attrs["long_name"] = "Return period"
+        quantiles.attrs["mode"] = mode
         out.append(quantiles)
 
     out = xr.merge(out)
@@ -166,7 +165,7 @@ def parametric_quantiles(p, t: Union[float, list], mode: str = "max") -> xr.Data
     return out
 
 
-def criteria(ds, p) -> xr.Dataset:
+def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
     """Compute information criteria (AIC, BIC, AICC) from fitted distributions, using the log-likelihood.
 
     Parameters
@@ -208,14 +207,13 @@ def criteria(ds, p) -> xr.Dataset:
     for v in common_vars:
         c = []
         for d in distributions:
+            dist_obj = xclim.indices.stats.get_dist(d)
+            shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
+            dist_params = shape_params + ["loc", "scale"]
             da = ds[v].transpose("time", ...)
             params = (
-                p[v]
-                .sel(scipy_dist=d)
-                .dropna("dparams", how="all")
-                .transpose("dparams", ...)
+                p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
             )
-            dist_obj = getattr(scipy.stats, d)
 
             if len(da.dims) == 1:
                 crit = xr.apply_ufunc(
@@ -247,11 +245,12 @@ def criteria(ds, p) -> xr.Dataset:
             crit.attrs = p[v].attrs
             crit.attrs["history"] = (
                 crit.attrs.get("history", "")
-                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
+                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                f"criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
             )
-            crit.attrs[
-                "description"
-            ] = "Information criteria for the distribution parameters."
+            crit.attrs["description"] = (
+                "Information criteria for the distribution parameters."
+            )
             crit.attrs["long_name"] = "Information criteria"
 
             # Remove a few attributes that are not relevant anymore

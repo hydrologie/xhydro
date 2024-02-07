@@ -20,7 +20,8 @@ from pathlib import Path
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+sys.path.insert(0, os.path.abspath(".."))
 if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
     # RTD doesn't activate the env, and esmpy depends on an env var set there
     # We assume the `os` package is in {ENV}/lib/pythonX.X/os.py
@@ -38,15 +39,15 @@ import xhydro  # noqa
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosectionlabel',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.todo',
-    'sphinx_codeautolink',
-    'sphinx_copybutton',
-    "nbsphinx"
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.todo",
+    "sphinx_codeautolink",
+    "sphinx_copybutton",
+    "nbsphinx",
 ]
 
 autosectionlabel_prefix_document = True
@@ -76,22 +77,22 @@ extlinks = {
 }
 
 # Generate documentation from Jupyter notebooks.
-nbsphinx_execute = 'always'
+nbsphinx_execute = "always"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ['.rst']
+source_suffix = [".rst"]
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'xHydro'
+project = "xHydro"
 copyright = "2023, Thomas-Charles Fortier Filion"
 author = "Thomas-Charles Fortier Filion"
 
@@ -111,13 +112,17 @@ release = xhydro.__version__
 # Usually you set "language" from the command line for these cases.
 language = "en"
 
+# Sphinx-intl configuration
+locale_dirs = ["locales"]
+gettext_compact = False  # optional
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -128,7 +133,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'furo'
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
@@ -145,7 +150,7 @@ html_theme = 'furo'
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'xhydrodoc'
+htmlhelp_basename = "xhydrodoc"
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -154,15 +159,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -172,9 +174,13 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'xhydro.tex',
-     'xHydro Documentation',
-     'Thomas-Charles Fortier Filion', 'manual'),
+    (
+        master_doc,
+        "xhydro.tex",
+        "xHydro Documentation",
+        "Thomas-Charles Fortier Filion",
+        "manual",
+    ),
 ]
 
 
@@ -182,11 +188,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'xhydro',
-     'xHydro Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "xhydro", "xHydro Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -195,10 +197,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'xhydro',
-     'xHydro Documentation',
-     author,
-     'xhydro',
-     'Hydrological analysis library built with xarray.',
-     'hydrology'),
+    (
+        master_doc,
+        "xhydro",
+        "xHydro Documentation",
+        author,
+        "xhydro",
+        "Hydrological analysis library built with xarray.",
+        "hydrology",
+    ),
 ]

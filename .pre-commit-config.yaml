@@ -11,58 +11,59 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        exclude: setup.cfg
       - id: end-of-file-fixer
       - id: debug-statements
       - id: check-json
+      - id: check-toml
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
         # exclude: .ipynb
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.23.1
+    hooks:
+      - id: toml-sort-fix
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
       - id: rst-inline-touching-normal
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.9.1
+    rev: 24.1.1
     hooks:
       - id: black
-        args: [ '--target-version=py39' ]
-        exclude: ^docs/
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        additional_dependencies: [ 'flake8-rst-docstrings' ]
-        args: ['--config=setup.cfg']
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
-        args: ['--settings-file=setup.cfg']
         exclude: ^docs/
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.3.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.14
     hooks:
-      - id: pydocstyle
-        args: [ '--config=setup.cfg' ]
+      - id: ruff
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies: [ 'flake8-alphabetize', 'flake8-rst-docstrings' ]
+        args: [ '--config=.flake8' ]
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.6.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: 'tests|docs/conf.py'
   - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.8
+    rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==23.9.1' ]
+        additional_dependencies: [ 'black==24.1.1' ]
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+    rev: v1.33.0
     hooks:
       - id: yamllint
         args: ['--config-file', '.yamllint.yaml']
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.49"
-    hooks:
-      - id: check-manifest
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.0
+    rev: 0.27.3
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
@@ -79,6 +80,6 @@ ci:
     autofix_prs: true
     autoupdate_branch: ''
     autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-    autoupdate_schedule: weekly
+    autoupdate_schedule: quarterly
     skip: []
     submodules: false

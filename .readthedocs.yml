@@ -15,10 +15,16 @@ build:
   tools:
     python: "mambaforge-22.9"
   jobs:
-    post_create_environment:
-      - pip install . --no-deps
     pre_build:
       - sphinx-apidoc -o docs/apidoc --private --module-first xhydro
+      - sphinx-build -M gettext docs docs/_build
 
 conda:
   environment: environment-dev.yml
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
