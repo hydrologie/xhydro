@@ -273,15 +273,15 @@ def get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
 
     Parameters
     ----------
-    data : xarray DataArray
+    data_array : xarray DataArray
         Input data.
     alpha : float, optional
         Plotting position parameter, by default 0.4.
-        See scipy.stats.mstats.plotting_positions for typical values for alpha and beta. (.4,.4) : approximately quantile unbiased (Cunnane)
+        See scipy.stats.mstats.plotting_positions for typical values for alpha and beta. (.4,.4) : approximately quantile unbiased (Cunnane).
     beta : float, optional
         Plotting position parameter, by default 0.4.
     return_period : bool, optional
-        If True, return periods instead of probabilities, by default True
+        If True, return periods instead of probabilities, by default True.
 
     Returns
     -------
@@ -291,6 +291,23 @@ def get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
     data_copy = data_array.copy(deep=True)
 
     def vec_plotting_positions(vec_data, alpha=0.4, beta=0.4):
+        """Calculate plotting positions for vectorized data.
+
+        Parameters
+        ----------
+        vec_data : ndarray
+            Input data, with time dimension first.
+        alpha : float, optional
+            Plotting position parameter.
+        beta : float, optional
+            Plotting position parameter.
+
+        Returns
+        -------
+        ndarray
+            Array with plotting positions assigned to valid data points,
+            and NaNs assigned to invalid data points.
+        """
         out = []
         if vec_data.ndim == 1:
             valid = ~np.isnan(vec_data)
@@ -332,11 +349,23 @@ def get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
 def prepare_plots(params, xmin=1, xmax=10000, npoints=100, log=True):
     """Prepare x-values for plotting frequency analysis results.
 
-    If log=True, returns log-spaced x values between xmin and xmax.
-    Otherwise returns linearly spaced values between xmin and xmax.
+    Parameters
+    ----------
+    params : xarray DataArray
+        Input data.
+    xmin : float, optional
+        Minimum x value, by default 1.
+    xmax : float, optional
+        Maximum x value, by default 10000.
+    npoints : int, optional
+        Number of x values, by default 100.
+    log : bool, optional
+        If True, return log-spaced x values, by default True.
 
-    Passes x values to parametric_quantiles() to compute quantiles and
-    assigns x as coordinate.
+    Returns
+    -------
+    xarray DataArray
+        The data with plotting positions assigned.
     """
     if log:
         x = np.logspace(np.log10(xmin), np.log10(xmax), npoints, endpoint=True)
