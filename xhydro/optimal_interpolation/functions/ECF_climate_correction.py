@@ -5,6 +5,33 @@ from .mathematical_algorithms import calculate_average_distance, eval_covariance
 from .utilities import initialize_nan_arrays, general_ecf
 
 def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count=10):
+    """
+    Perform correction on flow observations using optimal interpolation.
+
+    Parameters
+    ----------
+    flow_obs : np.ndarray
+        Array of observed flow data.
+    flow_sim : np.ndarray
+        Array of simulated flow data.
+    x_points : np.ndarray
+        X-coordinate points for stations.
+    y_points : np.ndarray
+        Y-coordinate points for stations.
+    savename : str
+        Name for saving the results.
+    iteration_count : int, optional
+        Number of iterations for the interpolation. Default is 10.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the following:
+        - ecf_fun: Partial function for the error covariance function.
+        - par_opt: Optimized parameters for the interpolation.
+
+    """
+
     difference = flow_sim - flow_obs
     time_range = np.shape(difference)[0]
 
@@ -58,6 +85,34 @@ def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count
     return ecf_fun, par_opt
 
 def initialize_ajusted_ECF_climate_variables(flow_obs, flow_sim, x_points, y_points, iteration_count):
+    """
+    Initialize variables for adjusted ECF climate.
+
+    Parameters
+    ----------
+    flow_obs : np.ndarray
+        Array of observed flow data.
+    flow_sim : np.ndarray
+        Array of simulated flow data.
+    x_points : np.ndarray
+        X-coordinate points for stations.
+    y_points : np.ndarray
+        Y-coordinate points for stations.
+    iteration_count : int
+        Number of iterations for the interpolation.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the following:
+        - difference: Difference between simulated and observed flows.
+        - station_count: Number of stations.
+        - time_range: Number of time steps in the data.
+        - heights: Array to store heights.
+        - covariances: Array to store covariances.
+        - standard_deviations: Array to store standard deviations.
+
+    """
     difference = flow_sim - flow_obs
 
     station_count = np.shape(x_points)[1]
@@ -74,6 +129,31 @@ def initialize_ajusted_ECF_climate_variables(flow_obs, flow_sim, x_points, y_poi
     return difference, station_count, time_range, heights, covariances, standard_deviations
 
 def calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights, valid_heights_count):
+    """
+    Calculate statistics for Empirical Covariance Function (ECF).
+
+    Parameters
+    ----------
+    distance : np.ndarray
+        Array of distances.
+    covariance : np.ndarray
+        Array of covariances.
+    covariance_weights : np.ndarray
+        Array of weights for covariances.
+    valid_heights : np.ndarray
+        Array of valid heights.
+    valid_heights_count : int
+        Number of valid heights.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the following:
+        - h_b: Array of mean distances for each height bin.
+        - cov_b: Array of weighted average covariances for each height bin.
+        - std_b: Array of standard deviations for each height bin.
+
+    """
     cov_b = np.zeros(valid_heights_count - 1)
     h_b = np.zeros(valid_heights_count - 1)
     std_b = np.zeros(valid_heights_count - 1)
@@ -91,6 +171,30 @@ def calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights,
     return h_b, cov_b, std_b
 
 def initialize_stats_variables(heights, covariances, standard_deviations, iteration_count=10):
+    """
+    Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
+
+    Parameters
+    ----------
+    heights : np.ndarray
+        Array of heights.
+    covariances : np.ndarray
+        Array of covariances.
+    standard_deviations : np.ndarray
+        Array of standard deviations.
+    iteration_count : int, optional
+        Number of iterations, default is 10.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the following:
+        - distance: Array of distances.
+        - covariance: Array of covariances.
+        - covariance_weights: Array of weights for covariances.
+        - valid_heights: Array of valid heights.
+        - valid_heights_count: Number of valid heights.
+    """
     quantities = np.linspace(0, 1, iteration_count + 1)
     valid_heights = np.unique(np.quantile(heights[~np.isnan(heights)], quantities))
     valid_heights_count = len(valid_heights)

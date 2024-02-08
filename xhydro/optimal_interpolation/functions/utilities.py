@@ -7,13 +7,14 @@ import os
 import xarray as xr
 
 def read_csv_file(csv_filename):
-    """Retourne une liste qui contient les valeurs d'un fichier CSV.
+    """
+    Read values from a CSV file and return them as a list.
 
-    Arguments :
-    csv_filename (string): Le nom du fichier CSV
-    header (bool) : Le fichier CSV contient une entête
-    Retourne :
-    (list): Liste qui contient les valeurs du fichier
+    Parameters:
+    - csv_filename (str): The name of the CSV file to be read.
+
+    Returns:
+    list: A list containing the values from the CSV file.
     """
     items = []
     with open(csv_filename, newline="") as csvfile:
@@ -30,24 +31,48 @@ def read_csv_file(csv_filename):
 
 
 def find_index(array, key, value):
-    """Find the index of an element in a list.
+    """
+    Find the index of an element in a list based on a specified key-value pair.
 
-    Arguments :
-    array (list): Liste qui contient les données
-    value (string) : Élément à trouver dans la liste
-    Retourne :
-    (float): -1 si l'élément est introuvable ou l'indice de l'élément
+    Parameters:
+    - array (list): List containing the data.
+    - key (str): The key to identify the element in the list.
+    - value (str): The value associated with the key to search for.
+
+    Returns:
+    int: Returns the index of the element in the list where the key-value pair matches.
+         Returns -1 if the element is not found.
     """
     return np.where(array[key].data == value.encode("UTF-8"))[0][0]
 
 
 def convert_list_to_dict(t):
-    """Convert lists to dictionnaries."""
+    """
+    Convert lists to dictionaries.
+
+    This function takes a list of key-value pairs and converts it into a dictionary.
+
+    Parameters:
+    - t (list): List of key-value pairs.
+
+    Returns:
+    dict: A dictionary created from the input list."""
     return {k: v for k, v in t}
 
 
 def initialize_nan_arrays(dimensions, percentiles):
-    """Preallocate arrays to nan of correct size for populating later."""
+    """
+    Initialize arrays with NaN values for later population.
+
+    This function preallocates arrays filled with NaN values to the correct size for later data population.
+
+    Parameters:
+    - dimensions (int): The size of each array dimension.
+    - percentiles (int): The number of arrays to initialize, representing percentiles.
+
+    Returns:
+    tuple: A tuple of preallocated arrays, each initialized with NaN values.
+    """
     t = [0] * percentiles
     for i in range(percentiles):
         t[i] = np.empty(dimensions)
@@ -56,15 +81,18 @@ def initialize_nan_arrays(dimensions, percentiles):
 
 
 def find_station_section(stations, section_id):
-    """Find which section in the data tables corresponds to the station.
+    """
+    Find the section associated with a given station in the data tables.
 
-    Trouve l'association d'une section à une station.
-    Arguments :
-    stations (list): Liste qui contient les stations
-    section_id (string) : L'indentificateur de la section
-    Retourne :
-    (string): Vide si la section est introuvable ou la clé d'association entre
-    la station et une section.
+    This function searches for the association of a section with a specific station in the provided list.
+
+    Parameters:
+    - stations (list): A list containing station information.
+    - section_id (string): The identifier of the section.
+
+    Returns:
+    string: Returns an empty string if the section is not found, otherwise, returns the key
+    representing the association between the station and a section.
     """
     value = ""
     section_position = 0
@@ -76,7 +104,14 @@ def find_station_section(stations, section_id):
     return value[section_value]
 
 def load_files(files):
-    """Load the files that contain the Hydrotel runs and observations."""
+    """
+    Load data from files containing Hydrotel runs and observations.
+
+    Parameters:
+    - files (list): A list of file paths to be loaded.
+
+    Returns:
+    list: A list containing the loaded data from the specified files."""
     extract_files = [0] * len(files)
     count = 0
     for filepath in files:
@@ -89,7 +124,19 @@ def load_files(files):
     return extract_files
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):
-    """Code to plot results as per user request."""
+    """
+    Plots the results of model evaluation using various metrics.
+
+    Parameters:
+    - kge (float): Kling-Gupta Efficiency for the entire dataset.
+    - kge_l1o (float): Kling-Gupta Efficiency for leave-one-out cross-validation.
+    - nse (float): Nash-Sutcliffe Efficiency for the entire dataset.
+    - nse_l1o (float): Nash-Sutcliffe Efficiency for leave-one-out cross-validation.
+
+    Returns:
+    None
+
+    """
     fig, (ax1, ax2) = plt.subplots(2)
     ax1.scatter(kge, kge_l1o)
     ax1.set_xlabel("KGE")
@@ -109,11 +156,17 @@ def plot_results(kge, kge_l1o, nse, nse_l1o):
 
 
 def general_ecf(h, par, form):
-    """Define the form of the ECF equations.
+    """
+    Define the form of the Error Covariance Function (ECF) equations.
 
-    We will use functools.partial to define functions instead of lambdas as it is
-    more efficient and will allow parallelization. Therefore, define the ECF
-    function shape here. New function.
+    Parameters:
+    - h (float or array): The distance or distances at which to evaluate the ECF.
+    - par (list): List of parameters for the ECF equation.
+    - form (int): The form of the ECF equation to use (1, 2, or other).
+
+    Returns:
+    float or array: The calculated ECF values based on the specified form.
+
     """
     if form == 1:
         return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])

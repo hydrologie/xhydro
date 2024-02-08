@@ -9,7 +9,16 @@ from .utilities import initialize_nan_arrays
 
 
 def optimal_interpolation(oi_input, args):
-    """Perform the actual optimal interpolation step."""
+    """
+    Perform optimal interpolation to estimate values at specified locations.
+
+    Parameters:
+    - oi_input (dict): Input data dictionary containing necessary information for interpolation.
+    - args (dict): Additional arguments and state information for the interpolation process.
+
+    Returns:
+    tuple: A tuple containing the updated oi_output dictionary and the modified args dictionary.
+    """
     if len(args) == 0:
         args = {}
 
@@ -105,15 +114,20 @@ def optimal_interpolation(oi_input, args):
     return oi_output, args
 
 
-def loop_interpolation_optimale_stations(args):
-    """Apply optimal interpolation to a single validation site for all times.
-
-    Takes as input the "args" iterator values prepared just before, unzips them
-    into its components, then runs the code for a single leave-one-out validation
-    station. The order is controlled by the pool, so this function is run in
-    parallel. Returns the desired quantiles to the pool.map that calls it.
+def loop_optimal_interpolation_stations(args):
     """
+    Apply optimal interpolation to a single validation site (station) for the selected time range.
 
+    Parameters:
+    - args (tuple): A tuple containing the station index and a dictionary with various information.
+                    The dictionary should include keys such as 'station_count', 'time_range', 'percentiles',
+                    'selected_flow_obs', 'selected_flow_sim', 'ratio_var_bg', 'ecf_fun', 'par_opt',
+                    'x_points', 'y_points', and 'drainage_area'.
+
+    Returns:
+    list: A list containing the quantiles of the flow values for each percentile over the specified time range.
+
+    """
     (station_index, args) = args
 
     station_count = args["station_count"]

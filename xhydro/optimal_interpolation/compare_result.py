@@ -16,12 +16,29 @@ def compare(
     """
     Start the computation of the comparison method.
 
+    Parameters
+    ----------
+    start_date : datetime
+        Start date of the analysis.
+    end_date : datetime
+        End date of the analysis.
+    files : list of str
+        List of files path for getting observed, simulated, and leave-one-out cross-validation flows.
+    percentile_to_plot : int, optional
+        Percentile value to plot (default is 50).
+    show_comparison : bool, optional
+        Whether to display the comparison plots (default is True).
+
+    Returns
+    -------
+    None
+
     TODO to make programmatic:
         1. Add checks for data quality/error handling
-        2. Comment/document
-        3. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
-        4. Check to make sure files and indexes are in the correct order when reading
-        5. Change structure of import for user
+        2. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
+        3. Check to make sure files and indexes are in the correct order when reading
+        4. Change structure of import for user
+        5. Save final result in netcdf
     """
     time = (end_date - start_date).days
 

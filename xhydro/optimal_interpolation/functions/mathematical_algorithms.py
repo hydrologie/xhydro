@@ -3,43 +3,70 @@ import numpy as np
 
 
 def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
-    """Evalute the covariance of a binomial distribution."""
-    n_data = len(values)
+    """
+    Evaluate the covariance of a binomial distribution.
+
+    Parameters:
+    - distances (numpy array): Array of distances for each data point.
+    - values (numpy array): Array of values corresponding to each data point.
+    - errors (numpy array): Array of errors (uncertainties) associated with each value.
+    - hmax_divider (int, optional): Maximum distance for binning is set as hmax_divider times the
+      maximum distance in the input data. Defaults to 2.
+    - iteration_count (int, optional): Number of iterations for refining the covariance estimate.
+      Defaults to 10.
+
+    Returns:
+    tuple: A tuple containing arrays for heights, covariance, standard deviation, and row length.
+
+    This function evaluates the covariance of a binomial distribution using a weighted approach.
+    It takes three numpy arrays: distances, values, and errors, representing the distance, values,
+    and uncertainties for each data point. It also accepts optional parameters:
+    - hmax_divider: Determines the maximum distance for binning.
+    - iteration_count: Number of iterations for refining the covariance estimate.
+
+    The function returns a tuple containing arrays for heights, covariance, standard deviation, and row length.
+    """
+
+    # Step 1: Calculate weights based on errors
     weights = np.power(1 / errors, 2)
     weights = weights / np.sum(weights)
 
+    # Step 2: Calculate weighted average and variances
     weighted_average = np.sum(values * weights) / np.sum(weights)
     variances = np.var(values, ddof=1)
 
+    # Step 3: Calculate covariance matrix
     weighted_values = values - weighted_average
-
     covariance = weighted_values * weighted_values[:, np.newaxis]
     covariance_weight = weights * weights[:, np.newaxis]
 
-    covariance = covariance.reshape(n_data * n_data)
-    covariance_weight = covariance_weight.reshape(n_data * n_data)
-
+    # Flatten matrices for further processing
+    covariance = covariance.reshape(len(values) * len(values))
+    covariance_weight = covariance_weight.reshape(len(values) * len(values))
     distances = distances.reshape(len(distances) * len(distances))
 
+    # Step 4: Apply distance threshold (hmax) for binning
     hmax = max(distances) / hmax_divider
     covariance = covariance[distances < hmax]
     distances = distances[distances < hmax]
 
-    quantiles = np.round(
-        [(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2
-    )
+    # Step 5: Define quantiles for binning
+    quantiles = np.round([(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2)
     cl = np.unique(np.quantile(distances, quantiles))
 
+    # Initialize arrays for results
     returned_covariance = np.empty((1, iteration_count))
     returned_heights = np.empty((1, iteration_count))
     returned_standard = np.empty((1, iteration_count))
     returned_row_length = np.empty((1, iteration_count))
 
+    # Set initial values to NaN
     returned_covariance[:, :] = np.nan
     returned_heights[:, :] = np.nan
     returned_standard[:, :] = np.nan
     returned_row_length[:, :] = np.nan
 
+    # Step 6: Iterate over distance bins
     for i in range(0, len(cl) - 1):
         ind = np.where((distances >= cl[i]) & (cl[i + 1] > distances))[0]
         returned_heights[:, i] = np.mean(distances[ind])
@@ -47,22 +74,31 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
         selected_covariance_weight = covariance_weight[ind]
         selected_covariance = covariance[ind]
 
+        # Step 7: Calculate covariance, standard deviation, and row length
         weight = selected_covariance_weight / np.sum(selected_covariance_weight)
-
         returned_covariance[:, i] = (
-            np.sum(weight)
-            / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2)))
-            * np.sum(weight * selected_covariance)
+            np.sum(weight) /
+            (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2))) *
+            np.sum(weight * selected_covariance)
         ) / variances
-
         returned_standard[:, i] = np.sqrt(np.var(selected_covariance))
         returned_row_length[:, i] = len(ind)
 
+    # Step 8: Return the final results as a tuple
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
 def calculate_average_distance(x_points, y_points):
-    """Compute the pairwise distance between sets of points."""
+    """
+    Calculates the average Euclidean distance between points in 2D space.
+
+    Parameters:
+    - x_points (list): List of x-coordinates of points.
+    - y_points (list): List of y-coordinates of corresponding points.
+
+    Returns:
+    float: The average Euclidean distance between the points.
+    """
     count = x_points.shape[1]
     average_distances = np.zeros((count, count))
 
@@ -81,7 +117,22 @@ def calculate_average_distance(x_points, y_points):
 
 
 def latlon_to_xy(lat, lon, lat0=0, lon0=0):
-    """Compute the distance in length units instead of lat/long units."""
+    """
+    Transform the geographic coordinate into the cartesian coordinate with a possibility of shifting the position
+    of the origin at a specific latitude and longitude.
+
+    Parameters
+    ----------
+        lat (list): List of latitude points
+        lon (list) :  List of longitude points
+        lat0 (list), optional :  Latitude at origin
+        lon0 (list), optional :  Longitude at origin
+    Returns
+    -------
+        x : Abscissas points
+        y : Ordinates points
+    """
+    """"""
     ray = 6371  # km
 
     lon = lon - lon0
@@ -99,16 +150,17 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
 
     return x, y
 
-
-# TODO: Replace these functions with those in the xhydro.hydrological_modelling.obj_fun toolbox.
 def kge_prime(obs, sim):
-    """Calculate KGE metric.
-
-    Arguments :
-    obs (list): Liste qui contient les débits observés
-    sim (list) : Liste qui contient les débits simulés
-    Retourne :
-    (float): Le coefficient d'efficacité KGE.
+    """Calculate Kling-Gupta Efficiency metric.
+    Parameters
+    ----------
+    obs : list
+        List of observed flows
+    sim : list
+        List of simulated flows
+    Returns
+    -------
+        float : The KGE efficiency coefficient
     """
     is_nan = np.isnan(obs) | np.isnan(sim)
 
@@ -132,13 +184,17 @@ def kge_prime(obs, sim):
 
 
 def nash(obs, sim):
-    """Calculate NSE metric.
+    """Calculate Nash–Sutcliffe efficiency metric.
 
-    Arguments :
-    obs (list): Liste qui contient les débits observés
-    sim (list) : Liste qui contient les débits simulés
-    Retourne :
-    (float): Le coefficient d'efficacité Nash–Sutcliffe.
+    Parameters
+    ----------
+    obs : list
+        List of observed flows
+    sim : list
+        List of simulated flows
+    Returns
+    -------
+        float : The Nash–Sutcliffe efficiency metric
     """
     sim = np.ma.array(sim, mask=np.isnan(obs))
     obs = np.ma.array(obs, mask=np.isnan(obs))

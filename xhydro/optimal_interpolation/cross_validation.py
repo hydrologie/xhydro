@@ -15,11 +15,12 @@ def execute(
     end_date,
     files,
     ratio_var_bg=0.15,
-    percentiles=[0.25, 0.50, 0.75],
+    percentiles=[0.25, 0.50, 0.75, 1.00],
     iterations=10,
     parallelize=False,
 ):
-    """Run the interpolation algorithm for cross-validation.
+    """
+    Run the interpolation algorithm for cross-validation.
 
     Parameters
     ----------
@@ -27,23 +28,24 @@ def execute(
         Start date of the analysis.
     end_date : datetime
         End date of the analysis.
-    files : list(str), optional
-        List of files path for getting flows and wathersheds info,
+    files : list(str)
+        List of files path for getting flows and watersheds info.
+    ratio_var_bg : float, optional
+        Ratio for background variance (default is 0.15).
     percentiles : list(float), optional
-        List of percentiles to analyze
+        List of percentiles to analyze (default is [0.25, 0.50, 0.75, 1.00]).
     iterations: int, optional
-        Number of iterations for the interpolation
+        Number of iterations for the interpolation (default is 10).
     parallelize : bool, optional
-        Execute the profiler in parallel or in series
+        Execute the profiler in parallel or in series (default is False).
 
     Returns
     -------
-    flow_l1o (Leave one out cross validation flow)
-    flow_l1o_percentile_25
-    flow_l1o_percentile_75
-    See Also
-    --------
-    xarray.open_dataset
+    list
+        A list containing the results of the interpolation:
+        - flow_l1o: Leave one out cross-validation flow.
+        - flow_l1o_percentile_25: Flow at the 25th percentile.
+        - flow_l1o_percentile_75: Flow at the 75th percentile.
     """
     # Run the code
     args = {
@@ -70,11 +72,22 @@ def execute(
 def execute_interpolation(
     start_date, end_date, files, ratio_var_bg, percentiles, iterations, parallelize
 ):
-    """Execute the interpolation algorithm.
-
-    Execute the main code, including setting constants to files, times, etc. Should
-    be converted to a function that takes these values as parameters.
+    """
+    Execute the main code, including setting constants to files, times, etc.
     Heavily modified to parallelize and to optimize.
+
+    Parameters:
+    - start_date (datetime.date): The start date of the interpolation period.
+    - end_date (datetime.date): The end date of the interpolation period.
+    - files (list): List of files containing Hydrotel runs and observations.
+    - ratio_var_bg (float): Ratio for background variance.
+    - percentiles (list): List of desired percentiles for flow quantiles.
+    - iterations (int): The number of iterations for the interpolation.
+    - parallelize (bool): Flag indicating whether to parallelize the interpolation.
+
+    Returns:
+    list: A list containing the flow quantiles for each desired percentile.
+'
     """
     (
         stations_info,
@@ -142,29 +155,23 @@ def execute_interpolation(
         "percentiles": percentiles,
         "iterations": iterations,
     }
-    # args = (
-    #     station_count,
-    #     selected_flow_obs,
-    #     selected_flow_sim,
-    #     ecf_fun,
-    #     par_opt,
-    #     x_points,
-    #     y_points,
-    #     start_date,
-    #     end_date,
-    #     selected_flow_obs,
-    #     drained_area,
-    #     ratio_var_bg,
-    #     percentiles,
-    #     iterations,
-    # )
     return parallelize_operation(args, parallelize=parallelize)
 
 
 
 
 def initialize_data_arrays(time_range, station_count):
-    """Intialize the data arrays to empty that we will need later."""
+    """
+    Initialize empty data arrays for later use.
+
+    Parameters:
+    - time_range (int): The number of time steps in the data arrays.
+    - station_count (int): The number of stations or data points.
+
+    Returns:
+    tuple: A tuple containing initialized empty arrays for selected flow observations,
+           selected flow simulations, centroid latitude, centroid longitude, and drained area.
+    """
     selected_flow_obs = np.empty((time_range, station_count))
     selected_flow_sim = np.empty((time_range, station_count))
     centroid_lat = np.empty(station_count)
@@ -181,7 +188,17 @@ def initialize_data_arrays(time_range, station_count):
 
 
 def retreive_data(args):
-    """Retrieve data from files to populate OI algorithm."""
+    """
+    Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
+
+    Parameters:
+    - args (dict): A dictionary containing the necessary information to retrieve and preprocess data.
+                  Keys include 'flow_obs', 'flow_sim', 'start_date', 'end_date', 'time_range',
+                  'stations_info', 'stations_mapping', and 'stations_id'.
+
+    Returns:
+    dict: A dictionary containing the retrieved and preprocessed data for OI algorithm.
+    """
     flow_obs = args["flow_obs"]
     flow_sim = args["flow_sim"]
     start_date = args["start_date"]
@@ -246,7 +263,19 @@ def retreive_data(args):
 
 
 def standardize_points_with_roots(x, y, station_count, drained_area):
-    """Standardize points with roots."""
+    """'
+    Standardize points with roots based on drainage area.
+
+    Parameters:
+    - x (array-like): Array of x-coordinates of the original points.
+    - y (array-like): Array of y-coordinates of the original points.
+    - station_count (int): The number of stations or points.
+    - drained_area (array-like): Array of drainage areas corresponding to each station.
+
+    Returns:
+    tuple: A tuple containing standardized x and y points with roots.
+    """
+
     x_points = np.empty((4, station_count))
     y_points = np.empty((4, station_count))
     for i in range(station_count):
@@ -290,7 +319,7 @@ def parallelize_operation(args, parallelize=True):
         p = Pool(int(processes_count))
         args_i = [(i, args) for i in range(0, station_count)]
         flow_quantiles_station = zip(
-            *p.map(opt.loop_interpolation_optimale_stations, args_i)
+            *p.map(opt.loop_optimal_interpolation_stations, args_i)
         )
         p.close()
         p.join()
@@ -301,7 +330,7 @@ def parallelize_operation(args, parallelize=True):
     # Serial
     else:
         for i in range(0, station_count):
-            flow_quantiles_station = opt.loop_interpolation_optimale_stations(
+            flow_quantiles_station = opt.loop_optimal_interpolation_stations(
                 (i, args)
             )
             for k in range(0, len(percentiles)):
