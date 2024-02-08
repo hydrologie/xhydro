@@ -2,36 +2,17 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.11
-  - IPyKernel
-  - bottleneck >=1.3.1
-  - cartopy
-  - cftime >=1.4.1
-  - cf_xarray >=0.6.1
-  - dask >=2.6
-  - furo
-  - geopandas
-  - geoviews
-  - h5netcdf
-  - hvplot
-  - intake
-  - intake-geopandas
-  - intake-xarray >=0.6.1
-  - jsonpickle
-  - matplotlib-base
-  - nbsphinx
-  - netCDF4
-  - numba
-  - numpy >=1.16.0
-  - pymannkendall
-  - rioxarray
-  - s3fs >=2022.7.0
-  - scipy >=1.2
-  - sphinx
-  - sphinx-autoapi
-  - sphinx-codeautolink
-  - sphinx-copybutton
-  - sphinxcontrib-napoleon
-  - xarray >=0.17.0
-  - xclim >=0.43.0
-  - zarr >=2.11.1
+  - python >=3.9,<3.12
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  # Main packages
+  - numpy
+  - pooch >=1.8.0
+  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
+  - spotpy
+  - statsmodels
+  - xarray
+  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
+  - xscen >=0.7.1
+  - pip
+  - pip:
+    - xdatasets

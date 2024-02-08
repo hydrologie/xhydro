@@ -7,8 +7,6 @@ import pkgutil
 
 import pytest
 
-from xhydro import xhydro
-
 
 @pytest.fixture
 def response():
@@ -38,4 +36,4 @@ def test_package_metadata():
         contents = f.read()
         assert """Thomas-Charles Fortier Filion""" in contents
         assert '__email__ = "tcff_hydro@outlook.com"' in contents
-        assert '__version__ = "0.1.5"' in contents
+        assert '__version__ = "0.3.3"' in contents
