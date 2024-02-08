@@ -45,6 +45,7 @@ dependencies = [
   "pydantic>=2.0,<2.5.3",
   "pystac",
   "rasterio",
+  "spotpy",
   "stackstac",
   "statsmodels",
   "tqdm",
