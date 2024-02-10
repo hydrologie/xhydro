@@ -2,13 +2,12 @@
 
 import os
 import sys
+
 parent_dir = os.path.dirname(os.path.realpath("../xhydro"))
 sys.path.append(parent_dir)
 from xhydro import lstm_tools as lt
 
 lt.control_regional_lstm_training()
-
-
 
 
 def test_lstm_controller():
