@@ -1,8 +1,14 @@
 """Test suite for LSTM model implementations"""
 
 import os
+import sys
+parent_dir = os.path.dirname(os.path.realpath("../xhydro"))
+sys.path.append(parent_dir)
+from xhydro import lstm_tools as lt
 
-from xhydro.lstm_tools.lstm_controller import control_regional_lstm_training
+lt.control_regional_lstm_training()
+
+
 
 
 def test_lstm_controller():
