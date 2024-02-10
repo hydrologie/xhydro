@@ -42,10 +42,7 @@ def execute(
     Returns
     -------
     list
-        A list containing the results of the interpolation:
-        - flow_l1o: Leave one out cross-validation flow.
-        - flow_l1o_percentile_25: Flow at the 25th percentile.
-        - flow_l1o_percentile_75: Flow at the 75th percentile.
+        A list containing the results of the interpolated percentiles flow
     """
     # Run the code
     args = {
@@ -56,9 +53,12 @@ def execute(
         'percentiles': percentiles
     }
 
+    time_range = (end_date - start_date).days
+
     results = execute_interpolation(
         start_date,
         end_date,
+        time_range,
         files,
         ratio_var_bg,
         percentiles,
@@ -70,7 +70,7 @@ def execute(
 
 
 def execute_interpolation(
-    start_date, end_date, files, ratio_var_bg, percentiles, iterations, parallelize
+    start_date, end_date, time_range, files, ratio_var_bg, percentiles, iterations, parallelize
 ):
     """
     Execute the main code, including setting constants to files, times, etc.
@@ -97,7 +97,7 @@ def execute_interpolation(
         flow_sim,
     ) = util.load_files(files)
 
-    time_range = (end_date - start_date).days
+    stations_id = [station[0] for station in stations_validation]
 
     args = {
         "flow_obs": flow_obs,
@@ -107,7 +107,7 @@ def execute_interpolation(
         "time_range": time_range,
         "stations_info": stations_info,
         "stations_mapping": util.convert_list_to_dict(stations_mapping),
-        "stations_id": [station[0] for station in stations_validation],
+        "stations_id": stations_id
     }
 
     data = retreive_data(args)
@@ -155,7 +155,19 @@ def execute_interpolation(
         "percentiles": percentiles,
         "iterations": iterations,
     }
-    return parallelize_operation(args, parallelize=parallelize)
+    flow_quantiles = parallelize_operation(args, parallelize=parallelize)
+
+    util.write_netcdf_debit("cross_validation_result",
+                            stations_id,
+                            centroid_lon,
+                            centroid_lat,
+                            drainage_area,
+                            time_range,
+                            percentiles,
+                            flow_quantiles
+                        )
+
+    return flow_quantiles
 
 
 
@@ -216,7 +228,6 @@ def retreive_data(args):
     selected_flow_obs, selected_flow_sim = util.initialize_nan_arrays(
         (time_range, station_count), 2
     )
-
     for i in range(0, station_count):
         station_id = stations_id[i]
         associate_section = stations_mapping[station_id]
@@ -252,6 +263,7 @@ def retreive_data(args):
 
     returned_dict = {
         "station_count": station_count,
+        "stations_id": stations_id,
         "drainage_area": drainage_area,
         "centroid_lat": centroid_lat,
         "centroid_lon": centroid_lon,
@@ -335,5 +347,8 @@ def parallelize_operation(args, parallelize=True):
             )
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][:, i] = flow_quantiles_station[k][:]
+
+
+
 
     return flow_quantiles

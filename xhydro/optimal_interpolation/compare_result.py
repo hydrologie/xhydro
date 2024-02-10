@@ -5,6 +5,7 @@ import sys
 import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
 import numpy as np
+from xhydro.modelling.obj_funcs import get_objective_function
 
 
 def compare(
@@ -98,10 +99,10 @@ def compare(
     kge, nse, kge_l1o, nse_l1o = util.initialize_nan_arrays(station_count, 4)
 
     for n in range(0, station_count):
-        kge[n] = ma.kge_prime(debit_obs[:, n], debit_sim[:, n])
-        nse[n] = ma.nash(debit_obs[:, n], debit_sim[:, n])
-        kge_l1o[n] = ma.kge_prime(debit_obs[:, n], debit_l1o[:, n])
-        nse_l1o[n] = ma.nash(debit_obs[:, n], debit_l1o[:, n])
+        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], 'kge')
+        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], 'nse')
+        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], 'kge')
+        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], 'nse')
 
     if show_comparaison:
         util.plot_results(kge, kge_l1o, nse, nse_l1o)

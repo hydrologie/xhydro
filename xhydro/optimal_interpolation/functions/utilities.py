@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import xarray as xr
+from datetime import datetime
 
 def read_csv_file(csv_filename):
     """
@@ -174,3 +175,88 @@ def general_ecf(h, par, form):
         return par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
     else:
         return par[0] * np.exp(-h / par[1])
+
+
+def write_netcdf_debit(filename, station_id, lon, lat, drain_area, time, percentile, discharge):
+    """
+    Write discharge data to a NetCDF file.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the NetCDF file to be created.
+    station_id : list
+        List of station IDs.
+    lon : list
+        List of longitudes corresponding to each station.
+    lat : list
+        List of latitudes corresponding to each station.
+    drain_area : list
+        List of drainage areas corresponding to each station.
+    time : list
+        List of datetime objects representing time.
+    percentile : list or None
+        List of percentiles or None if not applicable.
+    discharge : numpy.ndarray
+        3D array of discharge data, dimensions (percentile, station, time).
+
+    Notes
+    -----
+    - The function creates a NetCDF file using the provided data and saves it with the specified filename.
+    - If the file already exists, it is deleted before creating a new one.
+    - The function includes appropriate metadata and attributes for each variable.
+
+
+    Returns
+    -------
+
+    """
+
+
+    if os.path.exists(filename):
+        os.remove(filename)
+
+    # Convert time to days since reference
+    reference_time = datetime(1970, 1, 1)
+    time = [(t - reference_time).days for t in time]
+
+    # Create dataset
+    ds = xr.Dataset()
+
+    # Prepare discharge data
+    if percentile:
+        ds['Dis'] = (['percentile', 'station', 'time'], np.transpose(discharge, (2, 0, 1)))
+        ds['percentile'] = ('percentile', percentile)
+    else:
+        ds['Dis'] = (['station', 'time'], discharge)
+
+    # Other variables
+    ds['time'] = ('time', time)
+    ds['lat'] = ('station', lat)
+    ds['lon'] = ('station', lon)
+    ds['drainage_area'] = ('station', drain_area)
+    ds['station_id'] = ('station', station_id)
+
+    # Time bounds
+    ta = np.array(time)
+    time_bnds = np.array([ta - 1, time]).T
+    ds['time_bnds'] = (('time', 'nbnds'), time_bnds)
+
+    # Set attributes
+    ds['time'].attrs = {'long_name': 'time', 'standard_name': 'time', 'units': 'days since 1970-01-01 -05:00:00',
+                        'calendar': 'standard', 'axis': 'T', 'bounds': 'time_bnds'}
+    ds['Dis'].attrs = {'long_name': 'discharge', 'standard_name': 'discharge', 'units': 'm3/s',
+                       'cell_methods': 'time: mean', 'coverage_content_type': 'modelResult',
+                       'coordinates': 'time station_id'}
+    ds['lat'].attrs = {'long_name': 'latitude_of_river_stretch_outlet', 'standard_name': 'latitude',
+                       'units': 'degrees_north', 'axis': 'Y'}
+    ds['lon'].attrs = {'long_name': 'longitude_of_river_stretch_outlet', 'standard_name': 'longitude',
+                       'units': 'degrees_east', 'axis': 'X'}
+    ds['time_bnds'].attrs = {'units': 'days since 1970-01-01 -05:00:00', 'calendar': 'standard'}
+    ds['drainage_area'].attrs = {'long_name': 'drainage_area_at_river_stretch_outlet', 'standard_name': 'drainage_area',
+                                 'units': 'km2', 'coverage_content_type': 'auxiliaryInformation',
+                                 'coordinates': 'lat lon station_id'}
+    ds['station_id'].attrs = {'long_name': 'Station ID', 'cf_role': 'timeseries_id'}
+
+    # Write to file
+    ds.to_netcdf(filename)
