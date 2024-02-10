@@ -4,6 +4,7 @@ import os
 from multiprocessing import Pool
 
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 
 from .mathematical_algorithms import calculate_average_distance
@@ -218,7 +219,7 @@ def loop_optimal_interpolation_stations(args):
     return flow_quantiles
 
 def execute_interpolation(
-    start_date, end_date, time_range, files, ratio_var_bg, percentiles, iterations, parallelize
+    start_date, end_date, time_range, files, ratio_var_bg, percentiles, iterations, parallelize, write_file
 ):
     """
     Execute the main code, including setting constants to files, times, etc.
@@ -305,14 +306,16 @@ def execute_interpolation(
     }
     flow_quantiles = parallelize_operation(args, parallelize=parallelize)
 
-    util.write_netcdf_debit("cross_validation_result",
-                            stations_id,
-                            centroid_lon,
-                            centroid_lat,
-                            drainage_area,
-                            time_range,
-                            percentiles,
-                            flow_quantiles
+    time_vector = pd.date_range(start=start_date, end=end_date)
+
+    util.write_netcdf_debit(write_file=write_file,
+                            station_id=stations_id,
+                            lon=centroid_lon,
+                            lat=centroid_lat,
+                            drain_area=drainage_area,
+                            time=time_vector,
+                            percentile=percentiles,
+                            discharge=flow_quantiles
                         )
 
     return flow_quantiles

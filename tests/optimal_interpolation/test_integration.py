@@ -1,6 +1,7 @@
 import datetime as dt
 
 import numpy as np
+import tempfile
 
 import xhydro.optimal_interpolation.cross_validation as cv
 import xhydro.optimal_interpolation.compare_result as cr
@@ -44,6 +45,10 @@ class Test_optimal_interpolation_integration:
         flow_sim_info_file,
     ]
 
+    # Path to file to be written to
+    tmpdir = tempfile.mkdtemp()
+    write_file = tmpdir + "/" + "Test_OI_results.nc"
+
     # Start and end dates for the simulation. Short period for the test.
     start_date = dt.datetime(2018, 11, 1)
     end_date = dt.datetime(2019, 1, 1)
@@ -61,6 +66,7 @@ class Test_optimal_interpolation_integration:
             self.start_date,
             self.end_date,
             self.files,
+            write_file=self.write_file,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
             iterations=self.iterations,
@@ -88,6 +94,7 @@ class Test_optimal_interpolation_integration:
             start_date,
             end_date,
             self.files,
+            write_file=self.write_file,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
             iterations=self.iterations,
@@ -116,6 +123,7 @@ class Test_optimal_interpolation_integration:
             self.start_date,
             self.end_date,
             self.files,
+            write_file=self.write_file,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
             iterations=self.iterations,
@@ -145,4 +153,3 @@ class Test_optimal_interpolation_integration:
     ]
 
         cr.compare(self.start_date, self.end_date, files)
-

@@ -4,6 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
 import xarray as xr
 from datetime import datetime
 
@@ -177,13 +178,13 @@ def general_ecf(h, par, form):
         return par[0] * np.exp(-h / par[1])
 
 
-def write_netcdf_debit(filename, station_id, lon, lat, drain_area, time, percentile, discharge):
+def write_netcdf_debit(write_file, station_id, lon, lat, drain_area, time, percentile, discharge):
     """
     Write discharge data to a NetCDF file.
 
     Parameters
     ----------
-    filename : str
+    write_file : str
         Name of the NetCDF file to be created.
     station_id : list
         List of station IDs.
@@ -213,8 +214,8 @@ def write_netcdf_debit(filename, station_id, lon, lat, drain_area, time, percent
     """
 
 
-    if os.path.exists(filename):
-        os.remove(filename)
+    if os.path.exists(write_file):
+        os.remove(write_file)
 
     # Convert time to days since reference
     reference_time = datetime(1970, 1, 1)
@@ -222,13 +223,17 @@ def write_netcdf_debit(filename, station_id, lon, lat, drain_area, time, percent
 
     # Create dataset
     ds = xr.Dataset()
+    discharge = np.array(discharge)
+    axis_time = np.where(np.array(discharge.shape) == len(time))
+    axis_stations = np.where(np.array(discharge.shape) == len(drain_area))
 
     # Prepare discharge data
     if percentile:
-        ds['Dis'] = (['percentile', 'station', 'time'], np.transpose(discharge, (2, 0, 1)))
+        axis_percentile = np.where(np.array(discharge.shape) == len(percentile))
+        ds['Dis'] = (['percentile', 'station', 'time'], np.transpose(discharge, (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0])))
         ds['percentile'] = ('percentile', percentile)
     else:
-        ds['Dis'] = (['station', 'time'], discharge)
+        ds['Dis'] = (['station', 'time'], np.transpose(discharge,(axis_stations[0][0], axis_time[0][0])))
 
     # Other variables
     ds['time'] = ('time', time)
@@ -259,4 +264,4 @@ def write_netcdf_debit(filename, station_id, lon, lat, drain_area, time, percent
     ds['station_id'].attrs = {'long_name': 'Station ID', 'cf_role': 'timeseries_id'}
 
     # Write to file
-    ds.to_netcdf(filename)
+    ds.to_netcdf(write_file)

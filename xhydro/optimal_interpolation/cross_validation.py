@@ -8,6 +8,7 @@ def execute(
     start_date,
     end_date,
     files,
+    write_file,
     ratio_var_bg=0.15,
     percentiles=[0.25, 0.50, 0.75, 1.00],
     iterations=10,
@@ -39,6 +40,7 @@ def execute(
         A list containing the results of the interpolated percentiles flow
     """
     # Run the code
+    # TODO: Replace inputs to file with args dict constructed upstream and pass along.
     args = {
         'start_date' : start_date,
         'end_date' : end_date,
@@ -47,7 +49,7 @@ def execute(
         'percentiles': percentiles
     }
 
-    time_range = (end_date - start_date).days
+    time_range = (end_date - start_date).days +1
 
     results = opt.execute_interpolation(
         start_date,
@@ -58,9 +60,7 @@ def execute(
         percentiles,
         iterations,
         parallelize=parallelize,
+        write_file=write_file,
     )
 
     return results
-
-
-
