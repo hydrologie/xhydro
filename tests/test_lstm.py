@@ -5,7 +5,6 @@ import os
 from xhydro.lstm_tools.lstm_controller import control_regional_lstm_training
 
 
-
 def test_lstm_controller():
     """Test the regional LSTM model implementation."""
     batch_size = 64  # batch size used in the training - multiple of 32
