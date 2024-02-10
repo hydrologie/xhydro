@@ -33,13 +33,7 @@ def compare(
     Returns
     -------
     None
-
-    TODO to make programmatic:
-        1. Add checks for data quality/error handling
-        2. Eventually, refer to hydroeval package for the KGE and NSE metrics calculation.
-        3. Check to make sure files and indexes are in the correct order when reading
-        4. Change structure of import for user
-        5. Save final result in netcdf
+    
     """
     time = (end_date - start_date).days
 
