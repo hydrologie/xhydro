@@ -6,7 +6,9 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
 from tensorflow.keras.models import load_model
+
 from xhydro.modelling.obj_funcs import get_objective_function
+
 from .create_datasets import create_lstm_dataset
 
 
@@ -105,6 +107,7 @@ class TestingGenerator(tf.keras.utils.Sequence):
         ]
         return [np.array(batch_x), np.array(batch_x_static)], np.array(batch_x_static)
 
+
 '''
 def keras_kge(data, y_pred):
     """Compute the Kling-Gupta Efficiency (KGE) criterion under Keras for Tensorflow training.
@@ -141,6 +144,7 @@ def keras_kge(data, y_pred):
 
     return kge
 '''
+
 
 def nse_loss(data, y_pred):
     """Compute the modified NSE loss for regional training.
@@ -210,6 +214,8 @@ def obj_fun_kge(qobs, qsim):
     return kge
 
 '''
+
+
 def define_lstm_model_simple(
     window_size: object,
     n_dynamic_features: object,

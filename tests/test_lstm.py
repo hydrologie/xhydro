@@ -1,8 +1,9 @@
 """Test suite for LSTM model implementations"""
 
 import os
-import sys
+
 from xhydro.lstm_tools.lstm_controller import control_regional_lstm_training
+
 
 
 def test_lstm_controller():
