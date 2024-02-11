@@ -184,6 +184,7 @@ class TestingGeneratorLocal(tf.keras.utils.Sequence):
 
         return [np.array(batch_x)]
 
+
 def kge_loss(data, y_pred):
     """Compute the Kling-Gupta Efficiency (KGE) criterion under Keras for Tensorflow training.
 
@@ -218,7 +219,6 @@ def kge_loss(data, y_pred):
     kge = 1 - (1 - k.sqrt((r - 1) ** 2 + (b - 1) ** 2 + (g - 1) ** 2))
 
     return kge
-
 
 
 def nse_scaled_loss(data, y_pred):
@@ -299,7 +299,7 @@ def define_lstm_model_simple(
     x_out = tf.keras.layers.Dense(1, activation="relu")(x)
 
     model_lstm = tf.keras.models.Model([x_in_365, x_in_static], [x_out])
-    if training_func == 'nse_scaled':
+    if training_func == "nse_scaled":
         model_lstm.compile(loss=nse_scaled_loss, optimizer=tf.keras.optimizers.AdamW())
     elif training_func == "kge":
         model_lstm.compile(loss=kge_loss, optimizer=tf.keras.optimizers.AdamW())
@@ -329,6 +329,7 @@ def define_lstm_model_simple_local(
     checkpoint_path: str = "tmp.h5",
 ):
     """Define the local LSTM model structure and hyperparameters to use.
+
     Must be updated by users to modify model structures.
 
     Parameters
@@ -356,17 +357,23 @@ def define_lstm_model_simple_local(
     x_in_365 = tf.keras.layers.Input(shape=(window_size, n_dynamic_features))
 
     # LSTM 365 day
-    x_365 = tf.keras.layers.LSTM(64, return_sequences=False)(x_in_365)  # Single LSTM layer
+    x_365 = tf.keras.layers.LSTM(64, return_sequences=False)(
+        x_in_365
+    )  # Single LSTM layer
     x_365 = tf.keras.layers.Dropout(0.2)(x_365)  # Add dropout layer for robustness
-    x = tf.keras.layers.Dense(8, activation="relu")(x_365)  # Pass to a simple Dense layer with relu activation
-    x_out = tf.keras.layers.Dense(1, activation="relu")(x)  # pass to a 1-unit dense layer representing output flow.
+    x = tf.keras.layers.Dense(8, activation="relu")(
+        x_365
+    )  # Pass to a simple Dense layer with relu activation
+    x_out = tf.keras.layers.Dense(1, activation="relu")(
+        x
+    )  # pass to a 1-unit dense layer representing output flow.
 
     model_lstm = tf.keras.models.Model([x_in_365], [x_out])
 
     if training_func == "kge":
         model_lstm.compile(loss=kge_loss, optimizer=tf.keras.optimizers.AdamW())
     else:
-        raise ValueError('training_func can only be kge for the local training model.')
+        raise ValueError("training_func can only be kge for the local training model.")
 
     callback = [
         tf.keras.callbacks.ModelCheckpoint(

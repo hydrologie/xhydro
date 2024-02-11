@@ -189,7 +189,7 @@ def control_regional_lstm_training(
             y_valid,
             name_of_saved_model,
             training_func=training_func,
-            use_cpu=use_cpu
+            use_cpu=use_cpu,
         )
 
     if do_simulation:
@@ -251,9 +251,6 @@ def control_local_lstm_training(
     qsim_pos : list of bool
         List of same length as dynamic_var_tags. Should be set to all False EXCEPT where the dynamic_var_tags refer to
         flow simulations (ex: simulations from a hydrological model such as HYDROTEL). Those should be set to True.
-    static_var_tags : list of str
-        List of the catchment descriptor names in the input_data_filename ncfile. They need to be present in the ncfile
-        and will be used as inputs to the regional model, to help the flow regionalization process.
     batch_size : int
         Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
         GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
@@ -338,16 +335,18 @@ def control_local_lstm_training(
 
     # Import and scale dataset
     arr_dynamic, train_idx, valid_idx, test_idx, all_idx = scale_dataset_local(
-                                                                input_data_filename,
-                                                                dynamic_var_tags,
-                                                                qsim_pos,
-                                                                train_pct,
-                                                                valid_pct,
-                                                            )
+        input_data_filename,
+        dynamic_var_tags,
+        qsim_pos,
+        train_pct,
+        valid_pct,
+    )
 
     if do_train:
         # Split into train and valid
-        x_train, y_train, x_valid, y_valid = split_dataset_local(arr_dynamic, train_idx, window_size, valid_idx)
+        x_train, y_train, x_valid, y_valid = split_dataset_local(
+            arr_dynamic, train_idx, window_size, valid_idx
+        )
 
         # Do the main large-scale training
         perform_initial_train_local(
@@ -361,14 +360,11 @@ def control_local_lstm_training(
             y_valid,
             name_of_saved_model,
             training_func=training_func,
-            use_cpu=use_cpu
+            use_cpu=use_cpu,
         )
 
     if do_simulation:
         # Do the model simulation on all watersheds after training
-        kge_results = None
-        flow_results = None
-
         kge_results, flow_results = run_model_after_training_local(
             arr_dynamic,
             window_size,

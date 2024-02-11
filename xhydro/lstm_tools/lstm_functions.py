@@ -223,7 +223,7 @@ def scale_dataset_local(
         input_data_filename, dynamic_var_tags, qsim_pos
     )
 
-    #Get the indexes of the train, test and valid periods of each catchment.
+    # Get the indexes of the train, test and valid periods of each catchment.
     train_idx = np.empty([2], dtype=int)
     valid_idx = np.empty([2], dtype=int)
     test_idx = np.empty([2], dtype=int)
@@ -239,12 +239,13 @@ def scale_dataset_local(
     train_idx[1] = int(jj[number_training_days])  # to this index.
     valid_idx[0] = int(jj[number_training_days])  # From this index...
     valid_idx[1] = int(jj[number_training_days + number_valid_days])  # to this index.
-    test_idx[0] = int(jj[number_training_days + number_valid_days])  # From this index...
+    test_idx[0] = int(
+        jj[number_training_days + number_valid_days]
+    )  # From this index...
     test_idx[1] = int(jj[total_number_days - 1])  # to this index.
     all_idx[0] = int(0)
     all_idx[1] = arr_qobs.shape[0]
 
-    n_data = arr_dynamic.shape[1] - 1
     dynamic_data = arr_dynamic[train_idx[0] : train_idx[1], 1:]
 
     # Fit the scaler using only the training watersheds
@@ -411,13 +412,17 @@ def split_dataset_local(
         validation points.
     """
     # Training dataset
-    x_train, y_train = create_lstm_dataset_local(arr_dynamic=arr_dynamic, window_size=window_size, idx=train_idx)
+    x_train, y_train = create_lstm_dataset_local(
+        arr_dynamic=arr_dynamic, window_size=window_size, idx=train_idx
+    )
 
     # Clean nans
     y_train, x_train = clean_nans_func_local(y_train, x_train)
 
     # Validation dataset
-    x_valid, y_valid = create_lstm_dataset_local(arr_dynamic=arr_dynamic, window_size=window_size, idx=valid_idx)
+    x_valid, y_valid = create_lstm_dataset_local(
+        arr_dynamic=arr_dynamic, window_size=window_size, idx=valid_idx
+    )
 
     # Clean nans
     y_valid, x_valid = clean_nans_func_local(y_valid, x_valid)
@@ -491,11 +496,11 @@ def perform_initial_train(
         Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_valid,
         x_valid_static and x_valid_q_stds. Usually the observed streamflow for the day associated to each of the
         validation points.
+    name_of_saved_model : str
+        Path to the model that has been pre-trained if required for simulations.
     training_func : str
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
-    name_of_saved_model : str
-        Path to the model that has been pre-trained if required for simulations.
     use_cpu : bool
         Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be performed
         on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow and should
@@ -609,11 +614,11 @@ def perform_initial_train_local(
         Tensor of size [(timesteps * watersheds)] containing the target variable for the same time point as in x_valid,
         x_valid_static and x_valid_q_stds. Usually the observed streamflow for the day associated to each of the
         validation points.
+    name_of_saved_model : str
+        Path to the model that has been pre-trained if required for simulations.
     training_func : str
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
-    name_of_saved_model : str
-        Path to the model that has been pre-trained if required for simulations.
     use_cpu : bool
         Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be performed
         on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow and should
