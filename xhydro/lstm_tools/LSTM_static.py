@@ -9,7 +9,7 @@ from tensorflow.keras.models import load_model
 
 from xhydro.modelling.obj_funcs import get_objective_function
 
-from .create_datasets import create_lstm_dataset
+from .create_datasets import create_lstm_dataset, create_lstm_dataset_local
 
 
 class TrainingGenerator(tf.keras.utils.Sequence):
@@ -69,6 +69,50 @@ class TrainingGenerator(tf.keras.utils.Sequence):
         np.random.shuffle(self.indices)
 
 
+class TrainingGeneratorLocal(tf.keras.utils.Sequence):
+    """Create a training generator to manage the GPU memory during training.
+
+    Parameters
+    ----------
+    x_set : np.array
+        Tensor of size [batch_size x window_size x n_dynamic_variables] that contains the batch of dynamic (i.e. time-
+        series) variables that will be used during training.
+    y_set : np.array
+        Tensor of size [batch_size] containing the target variable for the same time point as in x_set, x_set_static and
+        x_set_q_stds. Usually the streamflow for the day associated to each of the training points.
+    batch_size : int
+        Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
+        GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
+        performance and final model skill, and should be handled accordingly.
+
+    Returns
+    -------
+    self : An object containing the subset of the total data that is selected for this batch.
+    """
+
+    def __init__(self, x_set, y_set, batch_size):
+        self.x = x_set
+        self.y = y_set
+        self.batch_size = batch_size
+        self.indices = np.arange(self.x.shape[0])
+
+    def __len__(self):
+        """Get total number of batches to generate"""
+        return (np.ceil(len(self.y) / float(self.batch_size))).astype(int)
+
+    def __getitem__(self, idx):
+        """Get one of the batches by taking the 'batch_size' first elements from the randomized list of remaining indices."""
+        inds = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
+        batch_x = self.x[inds]
+        batch_y = self.y[inds]
+
+        return [np.array(batch_x)], [np.array(batch_y)]
+
+    def on_epoch_end(self):
+        """Shuffle the dataset before the next batch sampling to ensure randomness, helping convergence."""
+        np.random.shuffle(self.indices)
+
+
 class TestingGenerator(tf.keras.utils.Sequence):
     """Create a testing generator to manage the GPU memory during training.
 
@@ -108,8 +152,39 @@ class TestingGenerator(tf.keras.utils.Sequence):
         return [np.array(batch_x), np.array(batch_x_static)], np.array(batch_x_static)
 
 
-'''
-def keras_kge(data, y_pred):
+class TestingGeneratorLocal(tf.keras.utils.Sequence):
+    """Create a testing generator to manage the GPU memory during training.
+
+    Parameters
+    ----------
+    x_set : np.array
+        Tensor of size [batch_size x window_size x n_dynamic_variables] that contains the batch of dynamic (i.e. time-
+        series) variables that will be used during training.
+    batch_size : int
+        Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
+        GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
+        performance and final model skill, and should be handled accordingly.
+
+    Returns
+    -------
+    self : An object containing the subset of the total data that is selected for this batch.
+    """
+
+    def __init__(self, x_set, batch_size):
+        self.x = x_set
+        self.batch_size = batch_size
+
+    def __len__(self):
+        """Get total number of batches to generate"""
+        return (np.ceil(self.x.shape[0] / float(self.batch_size))).astype(int)
+
+    def __getitem__(self, idx):
+        """Get one of the batches by taking the 'batch_size' first elements from the randomized list of remaining indices."""
+        batch_x = self.x[idx * self.batch_size : (idx + 1) * self.batch_size]
+
+        return [np.array(batch_x)]
+
+def kge_loss(data, y_pred):
     """Compute the Kling-Gupta Efficiency (KGE) criterion under Keras for Tensorflow training.
 
     Parameters
@@ -143,10 +218,10 @@ def keras_kge(data, y_pred):
     kge = 1 - (1 - k.sqrt((r - 1) ** 2 + (b - 1) ** 2 + (g - 1) ** 2))
 
     return kge
-'''
 
 
-def nse_loss(data, y_pred):
+
+def nse_scaled_loss(data, y_pred):
     """Compute the modified NSE loss for regional training.
 
     Parameters
@@ -173,54 +248,12 @@ def nse_loss(data, y_pred):
     return scaled_loss
 
 
-'''
-def obj_fun_kge(qobs, qsim):
-    """Compute the KGE objective function loss for model evaluation after simulation.
-
-    Parameters
-    ----------
-    qobs : np.array
-        Tensor of the target variable, i.e. observed streamflow.
-    qsim : np.array
-        Tensor of the predicted variable from the LSTM model, i.e. simulated streamflow.
-
-    Returns
-    -------
-    kge
-        Kling Gupta Efficiency metric.
-    """
-    # Remove all nans from both observed and simulated streamflow
-    ind_nan = np.isnan(qobs)
-    qobs = qobs[~ind_nan]
-    qsim = qsim[~ind_nan]
-
-    # Compute the dimensionless correlation coefficient
-    r = np.corrcoef(qsim, qobs)[0, 1]
-
-    # Compute the dimensionless bias ratio b (beta)
-    b = np.mean(qsim) / np.mean(qobs)
-
-    # Compute the dimensionless variability ratio g (gamma)
-    g = (np.std(qsim) / np.mean(qsim)) / (np.std(qobs) / np.mean(qobs))
-
-    # Compute the Kling-Gupta Efficiency (KGE) modified criterion
-    kge = 1 - np.sqrt((r - 1) ** 2 + (b - 1) ** 2 + (g - 1) ** 2)
-
-    # In some cases, the KGE can return nan values which will force some
-    # optimization algorithm to crash. Force the worst value possible instead.
-    if np.isnan(kge):
-        kge = -np.inf
-
-    return kge
-
-'''
-
-
 def define_lstm_model_simple(
-    window_size: object,
-    n_dynamic_features: object,
-    n_static_features: object,
-    checkpoint_path: object = "tmp.h5",
+    window_size: int,
+    n_dynamic_features: int,
+    n_static_features: int,
+    training_func: str,
+    checkpoint_path: str = "tmp.h5",
 ):
     """Define the LSTM model structure and hyperparameters to use. Must be updated by users to modify model structures.
 
@@ -236,6 +269,9 @@ def define_lstm_model_simple(
     n_static_features : int
         Number of static (i.e. catchment descriptor) variables that are used to define the regional LSTM model and allow
         it to modulate simulations according to catchment properties.
+    training_func : str
+        Name of the objective function used for training. For a regional model, it is highly recommended to use the
+        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
     checkpoint_path : str
         Sting containing the path of the file where the trained model will be saved.
 
@@ -263,7 +299,74 @@ def define_lstm_model_simple(
     x_out = tf.keras.layers.Dense(1, activation="relu")(x)
 
     model_lstm = tf.keras.models.Model([x_in_365, x_in_static], [x_out])
-    model_lstm.compile(loss=nse_loss, optimizer=tf.keras.optimizers.AdamW())
+    if training_func == 'nse_scaled':
+        model_lstm.compile(loss=nse_scaled_loss, optimizer=tf.keras.optimizers.AdamW())
+    elif training_func == "kge":
+        model_lstm.compile(loss=kge_loss, optimizer=tf.keras.optimizers.AdamW())
+
+    callback = [
+        tf.keras.callbacks.ModelCheckpoint(
+            checkpoint_path,
+            save_freq="epoch",
+            save_best_only=True,
+            monitor="val_loss",
+            mode="min",
+            verbose=1,
+        ),
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss", mode="min", verbose=1, patience=15
+        ),
+        tf.keras.callbacks.LearningRateScheduler(step_decay),
+    ]
+
+    return model_lstm, callback
+
+
+def define_lstm_model_simple_local(
+    window_size: int,
+    n_dynamic_features: int,
+    training_func: str,
+    checkpoint_path: str = "tmp.h5",
+):
+    """Define the local LSTM model structure and hyperparameters to use.
+    Must be updated by users to modify model structures.
+
+    Parameters
+    ----------
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    n_dynamic_features : int
+        Number of dynamic (i.e. time-series) variables that are used for training and simulating the model.
+    training_func : str
+        Name of the objective function used for training. For a regional model, it is highly recommended to use the
+        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
+    checkpoint_path : str
+        Sting containing the path of the file where the trained model will be saved.
+
+    Returns
+    -------
+    model_lstm : Tensorflow model
+        The tensorflow model that will be trained, along with all of its default hyperparameters and training options.
+    callback : list
+        List of tensorflow objects that allow performing operations after each training epoch.
+    """
+    x_in_365 = tf.keras.layers.Input(shape=(window_size, n_dynamic_features))
+
+    # LSTM 365 day
+    x_365 = tf.keras.layers.LSTM(64, return_sequences=False)(x_in_365)  # Single LSTM layer
+    x_365 = tf.keras.layers.Dropout(0.2)(x_365)  # Add dropout layer for robustness
+    x = tf.keras.layers.Dense(8, activation="relu")(x_365)  # Pass to a simple Dense layer with relu activation
+    x_out = tf.keras.layers.Dense(1, activation="relu")(x)  # pass to a 1-unit dense layer representing output flow.
+
+    model_lstm = tf.keras.models.Model([x_in_365], [x_out])
+
+    if training_func == "kge":
+        model_lstm.compile(loss=kge_loss, optimizer=tf.keras.optimizers.AdamW())
+    else:
+        raise ValueError('training_func can only be kge for the local training model.')
 
     callback = [
         tf.keras.callbacks.ModelCheckpoint(
@@ -360,7 +463,7 @@ def run_trained_model(
     # Delete and reload the model to free the memory
     k.clear_session()
     model_lstm = load_model(
-        name_of_saved_model, compile=False, custom_objects={"loss": nse_loss}
+        name_of_saved_model, compile=False, custom_objects={"loss": nse_scaled_loss}
     )
 
     # Training Database
@@ -375,7 +478,6 @@ def run_trained_model(
     )
 
     y_pred = model_lstm.predict(TestingGenerator(x, x_static, batch_size=batch_size))
-
     y_pred = np.squeeze(y_pred)
 
     # Rescale observed and simulated streamflow from mm/d to m^3/s
@@ -384,6 +486,68 @@ def run_trained_model(
     y = y * drainage_area / 86.4
 
     # Compute the Kling-Gupta Efficiency (KGE) for the current watershed
+    kge = get_objective_function(qobs=y, qsim=y_pred, obj_func="kge")
+    flows = np.array([y, y_pred])
+
+    return kge, flows
+
+
+def run_trained_model_local(
+    arr_dynamic: np.array,
+    window_size: int,
+    idx_scenario: np.array,
+    batch_size: int,
+    name_of_saved_model: str,
+    clean_nans: bool,
+):
+    """Run the trained regional LSTM model on a single catchment from a larger set.
+
+    Parameters
+    ----------
+    arr_dynamic : np.array
+        Tensor of size [time_steps x window_size x (n_dynamic_variables+1)] that contains the dynamic (i.e. time-series)
+        variables that will be used during training. The first element in axis=2 is the observed flow.
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow. Usually
+        set to 365 days to get one year of previous data. This makes the model heavier and longer to train but can improve
+        results.
+    idx_scenario : np.array
+        2-element array of indices of the beginning and end of the desired period for which the LSTM model should be simulated.
+    batch_size : int
+        Number of data points to use in training. Datasets are often way too big to train in a single batch on a single
+        GPU or CPU, meaning that the dataset must be divided into smaller batches. This has an impact on the training
+        performance and final model skill, and should be handled accordingly.
+    name_of_saved_model : str
+        Path to the model that has been pre-trained if required for simulations.
+    clean_nans : bool
+        Remove the periods for which observed streamflow is NaN for both observed and simulated flows.
+
+    Returns
+    -------
+    kge : float
+        KGE value between observed and simulated flows computed for the watershed of interest and for a specified period.
+    flows : np.array
+        Observed and simulated streamflows computed for the watershed of interest and for a specified period.
+    """
+    # Delete and reload the model to free the memory
+    k.clear_session()
+    model_lstm = load_model(
+        name_of_saved_model, compile=False, custom_objects={"loss": kge_loss}
+    )
+
+    # Training Database
+    x, y = create_lstm_dataset_local(
+        arr_dynamic=arr_dynamic,
+        window_size=window_size,
+        idx=idx_scenario,
+        clean_nans=clean_nans,
+    )
+
+    y_pred = model_lstm.predict(TestingGeneratorLocal(x, batch_size=batch_size))
+    y_pred = np.squeeze(y_pred)
+
+    # Compute the Kling-Gupta Efficiency (KGE) for the watershed
     kge = get_objective_function(qobs=y, qsim=y_pred, obj_func="kge")
     flows = np.array([y, y_pred])
 
