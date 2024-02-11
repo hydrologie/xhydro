@@ -280,7 +280,7 @@ def create_lstm_dataset_local(
         x_static and x_q_stds. Usually the observed streamflow for the day associated to each of the training points.
     """
     x, y = extract_watershed_block_local(
-        arr_dynamic=arr_dynamic[idx[0]:idx[1], :],
+        arr_dynamic=arr_dynamic[idx[0] : idx[1], :],
         window_size=window_size,
     )
 
@@ -379,10 +379,7 @@ def extract_watershed_block(
     return x_w, x_w_static, x_w_q_std, y_w
 
 
-def extract_watershed_block_local(
-    arr_dynamic: np.array,
-    window_size: int
-):
+def extract_watershed_block_local(arr_dynamic: np.array, window_size: int):
     """Extract all series of the desired window length over all features for a given watershed.
 
     Create the LSTM tensor format of data from the regular input arrays. Both dynamic and static variables are

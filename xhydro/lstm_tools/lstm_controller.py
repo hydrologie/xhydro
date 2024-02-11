@@ -189,7 +189,7 @@ def control_regional_lstm_training(
             y_valid,
             name_of_saved_model,
             training_func=training_func,
-            use_cpu=use_cpu
+            use_cpu=use_cpu,
         )
 
     if do_simulation:
@@ -338,16 +338,18 @@ def control_local_lstm_training(
 
     # Import and scale dataset
     arr_dynamic, train_idx, valid_idx, test_idx, all_idx = scale_dataset_local(
-                                                                input_data_filename,
-                                                                dynamic_var_tags,
-                                                                qsim_pos,
-                                                                train_pct,
-                                                                valid_pct,
-                                                            )
+        input_data_filename,
+        dynamic_var_tags,
+        qsim_pos,
+        train_pct,
+        valid_pct,
+    )
 
     if do_train:
         # Split into train and valid
-        x_train, y_train, x_valid, y_valid = split_dataset_local(arr_dynamic, train_idx, window_size, valid_idx)
+        x_train, y_train, x_valid, y_valid = split_dataset_local(
+            arr_dynamic, train_idx, window_size, valid_idx
+        )
 
         # Do the main large-scale training
         perform_initial_train_local(
@@ -361,7 +363,7 @@ def control_local_lstm_training(
             y_valid,
             name_of_saved_model,
             training_func=training_func,
-            use_cpu=use_cpu
+            use_cpu=use_cpu,
         )
 
     if do_simulation:

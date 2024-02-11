@@ -223,7 +223,7 @@ def scale_dataset_local(
         input_data_filename, dynamic_var_tags, qsim_pos
     )
 
-    #Get the indexes of the train, test and valid periods of each catchment.
+    # Get the indexes of the train, test and valid periods of each catchment.
     train_idx = np.empty([2], dtype=int)
     valid_idx = np.empty([2], dtype=int)
     test_idx = np.empty([2], dtype=int)
@@ -239,7 +239,9 @@ def scale_dataset_local(
     train_idx[1] = int(jj[number_training_days])  # to this index.
     valid_idx[0] = int(jj[number_training_days])  # From this index...
     valid_idx[1] = int(jj[number_training_days + number_valid_days])  # to this index.
-    test_idx[0] = int(jj[number_training_days + number_valid_days])  # From this index...
+    test_idx[0] = int(
+        jj[number_training_days + number_valid_days]
+    )  # From this index...
     test_idx[1] = int(jj[total_number_days - 1])  # to this index.
     all_idx[0] = int(0)
     all_idx[1] = arr_qobs.shape[0]
@@ -411,13 +413,17 @@ def split_dataset_local(
         validation points.
     """
     # Training dataset
-    x_train, y_train = create_lstm_dataset_local(arr_dynamic=arr_dynamic, window_size=window_size, idx=train_idx)
+    x_train, y_train = create_lstm_dataset_local(
+        arr_dynamic=arr_dynamic, window_size=window_size, idx=train_idx
+    )
 
     # Clean nans
     y_train, x_train = clean_nans_func_local(y_train, x_train)
 
     # Validation dataset
-    x_valid, y_valid = create_lstm_dataset_local(arr_dynamic=arr_dynamic, window_size=window_size, idx=valid_idx)
+    x_valid, y_valid = create_lstm_dataset_local(
+        arr_dynamic=arr_dynamic, window_size=window_size, idx=valid_idx
+    )
 
     # Clean nans
     y_valid, x_valid = clean_nans_func_local(y_valid, x_valid)
