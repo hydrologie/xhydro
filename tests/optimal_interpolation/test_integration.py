@@ -74,17 +74,17 @@ class Test_optimal_interpolation_integration:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.04, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.38, 2)
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
 
         # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.54, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.69, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.35, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days
+        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
+        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
+        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
 
         # Test a different data range to verify that the last entry is different
         start_date = dt.datetime(2018, 10, 31)
@@ -103,17 +103,17 @@ class Test_optimal_interpolation_integration:
 
         # TODO: CHECK WHY SOME DAYS HAVE ALL NANS LIKE: result_flows[0][27]
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.38, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.70, 2)
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.05, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.4, 2)
 
         # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 30.01, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 52.71, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.82, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 52.28, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == (end_date - start_date).days
-        assert len(result_flows[1]) == (end_date - start_date).days
-        assert len(result_flows[2]) == (end_date - start_date).days
+        assert len(result_flows[0]) == (end_date - start_date).days + 1
+        assert len(result_flows[1]) == (end_date - start_date).days + 1
+        assert len(result_flows[2]) == (end_date - start_date).days + 1
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
@@ -131,17 +131,17 @@ class Test_optimal_interpolation_integration:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.04, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.38, 2)
+        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
+        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
 
         # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.54, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.69, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.35, 2)
+        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
 
         # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days
+        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
+        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
+        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
 
     def test_compare_result_compare(self):
         files = [
