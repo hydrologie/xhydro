@@ -1,17 +1,19 @@
 """Package containing the optimal interpolation functions."""
-from functools import partial
+
 import os
+from functools import partial
 from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from .mathematical_algorithms import calculate_average_distance
-import xhydro.optimal_interpolation.functions.utilities as util
-
 import xhydro.optimal_interpolation.functions.ECF_climate_correction as ecf_cc
 import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
+import xhydro.optimal_interpolation.functions.utilities as util
+
+from .mathematical_algorithms import calculate_average_distance
+
 
 def optimal_interpolation(oi_input, args):
     """
@@ -160,7 +162,10 @@ def loop_optimal_interpolation_stations(args):
 
     # Compute difference between the obs and sim log-transformed flows for the
     # calibration basins
-    difference = selected_flow_obs[:, index_calibration] - selected_flow_sim[:, index_calibration]
+    difference = (
+        selected_flow_obs[:, index_calibration]
+        - selected_flow_sim[:, index_calibration]
+    )
     vsim_at_est = selected_flow_sim[:, index_validation]
 
     # Create and update dictionary for the interpolation input data. This object
@@ -218,25 +223,34 @@ def loop_optimal_interpolation_stations(args):
     # return the flow quantiles as desired.
     return flow_quantiles
 
+
 def execute_interpolation(
-    start_date, end_date, time_range, files, ratio_var_bg, percentiles, iterations, parallelize, write_file
+    start_date,
+    end_date,
+    time_range,
+    files,
+    ratio_var_bg,
+    percentiles,
+    iterations,
+    parallelize,
+    write_file,
 ):
     """
-    Execute the main code, including setting constants to files, times, etc.
-    Heavily modified to parallelize and to optimize.
+        Execute the main code, including setting constants to files, times, etc.
+        Heavily modified to parallelize and to optimize.
 
-    Parameters:
-    - start_date (datetime.date): The start date of the interpolation period.
-    - end_date (datetime.date): The end date of the interpolation period.
-    - files (list): List of files containing Hydrotel runs and observations.
-    - ratio_var_bg (float): Ratio for background variance.
-    - percentiles (list): List of desired percentiles for flow quantiles.
-    - iterations (int): The number of iterations for the interpolation.
-    - parallelize (bool): Flag indicating whether to parallelize the interpolation.
+        Parameters:
+        - start_date (datetime.date): The start date of the interpolation period.
+        - end_date (datetime.date): The end date of the interpolation period.
+        - files (list): List of files containing Hydrotel runs and observations.
+        - ratio_var_bg (float): Ratio for background variance.
+        - percentiles (list): List of desired percentiles for flow quantiles.
+        - iterations (int): The number of iterations for the interpolation.
+        - parallelize (bool): Flag indicating whether to parallelize the interpolation.
 
-    Returns:
-    list: A list containing the flow quantiles for each desired percentile.
-'
+        Returns:
+        list: A list containing the flow quantiles for each desired percentile.
+    '
     """
     (
         stations_info,
@@ -256,7 +270,7 @@ def execute_interpolation(
         "time_range": time_range,
         "stations_info": stations_info,
         "stations_mapping": util.convert_list_to_dict(stations_mapping),
-        "stations_id": stations_id
+        "stations_id": stations_id,
     }
 
     data = retreive_data(args)
@@ -308,19 +322,18 @@ def execute_interpolation(
 
     time_vector = pd.date_range(start=start_date, end=end_date)
 
-    util.write_netcdf_debit(write_file=write_file,
-                            station_id=stations_id,
-                            lon=centroid_lon,
-                            lat=centroid_lat,
-                            drain_area=drainage_area,
-                            time=time_vector,
-                            percentile=percentiles,
-                            discharge=flow_quantiles
-                        )
+    util.write_netcdf_debit(
+        write_file=write_file,
+        station_id=stations_id,
+        lon=centroid_lon,
+        lat=centroid_lat,
+        drain_area=drainage_area,
+        time=time_vector,
+        percentile=percentiles,
+        discharge=flow_quantiles,
+    )
 
     return flow_quantiles
-
-
 
 
 def initialize_data_arrays(time_range, station_count):
@@ -419,7 +432,7 @@ def retreive_data(args):
         "centroid_lat": centroid_lat,
         "centroid_lon": centroid_lon,
         "selected_flow_sim": selected_flow_sim,
-        "selected_flow_obs": selected_flow_obs
+        "selected_flow_obs": selected_flow_obs,
     }
 
     return returned_dict
@@ -493,13 +506,8 @@ def parallelize_operation(args, parallelize=True):
     # Serial
     else:
         for i in range(0, station_count):
-            flow_quantiles_station = loop_optimal_interpolation_stations(
-                (i, args)
-            )
+            flow_quantiles_station = loop_optimal_interpolation_stations((i, args))
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][:, i] = flow_quantiles_station[k][:]
-
-
-
 
     return flow_quantiles

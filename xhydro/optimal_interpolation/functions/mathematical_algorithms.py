@@ -1,4 +1,5 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
+
 import numpy as np
 
 
@@ -51,7 +52,9 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
     distances = distances[distances < hmax]
 
     # Step 5: Define quantiles for binning
-    quantiles = np.round([(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2)
+    quantiles = np.round(
+        [(1 / iteration_count) * i for i in range(0, iteration_count + 1)], 2
+    )
     cl = np.unique(np.quantile(distances, quantiles))
 
     # Initialize arrays for results
@@ -77,9 +80,9 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
         # Step 7: Calculate covariance, standard deviation, and row length
         weight = selected_covariance_weight / np.sum(selected_covariance_weight)
         returned_covariance[:, i] = (
-            np.sum(weight) /
-            (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2))) *
-            np.sum(weight * selected_covariance)
+            np.sum(weight)
+            / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2)))
+            * np.sum(weight * selected_covariance)
         ) / variances
         returned_standard[:, i] = np.sqrt(np.var(selected_covariance))
         returned_row_length[:, i] = len(ind)
@@ -149,6 +152,7 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
     y = -ray * cos_lat * sin_lat0 * cos_lon + ray * cos_lat0 * sin_lat
 
     return x, y
+
 
 def kge_prime(obs, sim):
     """Calculate Kling-Gupta Efficiency metric.

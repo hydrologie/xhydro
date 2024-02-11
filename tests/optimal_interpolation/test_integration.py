@@ -1,10 +1,10 @@
 import datetime as dt
-
-import numpy as np
 import tempfile
 
-import xhydro.optimal_interpolation.cross_validation as cv
+import numpy as np
+
 import xhydro.optimal_interpolation.compare_result as cr
+import xhydro.optimal_interpolation.cross_validation as cv
 from xhydro.optimal_interpolation.functions.testdata import get_file
 
 
@@ -33,7 +33,9 @@ class Test_optimal_interpolation_integration:
         name=dataf + "A20_HYDREP_TEST.nc", github_url=git_url, branch=branch
     )
     flow_l1o_info_file = get_file(
-        name=dataf + "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc", github_url=git_url, branch=branch
+        name=dataf + "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc",
+        github_url=git_url,
+        branch=branch,
     )
 
     # Make a list with these files paths, required for the code.
@@ -145,11 +147,11 @@ class Test_optimal_interpolation_integration:
 
     def test_compare_result_compare(self):
         files = [
-        self.selected_station_file,
-        self.corresponding_station_file,
-        self.flow_obs_info_file,
-        self.flow_sim_info_file,
-        self.flow_l1o_info_file,
-    ]
+            self.selected_station_file,
+            self.corresponding_station_file,
+            self.flow_obs_info_file,
+            self.flow_sim_info_file,
+            self.flow_l1o_info_file,
+        ]
 
         cr.compare(self.start_date, self.end_date, files)

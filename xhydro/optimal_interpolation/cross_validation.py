@@ -1,6 +1,5 @@
 """Perform the cross-validation for the optimal interpolation."""
 
-
 from .functions import optimal_interpolation as opt
 
 
@@ -42,14 +41,14 @@ def execute(
     # Run the code
     # TODO: Replace inputs to file with args dict constructed upstream and pass along.
     args = {
-        'start_date' : start_date,
-        'end_date' : end_date,
-        'files': files,
-        'ratio': ratio_var_bg,
-        'percentiles': percentiles
+        "start_date": start_date,
+        "end_date": end_date,
+        "files": files,
+        "ratio": ratio_var_bg,
+        "percentiles": percentiles,
     }
 
-    time_range = (end_date - start_date).days +1
+    time_range = (end_date - start_date).days + 1
 
     results = opt.execute_interpolation(
         start_date,

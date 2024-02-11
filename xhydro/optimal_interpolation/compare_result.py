@@ -1,19 +1,16 @@
 """Compare results between simulations and observations."""
+
 import datetime as dt
 import sys
 
+import numpy as np
+
 import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
-import numpy as np
 from xhydro.modelling.obj_funcs import get_objective_function
 
 
-def compare(
-    start_date,
-    end_date,
-    files,
-    percentile_to_plot=50,
-    show_comparaison=True):
+def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison=True):
     """
     Start the computation of the comparison method.
 
@@ -33,11 +30,13 @@ def compare(
     Returns
     -------
     None
-    
+
     """
     time = (end_date - start_date).days
 
-    station_validation, station_mapping, obs_data, sim_data, l1o_data = util.load_files(files)
+    station_validation, station_mapping, obs_data, sim_data, l1o_data = util.load_files(
+        files
+    )
 
     # Read station id
     stations_id = obs_data["station_id"]
@@ -93,10 +92,10 @@ def compare(
     kge, nse, kge_l1o, nse_l1o = util.initialize_nan_arrays(station_count, 4)
 
     for n in range(0, station_count):
-        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], 'kge')
-        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], 'nse')
-        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], 'kge')
-        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], 'nse')
+        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], "kge")
+        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], "nse")
+        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "kge")
+        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "nse")
 
     if show_comparaison:
         util.plot_results(kge, kge_l1o, nse, nse_l1o)

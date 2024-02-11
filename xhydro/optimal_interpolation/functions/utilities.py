@@ -1,12 +1,13 @@
 """Utilities required for managing data in the interpolation toolbox."""
+
 import csv
+import os
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-
 import xarray as xr
-from datetime import datetime
+
 
 def read_csv_file(csv_filename):
     """
@@ -105,6 +106,7 @@ def find_station_section(stations, section_id):
 
     return value[section_value]
 
+
 def load_files(files):
     """
     Load data from files containing Hydrotel runs and observations.
@@ -124,6 +126,7 @@ def load_files(files):
             extract_files[count] = xr.open_dataset(filepath)
         count += 1
     return extract_files
+
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):
     """
@@ -178,7 +181,9 @@ def general_ecf(h, par, form):
         return par[0] * np.exp(-h / par[1])
 
 
-def write_netcdf_debit(write_file, station_id, lon, lat, drain_area, time, percentile, discharge):
+def write_netcdf_debit(
+    write_file, station_id, lon, lat, drain_area, time, percentile, discharge
+):
     """
     Write discharge data to a NetCDF file.
 
@@ -213,7 +218,6 @@ def write_netcdf_debit(write_file, station_id, lon, lat, drain_area, time, perce
 
     """
 
-
     if os.path.exists(write_file):
         os.remove(write_file)
 
@@ -230,38 +234,72 @@ def write_netcdf_debit(write_file, station_id, lon, lat, drain_area, time, perce
     # Prepare discharge data
     if percentile:
         axis_percentile = np.where(np.array(discharge.shape) == len(percentile))
-        ds['Dis'] = (['percentile', 'station', 'time'], np.transpose(discharge, (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0])))
-        ds['percentile'] = ('percentile', percentile)
+        ds["Dis"] = (
+            ["percentile", "station", "time"],
+            np.transpose(
+                discharge, (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0])
+            ),
+        )
+        ds["percentile"] = ("percentile", percentile)
     else:
-        ds['Dis'] = (['station', 'time'], np.transpose(discharge,(axis_stations[0][0], axis_time[0][0])))
+        ds["Dis"] = (
+            ["station", "time"],
+            np.transpose(discharge, (axis_stations[0][0], axis_time[0][0])),
+        )
 
     # Other variables
-    ds['time'] = ('time', time)
-    ds['lat'] = ('station', lat)
-    ds['lon'] = ('station', lon)
-    ds['drainage_area'] = ('station', drain_area)
-    ds['station_id'] = ('station', station_id)
+    ds["time"] = ("time", time)
+    ds["lat"] = ("station", lat)
+    ds["lon"] = ("station", lon)
+    ds["drainage_area"] = ("station", drain_area)
+    ds["station_id"] = ("station", station_id)
 
     # Time bounds
     ta = np.array(time)
     time_bnds = np.array([ta - 1, time]).T
-    ds['time_bnds'] = (('time', 'nbnds'), time_bnds)
+    ds["time_bnds"] = (("time", "nbnds"), time_bnds)
 
     # Set attributes
-    ds['time'].attrs = {'long_name': 'time', 'standard_name': 'time', 'units': 'days since 1970-01-01 -05:00:00',
-                        'calendar': 'standard', 'axis': 'T', 'bounds': 'time_bnds'}
-    ds['Dis'].attrs = {'long_name': 'discharge', 'standard_name': 'discharge', 'units': 'm3/s',
-                       'cell_methods': 'time: mean', 'coverage_content_type': 'modelResult',
-                       'coordinates': 'time station_id'}
-    ds['lat'].attrs = {'long_name': 'latitude_of_river_stretch_outlet', 'standard_name': 'latitude',
-                       'units': 'degrees_north', 'axis': 'Y'}
-    ds['lon'].attrs = {'long_name': 'longitude_of_river_stretch_outlet', 'standard_name': 'longitude',
-                       'units': 'degrees_east', 'axis': 'X'}
-    ds['time_bnds'].attrs = {'units': 'days since 1970-01-01 -05:00:00', 'calendar': 'standard'}
-    ds['drainage_area'].attrs = {'long_name': 'drainage_area_at_river_stretch_outlet', 'standard_name': 'drainage_area',
-                                 'units': 'km2', 'coverage_content_type': 'auxiliaryInformation',
-                                 'coordinates': 'lat lon station_id'}
-    ds['station_id'].attrs = {'long_name': 'Station ID', 'cf_role': 'timeseries_id'}
+    ds["time"].attrs = {
+        "long_name": "time",
+        "standard_name": "time",
+        "units": "days since 1970-01-01 -05:00:00",
+        "calendar": "standard",
+        "axis": "T",
+        "bounds": "time_bnds",
+    }
+    ds["Dis"].attrs = {
+        "long_name": "discharge",
+        "standard_name": "discharge",
+        "units": "m3/s",
+        "cell_methods": "time: mean",
+        "coverage_content_type": "modelResult",
+        "coordinates": "time station_id",
+    }
+    ds["lat"].attrs = {
+        "long_name": "latitude_of_river_stretch_outlet",
+        "standard_name": "latitude",
+        "units": "degrees_north",
+        "axis": "Y",
+    }
+    ds["lon"].attrs = {
+        "long_name": "longitude_of_river_stretch_outlet",
+        "standard_name": "longitude",
+        "units": "degrees_east",
+        "axis": "X",
+    }
+    ds["time_bnds"].attrs = {
+        "units": "days since 1970-01-01 -05:00:00",
+        "calendar": "standard",
+    }
+    ds["drainage_area"].attrs = {
+        "long_name": "drainage_area_at_river_stretch_outlet",
+        "standard_name": "drainage_area",
+        "units": "km2",
+        "coverage_content_type": "auxiliaryInformation",
+        "coordinates": "lat lon station_id",
+    }
+    ds["station_id"].attrs = {"long_name": "Station ID", "cf_role": "timeseries_id"}
 
     # Write to file
     ds.to_netcdf(write_file)

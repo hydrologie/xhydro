@@ -3,8 +3,11 @@ from pathlib import Path
 import pytest
 import xarray
 
-from xhydro.optimal_interpolation.functions.testdata import _default_cache_dir  # noqa: F822
-from xhydro.optimal_interpolation.functions.testdata import get_file, open_dataset
+from xhydro.optimal_interpolation.functions.testdata import (  # noqa: F822
+    _default_cache_dir,
+    get_file,
+    open_dataset,
+)
 
 
 class TestRemoteFileAccess:
@@ -13,14 +16,20 @@ class TestRemoteFileAccess:
 
     @pytest.mark.online
     def test_get_file(self):
-        file = get_file(name="data/optimal_interpolation/stations_retenues_validation_croisee.csv",
-                        github_url=self.git_url,
-                        branch=self.branch)
+        file = get_file(
+            name="data/optimal_interpolation/stations_retenues_validation_croisee.csv",
+            github_url=self.git_url,
+            branch=self.branch,
+        )
 
-        assert Path(_default_cache_dir).joinpath(
+        assert (
+            Path(_default_cache_dir)
+            .joinpath(
                 self.branch,
                 "data/optimal_interpolation/stations_retenues_validation_croisee.csv",
-            ).exists()
+            )
+            .exists()
+        )
         assert file.is_file()
         with file.open() as f:
             header = f.read()
@@ -44,4 +53,3 @@ class TestRemoteFileAccess:
             .exists()
         )
         assert isinstance(ds, xarray.Dataset)
-
