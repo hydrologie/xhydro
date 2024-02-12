@@ -233,4 +233,9 @@ def _ravenpy_model(model_config: dict):
     outputs_path = run(modelname="raven", configdir=workdir)
     outputs = OutputReader(path=outputs_path)
 
-    return xr.open_dataset(outputs.files["hydrograph"]).q_sim.to_dataset(name="qsim").qsim
+    qsim = xr.open_dataset(outputs.files["hydrograph"]).q_sim.to_dataset(name="qsim")
+
+    if 'nbasins' in qsim.dims:
+        qsim = qsim.squeeze()
+
+    return qsim
