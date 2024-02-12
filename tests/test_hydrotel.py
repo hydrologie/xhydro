@@ -397,6 +397,6 @@ class TestHydrotel:
         )
         with pytest.raises(
             ValueError,
-            match="If not using default options, 'SIMULATION COURANTE' must be specified in the project files or as a keyword argument in 'project_options'.",
+            match="If not using default options, 'SIMULATION COURANTE' must be specified in the project files",
         ):
             Hydrotel(tmpdir / "fake", default_options=False)
