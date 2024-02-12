@@ -33,27 +33,18 @@ trivial and allows for easy calibration, regionalisation, analysis and any
 other type of interaction.
 """
 
-import numpy as np
-import pandas as pd
-import xarray as xr
 import tempfile
 from pathlib import Path
 
-from ravenpy.config.emulators import (
-    GR4JCN,
-    HMETS,
-    Mohyse,
-    HBVEC,
-    Blended,
-    SACSMA,
-    HYPR,
-)
-from ravenpy.config import commands as rc
+import numpy as np
+import pandas as pd
+import xarray as xr
 from ravenpy import OutputReader
+from ravenpy.config import commands as rc
+from ravenpy.config.emulators import GR4JCN, HBVEC, HMETS, HYPR, SACSMA, Blended, Mohyse
 from ravenpy.ravenpy import run
 
-
-__all__ = ["run_hydrological_model", "get_hydrological_model_inputs"]
+__all__ = ["get_hydrological_model_inputs", "run_hydrological_model"]
 
 
 def run_hydrological_model(model_config: dict):
@@ -79,7 +70,15 @@ def run_hydrological_model(model_config: dict):
     if model_config["model_name"] == "Dummy":
         qsim = _dummy_model(model_config)
 
-    elif model_config["model_name"].lower() in ["gr4jcn", "hmets", "mohyse", "hbvec", "hypr", "sacsma", "blended"]:
+    elif model_config["model_name"].lower() in [
+        "gr4jcn",
+        "hmets",
+        "mohyse",
+        "hbvec",
+        "hypr",
+        "sacsma",
+        "blended",
+    ]:
         qsim = _ravenpy_model(model_config)
 
     elif model_config["model_name"] == "ADD_OTHER_HERE":
@@ -114,7 +113,15 @@ def get_hydrological_model_inputs(model_name: str):
             drainage_area="Drainage area of the catchment, km²",
             parameters="Model parameters, length 3",
         )
-    elif model_name.lower() in ["gr4jcn", "hmets", "mohyse", "hbvec", "hypr", "sacsma", "blended"]:
+    elif model_name.lower() in [
+        "gr4jcn",
+        "hmets",
+        "mohyse",
+        "hbvec",
+        "hypr",
+        "sacsma",
+        "blended",
+    ]:
         # TODO ADD THIS
         required_config = dict(
             temperature="Daily average air temperature in °C.",
@@ -194,12 +201,22 @@ def _ravenpy_model(model_config: dict):
         HRUs=[hru],
         StartDate=model_config["start_date"],
         EndDate=model_config["end_date"],
-        ObservationData=[rc.ObservationData.from_nc(model_config["qobs_path"], alt_names=model_config["alt_names_flow"])],
+        ObservationData=[
+            rc.ObservationData.from_nc(
+                model_config["qobs_path"], alt_names=model_config["alt_names_flow"]
+            )
+        ],
         Gauge=[
             rc.Gauge.from_nc(
-                model_config["meteo_file"],  # Chemin d'accès au fichier contenant la météo
-                data_type=model_config["data_type"],  # Liste de toutes les variables contenues dans le fichier
-                alt_names=model_config["alt_names_meteo"],  # Mapping entre les noms des variables requises et celles dans le fichier.
+                model_config[
+                    "meteo_file"
+                ],  # Chemin d'accès au fichier contenant la météo
+                data_type=model_config[
+                    "data_type"
+                ],  # Liste de toutes les variables contenues dans le fichier
+                alt_names=model_config[
+                    "alt_names_meteo"
+                ],  # Mapping entre les noms des variables requises et celles dans le fichier.
                 data_kwds=model_config["meteo_station_properties"],
             )
         ],
@@ -235,7 +252,7 @@ def _ravenpy_model(model_config: dict):
 
     qsim = xr.open_dataset(outputs.files["hydrograph"]).q_sim.to_dataset(name="qsim")
 
-    if 'nbasins' in qsim.dims:
+    if "nbasins" in qsim.dims:
         qsim = qsim.squeeze()
 
     return qsim

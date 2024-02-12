@@ -46,7 +46,7 @@ dependencies = [
   "xclim>=0.47.0",
   "xdatasets>=0.3.1",
   "xscen>=0.7.1",
-  "ravenpy",
+  "ravenpy"
 ]
 
 [project.optional-dependencies]

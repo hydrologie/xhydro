@@ -1,11 +1,12 @@
 """Test suite for the calibration algorithm in calibration.py."""
 
 # Also tests the dummy model implementation.
+import datetime as dt
+from copy import deepcopy
+
 import numpy as np
 import pytest
-import datetime as dt
 import xarray as xr
-from copy import deepcopy
 
 from xhydro.modelling.calibration import perform_calibration
 from xhydro.modelling.hydrological_modelling import _dummy_model
@@ -143,6 +144,7 @@ def test_transform():
 
 class TestRavenpyModelCalibration:
     """Test calibration of RavenPy models."""
+
     # List of types of data provided to Raven in the meteo file
     data_type = ["TEMP_MAX", "TEMP_MIN", "PRECIP"]
 
@@ -158,7 +160,9 @@ class TestRavenpyModelCalibration:
     model_config = {
         "meteo_file": "/home/richard/src/xhydro/xhydro/tests/ERA5_Riviere_Rouge_global.nc",
         "qobs_path": qobs_path,
-        "qobs": xr.open_dataset(qobs_path).qobs.sel(time=slice(start_date, end_date)).values,
+        "qobs": xr.open_dataset(qobs_path)
+        .qobs.sel(time=slice(start_date, end_date))
+        .values,
         "drainage_area": np.array([100.0]),
         "elevation": np.array([250.5]),
         "latitude": np.array([46.0]),
@@ -179,7 +183,7 @@ class TestRavenpyModelCalibration:
         }
     }
 
-    model_config.update({'meteo_station_properties': meteo_station_properties})
+    model_config.update({"meteo_station_properties": meteo_station_properties})
 
     def test_ravenpy_gr4jcn_calibration(self):
         """Test for GR4JCN ravenpy model"""
@@ -202,12 +206,54 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-
     def test_ravenpy_hmets_calibration(self):
         """Test for HMETS ravenpy model"""
-        bounds_low = [0.3, 0.01, 0.5, 0.15, 0.0, 0.0, -2.0, 0.01, 0.0, 0.01, 0.005, -5.0, 0.0, 0.0, 0.0, 0.0, 0.00001, 0.0, 0.00001, 0.0, 0.0]
-        bounds_high = [20.0, 5.0, 13.0, 1.5, 20.0, 20.0, 3.0, 0.2, 0.1, 0.3, 0.1, 2.0, 5.0, 1.0, 3.0, 1.0, 0.02, 0.1, 0.01, 0.5, 2.0]
-
+        bounds_low = [
+            0.3,
+            0.01,
+            0.5,
+            0.15,
+            0.0,
+            0.0,
+            -2.0,
+            0.01,
+            0.0,
+            0.01,
+            0.005,
+            -5.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.00001,
+            0.0,
+            0.00001,
+            0.0,
+            0.0,
+        ]
+        bounds_high = [
+            20.0,
+            5.0,
+            13.0,
+            1.5,
+            20.0,
+            20.0,
+            3.0,
+            0.2,
+            0.1,
+            0.3,
+            0.1,
+            2.0,
+            5.0,
+            1.0,
+            3.0,
+            1.0,
+            0.02,
+            0.1,
+            0.01,
+            0.5,
+            2.0,
+        ]
 
         model_config = deepcopy(self.model_config)
         model_config.update(
@@ -250,12 +296,57 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-
-    @pytest.mark.skip(reason="Weird error with negative simulated PET in ravenpy for HBVEC.")
+    @pytest.mark.skip(
+        reason="Weird error with negative simulated PET in ravenpy for HBVEC."
+    )
     def test_ravenpy_hbvec_calibration(self):
         """Test for HBV-EC ravenpy model"""
-        bounds_low = [-3.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.01, 0.05, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.05, 0.8, 0.8]
-        bounds_high = [3.0, 8.0, 8.0, 0.1, 1.0, 1.0, 7.0, 100.0, 1.0, 0.1, 6.0, 5.0, 5.0, 0.2, 1.0, 30.0, 3.0, 2.0, 1.0, 1.5, 1.5]
+        bounds_low = [
+            -3.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3,
+            0.0,
+            0.0,
+            0.01,
+            0.05,
+            0.01,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.0,
+            0.05,
+            0.8,
+            0.8,
+        ]
+        bounds_high = [
+            3.0,
+            8.0,
+            8.0,
+            0.1,
+            1.0,
+            1.0,
+            7.0,
+            100.0,
+            1.0,
+            0.1,
+            6.0,
+            5.0,
+            5.0,
+            0.2,
+            1.0,
+            30.0,
+            3.0,
+            2.0,
+            1.0,
+            1.5,
+            1.5,
+        ]
 
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "hbvec"})
@@ -273,12 +364,57 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-
-    @pytest.mark.skip(reason="Weird error with negative simulated PET in ravenpy for HYPR.")
+    @pytest.mark.skip(
+        reason="Weird error with negative simulated PET in ravenpy for HYPR."
+    )
     def test_ravenpy_hypr_calibration(self):
         """Test for HYPR ravenpy model"""
-        bounds_low = [-1.0, -3.0, 0.0, 0.3, -1.3, -2.0, 0.0, 0.1, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 1.5, 0.0, 0.0, 0.8]
-        bounds_high = [1.0, 3.0, 0.8, 1.0, 0.3, 0.0, 30.0, 0.8, 2.0, 100.0, 0.5, 5.0, 1.0, 1000.0, 6.0, 7.0, 8.0, 3.0, 5.0, 5.0, 1.2]
+        bounds_low = [
+            -1.0,
+            -3.0,
+            0.0,
+            0.3,
+            -1.3,
+            -2.0,
+            0.0,
+            0.1,
+            0.4,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.01,
+            0.0,
+            0.0,
+            1.5,
+            0.0,
+            0.0,
+            0.8,
+        ]
+        bounds_high = [
+            1.0,
+            3.0,
+            0.8,
+            1.0,
+            0.3,
+            0.0,
+            30.0,
+            0.8,
+            2.0,
+            100.0,
+            0.5,
+            5.0,
+            1.0,
+            1000.0,
+            6.0,
+            7.0,
+            8.0,
+            3.0,
+            5.0,
+            5.0,
+            1.2,
+        ]
 
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "hypr"})
@@ -298,8 +434,52 @@ class TestRavenpyModelCalibration:
 
     def test_ravenpy_sacsma_calibration(self):
         """Test for SAC-SMA ravenpy model"""
-        bounds_low = [-3.0, -1.52287874, -0.69897, 0.025, 0.01, 0.075, 0.015, 0.04, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.01, 0.8, 0.8]
-        bounds_high = [-1.82390874, -0.69897, -0.30102999, 0.125, 0.075, 0.3, 0.3, 0.6, 0.5, 3.0, 80.0, 0.8, 0.05, 0.2, 0.1, 0.4, 8.0, 20.0, 5.0, 1.2, 1.2]
+        bounds_low = [
+            -3.0,
+            -1.52287874,
+            -0.69897,
+            0.025,
+            0.01,
+            0.075,
+            0.015,
+            0.04,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3,
+            0.01,
+            0.8,
+            0.8,
+        ]
+        bounds_high = [
+            -1.82390874,
+            -0.69897,
+            -0.30102999,
+            0.125,
+            0.075,
+            0.3,
+            0.3,
+            0.6,
+            0.5,
+            3.0,
+            80.0,
+            0.8,
+            0.05,
+            0.2,
+            0.1,
+            0.4,
+            8.0,
+            20.0,
+            5.0,
+            1.2,
+            1.2,
+        ]
 
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "sacsma"})
@@ -319,8 +499,96 @@ class TestRavenpyModelCalibration:
 
     def test_ravenpy_blended_calibration(self):
         """Test for Blended ravenpy model"""
-        bounds_low = [0.0, 0.1, 0.5, -5.0, 0.0, 0.5, 5.0, 0.0, 0.0, 0.0, -5.0, 0.5, 0.0, 0.01, 0.005, -5.0, 0.0, 0.0, 0.0, 0.3, 0.01, 0.5, 0.15, 1.5, 0.0, -1.0, 0.01, 0.00001, 0.0, 0.0, -3.0, 0.5, 0.8, 0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        bounds_high = [1.0, 3.0, 3.0, -1.0, 100.0, 2.0, 10.0, 3.0, 0.05, 0.45, -2.0, 2.0, 0.1, 0.3, 0.1, 2.0, 1.0, 5.0, 0.4, 20.0, 5.0, 13.0, 1.5, 3.0, 5.0, 1.0, 0.2, 0.02, 0.5, 2.0, 3.0, 4.0, 1.2, 1.2, 0.02, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        bounds_low = [
+            0.0,
+            0.1,
+            0.5,
+            -5.0,
+            0.0,
+            0.5,
+            5.0,
+            0.0,
+            0.0,
+            0.0,
+            -5.0,
+            0.5,
+            0.0,
+            0.01,
+            0.005,
+            -5.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3,
+            0.01,
+            0.5,
+            0.15,
+            1.5,
+            0.0,
+            -1.0,
+            0.01,
+            0.00001,
+            0.0,
+            0.0,
+            -3.0,
+            0.5,
+            0.8,
+            0.8,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+        bounds_high = [
+            1.0,
+            3.0,
+            3.0,
+            -1.0,
+            100.0,
+            2.0,
+            10.0,
+            3.0,
+            0.05,
+            0.45,
+            -2.0,
+            2.0,
+            0.1,
+            0.3,
+            0.1,
+            2.0,
+            1.0,
+            5.0,
+            0.4,
+            20.0,
+            5.0,
+            13.0,
+            1.5,
+            3.0,
+            5.0,
+            1.0,
+            0.2,
+            0.02,
+            0.5,
+            2.0,
+            3.0,
+            4.0,
+            1.2,
+            1.2,
+            0.02,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ]
 
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "blended"})
