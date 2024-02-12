@@ -13,6 +13,7 @@ dependencies:
   - xarray
   - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
   - xscen >=0.7.1
+  - ravenpy
   - pip
   - pip:
     - xdatasets
