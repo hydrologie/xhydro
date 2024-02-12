@@ -2,12 +2,17 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and setup.py!
   - python >=3.9,<3.12
+  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  # Main packages
   - numpy
-  - pandas
-  - pyyaml
+  - pooch >=1.8.0
+  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
+  - spotpy
   - statsmodels
   - xarray
-  - xclim >=0.45.0
+  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
   - xscen >=0.7.1
+  - pip
+  - pip:
+    - xdatasets

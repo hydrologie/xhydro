@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-  "commit": "240a2c784f89cb1e2c5952869413c5582e590345",
+  "commit": "617b216e87e1ddf008fcca890dfd5dd1ee601f51",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -9,13 +9,15 @@
       "github_username": "TC-FF",
       "project_name": "xHydro",
       "project_slug": "xhydro",
-      "project_short_description": "Hydrological analysis library built with xarray",
+      "project_short_description": "Hydrological analysis library built with xarray.",
       "pypi_username": "TC-FF",
-      "version": "0.2.3",
+      "version": "0.3.3",
       "use_pytest": "y",
       "use_black": "y",
+      "use_conda": "y",
       "add_pyup_badge": "n",
       "make_docs": "y",
+      "add_translations": "y",
       "command_line_interface": "No command-line interface",
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",

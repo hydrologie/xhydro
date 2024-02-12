@@ -11,10 +11,17 @@ Welcome to xHydro's documentation!
    usage
    notebooks/hydrotel
    notebooks/local_frequency_analysis
+   planification
    apidoc/modules
    contributing
    authors
-   history
+   changes
+
+.. toctree::
+   :maxdepth: 1
+   :caption: All Modules
+
+   apidoc/modules
 
 .. Indices and tables
 .. ==================

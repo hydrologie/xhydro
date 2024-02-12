@@ -10,9 +10,9 @@ import xclim.indices.stats
 from statsmodels.tools import eval_measures
 
 __all__ = [
+    "criteria",
     "fit",
     "parametric_quantiles",
-    "criteria",
 ]
 
 
@@ -43,7 +43,8 @@ def fit(
 
     Notes
     -----
-    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the maximum number of unique parameters between the distributions.
+    In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the
+    maximum number of unique parameters between the distributions.
     """
     distributions = distributions or [
         "expon",
@@ -143,16 +144,16 @@ def parametric_quantiles(
             if mode == "max"
             else "Probability of non-exceedance"
         )
-        da_q.attrs[
-            "description"
-        ] = "Parametric distribution quantiles for the given return period."
+        da_q.attrs["description"] = (
+            "Parametric distribution quantiles for the given return period."
+        )
         da_q.attrs["mode"] = mode
         quantiles = quantiles.assign_coords(p_quantile=da_q)
 
         quantiles.attrs["scipy_dist"] = distributions
-        quantiles.attrs[
-            "description"
-        ] = f"Return period ({mode}) estimated with statistic distributions"
+        quantiles.attrs["description"] = (
+            f"Return period ({mode}) estimated with statistic distributions"
+        )
         quantiles.attrs["long_name"] = "Return period"
         quantiles.attrs["mode"] = mode
         out.append(quantiles)
@@ -243,11 +244,12 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
             crit.attrs = p[v].attrs
             crit.attrs["history"] = (
                 crit.attrs.get("history", "")
-                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
+                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                f"criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
             )
-            crit.attrs[
-                "description"
-            ] = "Information criteria for the distribution parameters."
+            crit.attrs["description"] = (
+                "Information criteria for the distribution parameters."
+            )
             crit.attrs["long_name"] = "Information criteria"
 
             # Remove a few attributes that are not relevant anymore

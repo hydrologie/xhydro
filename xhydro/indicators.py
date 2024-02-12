@@ -1,4 +1,5 @@
 """Module to compute indicators using xclim's build_indicator_module_from_yaml."""
+
 import warnings
 from typing import Optional
 
@@ -64,44 +65,48 @@ def get_yearly_op(
     missing_options: Optional[dict] = None,
     interpolate_na: bool = False,
 ) -> xr.Dataset:
-    """
-    Compute yearly operations on a variable.
+    """Compute yearly operations on a variable.
 
     Parameters
     ----------
-    ds: xr.Dataset
+    ds : xr.Dataset
         Dataset containing the variable to compute the operation on.
-    op: str
+    op : str
         Operation to compute. One of ["max", "min", "mean", "sum"].
-    input_var: str
+    input_var : str
         Name of the input variable. Defaults to "streamflow".
-    window: int
+    window : int
         Size of the rolling window. A "mean" operation is performed on the rolling window before the call to xclim.
         This parameter cannot be used with the "sum" operation.
-    timeargs: dict, optional
-        Dictionary of time arguments for the operation. Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
+    timeargs : dict, optional
+        Dictionary of time arguments for the operation.
+        Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
         Values are up to two dictionaries, with both being optional.
-        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC"). It needs to be a yearly frequency. Defaults to "AS-JAN".
-        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which means the whole year.
+        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC").
+        It needs to be a yearly frequency. Defaults to "AS-JAN".
+        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`.
+        Defaults to {}, which means the whole year.
         See :py:func:`xclim.core.calendar.select_time` for more information.
-        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ['12-01', '02-28']}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
-    missing: str
+        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ["12-01", "02-28"]}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
+    missing : str
         How to handle missing values. One of "skip", "any", "at_least_n", "pct", "wmo".
         See :py:func:`xclim.core.missing` for more information.
-    missing_options: dict, optional
+    missing_options : dict, optional
         Dictionary of options for the missing values' method. See :py:func:`xclim.core.missing` for more information.
-    interpolate_na: bool
-        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation. Defaults to False.
+    interpolate_na : bool
+        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation.
+        Defaults to False.
 
     Returns
     -------
     xr.Dataset
-        Dataset containing the computed operations, with one variable per indexer. The name of the variable follows the pattern `{input_var}{window}_{op}_{indexer}`.
+        Dataset containing the computed operations, with one variable per indexer.
+        The name of the variable follows the pattern `{input_var}{window}_{op}_{indexer}`.
 
     Notes
     -----
-    If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs (e.g. 1 per month) to create multiple distinct variables.
-
+    If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs
+    (e.g. 1 per month) to create multiple distinct variables.
     """
     missing_options = missing_options or {}
     timeargs = timeargs or {"annual": {}}
@@ -170,7 +175,8 @@ def get_yearly_op(
             and freq != "AS-DEC"
         ):
             warnings.warn(
-                "The frequency is not AS-DEC, but the season indexer includes DJF. This will lead to misleading results."
+                "The frequency is not AS-DEC, but the season indexer includes DJF. "
+                "This will lead to misleading results."
             )
         elif (
             "doy_bounds" in indexer.keys()
@@ -195,11 +201,13 @@ def get_yearly_op(
                 month_end = int(indexer["date_bounds"][1].split("-")[0])
             if month_end == month_start:
                 warnings.warn(
-                    "The bounds wrap around the year, but the month is the same between the both of them. This is not supported and will lead to wrong results."
+                    "The bounds wrap around the year, but the month is the same between the both of them. "
+                    "This is not supported and will lead to wrong results."
                 )
             if freq == "YS" or (month_start != month_labels.index(freq.split("-")[1])):
                 warnings.warn(
-                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
+                    f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. "
+                    f"You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
                 )
 
         identifier = f"{input_var}{window if window > 1 else ''}_{op}_{i.lower()}"
