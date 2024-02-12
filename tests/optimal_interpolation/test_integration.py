@@ -154,4 +154,4 @@ class Test_optimal_interpolation_integration:
             self.flow_l1o_info_file,
         ]
 
-        cr.compare(self.start_date, self.end_date, files)
+        cr.compare(self.start_date, self.end_date, files, show_comparaison=False)
