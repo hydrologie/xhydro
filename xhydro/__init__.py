@@ -1,6 +1,6 @@
 """Hydrological analysis library built with xarray."""
 
-# from . import cc, indicators, utils
+from . import cc, indicators, utils, modelling
 
 # Import top-level functions
 # TODO: Decide which functions to import at the top level

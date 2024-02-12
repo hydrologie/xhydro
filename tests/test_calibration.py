@@ -153,7 +153,7 @@ class TestRavenpyModelCalibration:
     qobs_path = "/home/richard/src/xhydro/xhydro/tests/Debit_Riviere_Rouge.nc"
 
     start_date = dt.datetime(1985, 1, 1)
-    end_date = dt.datetime(1990, 1, 1)
+    end_date = dt.datetime(1986, 12, 31)
 
     model_config = {
         "meteo_file": "/home/richard/src/xhydro/xhydro/tests/ERA5_Riviere_Rouge_global.nc",

@@ -53,7 +53,7 @@ from ravenpy import OutputReader
 from ravenpy.ravenpy import run
 
 
-__all__ = ["run_hydrological_model"]
+__all__ = ["run_hydrological_model", "get_hydrological_model_inputs"]
 
 
 def run_hydrological_model(model_config: dict):
