@@ -1,3 +1,5 @@
+"""Utility to find the folder containing the notebooks."""
+
 from __future__ import annotations
 
 from pathlib import Path
