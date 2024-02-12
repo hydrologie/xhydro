@@ -167,7 +167,7 @@ class TestGetPlottingPositions:
             as_dataset=True,
         )
         expected = [1.16666667, 1.61538462, 2.625, 7.0]
-        result = get_plotting_positions(data)
+        result = _get_plotting_positions(data)
         np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
         np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
 
@@ -185,12 +185,12 @@ class TestGetPlottingPositions:
             as_dataset=True,
         )
         expected = [1.23076923, np.nan, 2.0, 5.33333333]
-        result = get_plotting_positions(data)
+        result = _get_plotting_positions(data)
         np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
         np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
 
         data_2d = xr.concat([data, data], dim="id")
-        result = get_plotting_positions(data_2d)
+        result = _get_plotting_positions(data_2d)
         np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
 
@@ -203,12 +203,12 @@ class TestGetPlottingPositions:
             as_dataset=True,
         )
         expected = [0.14285714, 0.38095238, 0.61904762, 0.85714286]
-        result = get_plotting_positions(data, return_period=False)
+        result = _get_plotting_positions(data, return_period=False)
         np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
         np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
 
         data_2d = xr.concat([data, data], dim="id")
-        result = get_plotting_positions(data_2d, return_period=False)
+        result = _get_plotting_positions(data_2d, return_period=False)
         np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
 
@@ -221,11 +221,11 @@ class TestGetPlottingPositions:
             as_dataset=True,
         )
         expected = [1.25, 1.66666667, 2.5, 5.0]
-        result = get_plotting_positions(data, alpha=0, beta=0)
+        result = _get_plotting_positions(data, alpha=0, beta=0)
         np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
         np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
 
         data_2d = xr.concat([data, data], dim="id")
-        result = get_plotting_positions(data_2d, alpha=0, beta=0)
+        result = _get_plotting_positions(data_2d, alpha=0, beta=0)
         np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)

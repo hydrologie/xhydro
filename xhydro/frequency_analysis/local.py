@@ -268,7 +268,7 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
     return out
 
 
-def get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
+def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
     """Calculate plotting positions for data.
 
     Parameters
@@ -346,7 +346,7 @@ def get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
     return pp
 
 
-def prepare_plots(params, xmin=1, xmax=10000, npoints=100, log=True):
+def _prepare_plots(params, xmin=1, xmax=10000, npoints=100, log=True):
     """Prepare x-values for plotting frequency analysis results.
 
     Parameters
