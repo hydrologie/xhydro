@@ -1,3 +1,5 @@
+"""Class to handle Hydrotel simulations."""
+
 import os
 import re
 import subprocess
@@ -19,7 +21,22 @@ __all__ = ["Hydrotel"]
 
 
 class Hydrotel:
-    """Class to handle Hydrotel simulations."""
+    """Class to handle Hydrotel simulations.
+
+    Parameters
+    ----------
+    project : str or os.PathLike
+        Path to the project folder.
+    default_options : bool
+        If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
+        If False, read the options directly from the files in the project folder.
+    project_options : dict, optional
+        Dictionary of options to overwrite in the project file (projet.csv).
+    simulation_options : dict, optional
+        Dictionary of options to overwrite in the simulation file (simulation.csv).
+    output_options : dict, optional
+        Dictionary of options to overwrite in the output file (output.csv).
+    """
 
     def __init__(
         self,
@@ -34,16 +51,16 @@ class Hydrotel:
 
         Parameters
         ----------
-        project: str or os.PathLike
+        project : str or os.PathLike
             Path to the project folder.
-        default_options: bool
+        default_options : bool
             If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
             If False, read the options directly from the files in the project folder.
-        project_options: dict, optional
+        project_options : dict, optional
             Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options: dict, optional
+        simulation_options : dict, optional
             Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options: dict, optional
+        output_options : dict, optional
             Dictionary of options to overwrite in the output file (output.csv).
 
         Notes
@@ -134,11 +151,11 @@ class Hydrotel:
 
         Parameters
         ----------
-        project_options: dict, optional
+        project_options : dict, optional
             Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options: dict, optional
+        simulation_options : dict, optional
             Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options: dict, optional
+        output_options : dict, optional
             Dictionary of options to overwrite in the output file (output.csv).
         """
         options = [project_options, simulation_options, output_options]
@@ -195,16 +212,21 @@ class Hydrotel:
 
         Parameters
         ----------
-        hydrotel_console: str or os.PathLike, optional
+        hydrotel_console : str or os.PathLike, optional
             For Windows only. Path to the Hydrotel.exe file.
-        id_as_dim: bool
+        id_as_dim : bool
             Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
-        xr_open_kwargs_in: dict, optional
+        xr_open_kwargs_in : dict, optional
             Used on the input file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
-        xr_open_kwargs_out: dict, optional
+        xr_open_kwargs_out : dict, optional
             Used on the output file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
-        dry_run: bool
+        dry_run : bool
             If True, do not run the simulation. Only perform basic checks and print the command that would be run.
+
+        Returns
+        -------
+        str
+           If 'dry_run' is True, returns the command that would be run.
         """
         # Perform basic checkups on the inputs
         self._basic_checks(xr_open_kwargs=xr_open_kwargs_in)
@@ -245,11 +267,17 @@ class Hydrotel:
 
         Parameters
         ----------
-        return_config: bool
+        return_config : bool
             Whether to return the configuration file as well. If True, returns a tuple of (dataset, configuration).
-        \*\*kwargs
+        \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
+        Returns
+        -------
+        xr.Dataset
+            If 'return_config' is False, returns the weather file.
+        Tuple[xr.Dataset, dict]
+            If 'return_config' is True, returns the weather file and its configuration.
         """
         # Set the type of weather file
         if all(
@@ -296,9 +324,13 @@ class Hydrotel:
 
         Parameters
         ----------
-        \*\*kwargs
+        \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
+        Returns
+        -------
+        xr.Dataset
+            The streamflow file.
         """
         return xr.open_dataset(
             self.project
@@ -314,7 +346,7 @@ class Hydrotel:
 
         Parameters
         ----------
-        xr_open_kwargs: dict
+        xr_open_kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
         Notes
@@ -447,9 +479,9 @@ class Hydrotel:
 
         Parameters
         ----------
-        id_as_dim: bool
+        id_as_dim : bool
             Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
-        xr_open_kwargs: dict, optional
+        xr_open_kwargs : dict, optional
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
         ds = self.get_streamflow(**(xr_open_kwargs or {}))
@@ -514,9 +546,11 @@ class Hydrotel:
 def _fix_os_paths(d: dict):
     """Convert paths to fit the OS."""
     return {
-        k: str(Path(PureWindowsPath(v).as_posix()))
-        if any(slash in str(v) for slash in ["/", "\\"])
-        else v
+        k: (
+            str(Path(PureWindowsPath(v).as_posix()))
+            if any(slash in str(v) for slash in ["/", "\\"])
+            else v
+        )
         for k, v in d.items()
     }
 
