@@ -514,9 +514,11 @@ class Hydrotel:
 def _fix_os_paths(d: dict):
     """Convert paths to fit the OS."""
     return {
-        k: str(Path(PureWindowsPath(v).as_posix()))
-        if any(slash in str(v) for slash in ["/", "\\"])
-        else v
+        k: (
+            str(Path(PureWindowsPath(v).as_posix()))
+            if any(slash in str(v) for slash in ["/", "\\"])
+            else v
+        )
         for k, v in d.items()
     }
 
