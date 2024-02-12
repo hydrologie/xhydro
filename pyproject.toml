@@ -38,8 +38,10 @@ dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "numpy",
+  "pandas",
   "pooch>=1.8.0",
   "pydantic>=2.0,<2.5.3",
+  "pyyaml",
   "spotpy",
   "statsmodels",
   "xarray",
