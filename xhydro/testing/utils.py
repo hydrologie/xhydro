@@ -6,11 +6,6 @@ from io import StringIO
 from pathlib import Path
 from typing import Optional, TextIO, Union
 
-import numpy as np
-from xclim.testing.helpers import test_timeseries as timeseries
-
-import xhydro.frequency_analysis as xhfa
-
 __all__ = [
     "publish_release_notes",
 ]
@@ -98,22 +93,3 @@ def publish_release_notes(
     if isinstance(file, (Path, os.PathLike)):
         file = Path(file).open("w")
     print(changes, file=file)
-
-
-def get_fake_params():
-    """Return fake parameters for testing.
-
-    Returns
-    -------
-    xhydro.frequency_analysis.Params
-        Fake parameters for testing.
-    """
-    ds = timeseries(
-        np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-        variable="streamflow",
-        start="2001-01-01",
-        freq="YS",
-        as_dataset=True,
-    )
-
-    return xhfa.local.fit(ds, distributions=["gamma", "pearson3"])

@@ -5,7 +5,6 @@ from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
 from xhydro.frequency_analysis.local import _get_plotting_positions, _prepare_plots
-from xhydro.testing.utils import get_fake_params
 
 
 class TestFit:
@@ -233,18 +232,17 @@ class TestGetPlottingPositions:
 
 
 class Testprepare_plots:
-ds = timeseries(
-    np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-    variable="streamflow",
-    start="2001-01-01",
-    freq="YS",
-    as_dataset=True,
-)
-params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
+    ds = timeseries(
+        np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
+        variable="streamflow",
+        start="2001-01-01",
+        freq="YS",
+        as_dataset=True,
+    )
+    params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
 
     def test_prepare_plots_default(self):
-        params = get_fake_params()
-        result = _prepare_plots(params)
+        result = _prepare_plots(self.params)
         assert result.streamflow.shape == (2, 100)
         assert result.return_period.min() == 1
         assert result.return_period.max() == 10000
@@ -255,8 +253,7 @@ params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
         np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
 
     def test_prepare_plots_linear(self):
-        params = get_fake_params()
-        result = _prepare_plots(params, log=False)
+        result = _prepare_plots(self.params, log=False)
 
         expected = [
             [-30.78466504, 262.72577254, 281.56238078, 292.27851004, 299.75980757],
@@ -265,12 +262,10 @@ params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
         np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
 
     def test_prepare_plots_range(self):
-        params = get_fake_params()
-        result = _prepare_plots(params, xmin=5, xmax=500)
+        result = _prepare_plots(self.params, xmin=5, xmax=500)
         assert result.return_period.min() == pytest.approx(5)
         assert result.return_period.max() == pytest.approx(500)
 
     def test_prepare_plots_npoints(self):
-        params = get_fake_params()
-        result = _prepare_plots(params, npoints=50).load()
+        result = _prepare_plots(self.params, npoints=50).load()
         assert result.streamflow.shape == (2, 50)
