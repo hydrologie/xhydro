@@ -277,7 +277,6 @@ def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True)
         Input data.
     alpha : float, optional
         Plotting position parameter, by default 0.4.
-        See scipy.stats.mstats.plotting_positions for typical values for alpha and beta. (.4,.4) : approximately quantile unbiased (Cunnane).
     beta : float, optional
         Plotting position parameter, by default 0.4.
     return_period : bool, optional
@@ -287,6 +286,10 @@ def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True)
     -------
     xarray DataArray
         The data with plotting positions assigned.
+
+    Notes
+    -----
+    See scipy.stats.mstats.plotting_positions for typical values for alpha and beta. (0.4, 0.4) : approximately quantile unbiased (Cunnane).
     """
     data_copy = data_array.copy(deep=True)
 
