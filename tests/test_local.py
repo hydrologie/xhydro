@@ -4,7 +4,8 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.local import _get_plotting_positions
+from xhydro.frequency_analysis.local import _get_plotting_positions, _prepare_plots
+from xhydro.testing.utils import get_fake_params
 
 
 class TestFit:
@@ -172,7 +173,7 @@ class TestGetPlottingPositions:
         np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
 
         data_2d = xr.concat([data, data], dim="id")
-        result = get_plotting_positions(data_2d)
+        result = _get_plotting_positions(data_2d)
         np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
 
@@ -229,3 +230,39 @@ class TestGetPlottingPositions:
         result = _get_plotting_positions(data_2d, alpha=0, beta=0)
         np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+
+
+class Testprepare_plots:
+
+    def test_prepare_plots_default(self):
+        params = get_fake_params()
+        result = _prepare_plots(params)
+        assert result.streamflow.shape == (2, 100)
+        assert result.return_period.min() == 1
+        assert result.return_period.max() == 10000
+        expected = [
+            [-30.78466504, 63.64266447, 78.19229358, 88.62699148, 97.15369501],
+            [-np.inf, 61.08708903, 79.72126025, 92.05411647, 101.59650405],
+        ]
+        np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
+
+    def test_prepare_plots_linear(self):
+        params = get_fake_params()
+        result = _prepare_plots(params, log=False)
+
+        expected = [
+            [-30.78466504, 262.72577254, 281.56238078, 292.27851004, 299.75980757],
+            [-np.inf, 235.6878466, 247.41104463, 253.8825982, 258.32114457],
+        ]
+        np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
+
+    def test_prepare_plots_range(self):
+        params = get_fake_params()
+        result = _prepare_plots(params, xmin=5, xmax=500)
+        assert result.return_period.min() == pytest.approx(5)
+        assert result.return_period.max() == pytest.approx(500)
+
+    def test_prepare_plots_npoints(self):
+        params = get_fake_params()
+        result = _prepare_plots(params, npoints=50).load()
+        assert result.streamflow.shape == (2, 50)
