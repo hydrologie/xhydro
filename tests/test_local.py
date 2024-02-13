@@ -233,6 +233,14 @@ class TestGetPlottingPositions:
 
 
 class Testprepare_plots:
+ds = timeseries(
+    np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
+    variable="streamflow",
+    start="2001-01-01",
+    freq="YS",
+    as_dataset=True,
+)
+params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
 
     def test_prepare_plots_default(self):
         params = get_fake_params()
