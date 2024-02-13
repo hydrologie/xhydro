@@ -4,7 +4,7 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.local import get_plotting_positions
+from xhydro.frequency_analysis.local import _get_plotting_positions
 
 
 class TestFit:
