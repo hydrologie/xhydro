@@ -3,6 +3,7 @@ import pytest
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro as xh
+from xhydro.indicators import mannkendall
 
 
 # Smoke test for xscen functions that are imported into xhydro
@@ -245,3 +246,19 @@ class TestGetYearlyOp:
                     "annual": {"date_bounds": ["06-01", "04-30"], "freq": "AS-DEC"}
                 },
             )
+
+
+class TestStatsTest:
+    ds = timeseries(
+        np.arange(1, 365 * 3 + 1),
+        variable="streamflow",
+        start="2001-01-01",
+        freq="D",
+        as_dataset=True,
+    )
+
+    def test_mannkendall_original(self):
+        result = mannkendall(self.ds, outputs=["h", "p"])
+        assert result.mk.size == 2
+        np.testing.assert_array_equal(result.sel(mk="h").streamflow, [1.0])
+        np.testing.assert_array_equal(result.sel(mk="p").streamflow, [0])
