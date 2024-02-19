@@ -1,10 +1,10 @@
 """Module to compute indicators using xclim's build_indicator_module_from_yaml."""
+
 import warnings
 from typing import Optional
 
 import numpy as np
 import pymannkendall
-import scipy.stats as stats
 import xarray as xr
 import xclim as xc
 import xscen as xs
@@ -71,36 +71,37 @@ def get_yearly_op(
     missing_options: Optional[dict] = None,
     interpolate_na: bool = False,
 ) -> xr.Dataset:
-    """
-    Compute yearly operations on a variable.
+    """Compute yearly operations on a variable.
 
     Parameters
     ----------
-    ds: xr.Dataset
+    ds : xr.Dataset
         Dataset containing the variable to compute the operation on.
-    op: str
+    op : str
         Operation to compute. One of ["max", "min", "mean", "sum"].
-    input_var: str
+    input_var : str
         Name of the input variable. Defaults to "streamflow".
-    window: int
+    window : int
         Size of the rolling window. A "mean" operation is performed on the rolling window before the call to xclim.
         This parameter cannot be used with the "sum" operation.
-    timeargs: dict, optional
+    timeargs : dict, optional
         Dictionary of time arguments for the operation.
         Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
         Values are up to two dictionaries, with both being optional.
         The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC").
         It needs to be a yearly frequency. Defaults to "AS-JAN".
-        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which means the whole year.
+        The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`.
+        Defaults to {}, which means the whole year.
         See :py:func:`xclim.core.calendar.select_time` for more information.
-        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ['12-01', '02-28']}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
-    missing: str
+        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ["12-01", "02-28"]}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
+    missing : str
         How to handle missing values. One of "skip", "any", "at_least_n", "pct", "wmo".
         See :py:func:`xclim.core.missing` for more information.
-    missing_options: dict, optional
+    missing_options : dict, optional
         Dictionary of options for the missing values' method. See :py:func:`xclim.core.missing` for more information.
-    interpolate_na: bool
-        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation. Defaults to False.
+    interpolate_na : bool
+        Whether to interpolate missing values before computing the operation. Only used with the "sum" operation.
+        Defaults to False.
 
     Returns
     -------
@@ -112,7 +113,6 @@ def get_yearly_op(
     -----
     If you want to perform a frequency analysis on a frequency that is finer than annual, simply use multiple timeargs
     (e.g. 1 per month) to create multiple distinct variables.
-
     """
     missing_options = missing_options or {}
     timeargs = timeargs or {"annual": {}}
@@ -181,7 +181,8 @@ def get_yearly_op(
             and freq != "AS-DEC"
         ):
             warnings.warn(
-                "The frequency is not AS-DEC, but the season indexer includes DJF. This will lead to misleading results."
+                "The frequency is not AS-DEC, but the season indexer includes DJF. "
+                "This will lead to misleading results."
             )
         elif (
             "doy_bounds" in indexer.keys()
@@ -260,18 +261,18 @@ def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
     Parameters
     ----------
     da : xarray DataArray
-        Input time series
+        Input time series.
     outputs : list of str, optional
         Names of output variables to compute, by default ["h", "p"]
         Possible values include 'trend', 'h', 'p', 'z', 'S', 'var_s', 'trend_type', 'seasonal', and 'seasonal_slope'.
         Refer to the documentation of the specific Mann-Kendall test variant for available outputs.
     test : str, optional
-        The Mann-Kendall test variant to be applied, by default "original_test"
+        The Mann-Kendall test variant to be applied, by default "original_test".
 
     Returns
     -------
     xarray Dataset
-        Dataset containing output variables specified in outputs
+        Dataset containing output variables specified in outputs.
     """
 
     def _pval_mannkendall_ufunc(da, test, outputs):
@@ -307,8 +308,7 @@ def mannkendall(da, outputs: list = ["h", "p"], test: str = "original_test"):
 
 
 def pval_mannwhitneyu(da_in, buffer=5):
-    """
-    Apply Mann-Whitney U test for change detection.
+    """Apply Mann-Whitney U test for change detection.
 
     Computes mean before and after each timestep, as well as p-value from
     Mann-Whitney U test. Buffer is used to avoid comparing only a few values.
@@ -326,7 +326,6 @@ def pval_mannwhitneyu(da_in, buffer=5):
     xr.DataArray
         Data array with mannwhitneyu dimension containing mean_before, mean_after
         and p_value variables.
-
     """
 
     def pval_mannwhitneyu_ufunc(da_in, buffer=5, test="two-sided"):
@@ -336,20 +335,23 @@ def pval_mannwhitneyu(da_in, buffer=5):
         Parameters
         ----------
         da_in : xarray DataArray
-            Input data array
+            Input data array.
         buffer : int, optional
-            Size of moving window, by default 5
+            Size of moving window, by default 5.
+        test : str, optional
+            Test type, by default "two-sided".
 
         Returns
         -------
         mean_before : xarray DataArray
-            Mean values before each index
+            Mean values before each index.
         mean_after : xarray DataArray
-            Mean values after each index
+            Mean values after each index.
         p_values : xarray DataArray
-            p-values for difference in distribution before and
-            after each index
+            P-values for difference in distribution before and after each index.
 
+        Notes
+        -----
         Handles NaNs by ignoring them in calculations.
 
         Performs a two-sided test by default. Can use 'greater' or
@@ -411,22 +413,17 @@ def pval_wald_wolfowitz(da: xr.DataArray):
     """
 
     def pval_wald_wolfowitz_ufunc(q):
-        """
-        Perform a two-sided Wald-Wolfowitz independence test.
+        """Perform a two-sided Wald-Wolfowitz independence test.
 
         Parameters
         ----------
-        q: series (array-like):
+        q : series (array-like)
             Consecutive numeric observation series (n-dimensional vector).
 
         Returns
         -------
-            float: The observed test threshold (p-value).
-
-        Example
-        -------
-            >>> x = normrnd(0, 1, 50, 1)
-            >>> p = pval_wald_wolfowitz_ufunc(x)
+        float
+            The observed test threshold (p-value).
 
         Notes
         -----
@@ -439,8 +436,14 @@ def pval_wald_wolfowitz(da: xr.DataArray):
         References
         ----------
         Bobée and Ashkar (1991). The Gamma Family and Derived Distributions Applied in Hydrology
-        Wald and Wolfowitz (1943). An exact test for randomness in the non-parametric case based on serial correlation. Ann. Math. Statist., 14, 378-388
+        Wald and Wolfowitz (1943).
+        An exact test for randomness in the non-parametric case based on serial correlation. Ann. Math. Statist., 14, 378-388
         Distributions Applied in Hydrology
+
+        Examples
+        --------
+            >>> x = normrnd(0, 1, 50, 1)
+            >>> p = pval_wald_wolfowitz_ufunc(x)
         """
         # Remove NaN values
         q = np.array(q)

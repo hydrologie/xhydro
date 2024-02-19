@@ -2,13 +2,40 @@
 Changelog
 =========
 
-v0.3.0 (unreleased)
+
+v0.4.0 (unreleased)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added French language support to the documentation. (:issue:`53`, :pull:`55`).
+* Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories. (:pull:`62`).
+* `xhydro` is now configured to use `pooch` to download and cache testing datasets from `hydrologie/xhydro-testdata`. (:pull:`62`).
+* `xhydro` is now `Semantic Versioning v2.0.0 <https://semver.org/spec/v2.0.0.html>`_ compliant. (:pull:`70`).
+* Added new functions to `xhydro.frequency_analysis.local` to calculate plotting positions and to prepare plots. (:pull:`87`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Added `pooch` as an installation dependency. (:pull:`62`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added a new module for testing purposes: `xhydro.testing.helpers` with some new functions. (:pull:`62`):
+    * `generate_registry`: Parses data found in package (`xhydro.testing.data`), and adds it to the `registry.txt`
+    * `load_registry`: Loads installed (or custom) registry and returns dictionary
+    * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
+* Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
+* The cookiecutter has been updated to the latest commit (:pull:`70`):
+    * Added some workflows (Change file labelling, Cache cleaning, Dependency scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_).
+    * The README has been updated to organize badges in a table, including a badge for the OpenSSF Scorecard.
+    * Updated pre-commit hook versions to the latest available.
+    * Formatting tools are now pinned to their pre-commit equivalents.
+    * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
+
+v0.3.0 (2023-12-01)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
-
-Announcements
-^^^^^^^^^^^^^
-* N/A
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,16 +43,16 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging.
+* `xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for building and packaging. (:pull:`50`).
 
 Bug fixes
 ^^^^^^^^^
-* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile (:issue:`41`, :pull:`43`).
+* The `return_level` dimension in `xh.frequency_analysis.local.parametric_quantiles()` is now the actual return level, not the quantile. (:issue:`41`, :pull:`43`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added `xhydro.testing.utils.publish_release_notes()` to help with the release process. (:pull:`37`).
-* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier (:issue:`41`, :pull:`43`).
+* `xh.frequency_analysis.local.parametric_quantiles()` and `xh.frequency_analysis.local.criteria()` are now lazier. (:issue:`41`, :pull:`43`).
 * The `cookiecutter` template has been updated to the latest commit via `cruft`. (:pull:`50`):
     * `Manifest.in` and `setup.py` have been removed.
     * `pyproject.toml` has been added, with most package configurations migrated into it.

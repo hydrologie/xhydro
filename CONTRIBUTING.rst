@@ -106,6 +106,14 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     # Or, to run multiple build tests
     $ tox
 
+   .. note::
+
+       Running `pytest` or `tox` will automatically fetch and cache the testing data for the package to your local cache (using the `platformdirs` library). On Linux, this is located at ``XDG_CACHE_HOME`` (usually ``~/.cache``). On Windows, this is located at ``%LOCALAPPDATA%`` (usually ``C:\Users\username\AppData\Local``). On MacOS, this is located at ``~/Library/Caches``.
+
+       If for some reason you wish to cache this data elsewhere, you can set the ``XHYDRO_DATA_DIR`` environment variable to a different location before running the tests. For example, to cache the data in the current working directory, run::
+
+            $ export XHYDRO_DATA_DIR=$(pwd)/.cache
+
 #. Commit your changes and push your branch to GitHub::
 
     $ git add .
@@ -134,6 +142,12 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
 You will have contributed your first changes to ``xhydro``!
 
+.. warning::
+
+    If your Pull Request relies on modifications to the testing data of `xhydro`, you will need to update the testing data repository as well. As a preliminary testing measure, the branch of the testing data can be modified at testing time (from `main`) by setting the ``XHYDRO_TESTDATA_BRANCH`` environment variable to the branch name of the ``xhydro-testdata`` repository.
+
+    Be sure to consult the ReadMe found at https://github.com/hydrologie/xhydro-testdata as well.
+
 Pull Request Guidelines
 -----------------------
 
@@ -160,7 +174,7 @@ To run specific code style checks::
     $ ruff xhydro tests
     $ flake8 xhydro tests
 
-To get ``black``, ``isort ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install them with `pip` (or `conda`) into your environment.
+To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install them with ``pip`` (or ``conda``) into your environment.
 
 Versioning/Tagging
 ------------------
@@ -173,20 +187,16 @@ A reminder for the **maintainers** on how to deploy. This section is only releva
 
 #. Create a new branch from `main` (e.g. `release-0.2.0`).
 #. Update the `CHANGES.rst` file to change the `Unreleased` section to the current date.
-#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`):
+#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`)::
 
-    .. code-block:: shell
-
-        $ bump-my-version bump minor # In most cases, we will be releasing a minor version
-        $ git push
+    $ bump-my-version bump minor # In most cases, we will be releasing a minor version
+    $ git push
 
 #. Create a pull request from your branch to `main`.
-#. Once the pull request is merged, create a new release on GitHub. On the main branch, run:
+#. Once the pull request is merged, create a new release on GitHub. On the main branch, run::
 
-    .. code-block:: shell
-
-        $ git tag v0.2.0
-        $ git push --tags
+    $ git tag v0.2.0
+    $ git push --tags
 
    This will trigger a GitHub workflow to build the package and upload it to TestPyPI. At the same time, the GitHub workflow will create a draft release on GitHub. Assuming that the workflow passes, the final release can then be published on GitHub by finalizing the draft release.
 
