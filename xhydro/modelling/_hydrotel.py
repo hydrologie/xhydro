@@ -1,7 +1,7 @@
 """Class to handle Hydrotel simulations."""
 
 import os
-import re
+import shutil
 import subprocess
 import warnings
 from copy import deepcopy
@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim as xc
-import yaml
 from xscen.io import estimate_chunks, save_to_netcdf
 
 from xhydro.utils import health_checks
@@ -25,240 +24,227 @@ class Hydrotel:
 
     Parameters
     ----------
-    project : str or os.PathLike
+    project_dir : str or os.PathLike
         Path to the project folder.
-    default_options : bool
+    project_file : str
+        Name of the project file (e.g. 'projet.csv').
+    project_config : dict, optional
+        Dictionary of options to overwrite in the project file (projet.csv).
+    simulation_config : dict, optional
+        Dictionary of options to overwrite in the simulation file (simulation.csv).
+    output_config : dict, optional
+        Dictionary of options to overwrite in the output file (output.csv).
+    use_defaults : bool
         If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
         If False, read the options directly from the files in the project folder.
-    project_options : dict, optional
-        Dictionary of options to overwrite in the project file (projet.csv).
-    simulation_options : dict, optional
-        Dictionary of options to overwrite in the simulation file (simulation.csv).
-    output_options : dict, optional
-        Dictionary of options to overwrite in the output file (output.csv).
     """
 
     def __init__(
         self,
-        project: Union[str, os.PathLike],
+        project_dir: Union[str, os.PathLike],
+        project_file: str,
         *,
-        default_options: bool = True,
-        project_options: Optional[dict] = None,
-        simulation_options: Optional[dict] = None,
-        output_options: Optional[dict] = None,
+        project_config: Optional[dict] = None,
+        simulation_config: Optional[dict] = None,
+        output_config: Optional[dict] = None,
+        use_defaults: bool = True,
     ):
         """Class to handle Hydrotel simulations.
 
         Parameters
         ----------
-        project : str or os.PathLike
+        project_dir : str or os.PathLike
             Path to the project folder.
-        default_options : bool
-            If True, base the options on default values loaded from xhydro/modelling/data/hydrotel_defaults.yml.
-            If False, read the options directly from the files in the project folder.
-        project_options : dict, optional
-            Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options : dict, optional
-            Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options : dict, optional
-            Dictionary of options to overwrite in the output file (output.csv).
+        project_file : str
+            Name of the project file (e.g. 'projet.csv').
+        project_config : dict, optional
+            Dictionary of configuration options to overwrite in the project file.
+        simulation_config : dict, optional
+            Dictionary of configuration options to overwrite in the simulation file (simulation.csv).
+        output_config : dict, optional
+            Dictionary of configuration options to overwrite in the output file (output.csv).
+        use_defaults : bool
+            If True, use default configuration options loaded from xhydro/modelling/data/hydrotel_defaults/.
+            If False, read the configuration options directly from the files in the project folder.
 
         Notes
         -----
         At minimum, the project folder must already exist when this function is called
-        and either 'default_options' must be True or 'SIMULATION COURANTE' must be specified as a keyword argument in 'project_options'.
+        and either 'default_options' must be True or 'SIMULATION COURANTE' must be specified
+        as a keyword argument in 'project_config'.
         """
-        project_options = project_options or dict()
-        simulation_options = simulation_options or dict()
-        output_options = output_options or dict()
+        project_config = project_config or dict()
+        simulation_config = simulation_config or dict()
+        output_config = output_config or dict()
 
-        self.project = Path(project)
-        if not os.path.isdir(self.project):
+        self.project_dir = Path(project_dir)
+        if not os.path.isdir(self.project_dir):
             raise ValueError("The project folder does not exist.")
 
-        # Initialise the project, simulation, and output options
-        if default_options is True:
-            with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-                o = yaml.safe_load(f)
-            self.simulation_name = o["project_options"]["SIMULATION COURANTE"]
-        else:
-            o = dict()
-            o["project_options"] = (
-                pd.read_csv(
-                    self.project / "projet.csv",
-                    delimiter=";",
-                    header=None,
-                    index_col=0,
-                )
-                .replace([np.nan], [None])
-                .squeeze()
-                .to_dict()
+        self.project_file = Path(self.project_dir / project_file).with_suffix(".csv")
+
+        # Initialise the project, simulation, and output configuration options
+        template = dict()
+        # Get a basic template for the default configuration files
+        for cfg in ["project", "simulation", "output"]:
+            template[f"{cfg}_config"] = _read_csv(
+                Path(__file__).parent / "data" / "hydrotel_defaults" / f"{cfg}.csv"
             )
-            if "SIMULATION COURANTE" in project_options:
-                self.simulation_name = project_options["SIMULATION COURANTE"]
+
+        if use_defaults is True:
+            o = template
+            self.simulation_name = o["project_config"]["SIMULATION COURANTE"]
+
+            # If the configuration files are missing, copy the defaults to the project folder
+            if not os.path.isfile(self.project_file):
+                shutil.copy(
+                    Path(__file__).parent / "data" / "hydrotel_defaults" / "projet.csv",
+                    self.project_file,
+                )
+            for cfg in ["simulation", "output"]:
+                path = self.project_dir / "simulation" / self.simulation_name
+                if not os.path.isfile(path / f"{cfg}.csv"):
+                    shutil.copy(
+                        Path(__file__).parent
+                        / "data"
+                        / "hydrotel_defaults"
+                        / f"{cfg}.csv",
+                        path / f"{cfg}.csv",
+                    )
+
+        else:
+            o = dict()  # Configuration options from files on disk
+            o["project_config"] = _read_csv(self.project_file)
+
+            # Either the file on disk or the keyword argument must specify the current simulation name
+            if "SIMULATION COURANTE" in project_config:
+                self.simulation_name = project_config["SIMULATION COURANTE"]
             else:
-                self.simulation_name = o["project_options"].get(
-                    "SIMULATION COURANTE", None
-                )
-            if self.simulation_name is None:
-                raise ValueError(
-                    "If not using default options, 'SIMULATION COURANTE' must be specified in the project files "
-                    "or as a keyword argument in 'project_options'."
-                )
-            elif not os.path.isdir(self.project / "simulation" / self.simulation_name):
+                self.simulation_name = o["project_config"]["SIMULATION COURANTE"]
+            if not os.path.isdir(
+                self.project_dir / "simulation" / self.simulation_name
+            ):
                 raise ValueError(
                     f"The 'simulation/{self.simulation_name}/' folder does not exist in the project directory."
                 )
 
-            for option in ["simulation", "output"]:
-                path = self.project / "simulation" / self.simulation_name
-                o[f"{option}_options"] = (
-                    pd.read_csv(
-                        path / f"{option}.csv",
-                        delimiter=";",
-                        header=None,
-                        index_col=0,
-                    )
-                    .replace([np.nan], [None])
-                    .squeeze()
-                    .to_dict()
-                )
-        self.project_options = o["project_options"]
-        self.simulation_options = o["simulation_options"]
-        self.output_options = o["output_options"]
+            for cfg in ["simulation", "output"]:
+                path = self.project_dir / "simulation" / self.simulation_name
+                o[f"{cfg}_config"] = _read_csv(path / f"{cfg}.csv")
 
-        # Fix paths and dates
-        self.project_options = _fix_os_paths(self.project_options)
-        self.simulation_options = _fix_os_paths(_fix_dates(self.simulation_options))
+            # Check that the configuration files on disk have the same number of entries as the default
+            for cfg in ["project", "simulation", "output"]:
+                if len(o[f"{cfg}_config"]) != len(template[f"{cfg}_config"]):
+                    raise ValueError(
+                        f"The {cfg} configuration file does not appear to have the same number of entries as the default."
+                    )
+
+        # Upon initialisation, call the 'update_config' method to update the configuration options in the class,
+        # and fix paths and dates if necessary
+        self.project_config = o["project_config"]
+        self.simulation_config = o["simulation_config"]
+        self.output_config = o["output_config"]
+        self.update_config(
+            project_config=o["project_config"],
+            simulation_config=o["simulation_config"],
+            output_config=o["output_config"],
+        )
 
         # Update options with the user-provided ones
-        self.update_options(
-            project_options=project_options,
-            simulation_options=simulation_options,
-            output_options=output_options,
+        self.update_config(
+            project_config=project_config,
+            simulation_config=simulation_config,
+            output_config=output_config,
         )
 
         # TODO: Clean up and prepare the 'etat' folder (missing the files)
 
-    def update_options(
+    def update_config(
         self,
         *,
-        project_options: Optional[dict] = None,
-        simulation_options: Optional[dict] = None,
-        output_options: Optional[dict] = None,
+        project_config: Optional[dict] = None,
+        simulation_config: Optional[dict] = None,
+        output_config: Optional[dict] = None,
     ):
-        """Update the options in the project, simulation, and output files.
+        """Update the configuration options in the project, simulation, and output files.
 
         Parameters
         ----------
-        project_options : dict, optional
-            Dictionary of options to overwrite in the project file (projet.csv).
-        simulation_options : dict, optional
-            Dictionary of options to overwrite in the simulation file (simulation.csv).
-        output_options : dict, optional
-            Dictionary of options to overwrite in the output file (output.csv).
+        project_config : dict, optional
+            Dictionary of configuration options to overwrite in the project file.
+        simulation_config : dict, optional
+            Dictionary of configuration options to overwrite in the simulation file (simulation.csv).
+        output_config : dict, optional
+            Dictionary of configuration options to overwrite in the output file (output.csv).
         """
-        options = [project_options, simulation_options, output_options]
-        option_names = ["project_options", "simulation_options", "output_options"]
-        for o in range(len(options)):
-            if options[o] is not None:
-                if o == 0 and "SIMULATION COURANTE" in project_options:
-                    if not os.path.isdir(
-                        self.project
-                        / "simulation"
-                        / project_options["SIMULATION COURANTE"]
-                    ):
-                        raise ValueError(
-                            f"The 'simulation/{project_options['SIMULATION COURANTE']}/' folder does not exist in the project directory."
-                        )
-                    self.simulation_name = project_options["SIMULATION COURANTE"]
-                path = (
-                    self.project
-                    if o == 0
-                    else self.project / "simulation" / self.simulation_name
-                )
-                options_file = (
-                    path / "projet.csv"
-                    if o == 0
-                    else path / f"{option_names[o].split('_')[0]}.csv"
-                )
-                option_vals = deepcopy(_fix_os_paths(_fix_dates(options[o])))
-                for key, value in option_vals.items():
-                    self.__dict__[option_names[o]][key] = value
+        if project_config is not None:
+            project_config = deepcopy(_fix_os_paths(project_config))
+            file = self.project_file
+            _overwrite_csv(file, project_config)
 
-                # Update the options file
-                df = pd.DataFrame.from_dict(
-                    self.__dict__[option_names[o]], orient="index"
-                )
-                df = df.replace({None: ""})
-                df.to_csv(
-                    options_file,
-                    sep=";",
-                    header=False,
-                    columns=[0],
-                )
+            # Also update class attributes to reflect the changes
+            for key, value in project_config.items():
+                self.project_config[key] = value
+            self.simulation_name = self.project_config["SIMULATION COURANTE"]
+
+        if simulation_config is not None:
+            simulation_config = deepcopy(_fix_os_paths(_fix_dates(simulation_config)))
+            file = (
+                self.project_dir
+                / "simulation"
+                / self.simulation_name
+                / "simulation.csv"
+            )
+            _overwrite_csv(file, simulation_config)
+
+            # Also update class attributes to reflect the changes
+            for key, value in simulation_config.items():
+                self.simulation_config[key] = value
+
+        if output_config is not None:
+            file = self.project_dir / "simulation" / self.simulation_name / "output.csv"
+            _overwrite_csv(file, output_config)
+
+            # Also update class attributes to reflect the changes
+            for key, value in output_config.items():
+                self.output_config[key] = value
 
     def run(
         self,
-        *,
-        hydrotel_console: Optional[Union[str, os.PathLike]] = None,
-        id_as_dim: bool = True,
-        xr_open_kwargs_in: Optional[dict] = None,
-        xr_open_kwargs_out: Optional[dict] = None,
-        dry_run: bool = True,
+        executable: Union[str, os.PathLike] = "hydrotel",
     ):
         """
         Run the simulation.
 
         Parameters
         ----------
-        hydrotel_console : str or os.PathLike, optional
-            For Windows only. Path to the Hydrotel.exe file.
-        id_as_dim : bool
-            Whether to use the 'station_id' coordinate as the dimension, instead of 'station'.
-        xr_open_kwargs_in : dict, optional
-            Used on the input file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
-        xr_open_kwargs_out : dict, optional
-            Used on the output file. Keyword arguments to pass to :py:func:`xarray.open_dataset`.
-        dry_run : bool
-            If True, do not run the simulation. Only perform basic checks and print the command that would be run.
-
-        Returns
-        -------
-        str
-           If 'dry_run' is True, returns the command that would be run.
+        executable : str or os.PathLike, optional
+            Command to run the simulation.
+            On Windows, this should be the path to Hydrotel.exe.
         """
         # Perform basic checkups on the inputs
-        self._basic_checks(xr_open_kwargs=xr_open_kwargs_in)
+        self._basic_checks()
 
-        if os.name == "nt":  # Windows
-            if hydrotel_console is None:
-                raise ValueError("You must specify the path to Hydrotel.exe")
-        else:
-            hydrotel_console = "hydrotel"
+        # if dry_run:
+        #     command = f"{hydrotel_console} {self.project_dir / self.project_file} -t 1"
+        #     return command
+        # else:
+        # Run the simulation
+        subprocess.run(
+            [str(executable), str(self.project_dir / self.project_file), "-t", "1"],
+            check=True,
+        )
 
-        if dry_run:
-            command = f"{hydrotel_console} {self.project} -t 1"
-            return command
-        else:
-            # Run the simulation
-            subprocess.run(
-                [str(hydrotel_console), str(self.project), "-t", "1"], check=True
+        # Standardize the outputs
+        if any(
+            self.output_config[k] == 1
+            for k in self.output_config
+            if k not in ["TRONCONS", "DEBITS_AVAL", "OUTPUT_NETCDF"]
+        ):
+            warnings.warn(
+                "The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted."
             )
-
-            # Standardize the outputs
-            if any(
-                self.output_options[k] == 1
-                for k in self.output_options
-                if k not in ["TRONCONS", "DEBITS_AVAL", "OUTPUT_NETCDF"]
-            ):
-                warnings.warn(
-                    "The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted."
-                )
-            self._standardise_outputs(
-                id_as_dim=id_as_dim,
-                xr_open_kwargs=xr_open_kwargs_out,
-            )
+        self._standardise_outputs()
 
     def get_input(
         self, return_config=False, **kwargs
@@ -281,16 +267,16 @@ class Hydrotel:
         """
         # Set the type of weather file
         if all(
-            self.simulation_options.get(k, None) is not None
+            len(self.simulation_config.get(k, "")) > 0
             for k in ["FICHIER GRILLE METEO", "FICHIER STATIONS METEO"]
         ):
             raise ValueError(
                 "Both 'FICHIER GRILLE METEO' and 'FICHIER STATIONS METEO' are specified in the simulation configuration file."
             )
-        if self.simulation_options["FICHIER GRILLE METEO"] is not None:
-            weather_file = self.simulation_options["FICHIER GRILLE METEO"]
-        elif self.simulation_options["FICHIER STATIONS METEO"] is not None:
-            weather_file = self.simulation_options["FICHIER STATIONS METEO"]
+        if len(self.simulation_config.get("FICHIER GRILLE METEO", "")) > 0:
+            weather_file = self.simulation_config["FICHIER GRILLE METEO"]
+        elif len(self.simulation_config.get("FICHIER STATIONS METEO", "")) > 0:
+            weather_file = self.simulation_config["FICHIER STATIONS METEO"]
         else:
             raise ValueError(
                 "You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO' in the simulation configuration file."
@@ -298,17 +284,17 @@ class Hydrotel:
 
         if return_config is False:
             return xr.open_dataset(
-                self.project / weather_file,
+                self.project_dir / weather_file,
                 **kwargs,
             )
         else:
             ds = xr.open_dataset(
-                self.project / weather_file,
+                self.project_dir / weather_file,
                 **kwargs,
             )
             cfg = (
                 pd.read_csv(
-                    self.project / f"{weather_file}.config",
+                    self.project_dir / f"{weather_file}.config",
                     delimiter=";",
                     header=None,
                     index_col=0,
@@ -317,6 +303,8 @@ class Hydrotel:
                 .squeeze()
                 .to_dict()
             )
+            # Remove leading and trailing whitespaces
+            cfg = {k: v.strip() if isinstance(v, str) else v for k, v in cfg.items()}
             return ds, cfg
 
     def get_streamflow(self, **kwargs) -> xr.Dataset:
@@ -333,7 +321,7 @@ class Hydrotel:
             The streamflow file.
         """
         return xr.open_dataset(
-            self.project
+            self.project_dir
             / "simulation"
             / self.simulation_name
             / "resultat"
@@ -361,81 +349,91 @@ class Hydrotel:
 
         The name of the dimensions, coordinates, and variables are checked against the configuration file.
         """
-        # Check that the option files have no missing entries
-        with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
-            defaults = yaml.safe_load(f)
-        options = ["project_options", "simulation_options", "output_options"]
-        for option in options:
-            for key in defaults[option]:
-                if (
-                    defaults[option][key] is not None
-                    and key not in self.__dict__[option]
-                ):
-                    raise ValueError(
-                        f"The option '{key}' is missing from the {option.split('_')[0]} file."
-                    )
-        if any(
-            self.simulation_options.get(k, None) is None
-            for k in ["DATE DEBUT", "DATE FIN", "PAS DE TEMPS"]
-        ):
-            raise ValueError(
-                "You must specify 'DATE DEBUT', 'DATE FIN', and 'PAS DE TEMPS' in the simulation configuration file."
-            )
+        # Check that the configuration files have no missing entries
+        # FIXME: This check is now redundant with the checks in the __init__ method
+        # with open(Path(__file__).parent / "data" / "hydrotel_defaults.yml") as f:
+        #     defaults = yaml.safe_load(f)
+        # options = ["project_options", "simulation_options", "output_options"]
+        # for option in options:
+        #     for key in defaults[option]:
+        #         if (
+        #             defaults[option][key] is not None
+        #             and key not in self.__dict__[option]
+        #         ):
+        #             raise ValueError(
+        #                 f"The option '{key}' is missing from the {option.split('_')[0]} file."
+        #             )
 
-        # Make sure that all the files exist
-        possible_files = [
-            self.project_options.values(),
-            self.simulation_options.values(),
-        ]
-        for value in [item for sublist in possible_files for item in sublist]:
-            if re.match("^.[a-z]", Path(str(value)).suffix):
-                if Path(value).is_absolute() is False:
-                    # Some paths are relative to the project folder, others to the simulation folder
-                    if str(Path(value).parent) != ".":
-                        value = self.project / value
-                    else:
-                        value = self.project / "simulation" / "simulation" / value
-                if not Path(value).is_file():
-                    raise FileNotFoundError(f"The file {value} does not exist.")
+        # Make sure that the files reflect the configuration
+        self.update_config(
+            project_config=self.project_config,
+            simulation_config=self.simulation_config,
+            output_config=self.output_config,
+        )
+
+        # FIXME: I think that Hydrotel already checks all that when it runs
+        # if any(
+        #     self.simulation_config.get(k, None) is None
+        #     for k in ["DATE DEBUT", "DATE FIN", "PAS DE TEMPS"]
+        # ):
+        #     raise ValueError(
+        #         "You must specify 'DATE DEBUT', 'DATE FIN', and 'PAS DE TEMPS' in the simulation configuration file."
+        #     )
+        #
+        # # Make sure that all the files exist
+        # possible_files = [
+        #     self.project_config.values(),
+        #     self.simulation_config.values(),
+        # ]
+        # for value in [item for sublist in possible_files for item in sublist]:
+        #     if re.match("^.[a-z]", Path(str(value)).suffix):
+        #         if Path(value).is_absolute() is False:
+        #             # Some paths are relative to the project folder, others to the simulation folder
+        #             if str(Path(value).parent) != ".":
+        #                 value = self.project_dir / value
+        #             else:
+        #                 value = self.project_dir / "simulation" / self.simulation_name / value
+        #         if not Path(value).is_file():
+        #             raise FileNotFoundError(f"The file {value} does not exist.")
 
         # Open the meteo file and its configuration
         ds, cfg = self.get_input(**(xr_open_kwargs or {}), return_config=True)
-        # Validate the configuration
-        req = [
-            "TYPE (STATION/GRID)",
-            "LATITUDE_NAME",
-            "LONGITUDE_NAME",
-            "ELEVATION_NAME",
-            "TIME_NAME",
-            "TMIN_NAME",
-            "TMAX_NAME",
-            "PRECIP_NAME",
-        ]
-        missing = [k for k in req if cfg.get(k, None) is None]
-        if len(missing) > 0 or cfg.get("STATION_DIM_NAME", None) is None:
-            raise ValueError(
-                f"The configuration file is missing some entries: {missing}"
-            )
-        if cfg["TYPE (STATION/GRID)"] not in ["STATION", "GRID"]:
-            raise ValueError(
-                "The configuration file must specify 'STATION' or 'GRID' as the type of weather file."
-            )
-        if (
-            cfg["TYPE (STATION/GRID)"] == "GRID"
-            and cfg.get("STATION_DIM_NAME", None) is not None
-        ):
-            raise ValueError(
-                "STATION_DIM_NAME must be specified if and only if TYPE (STATION/GRID) is 'STATION'."
-            )
+        # # Validate the configuration
+        # req = [
+        #     "TYPE (STATION/GRID/GRID_EXTENT)",
+        #     "LATITUDE_NAME",
+        #     "LONGITUDE_NAME",
+        #     "ELEVATION_NAME",
+        #     "TIME_NAME",
+        #     "TMIN_NAME",
+        #     "TMAX_NAME",
+        #     "PRECIP_NAME",
+        # ]
+        # missing = [k for k in req if cfg.get(k, None) is None]
+        # if len(missing) > 0 or cfg.get("STATION_DIM_NAME", None) is None:
+        #     raise ValueError(
+        #         f"The configuration file is missing some entries: {missing}"
+        #     )
+        # if cfg["TYPE (STATION/GRID/GRID_EXTENT)"] not in ["STATION", "GRID", "GRID_EXTENT"]:
+        #     raise ValueError(
+        #         "The configuration file must specify 'STATION', 'GRID', or 'GRID_EXTENT' as the type of weather file."
+        #     )
+        # if (
+        #     cfg["TYPE (STATION/GRID/GRID_EXTENT)"] != "STATION"
+        #     and cfg.get("STATION_DIM_NAME", None) is not None
+        # ):
+        #     raise ValueError(
+        #         "STATION_DIM_NAME must be specified if and only if TYPE (STATION/GRID) is 'STATION'."
+        #     )
 
         # Check that the start and end dates are contained in the dataset
-        start_date = self.simulation_options["DATE DEBUT"]
-        end_date = self.simulation_options["DATE FIN"]
+        start_date = self.simulation_config["DATE DEBUT"]
+        end_date = self.simulation_config["DATE FIN"]
 
         # Check that the dimensions, coordinates, calendar, and units are correct
         dims = (
             [cfg["TIME_NAME"], cfg["STATION_DIM_NAME"]]
-            if cfg["TYPE (STATION/GRID)"] == "STATION"
+            if cfg["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"
             else [cfg["TIME_NAME"], cfg["LATITUDE_NAME"], cfg["LONGITUDE_NAME"]]
         )
         coords = [
@@ -444,7 +442,7 @@ class Hydrotel:
             cfg["LONGITUDE_NAME"],
             cfg["ELEVATION_NAME"],
         ]
-        if cfg["TYPE (STATION/GRID)"] == "STATION":
+        if cfg["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION":
             coords.append(cfg["STATION_DIM_NAME"])
         structure = {
             "dims": dims,
@@ -458,7 +456,7 @@ class Hydrotel:
         }
 
         # Check that the frequency is uniform
-        freq = f"{self.simulation_options['PAS DE TEMPS']}H"
+        freq = f"{self.simulation_config['PAS DE TEMPS']}H"
         freq = freq.replace("24H", "D")
 
         health_checks(
@@ -472,9 +470,7 @@ class Hydrotel:
             raise_on=["all"],
         )
 
-    def _standardise_outputs(
-        self, *, id_as_dim: bool = True, xr_open_kwargs: Optional[dict] = None
-    ):
+    def _standardise_outputs(self):
         """Standardise the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
@@ -484,62 +480,79 @@ class Hydrotel:
         xr_open_kwargs : dict, optional
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
         """
-        ds = self.get_streamflow(**(xr_open_kwargs or {}))
+        with self.get_streamflow() as ds:
+            # station_id as dimension
+            ds = ds.swap_dims({"troncon": "idtroncon"})
 
-        # FIXME: This is maybe because of a faulty file. Validate once we have a working Hydrotel installation
-        if "idtroncon" in ds.debit_aval.encoding.get("coordinates", ""):
-            ds.debit_aval.encoding.pop("coordinates")
-
-        # Rename variables to standard names
-        ds = ds.assign_coords(troncon=ds["troncon"], idtroncon=ds["idtroncon"])
-        ds = ds.rename(
-            {
-                "troncon": "station",
-                "idtroncon": "station_id",
-                "debit_aval": "streamflow",
-            }
-        )
-        # Swap the dimensions, if requested
-        if id_as_dim:
-            ds = ds.swap_dims({"station": "station_id"})
-            ds = ds.drop_vars(["station"])
-
-        # Add standard attributes and fix units
-        ds["station_id" if id_as_dim else "station"].attrs["cf_role"] = "timeseries_id"
-        orig_attrs = dict()
-        orig_attrs["original_name"] = "debit_aval"
-        for attr in ["standard_name", "long_name", "description"]:
-            if attr in ds["streamflow"].attrs:
-                orig_attrs[f"original_{attr}"] = ds["streamflow"].attrs[attr]
-        ds["streamflow"].attrs[
-            "standard_name"
-        ] = "outgoing_water_volume_transport_along_river_channel"
-        ds["streamflow"].attrs["long_name"] = "Streamflow"
-        ds["streamflow"].attrs[
-            "description"
-        ] = "Streamflow at the outlet of the river reach"
-        ds["streamflow"] = xc.units.convert_units_to(ds["streamflow"], "m3 s-1")
-        for attr in orig_attrs:
-            ds["streamflow"].attrs[attr] = orig_attrs[attr]
-
-        # TODO: Adjust global attributes once we have a working Hydrotel installation
-
-        # Overwrite the file
-        os.remove(
-            self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
-        )
-        chunks = estimate_chunks(
-            ds, dims=["station_id" if id_as_dim else "station"], target_mb=5
-        )
-        save_to_netcdf(
-            ds,
-            self.project / "simulation" / "simulation" / "resultat" / "debit_aval.nc",
-            rechunk=chunks,
-            netcdf_kwargs={
-                "encoding": {
-                    "streamflow": {"dtype": "float32", "zlib": True, "complevel": 1}
+            # Rename variables to standard names
+            ds = ds.assign_coords(idtroncon=ds["idtroncon"])
+            ds = ds.rename(
+                {
+                    "idtroncon": "station_id",
+                    "debit_aval": "streamflow",
                 }
-            },
+            )
+
+            # Add standard attributes and fix units
+            ds["station_id"].attrs["cf_role"] = "timeseries_id"
+            orig_attrs = dict()
+            orig_attrs["_original_name"] = "debit_aval"
+            for attr in ["standard_name", "long_name", "description"]:
+                if attr in ds["streamflow"].attrs:
+                    orig_attrs[f"_original_{attr}"] = ds["streamflow"].attrs[attr]
+            ds["streamflow"].attrs[
+                "standard_name"
+            ] = "outgoing_water_volume_transport_along_river_channel"
+            ds["streamflow"].attrs["long_name"] = "Streamflow"
+            ds["streamflow"].attrs[
+                "description"
+            ] = "Streamflow at the outlet of the river reach"
+            ds["streamflow"] = xc.units.convert_units_to(ds["streamflow"], "m3 s-1")
+            for attr in orig_attrs:
+                ds["streamflow"].attrs[attr] = orig_attrs[attr]
+
+            # Adjust global attributes
+            del ds.attrs["initial_simulation_path"]
+            ds.attrs["Hydrotel_version"] = self.simulation_config[
+                "SIMULATION HYDROTEL VERSION"
+            ]
+
+            # Overwrite the file
+            chunks = estimate_chunks(ds, dims=["station_id"], target_mb=5)
+            save_to_netcdf(
+                ds,
+                self.project_dir
+                / "simulation"
+                / self.simulation_name
+                / "resultat"
+                / "debit_aval_standard.nc",
+                rechunk=chunks,
+                netcdf_kwargs={
+                    "encoding": {
+                        "streamflow": {"dtype": "float32", "zlib": True, "complevel": 1}
+                    }
+                },
+            )
+
+        # Remove the original file and rename the new one
+        os.remove(
+            self.project_dir
+            / "simulation"
+            / self.simulation_name
+            / "resultat"
+            / "debit_aval.nc"
+        )
+        os.rename(
+            self.project_dir
+            / "simulation"
+            / self.simulation_name
+            / "resultat"
+            / "debit_aval_standard.nc",
+            self.project_dir
+            / "simulation"
+            / self.simulation_name
+            / "resultat"
+            / "debit_aval.nc",
         )
 
 
@@ -569,7 +582,7 @@ def _fix_dates(d: dict):
         "LECTURE ETAT RUISSELEMENT SURFACE",
         "LECTURE ETAT ACHEMINEMENT RIVIERE",
     ]:
-        if key in d and not pd.isnull(d[key]):
+        if len(d.get(key, "")) > 0:
             # If only a date is provided, add the path to the file
             if ".csv" not in d[key]:
                 warnings.warn(
@@ -590,7 +603,81 @@ def _fix_dates(d: dict):
         "ECRITURE ETAT RUISSELEMENT SURFACE",
         "ECRITURE ETAT ACHEMINEMENT RIVIERE",
     ]:
-        if key in d and not pd.isnull(d[key]):
+        if len(d.get(key, "")) > 0:
             d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H")
 
     return d
+
+
+def _read_csv(file: Union[str, os.PathLike]) -> dict:
+    """Read a CSV file and return the content as a dictionary.
+
+    Hydrotel is very picky about the formatting of the files and needs blank lines at specific places
+    so we can't use pandas or a simple dictionary to read the files.
+
+    Also, some entries in output.csv are semicolons themselves, which makes it impossible to read
+    the file with pandas or other libraries.
+    """
+    with open(file) as f:
+        lines = f.readlines()
+
+    # Manage the case where a semicolon might be part of the value
+    lines = [line.replace(";;", ";semicolon") for line in lines]
+
+    output = {
+        line.split(";")[0]: line.split(";")[1] if len(line.split(";")) > 1 else None
+        for line in lines
+    }
+    # Remove leading and trailing whitespaces
+    output = {k: v.strip() if isinstance(v, str) else v for k, v in output.items()}
+    # Remove newlines
+    output = {
+        k.replace("\n", ""): v.replace("\n", "") if isinstance(v, str) else v
+        for k, v in output.items()
+    }
+    # Remove empty keys
+    output = {k: v for k, v in output.items() if len(k) > 0}
+
+    # Manage the case where a semicolon might be part of the value
+    output = {
+        k: v.replace("semicolon", ";") if isinstance(v, str) else v
+        for k, v in output.items()
+    }
+
+    return output
+
+
+def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
+    """Overwrite a CSV file with new configuration options.
+
+    Hydrotel is very picky about the formatting of the files and needs blank lines at specific places
+    so we can't use pandas or a simple dictionary to read the files.
+
+    Parameters
+    ----------
+    file : str or os.PathLike
+        Path to the file to write.
+    d : dict
+        Dictionary of options to write to the file.
+    """
+    # Open the file
+    with open(file) as f:
+        lines = f.readlines()
+    lines = [line.replace(";;", ";separateur") for line in lines]
+
+    overwritten = []
+    # clear default values from the template
+    for i, line in enumerate(lines):
+        if line.split(";")[0] in d:
+            overwritten.append(line.split(";")[0])
+            lines[i] = f"{line.split(';')[0]};{d[line.split(';')[0]]}\n"
+
+    if len(overwritten) < len(d):
+        raise ValueError(
+            f"Could not find the following keys in the template file: {set(d.keys()) - set(overwritten)}"
+        )
+    lines = [line.replace("separateur", ";") for line in lines]
+
+    # Save the file
+    with open(file, "w") as f:
+        f.writelines(lines)

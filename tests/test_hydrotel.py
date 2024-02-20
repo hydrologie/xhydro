@@ -18,18 +18,20 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=True,
-            project_options={"PROJET HYDROTEL VERSION": "2.1.0"},
-            simulation_options={"SIMULATION HYDROTEL VERSION": "1.0.5"},
-            output_options={"TMAX_JOUR": 1},
+            project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
+            simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
+            output_config={"TMAX_JOUR": 1},
         )
 
         assert ht.simulation_name == "simulation"
-        assert ht.project.name == "fake"
+        assert ht.project_dir.name == "fake"
 
         # Check that the options have been updated and that the files have been overwritten
         assert ht.project_options["PROJET HYDROTEL VERSION"] == "2.1.0"
         df = (
-            pd.read_csv(ht.project / "projet.csv", sep=";", header=None, index_col=0)
+            pd.read_csv(
+                ht.project_dir / "projet.csv", sep=";", header=None, index_col=0
+            )
             .replace([np.nan], [None])
             .to_dict()[1]
         )
@@ -38,7 +40,7 @@ class TestHydrotel:
         assert ht.simulation_options["SIMULATION HYDROTEL VERSION"] == "1.0.5"
         df = (
             pd.read_csv(
-                ht.project / "simulation" / ht.simulation_name / "simulation.csv",
+                ht.project_dir / "simulation" / ht.simulation_name / "simulation.csv",
                 sep=";",
                 header=None,
                 index_col=0,
@@ -58,7 +60,7 @@ class TestHydrotel:
         assert ht.output_options["TMAX_JOUR"] == 1
         df = (
             pd.read_csv(
-                ht.project / "simulation" / ht.simulation_name / "output.csv",
+                ht.project_dir / "simulation" / ht.simulation_name / "output.csv",
                 sep=";",
                 header=None,
                 index_col=0,
@@ -100,7 +102,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=True,
-            simulation_options=simulation_options,
+            simulation_config=simulation_options,
         )
         if test in ["station", "grid"]:
             ds = ht.get_input()
@@ -190,7 +192,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=True if test != "option" else False,
-            simulation_options=simulation_options,
+            simulation_config=simulation_options,
         )
 
         if test == "ok":
@@ -252,14 +254,14 @@ class TestHydrotel:
             Hydrotel(
                 tmpdir / "fake",
                 default_options=False,
-                project_options={"SIMULATION COURANTE": "test"},
+                project_config={"SIMULATION COURANTE": "test"},
             )
 
         ht = Hydrotel(tmpdir / "fake", default_options=False)
         with pytest.raises(
             ValueError, match="The 'simulation/test/' folder does not exist"
         ):
-            ht.update_options(project_options={"SIMULATION COURANTE": "test"})
+            ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
         os.rename(
             tmpdir / "fake" / "simulation" / "simulation",
@@ -268,7 +270,7 @@ class TestHydrotel:
         Hydrotel(
             tmpdir / "fake",
             default_options=True,
-            project_options={"SIMULATION COURANTE": "test"},
+            project_config={"SIMULATION COURANTE": "test"},
         )
 
     def test_dates(self, tmpdir):
@@ -276,7 +278,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=True,
-            simulation_options={
+            simulation_config={
                 "DATE DEBUT": "2001-01-01",
                 "DATE FIN": "2001-12-31 12",
                 "LECTURE ETAT FONTE NEIGE": "2001-01-01 03",
@@ -296,7 +298,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir / "fake",
             default_options=False,
-            simulation_options={
+            simulation_config={
                 "DATE DEBUT": "2001-01-01",
                 "DATE FIN": "2001-12-31",
                 "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
@@ -312,7 +314,7 @@ class TestHydrotel:
         else:
             if test == "ok":
                 command = ht.run(dry_run=True)
-                assert command == f"hydrotel {ht.project} -t 1"
+                assert command == f"hydrotel {ht.project_dir} -t 1"
             elif test == "pdt":
                 with pytest.raises(
                     ValueError,
