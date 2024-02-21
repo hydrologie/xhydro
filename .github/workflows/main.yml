@@ -64,7 +64,7 @@ jobs:
           egress-policy: audit
       - uses: actions/checkout@v4.1.1
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v1.8.0
+        uses: mamba-org/setup-micromamba@v1.8.1
         with:
           cache-downloads: true
           environment-file: environment-dev.yml
