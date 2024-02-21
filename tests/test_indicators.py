@@ -69,9 +69,9 @@ class TestGetYearlyOp:
     def test_get_yearly_op(self, op):
         timeargs = {
             "annual": {},
-            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
-            "winterdoy": {"doy_bounds": [335, 59], "freq": "YS-DEC"},
-            "winterdjf": {"season": ["DJF"], "freq": "YS-DEC"},
+            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"},
+            "winterdoy": {"doy_bounds": [335, 59], "freq": "AS-DEC"},
+            "winterdjf": {"season": ["DJF"], "freq": "AS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
 
