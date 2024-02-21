@@ -29,7 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  # "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology"
@@ -43,7 +43,7 @@ dependencies = [
   "spotpy",
   "statsmodels",
   "xarray",
-  "xclim>=0.47.0",
+  "xclim>=0.48.0",
   "xdatasets>=0.3.1",
   "xscen>=0.7.1"
 ]
