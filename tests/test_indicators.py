@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+from packaging.version import parse
+from xclim import __version__ as __xclim_version__
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro as xh
@@ -25,9 +27,13 @@ class TestComputeVolume:
         mult = 86400 if freq == "D" else 86400 * 365
         np.testing.assert_array_equal(out, da * mult)
         assert out.attrs["long_name"] == "Foo"
-        assert out.attrs["units"] == "m^3"
         assert out.attrs["cell_methods"] == "time: sum"
         assert out.attrs["description"] == "Volume of water"
+
+        if parse(__xclim_version__) < parse("0.48.0"):
+            assert out.attrs["units"] == "m^3"
+        else:
+            assert out.attrs["units"] == "m3"
 
     def test_units(self):
         da = timeseries(
@@ -38,9 +44,15 @@ class TestComputeVolume:
         )
 
         out_m3 = xh.indicators.compute_volume(da)
-        assert out_m3.attrs["units"] == "m^3"
         out_hm3 = xh.indicators.compute_volume(da, out_units="hm3")
-        assert out_hm3.attrs["units"] == "hm^3"
+
+        if parse(__xclim_version__) < parse("0.48.0"):
+            assert out_m3.attrs["units"] == "m^3"
+            assert out_hm3.attrs["units"] == "hm^3"
+        else:
+            assert out_m3.attrs["units"] == "m3"
+            assert out_hm3.attrs["units"] == "hm3"
+
         np.testing.assert_array_equal(out_m3 * 1e-6, out_hm3)
 
 
@@ -227,7 +239,7 @@ class TestGetYearlyOp:
                 op="max",
                 timeargs={"annual": {"season": ["DJF"], "doy_bounds": [200, 300]}},
             )
-        with pytest.warns(UserWarning, match="The frequency is not AS-DEC"):
+        with pytest.warns(UserWarning, match="The frequency is not YS-DEC"):
             xh.indicators.get_yearly_op(
                 self.ds, op="max", timeargs={"annual": {"season": ["DJF"]}}
             )
