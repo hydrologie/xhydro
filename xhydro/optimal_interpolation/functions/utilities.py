@@ -13,11 +13,15 @@ def read_csv_file(csv_filename):
     """
     Read values from a CSV file and return them as a list.
 
-    Parameters:
-    - csv_filename (str): The name of the CSV file to be read.
+    Parameters
+    ----------
+    csv_filename : str
+        The name of the CSV file to be read.
 
-    Returns:
-    list: A list containing the values from the CSV file.
+    Returns
+    -------
+    list :
+        A list containing the values from the CSV file.
     """
     items = []
     with open(csv_filename, newline="") as csvfile:
@@ -37,14 +41,20 @@ def find_index(array, key, value):
     """
     Find the index of an element in a list based on a specified key-value pair.
 
-    Parameters:
-    - array (list): List containing the data.
-    - key (str): The key to identify the element in the list.
-    - value (str): The value associated with the key to search for.
+    Parameters
+    ----------
+    array : list
+        List containing the data.
+    key : str
+        The key to identify the element in the list.
+    value : str
+        The value associated with the key to search for.
 
-    Returns:
-    int: Returns the index of the element in the list where the key-value pair matches.
-         Returns -1 if the element is not found.
+    Returns
+    -------
+    int:
+        Returns the index of the element in the list where the key-value pair matches.
+        Returns -1 if the element is not found.
     """
     return np.where(array[key].data == value.encode("UTF-8"))[0][0]
 
@@ -55,11 +65,16 @@ def convert_list_to_dict(t):
 
     This function takes a list of key-value pairs and converts it into a dictionary.
 
-    Parameters:
-    - t (list): List of key-value pairs.
+    Parameters
+    ----------
+    t : list
+        List of key-value pairs.
 
-    Returns:
-    dict: A dictionary created from the input list."""
+    Returns
+    -------
+    dict:
+        A dictionary created from the input list.
+    """
     return {k: v for k, v in t}
 
 
@@ -69,12 +84,17 @@ def initialize_nan_arrays(dimensions, percentiles):
 
     This function preallocates arrays filled with NaN values to the correct size for later data population.
 
-    Parameters:
-    - dimensions (int): The size of each array dimension.
-    - percentiles (int): The number of arrays to initialize, representing percentiles.
+    Parameters
+    ----------
+    dimensions : int
+        The size of each array dimension.
+    percentiles : int
+        The number of arrays to initialize, representing percentiles.
 
-    Returns:
-    tuple: A tuple of preallocated arrays, each initialized with NaN values.
+    Returns
+    -------
+    tuple:
+        A tuple of preallocated arrays, each initialized with NaN values.
     """
     t = [0] * percentiles
     for i in range(percentiles):
@@ -89,13 +109,18 @@ def find_station_section(stations, section_id):
 
     This function searches for the association of a section with a specific station in the provided list.
 
-    Parameters:
-    - stations (list): A list containing station information.
-    - section_id (string): The identifier of the section.
+    Parameters
+    ----------
+    stations : list
+        A list containing station information.
+    section_id : str
+        The identifier of the section.
 
-    Returns:
-    string: Returns an empty string if the section is not found, otherwise, returns the key
-    representing the association between the station and a section.
+    Returns
+    -------
+    string:
+        Returns an empty string if the section is not found, otherwise, returns the key
+        representing the association between the station and a section.
     """
     value = ""
     section_position = 0
@@ -111,11 +136,16 @@ def load_files(files):
     """
     Load data from files containing Hydrotel runs and observations.
 
-    Parameters:
-    - files (list): A list of file paths to be loaded.
+    Parameters
+    ----------
+    files : list
+        A list of file paths to be loaded.
 
-    Returns:
-    list: A list containing the loaded data from the specified files."""
+    Returns
+    -------
+    list:
+        A list containing the loaded data from the specified files.
+    """
     extract_files = [0] * len(files)
     count = 0
     for filepath in files:
@@ -130,17 +160,23 @@ def load_files(files):
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):
     """
-    Plots the results of model evaluation using various metrics.
+    Generate a plot of the results of model evaluation using various metrics.
 
-    Parameters:
-    - kge (float): Kling-Gupta Efficiency for the entire dataset.
-    - kge_l1o (float): Kling-Gupta Efficiency for leave-one-out cross-validation.
-    - nse (float): Nash-Sutcliffe Efficiency for the entire dataset.
-    - nse_l1o (float): Nash-Sutcliffe Efficiency for leave-one-out cross-validation.
+    Parameters
+    ----------
+    kge : float
+        Kling-Gupta Efficiency for the entire dataset.
+    kge_l1o : float
+        Kling-Gupta Efficiency for leave-one-out cross-validation.
+    nse : float
+        Nash-Sutcliffe Efficiency for the entire dataset.
+    nse_l1o : float
+        Nash-Sutcliffe Efficiency for leave-one-out cross-validation.
 
-    Returns:
-    None
-
+    Returns
+    -------
+    None :
+        No return.
     """
     fig, (ax1, ax2) = plt.subplots(2)
     ax1.scatter(kge, kge_l1o)
@@ -164,14 +200,19 @@ def general_ecf(h, par, form):
     """
     Define the form of the Error Covariance Function (ECF) equations.
 
-    Parameters:
-    - h (float or array): The distance or distances at which to evaluate the ECF.
-    - par (list): List of parameters for the ECF equation.
-    - form (int): The form of the ECF equation to use (1, 2, or other).
+    Parameters
+    ----------
+    h : float or array
+        The distance or distances at which to evaluate the ECF.
+    par : list
+        List of parameters for the ECF equation.
+    form : int
+        The form of the ECF equation to use (1, 2, or other).
 
-    Returns:
-    float or array: The calculated ECF values based on the specified form.
-
+    Returns
+    -------
+    float or array:
+        The calculated ECF values based on the specified form.
     """
     if form == 1:
         return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
@@ -206,18 +247,17 @@ def write_netcdf_debit(
     discharge : numpy.ndarray
         3D array of discharge data, dimensions (percentile, station, time).
 
+    Returns
+    -------
+    None :
+        No return.
+
     Notes
     -----
     - The function creates a NetCDF file using the provided data and saves it with the specified filename.
     - If the file already exists, it is deleted before creating a new one.
     - The function includes appropriate metadata and attributes for each variable.
-
-
-    Returns
-    -------
-
     """
-
     if os.path.exists(write_file):
         os.remove(write_file)
 
