@@ -41,6 +41,12 @@ class Hydrotel:
     executable : str or os.PathLike, optional
         Command to run the simulation.
         On Windows, this should be the path to Hydrotel.exe.
+
+    Notes
+    -----
+    At minimum, the project folder must already exist when this function is called
+    and either 'use_defaults' must be True or 'SIMULATION COURANTE' must be specified
+    as a keyword argument in 'project_config'.
     """
 
     def __init__(
@@ -54,33 +60,7 @@ class Hydrotel:
         use_defaults: bool = True,
         executable: Union[str, os.PathLike] = "hydrotel",
     ):
-        """Class to handle Hydrotel simulations.
-
-        Parameters
-        ----------
-        project_dir : str or os.PathLike
-            Path to the project folder.
-        project_file : str
-            Name of the project file (e.g. 'projet.csv').
-        project_config : dict, optional
-            Dictionary of configuration options to overwrite in the project file.
-        simulation_config : dict, optional
-            Dictionary of configuration options to overwrite in the simulation file (simulation.csv).
-        output_config : dict, optional
-            Dictionary of configuration options to overwrite in the output file (output.csv).
-        use_defaults : bool
-            If True, use default configuration options loaded from xhydro/modelling/data/hydrotel_defaults/.
-            If False, read the configuration options directly from the files in the project folder.
-        executable : str or os.PathLike, optional
-            Command to run the simulation.
-            On Windows, this should be the path to Hydrotel.exe.
-
-        Notes
-        -----
-        At minimum, the project folder must already exist when this function is called
-        and either 'use_defaults' must be True or 'SIMULATION COURANTE' must be specified
-        as a keyword argument in 'project_config'.
-        """
+        """Initialise the Hydrotel simulation."""
         project_config = project_config or dict()
         simulation_config = simulation_config or dict()
         output_config = output_config or dict()

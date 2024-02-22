@@ -34,6 +34,7 @@ other type of interaction.
 """
 
 import inspect
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -66,27 +67,13 @@ class HydrologicalModel:
     """
 
     def __init__(self, model_name: str, model_config: dict):
-        """Hydrological model selector.
-
-        Parameters
-        ----------
-        model_name : str
-            The model name. Only "Hydrotel" is currently supported.
-        model_config : dict
-            The model configuration object that contains all info required to run the model.
-            Use the get_hydrological_model_inputs() function to get the required list of keys.
-
-        Returns
-        -------
-        HydrologicalModel
-            An instance of the HydrologicalModel class.
-        """
+        """Initialize the HydrologicalModel object."""
         self.model_name = model_name
 
         if model_name == "Hydrotel":
             self.model = Hydrotel(**model_config)
         elif model_name == "Dummy":
-            self.model = _dummy_model(**model_config)
+            self.model = DummyModel(**model_config)
         else:
             raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
@@ -140,40 +127,6 @@ class HydrologicalModel:
         return f"xhydro.modelling.HydrologicalModel(model_name={self.model_name})"
 
 
-def run_hydrological_model(model_config: dict):
-    """Hydrological model selector.
-
-    This is the main hydrological model selector. This is the code that looks
-    at the "model_config["model_name"]" keyword and calls the appropriate
-    hydrological model function.
-
-    Parameters
-    ----------
-    model_config : dict
-        The model configuration object that contains all info to run the model.
-        The model function called to run this model shouls always use this object
-        and read-in data it requires. It will be up to the user to provide the
-        data that the model requires.
-
-    Returns
-    -------
-    xr.Dataset
-        Simulated streamflow from the model, in xarray Dataset format.
-    """
-    if model_config["model_name"] == "Dummy":
-        qsim = _dummy_model(model_config)
-
-    elif model_config["model_name"] == "ADD_OTHER_HERE":
-        # ADD OTHER MODELS HERE
-        qsim = 0
-    else:
-        raise NotImplementedError(
-            f"The model '{model_config['model_name']}' is not recognized."
-        )
-
-    return qsim
-
-
 def get_hydrological_model_inputs(model_name: str):
     """Required hydrological model inputs for model_config objects.
 
@@ -189,68 +142,107 @@ def get_hydrological_model_inputs(model_name: str):
         Elements that must be found in the model_config object.
     """
     if model_name == "Dummy":
-        required_config = dict(
-            precip="Daily precipitation in mm.",
-            temperature="Daily average air temperature in °C",
-            drainage_area="Drainage area of the catchment",
-            parameters="Model parameters, length 3",
-        )
+        required_config = inspect.getfullargspec(DummyModel.__init__).annotations
     elif model_name == "Hydrotel":
         # FIXME: This is a temporary solution that does not give a description of the required inputs, only the type.
         required_config = inspect.getfullargspec(Hydrotel.__init__).annotations
-
-    elif model_name == "ADD_OTHER_HERE":
-        # ADD OTHER MODELS HERE
-        required_config = {}
-
     else:
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
     return required_config
 
 
-def _dummy_model(model_config: dict):
+class DummyModel:
     """Dummy model.
 
-    Dummy model to show the implementation we should be aiming for. Each model
-    will have its own required data that users can pass.
+    Dummy model to use as a placeholder for testing purposes.
 
     Parameters
     ----------
-    model_config : dict
-        The model configuration object that contains all info to run the model.
-        The model function called to run this model shouls always use this object
-        and read-in data it requires. It will be up to the user to provide the
-        data that the model requires.
-
-    Returns
-    -------
-    xr.Dataset
-        Simulated streamflow from the model, in xarray Dataset format.
+    precip : xr.DataArray
+        Daily precipitation in mm.
+    temperature : xr.DataArray
+        Daily average air temperature in °C.
+    drainage_area : float
+        Drainage area of the catchment.
+    parameters : np.ndarray
+        Model parameters, length 3.
     """
-    # Parse the model_config object to extract required information
-    precip = model_config["precip"]
-    temperature = model_config["temperature"]
-    area = model_config["drainage_area"]
-    x = model_config["parameters"]
 
-    # Run the dummy model using these data. Keeping it simple to calculate by
-    # hand to ensure the calibration algorithm is working correctly and data
-    # are handled correctly
-    qsim = np.empty(len(precip))
-    for t in range(0, len(precip)):
-        qsim[t] = (precip[t] * x[0] + abs(temperature[t]) * x[1]) * x[2] * area
+    def __init__(
+        self,
+        precip: xr.DataArray,
+        temperature: xr.DataArray,
+        drainage_area: float,
+        parameters: np.ndarray,
+    ):
+        """Initialize the DummyModel object."""
+        warnings.warn(
+            "This is a dummy model. Do not use for real applications.", UserWarning
+        )
+        self.precip = precip
+        self.temperature = temperature
+        self.drainage_area = drainage_area
+        self.parameters = parameters
+        self.qsim = None
 
-    # For this model, we can convert to xr.dataset by supposing dates. Other
-    # models will require some dates in some form (to add to QC checks) in their
-    # inputs.
-    time = pd.date_range("2024-01-01", periods=len(precip))
-    qsim = xr.Dataset(
-        data_vars=dict(
-            qsim=(["time"], qsim),
-        ),
-        coords=dict(time=time),
-        attrs=dict(description="streamflow simulated by the Dummy Model"),
-    )
+    def run(self):
+        """Run the Dummy model.
 
-    return qsim
+        Returns
+        -------
+        xr.Dataset
+            Simulated streamflow from the Dummy model, in xarray Dataset format.
+        """
+        qsim = np.empty(len(self.precip))
+        for t in range(0, len(self.precip)):
+            qsim[t] = (
+                (
+                    self.precip[t] * self.parameters[0]
+                    + abs(self.temperature[t]) * self.parameters[1]
+                )
+                * self.parameters[2]
+                * self.drainage_area
+            )
+
+        time = pd.date_range("2024-01-01", periods=len(self.precip))
+        qsim = xr.Dataset(
+            data_vars=dict(
+                qsim=(["time"], qsim),
+            ),
+            coords=dict(time=time),
+            attrs=dict(description="streamflow simulated by the Dummy Model"),
+        )
+        self.qsim = qsim
+
+        return qsim
+
+    def get_input(self):
+        """Return the input data for the Dummy model.
+
+        Returns
+        -------
+        xr.Dataset
+            Input data for the Dummy model, in xarray Dataset format.
+        """
+        return xr.Dataset(
+            data_vars=dict(
+                precip=(["time"], self.precip),
+                temperature=(["time"], self.temperature),
+            ),
+            coords=dict(time=pd.date_range("2024-01-01", periods=len(self.precip))),
+            attrs=dict(description="input data for the Dummy Model"),
+        )
+
+    def get_streamflow(self):
+        """Return the simulated streamflow from the Dummy model.
+
+        Returns
+        -------
+        xr.Dataset
+            Simulated streamflow from the Dummy model, in xarray Dataset format.
+        """
+        if self.qsim is None:
+            self.run()
+        else:
+            return self.qsim
