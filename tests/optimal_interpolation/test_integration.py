@@ -62,7 +62,6 @@ class Test_optimal_interpolation_integration:
 
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
-
         # Run the code and obtain the resulting flows.
         result_flows = cv.execute(
             self.start_date,
@@ -119,7 +118,6 @@ class Test_optimal_interpolation_integration:
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
-
         # Run the interpolation and get flows
         result_flows = cv.execute(
             self.start_date,

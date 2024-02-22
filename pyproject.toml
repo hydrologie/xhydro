@@ -96,7 +96,6 @@ docs = [
 
 [tool.black]
 target-version = [
-  "py38",
   "py39",
   "py310",
   "py311",
@@ -189,10 +188,10 @@ exclude = [
 
 [tool.isort]
 profile = "black"
-py_version = 38
+py_version = 39
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 show_error_codes = true
 warn_return_any = true
 warn_unused_configs = true
@@ -231,13 +230,12 @@ markers = [
 [tool.ruff]
 src = [""]
 line-length = 150
-target-version = "py38"
+target-version = "py39"
 exclude = [
   ".eggs",
   ".git",
   "build",
-  "docs",
-  "tests"
+  "docs"
 ]
 
 [tool.ruff.format]
