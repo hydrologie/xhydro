@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.15.1
     hooks:
     -   id: pyupgrade
         args: [ '--py39-plus' ]
@@ -38,7 +38,7 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14
+    rev: v0.2.2
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/flake8
@@ -58,12 +58,12 @@ repos:
       - id: blackdoc
         additional_dependencies: [ 'black==24.2.0' ]
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.33.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
         args: ['--config-file', '.yamllint.yaml']
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.3
+    rev: 0.28.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
