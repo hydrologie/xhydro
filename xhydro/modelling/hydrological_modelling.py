@@ -33,11 +33,111 @@ trivial and allows for easy calibration, regionalisation, analysis and any
 other type of interaction.
 """
 
+import inspect
+
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-__all__ = ["run_hydrological_model"]
+from ._hydrotel import Hydrotel
+
+__all__ = ["HydrologicalModel", "get_hydrological_model_inputs"]
+
+
+class HydrologicalModel:
+    """Hydrological model class.
+
+    This class is a wrapper for the different hydrological models that can be used in xhydro.
+
+    Parameters
+    ----------
+    model_name : str
+        The model name. One of ["Hydrotel", "Dummy"].
+    model_config : dict
+        The model configuration object that contains all info required to run the model.
+        Use the get_hydrological_model_inputs() function to get the required list of keys.
+
+    Notes
+    -----
+    Available functions, regardless of the model:
+    - run: Run the hydrological model.
+    - get_input: Return the input data for the model.
+    - get_streamflow: Return the simulated streamflow from the model.
+    """
+
+    def __init__(self, model_name: str, model_config: dict):
+        """Hydrological model selector.
+
+        Parameters
+        ----------
+        model_name : str
+            The model name. Only "Hydrotel" is currently supported.
+        model_config : dict
+            The model configuration object that contains all info required to run the model.
+            Use the get_hydrological_model_inputs() function to get the required list of keys.
+
+        Returns
+        -------
+        HydrologicalModel
+            An instance of the HydrologicalModel class.
+        """
+        self.model_name = model_name
+
+        if model_name == "Hydrotel":
+            self.model = Hydrotel(**model_config)
+        elif model_name == "Dummy":
+            self.model = _dummy_model(**model_config)
+        else:
+            raise NotImplementedError(f"The model '{model_name}' is not recognized.")
+
+    def run(self, **kwargs) -> xr.Dataset:
+        r"""Run the hydrological model.
+
+        Parameters
+        ----------
+        \*\*kwargs : dict
+            Arbitrary keyword arguments to pass to the model.
+
+        Returns
+        -------
+        xr.Dataset
+            Simulated streamflow from the model, in xarray Dataset format.
+        """
+        return self.model.run(**kwargs)
+
+    def get_input(self, **kwargs) -> xr.Dataset:
+        r"""Return the input data for the model.
+
+        Parameters
+        ----------
+        \*\*kwargs : dict
+            Arbitrary keyword arguments to pass to the model.
+
+        Returns
+        -------
+        xr.Dataset
+            Input data for the model, in xarray Dataset format.
+        """
+        return self.model.get_input(**kwargs)
+
+    def get_streamflow(self, **kwargs) -> xr.Dataset:
+        r"""Return the simulated streamflow from the model.
+
+        Parameters
+        ----------
+        \*\*kwargs : dict
+            Arbitrary keyword arguments to pass to the model.
+
+        Returns
+        -------
+        xr.Dataset
+            Simulated streamflow from the model, in xarray Dataset format.
+        """
+        return self.model.get_streamflow(**kwargs)
+
+    def __repr__(self):
+        """Return a string representation of the object."""
+        return f"xhydro.modelling.HydrologicalModel(model_name={self.model_name})"
 
 
 def run_hydrological_model(model_config: dict):
@@ -95,6 +195,9 @@ def get_hydrological_model_inputs(model_name: str):
             drainage_area="Drainage area of the catchment",
             parameters="Model parameters, length 3",
         )
+    elif model_name == "Hydrotel":
+        # FIXME: This is a temporary solution that does not give a description of the required inputs, only the type.
+        required_config = inspect.getfullargspec(Hydrotel.__init__).annotations
 
     elif model_name == "ADD_OTHER_HERE":
         # ADD OTHER MODELS HERE
