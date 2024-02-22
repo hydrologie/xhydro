@@ -491,7 +491,7 @@ class Hydrotel:
         Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
         a temporary file will be created and then renamed to overwrite the original file.
         """
-        with self.get_streamflow(engine="h5netcdf") as ds:
+        with self.get_streamflow(**kwargs) as ds:
             # station_id as dimension
             ds = ds.swap_dims({"troncon": "idtroncon"})
 
