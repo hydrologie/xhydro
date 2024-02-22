@@ -15,16 +15,20 @@ import xhydro.optimal_interpolation.functions.utilities as util
 from .mathematical_algorithms import calculate_average_distance
 
 
-def optimal_interpolation(oi_input, args):
-    """
-    Perform optimal interpolation to estimate values at specified locations.
+def optimal_interpolation(oi_input: dict, args: dict):
+    """Perform optimal interpolation to estimate values at specified locations.
 
-    Parameters:
-    - oi_input (dict): Input data dictionary containing necessary information for interpolation.
-    - args (dict): Additional arguments and state information for the interpolation process.
+    Parameters
+    ----------
+    oi_input : dict
+        Input data dictionary containing necessary information for interpolation.
+    args : dict
+        Additional arguments and state information for the interpolation process.
 
-    Returns:
-    tuple: A tuple containing the updated oi_output dictionary and the modified args dictionary.
+    Returns
+    -------
+    tuple
+        A tuple containing the updated oi_output dictionary and the modified args dictionary.
     """
     if len(args) == 0:
         args = {}
@@ -122,18 +126,19 @@ def optimal_interpolation(oi_input, args):
 
 
 def loop_optimal_interpolation_stations(args):
-    """
-    Apply optimal interpolation to a single validation site (station) for the selected time range.
+    """Apply optimal interpolation to a single validation site (station) for the selected time range.
 
-    Parameters:
-    - args (tuple): A tuple containing the station index and a dictionary with various information.
-                    The dictionary should include keys such as 'station_count', 'time_range', 'percentiles',
-                    'selected_flow_obs', 'selected_flow_sim', 'ratio_var_bg', 'ecf_fun', 'par_opt',
-                    'x_points', 'y_points', and 'drainage_area'.
+    Parameters
+    ----------
+    args : tuple
+        A tuple containing the station index and a dictionary with various information. The dictionary should include
+        keys such as 'station_count', 'time_range', 'percentiles', 'selected_flow_obs', 'selected_flow_sim',
+        'ratio_var_bg', 'ecf_fun', 'par_opt', 'x_points', 'y_points', and 'drainage_area'.
 
-    Returns:
-    list: A list containing the quantiles of the flow values for each percentile over the specified time range.
-
+    Returns
+    -------
+    list
+        The quantiles of the flow values for each percentile over the specified time range.
     """
     (station_index, args) = args
 
@@ -235,22 +240,33 @@ def execute_interpolation(
     parallelize,
     write_file,
 ):
-    """
-        Execute the main code, including setting constants to files, times, etc.
-        Heavily modified to parallelize and to optimize.
+    """Execute the main code, including setting constants to files, times, and other hyperparemeters.
 
-        Parameters:
-        - start_date (datetime.date): The start date of the interpolation period.
-        - end_date (datetime.date): The end date of the interpolation period.
-        - files (list): List of files containing Hydrotel runs and observations.
-        - ratio_var_bg (float): Ratio for background variance.
-        - percentiles (list): List of desired percentiles for flow quantiles.
-        - iterations (int): The number of iterations for the interpolation.
-        - parallelize (bool): Flag indicating whether to parallelize the interpolation.
+    Parameters
+    ----------
+    start_date : datetime date
+        The start date of the interpolation period.
+    end_date : datetime date
+        The end date of the interpolation period.
+    time_range : int
+        The number of time steps in the data arrays.
+    files : list
+        List of files containing Hydrotel runs and observations.
+    ratio_var_bg : float
+        Ratio for background variance.
+    percentiles : list
+        List of desired percentiles for flow quantiles.
+    iterations : int
+        The number of iterations for the interpolation.
+    parallelize : bool
+        Flag indicating whether to parallelize the interpolation.
+    write_file : str
+        Name of the NetCDF file to be created.
 
-        Returns:
-        list: A list containing the flow quantiles for each desired percentile.
-    '
+    Returns
+    -------
+    list
+        The flow quantiles for each desired percentile.
     """
     (
         stations_info,
@@ -299,7 +315,6 @@ def execute_interpolation(
         selected_flow_sim,
         x_points,
         y_points,
-        savename="test",
         iteration_count=iterations,
     )
 
@@ -337,16 +352,20 @@ def execute_interpolation(
 
 
 def initialize_data_arrays(time_range, station_count):
-    """
-    Initialize empty data arrays for later use.
+    """Initialize empty data arrays for later use.
 
-    Parameters:
-    - time_range (int): The number of time steps in the data arrays.
-    - station_count (int): The number of stations or data points.
+    Parameters
+    ----------
+    time_range : int
+        The number of time steps in the data arrays.
+    station_count : int
+        The number of stations or data points.
 
-    Returns:
-    tuple: A tuple containing initialized empty arrays for selected flow observations,
-           selected flow simulations, centroid latitude, centroid longitude, and drained area.
+    Returns
+    -------
+    tuple
+        Initialized empty arrays for selected flow observations, selected flow simulations, centroid latitude, centroid
+        longitude, and drained area.
     """
     selected_flow_obs = np.empty((time_range, station_count))
     selected_flow_sim = np.empty((time_range, station_count))
@@ -364,16 +383,18 @@ def initialize_data_arrays(time_range, station_count):
 
 
 def retreive_data(args):
-    """
-    Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
+    """Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
 
-    Parameters:
-    - args (dict): A dictionary containing the necessary information to retrieve and preprocess data.
-                  Keys include 'flow_obs', 'flow_sim', 'start_date', 'end_date', 'time_range',
-                  'stations_info', 'stations_mapping', and 'stations_id'.
+    Parameters
+    ----------
+    args : dict
+        A dictionary containing the necessary information to retrieve and preprocess data. Keys include 'flow_obs',
+        'flow_sim', 'start_date', 'end_date', 'time_range', 'stations_info', 'stations_mapping', and 'stations_id'.
 
-    Returns:
-    dict: A dictionary containing the retrieved and preprocessed data for OI algorithm.
+    Returns
+    -------
+    dict
+        The retrieved and preprocessed data for OI algorithm.
     """
     flow_obs = args["flow_obs"]
     flow_sim = args["flow_sim"]
@@ -439,19 +460,24 @@ def retreive_data(args):
 
 
 def standardize_points_with_roots(x, y, station_count, drained_area):
-    """'
-    Standardize points with roots based on drainage area.
+    """Standardize points with roots based on drainage area.
 
-    Parameters:
-    - x (array-like): Array of x-coordinates of the original points.
-    - y (array-like): Array of y-coordinates of the original points.
-    - station_count (int): The number of stations or points.
-    - drained_area (array-like): Array of drainage areas corresponding to each station.
+    Parameters
+    ----------
+    x : array-like
+        X-coordinates of the original points.
+    y : array-like
+        Y-coordinates of the original points.
+    station_count : int
+        The number of stations or points.
+    drained_area : array-like
+        Drainage areas corresponding to each station.
 
-    Returns:
-    tuple: A tuple containing standardized x and y points with roots.
+    Returns
+    -------
+    tuple
+        Standardized x and y points with roots.
     """
-
     x_points = np.empty((4, station_count))
     y_points = np.empty((4, station_count))
     for i in range(station_count):
@@ -480,6 +506,20 @@ def parallelize_operation(args, parallelize=True):
        4. Run pool.map, which maps inputs (iterators) to the function.
        5. Collect the results and unzip the tuple returning from pool.map.
        6. Close the pool and return the parsed results.
+
+    Parameters
+    ----------
+    args : dict
+        A dictionary containing the necessary information to retrieve and preprocess data. Keys include 'flow_obs',
+        'flow_sim', 'start_date', 'end_date', 'time_range', 'stations_info', 'stations_mapping', 'stations_id',
+        'percentiles' and 'station_count'.
+    parallelize : bool
+        Flag to make the code run in parallel. True to use parallelization.
+
+    Returns
+    -------
+    array-like
+        Flow quantiles associated to the desired percentiles after optimal interpolation.
     """
     station_count = args["station_count"]
     percentiles = args["percentiles"]

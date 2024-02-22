@@ -1,3 +1,5 @@
+"""Empirical Covariance Function climate correction package."""
+
 from functools import partial
 
 import numpy as np
@@ -7,9 +9,8 @@ from .mathematical_algorithms import calculate_average_distance, eval_covariance
 from .utilities import general_ecf, initialize_nan_arrays
 
 
-def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count=10):
-    """
-    Perform correction on flow observations using optimal interpolation.
+def correction(flow_obs, flow_sim, x_points, y_points, iteration_count=10):
+    """Perform correction on flow observations using optimal interpolation.
 
     Parameters
     ----------
@@ -21,8 +22,6 @@ def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count
         X-coordinate points for stations.
     y_points : np.ndarray
         Y-coordinate points for stations.
-    savename : str
-        Name for saving the results.
     iteration_count : int, optional
         Number of iterations for the interpolation. Default is 10.
 
@@ -32,9 +31,7 @@ def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count
         A tuple containing the following:
         - ecf_fun: Partial function for the error covariance function.
         - par_opt: Optimized parameters for the interpolation.
-
     """
-
     difference = flow_sim - flow_obs
     time_range = np.shape(difference)[0]
 
@@ -105,16 +102,13 @@ def correction(flow_obs, flow_sim, x_points, y_points, savename, iteration_count
         ),
     )["x"]
 
-    # Faire graphique et sauvegarde
-
     return ecf_fun, par_opt
 
 
 def initialize_ajusted_ECF_climate_variables(
     flow_obs, flow_sim, x_points, y_points, iteration_count
 ):
-    """
-    Initialize variables for adjusted ECF climate.
+    """Initialize variables for adjusted ECF climate.
 
     Parameters
     ----------
@@ -139,7 +133,6 @@ def initialize_ajusted_ECF_climate_variables(
         - heights: Array to store heights.
         - covariances: Array to store covariances.
         - standard_deviations: Array to store standard deviations.
-
     """
     difference = flow_sim - flow_obs
 
@@ -167,8 +160,7 @@ def initialize_ajusted_ECF_climate_variables(
 def calculate_ECF_stats(
     distance, covariance, covariance_weights, valid_heights, valid_heights_count
 ):
-    """
-    Calculate statistics for Empirical Covariance Function (ECF).
+    """Calculate statistics for Empirical Covariance Function (ECF).
 
     Parameters
     ----------
@@ -190,7 +182,6 @@ def calculate_ECF_stats(
         - h_b: Array of mean distances for each height bin.
         - cov_b: Array of weighted average covariances for each height bin.
         - std_b: Array of standard deviations for each height bin.
-
     """
     cov_b = np.zeros(valid_heights_count - 1)
     h_b = np.zeros(valid_heights_count - 1)
@@ -214,8 +205,7 @@ def calculate_ECF_stats(
 def initialize_stats_variables(
     heights, covariances, standard_deviations, iteration_count=10
 ):
-    """
-    Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
+    """Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
 
     Parameters
     ----------

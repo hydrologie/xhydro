@@ -4,30 +4,26 @@ import numpy as np
 
 
 def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
+    """Evaluate the covariance of a binomial distribution using a weighted approach.
+
+    Parameters
+    ----------
+    distances : np.array
+        Distances for each data point.
+    values : np.array
+        Values corresponding to each data point.
+    errors : np.array
+        Errors (uncertainties) associated with each value.
+    hmax_divider : int, optional
+        Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
+    iteration_count : int, optional
+        Number of iterations for refining the covariance estimate. Defaults to 10.
+
+    Returns
+    -------
+    tuple
+        Arrays for heights, covariance, standard deviation, and row length.
     """
-    Evaluate the covariance of a binomial distribution.
-
-    Parameters:
-    - distances (numpy array): Array of distances for each data point.
-    - values (numpy array): Array of values corresponding to each data point.
-    - errors (numpy array): Array of errors (uncertainties) associated with each value.
-    - hmax_divider (int, optional): Maximum distance for binning is set as hmax_divider times the
-      maximum distance in the input data. Defaults to 2.
-    - iteration_count (int, optional): Number of iterations for refining the covariance estimate.
-      Defaults to 10.
-
-    Returns:
-    tuple: A tuple containing arrays for heights, covariance, standard deviation, and row length.
-
-    This function evaluates the covariance of a binomial distribution using a weighted approach.
-    It takes three numpy arrays: distances, values, and errors, representing the distance, values,
-    and uncertainties for each data point. It also accepts optional parameters:
-    - hmax_divider: Determines the maximum distance for binning.
-    - iteration_count: Number of iterations for refining the covariance estimate.
-
-    The function returns a tuple containing arrays for heights, covariance, standard deviation, and row length.
-    """
-
     # Step 1: Calculate weights based on errors
     weights = np.power(1 / errors, 2)
     weights = weights / np.sum(weights)
@@ -92,15 +88,19 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
 
 
 def calculate_average_distance(x_points, y_points):
-    """
-    Calculates the average Euclidean distance between points in 2D space.
+    """Calculate the average Euclidean distance between points in 2D space.
 
-    Parameters:
-    - x_points (list): List of x-coordinates of points.
-    - y_points (list): List of y-coordinates of corresponding points.
+    Parameters
+    ----------
+    x_points : list
+        X-coordinates of points.
+    y_points : list
+        Y-coordinates of corresponding points.
 
-    Returns:
-    float: The average Euclidean distance between the points.
+    Returns
+    -------
+    np.array
+        The average Euclidean distance between the points.
     """
     count = x_points.shape[1]
     average_distances = np.zeros((count, count))
@@ -120,22 +120,29 @@ def calculate_average_distance(x_points, y_points):
 
 
 def latlon_to_xy(lat, lon, lat0=0, lon0=0):
-    """
-    Transform the geographic coordinate into the cartesian coordinate with a possibility of shifting the position
-    of the origin at a specific latitude and longitude.
+    """Transform the geographic coordinate into the cartesian coordinate.
+
+     Also provides the possibility of shifting the position of the origin at a specific latitude and longitude.
 
     Parameters
     ----------
-        lat (list): List of latitude points
-        lon (list) :  List of longitude points
-        lat0 (list), optional :  Latitude at origin
-        lon0 (list), optional :  Longitude at origin
+    lat : list
+        Latitude points.
+    lon : list
+        Longitude points.
+    lat0 : list, optional
+        Latitude at origin.
+    lon0 : list, optional
+        Longitude at origin.
+
     Returns
     -------
-        x : Abscissas points
-        y : Ordinates points
+    x : np.array
+        Abscissas points in x direction.
+
+    y : np.array
+        Ordinates points in y direction.
     """
-    """"""
     ray = 6371  # km
 
     lon = lon - lon0
@@ -152,57 +159,3 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
     y = -ray * cos_lat * sin_lat0 * cos_lon + ray * cos_lat0 * sin_lat
 
     return x, y
-
-
-def kge_prime(obs, sim):
-    """Calculate Kling-Gupta Efficiency metric.
-    Parameters
-    ----------
-    obs : list
-        List of observed flows
-    sim : list
-        List of simulated flows
-    Returns
-    -------
-        float : The KGE efficiency coefficient
-    """
-    is_nan = np.isnan(obs) | np.isnan(sim)
-
-    obs = obs[~is_nan]
-    sim = sim[~is_nan]
-
-    obs_mean = np.mean(obs)
-    sim_mean = np.mean(sim)
-
-    obs_std = np.std(obs)
-    sim_std = np.std(sim)
-
-    r = np.corrcoef(obs, sim)[0, 1]
-
-    beta = sim_mean / obs_mean
-    gamma = (sim_std / sim_mean) / (obs_std / obs_mean)
-
-    return 1 - np.sqrt(
-        np.power((r - 1), 2) + np.power((beta - 1), 2) + np.power((gamma - 1), 2)
-    )
-
-
-def nash(obs, sim):
-    """Calculate Nash–Sutcliffe efficiency metric.
-
-    Parameters
-    ----------
-    obs : list
-        List of observed flows
-    sim : list
-        List of simulated flows
-    Returns
-    -------
-        float : The Nash–Sutcliffe efficiency metric
-    """
-    sim = np.ma.array(sim, mask=np.isnan(obs))
-    obs = np.ma.array(obs, mask=np.isnan(obs))
-
-    sse = np.sum(np.power(obs - sim, 2))
-    ssu = np.sum(np.power(obs - np.mean(obs), 2))
-    return 1 - sse / ssu

@@ -5,7 +5,7 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 from shutil import copy
-from typing import List, Optional, Union
+from typing import Optional, Union
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
@@ -17,15 +17,22 @@ _default_cache_dir = user_cache_dir("xhydro_testing_data")
 
 LOGGER = logging.getLogger("XHYDRO")
 
-__all__ = [
-    "get_local_testdata",
-    "open_dataset",
-    "get_file",
-]
+__all__ = ["get_file", "get_local_testdata", "open_dataset"]
 
 
 def file_md5_checksum(fname):
-    """Check that the data respects the md5 checksum."""
+    """Check that the data respects the md5 checksum.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the file to check the md5 checksum.
+
+    Returns
+    -------
+    str
+        Checksum of the file.
+    """
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
         hash_md5.update(f.read())
@@ -56,6 +63,7 @@ def get_local_testdata(
     Returns
     -------
     Union[Path, List[Path]]
+        Path of where the generated/downloaded files are located.
     """
     temp_paths = []
 
@@ -98,7 +106,24 @@ def _get(
     branch: str,
     cache_dir: Path,
 ) -> Path:
-    """Get the file from a github repo."""
+    """Get the file from a github repo.
+
+    Parameters
+    ----------
+    fullname : Path
+        Path to the file where files are to be stored.
+    github_url : str
+        URL to the github repo main branch.
+    branch : str
+        name of the github branch where the file lives.
+    cache_dir : Path
+        Path of the caching directory where to save file and check to see if it exists before downloading.
+
+    Returns
+    -------
+    Path
+        Path to the file location on the local computer.
+    """
     cache_dir = cache_dir.absolute()
     local_file = cache_dir / branch / fullname
 
@@ -147,6 +172,7 @@ def get_file(
     Returns
     -------
     Path or list of Path
+        Path to the file location.
     """
     if isinstance(name, (str, Path)):
         name = [name]
@@ -188,26 +214,24 @@ def open_dataset(
         Name of the file containing the dataset. If no suffix is given, assumed to be netCDF ('.nc' is appended).
     suffix : str, optional
         If no suffix is given, assumed to be netCDF ('.nc' is appended). For no suffix, set "".
-    dap_url : str, optional
-        URL to OPeNDAP folder where the data is stored. If supplied, supersedes github_url.
     github_url : str
         URL to GitHub repository where the data is stored.
     branch : str, optional
         For GitHub-hosted files, the branch to download from.
-    cache : bool
-        If True, then cache data locally for use on subsequent calls.
     cache_dir : str or Path
         The directory in which to search for and write cached data.
-    \*\*kwds
+    \*\*kwds : dict
         For NetCDF files, keywords passed to xarray.open_dataset.
 
     Returns
     -------
     xr.Dataset
+        Dataset that was loaded from the file downloaded from GitHub.
 
     See Also
     --------
     xarray.open_dataset
+        The open_dataset function from xarray, for any required keywords.
     """
     name = Path(name)
     cache_dir = Path(cache_dir)

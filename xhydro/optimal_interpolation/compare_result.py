@@ -1,18 +1,15 @@
 """Compare results between simulations and observations."""
 
-import datetime as dt
 import sys
 
 import numpy as np
 
-import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
 from xhydro.modelling.obj_funcs import get_objective_function
 
 
 def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison=True):
-    """
-    Start the computation of the comparison method.
+    """Start the computation of the comparison method.
 
     Parameters
     ----------
@@ -24,13 +21,8 @@ def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison
         List of files path for getting observed, simulated, and leave-one-out cross-validation flows.
     percentile_to_plot : int, optional
         Percentile value to plot (default is 50).
-    show_comparison : bool, optional
+    show_comparaison : bool, optional
         Whether to display the comparison plots (default is True).
-
-    Returns
-    -------
-    None
-
     """
     time = (end_date - start_date).days
 
