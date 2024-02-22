@@ -1,4 +1,5 @@
 """Empirical Covariance Function climate correction package."""
+
 from functools import partial
 
 import numpy as np
@@ -6,6 +7,7 @@ import scipy.optimize
 
 from .mathematical_algorithms import calculate_average_distance, eval_covariance_bin
 from .utilities import general_ecf, initialize_nan_arrays
+
 
 def correction(
     flow_obs: np.ndarray,

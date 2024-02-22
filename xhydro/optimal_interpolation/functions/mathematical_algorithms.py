@@ -1,4 +1,5 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
+
 import numpy as np
 
 

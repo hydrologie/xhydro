@@ -383,6 +383,7 @@ def initialize_data_arrays(time_range: int, station_count: int) -> tuple[ndarray
         drained_area,
     )
 
+
 def retreive_data(args: dict) -> dict[str, Any]:
     """Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
 
@@ -524,20 +525,6 @@ def parallelize_operation(args: dict, parallelize: bool = True) -> np.array:
        4. Run pool.map, which maps inputs (iterators) to the function.
        5. Collect the results and unzip the tuple returning from pool.map.
        6. Close the pool and return the parsed results.
-
-    Parameters
-    ----------
-    args : dict
-        A dictionary containing the necessary information to retrieve and preprocess data. Keys include 'flow_obs',
-        'flow_sim', 'start_date', 'end_date', 'time_range', 'stations_info', 'stations_mapping', 'stations_id',
-        'percentiles' and 'station_count'.
-    parallelize : bool
-        Flag to make the code run in parallel. True to use parallelization.
-
-    Returns
-    -------
-    array-like
-        Flow quantiles associated to the desired percentiles after optimal interpolation.
     """
     station_count = args["station_count"]
     percentiles = args["percentiles"]

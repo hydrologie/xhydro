@@ -1,12 +1,12 @@
 """Compare results between simulations and observations."""
 
+import datetime as dt
 import pathlib
 import sys
 from typing import Union
 
 import numpy as np
 
-import datetime as dt
 import xhydro.optimal_interpolation.functions.utilities as util
 from xhydro.modelling.obj_funcs import get_objective_function
 
