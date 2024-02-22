@@ -1,13 +1,12 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
 
 import numpy as np
-import shapely
 
 
 def eval_covariance_bin(
-    distances: np.array,
-    values: np.array,
-    errors: np.array,
+    distances: np.ndarray,
+    values: np.ndarray,
+    errors: np.ndarray,
     hmax_divider: int = 2,
     iteration_count: int = 10,
 ):
@@ -15,11 +14,11 @@ def eval_covariance_bin(
 
     Parameters
     ----------
-    distances : array-like
+    distances : np.ndarray
         Array of distances for each data point.
-    values : array-like
+    values : np.ndarray
         Array of values corresponding to each data point.
-    errors : array-like
+    errors : np.ndarray
         Array of errors (uncertainties) associated with each value.
     hmax_divider : int
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
@@ -104,16 +103,14 @@ def eval_covariance_bin(
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
-def calculate_average_distance(
-    x_points: shapely.Point, y_points: shapely.Point
-) -> np.array:
+def calculate_average_distance(x_points: np.ndarray, y_points: np.ndarray) -> np.array:
     """Calculate the average Euclidean distance between points in 2D space.
 
     Parameters
     ----------
-    x_points : shapely.Point
+    x_points : np.ndarray
         List of x-coordinates of points.
-    y_points : shapely.Point
+    y_points : np.ndarray
         List of y-coordinates of corresponding points.
 
     Returns
@@ -139,17 +136,17 @@ def calculate_average_distance(
 
 
 def latlon_to_xy(
-    lat: shapely.Point, lon: shapely.Point, lat0: float = 0.0, lon0: float = 0.0
-) -> tuple[np.array, np.array]:
+    lat: np.ndarray, lon: np.ndarray, lat0: float = 0.0, lon0: float = 0.0
+) -> tuple[np.ndarray, np.ndarray]:
     """Transform the geographic coordinate into the cartesian coordinate.
 
     Will shift the position of the origin at a specific latitude and longitude if required.
 
     Parameters
     ----------
-    lat : shapey.Point
+    lat : np.ndarray
         List of latitude points.
-    lon : shapely.Point
+    lon : np.ndarray
         List of longitude points.
     lat0 : float
         Latitude at origin. Defaults to 0.0.
@@ -158,7 +155,7 @@ def latlon_to_xy(
 
     Returns
     -------
-    tuple[np.array, np.array]
+    tuple[np.ndarray, np.ndarray]
         Abscissas points and Ordinates points.
     """
     ray = 6371  # km
@@ -179,14 +176,14 @@ def latlon_to_xy(
     return x, y
 
 
-def kge_prime(obs, sim) -> float:
+def kge_prime(obs: np.ndarray, sim: np.ndarray) -> float:
     """Calculate Kling-Gupta Efficiency metric.
 
     Parameters
     ----------
-    obs : list
+    obs : np.ndarray
         List of observed flows.
-    sim : list
+    sim : np.ndarray
         List of simulated flows.
 
     Returns
@@ -215,14 +212,14 @@ def kge_prime(obs, sim) -> float:
     )
 
 
-def nash(obs, sim) -> float:
+def nash(obs: np.ndarray, sim: np.ndarray) -> float:
     """Calculate Nash–Sutcliffe efficiency metric.
 
     Parameters
     ----------
-    obs : list
+    obs : np.ndarray
         List of observed flows.
-    sim : list
+    sim : np.ndarray
         List of simulated flows.
 
     Returns

@@ -1,7 +1,9 @@
 """Compare results between simulations and observations."""
 
 import datetime as dt
+import pathlib
 import sys
+from typing import Union
 
 import numpy as np
 
@@ -13,7 +15,7 @@ from xhydro.modelling.obj_funcs import get_objective_function
 def compare(
     start_date: dt.datetime,
     end_date: dt.datetime,
-    files: list[str],
+    files: list[Union[str, pathlib.Path]],
     percentile_to_plot: int = 50,
     show_comparison: bool = True,
 ):
@@ -25,7 +27,7 @@ def compare(
         Start date of the analysis.
     end_date : datetime
         End date of the analysis.
-    files : list of str
+    files : list of str or pathlib.Path
         List of files path for getting observed, simulated, and leave-one-out cross-validation flows.
     percentile_to_plot : int
         Percentile value to plot (default is 50).
