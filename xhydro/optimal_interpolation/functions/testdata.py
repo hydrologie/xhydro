@@ -19,6 +19,8 @@ LOGGER = logging.getLogger("XHYDRO")
 
 __all__ = ["get_file", "get_local_testdata", "open_dataset"]
 
+# FIXME: Flattered as I am to see xclim's code here, this should all be rewritten to use pooch for data fetching.
+
 
 def file_md5_checksum(fname):
     """Check that the data respects the md5 checksum.
@@ -39,7 +41,7 @@ def file_md5_checksum(fname):
     return hash_md5.hexdigest()
 
 
-def get_local_testdata(
+def get_local_testdata(  # noqa
     patterns: Union[str, Sequence[str]],
     temp_folder: Union[str, Path],
     branch: str = "master",
@@ -63,7 +65,7 @@ def get_local_testdata(
     Returns
     -------
     Union[Path, List[Path]]
-        Path of where the generated/downloaded files are located.
+        The matched files found in the cache dir.
     """
     temp_paths = []
 
@@ -148,7 +150,7 @@ def _get(
 
 
 # idea copied from xclim that borrowed it from xarray that was borrowed from Seaborn
-def get_file(
+def get_file(  # noqa
     name: Union[str, Path, Sequence[Union[str, Path]]],
     github_url: str = "https://github.com/hydrologie/xhydro-testdata",
     branch: str = "master",
@@ -172,7 +174,7 @@ def get_file(
     Returns
     -------
     Path or list of Path
-        Path to the file location.
+        The path to a fetched file or a list of paths to fetched files.
     """
     if isinstance(name, (str, Path)):
         name = [name]
@@ -226,12 +228,7 @@ def open_dataset(
     Returns
     -------
     xr.Dataset
-        Dataset that was loaded from the file downloaded from GitHub.
-
-    See Also
-    --------
-    xarray.open_dataset
-        The open_dataset function from xarray, for any required keywords.
+        The xarray Dataset object.
     """
     name = Path(name)
     cache_dir = Path(cache_dir)

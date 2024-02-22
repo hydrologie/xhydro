@@ -1,5 +1,4 @@
 """Empirical Covariance Function climate correction package."""
-
 from functools import partial
 
 import numpy as np
@@ -8,8 +7,8 @@ import scipy.optimize
 from .mathematical_algorithms import calculate_average_distance, eval_covariance_bin
 from .utilities import general_ecf, initialize_nan_arrays
 
-
 def correction(flow_obs, flow_sim, x_points, y_points, iteration_count=10):
+
     """Perform correction on flow observations using optimal interpolation.
 
     Parameters
@@ -89,12 +88,12 @@ def correction(flow_obs, flow_sim, x_points, y_points, iteration_count=10):
 
     weights = 1 / np.power(std_b, 2)
     weights = weights / np.sum(weights)
-    rmse_fun = lambda par: np.sqrt(
-        np.mean(weights * np.power(ecf_fun(h=h_b, par=par) - cov_b, 2))
-    )
+
+    def _rmse_func(par):
+        return np.sqrt(np.mean(weights * np.power(ecf_fun(h=h_b, par=par) - cov_b, 2)))
 
     par_opt = scipy.optimize.minimize(
-        rmse_fun,
+        _rmse_func,
         [np.mean(cov_b), np.mean(h_b) / 3],
         bounds=(
             [input_opt["p1_bnds"][0], input_opt["p1_bnds"][1]],

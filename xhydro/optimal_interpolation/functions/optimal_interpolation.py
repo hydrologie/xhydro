@@ -3,19 +3,21 @@
 import os
 from functools import partial
 from multiprocessing import Pool
+from typing import Any
 
 import numpy as np
 import pandas as pd
+from numpy import ndarray
 from scipy.stats import norm
 
-import xhydro.optimal_interpolation.functions.ECF_climate_correction as ecf_cc
+import xhydro.optimal_interpolation.functions.ECF_climate_correction as ecf_cc  # noqa
 import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
 
 from .mathematical_algorithms import calculate_average_distance
 
 
-def optimal_interpolation(oi_input: dict, args: dict):
+def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     """Perform optimal interpolation to estimate values at specified locations.
 
     Parameters
@@ -125,20 +127,21 @@ def optimal_interpolation(oi_input: dict, args: dict):
     return oi_output, args
 
 
-def loop_optimal_interpolation_stations(args):
+def loop_optimal_interpolation_stations(args: tuple[int, dict]) -> tuple:
     """Apply optimal interpolation to a single validation site (station) for the selected time range.
 
     Parameters
     ----------
     args : tuple
-        A tuple containing the station index and a dictionary with various information. The dictionary should include
-        keys such as 'station_count', 'time_range', 'percentiles', 'selected_flow_obs', 'selected_flow_sim',
-        'ratio_var_bg', 'ecf_fun', 'par_opt', 'x_points', 'y_points', and 'drainage_area'.
+        A tuple containing the station index and a dictionary with various information.
+        The dictionary should include keys such as 'station_count', 'time_range', 'percentiles',
+        'selected_flow_obs', 'selected_flow_sim', 'ratio_var_bg', 'ecf_fun', 'par_opt',
+        'x_points', 'y_points', and 'drainage_area'.
 
     Returns
     -------
     list
-        The quantiles of the flow values for each percentile over the specified time range.
+        A list containing the quantiles of the flow values for each percentile over the specified time range.
     """
     (station_index, args) = args
 
@@ -190,8 +193,7 @@ def loop_optimal_interpolation_stations(args):
     # and updated. Named oi_args to not confuse with this functions' own args.
     oi_args = {}
 
-    # For each timestep, build the interpolator and apply to the cross-
-    # validation catchment.
+    # For each timestep, build the interpolator and apply to the cross-validation catchment.
     for j in range(time_range):
         # Need to skip days where no value exists for verification
         if not np.isnan(selected_flow_obs[j, index_validation]):
@@ -240,16 +242,16 @@ def execute_interpolation(
     parallelize,
     write_file,
 ):
-    """Execute the main code, including setting constants to files, times, and other hyperparemeters.
+    """Execute the main code, including setting constants to files, times, etc.
 
     Parameters
     ----------
-    start_date : datetime date
+    start_date : datetime.date
         The start date of the interpolation period.
-    end_date : datetime date
+    end_date : datetime.date
         The end date of the interpolation period.
     time_range : int
-        The number of time steps in the data arrays.
+        VERIFY: The number of time steps in the data arrays.
     files : list
         List of files containing Hydrotel runs and observations.
     ratio_var_bg : float
@@ -266,7 +268,7 @@ def execute_interpolation(
     Returns
     -------
     list
-        The flow quantiles for each desired percentile.
+        A list containing the flow quantiles for each desired percentile.
     """
     (
         stations_info,
@@ -351,7 +353,7 @@ def execute_interpolation(
     return flow_quantiles
 
 
-def initialize_data_arrays(time_range, station_count):
+def initialize_data_arrays(time_range: int, station_count: int) -> tuple[ndarray, ...]:
     """Initialize empty data arrays for later use.
 
     Parameters
@@ -381,20 +383,20 @@ def initialize_data_arrays(time_range, station_count):
         drained_area,
     )
 
-
-def retreive_data(args):
+def retreive_data(args: dict) -> dict[str, Any]:
     """Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
 
     Parameters
     ----------
     args : dict
-        A dictionary containing the necessary information to retrieve and preprocess data. Keys include 'flow_obs',
-        'flow_sim', 'start_date', 'end_date', 'time_range', 'stations_info', 'stations_mapping', and 'stations_id'.
+        A dictionary containing the necessary information to retrieve and preprocess data.
+        Keys include: 'flow_obs', 'flow_sim', 'start_date', 'end_date', 'time_range',
+        'stations_info', 'stations_mapping', and 'stations_id'.
 
     Returns
     -------
     dict
-        The retrieved and preprocessed data for OI algorithm.
+        A dictionary containing the retrieved and preprocessed data for OI algorithm.
     """
     flow_obs = args["flow_obs"]
     flow_sim = args["flow_sim"]
@@ -459,7 +461,9 @@ def retreive_data(args):
     return returned_dict
 
 
-def standardize_points_with_roots(x, y, station_count, drained_area):
+def standardize_points_with_roots(
+    x: np.array, y: np.array, station_count: int, drained_area: np.array
+) -> tuple[np.array, np.array]:
     """Standardize points with roots based on drainage area.
 
     Parameters
@@ -492,9 +496,23 @@ def standardize_points_with_roots(x, y, station_count, drained_area):
     return x_points, y_points
 
 
-def parallelize_operation(args, parallelize=True):
+def parallelize_operation(args, parallelize: bool = True) -> np.array:
     """Run the interpolator on the cross-validation and manage parallelization.
 
+    Parameters
+    ----------
+    args : dict
+        A dictionary containing the necessary information for the interpolation.
+    parallelize : bool
+        Flag indicating whether to parallelize the interpolation.
+
+    Returns
+    -------
+    np.array
+        An array containing the flow quantiles for each desired percentile.
+
+    Notes
+    -----
     New section for parallel computing. Several steps performed:
        1. Estimation of available computing power. Carried out by taking
           the number of threads available / 2 (to get the number of cores)
@@ -502,7 +520,7 @@ def parallelize_operation(args, parallelize=True):
        2. Starting a parallel computing pool
        3. Create an iterator (iterable) containing the data required
           by the new function, which loops on each station in leave-one-out
-          validation. It's embarassingly parallelizable, so very useful.
+          validation. It's embarrassingly parallelized, so very useful.
        4. Run pool.map, which maps inputs (iterators) to the function.
        5. Collect the results and unzip the tuple returning from pool.map.
        6. Close the pool and return the parsed results.

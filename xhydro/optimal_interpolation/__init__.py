@@ -1,1 +1,1 @@
-"""Optimal interpolation package."""
+"""Optimal Interpolation module."""

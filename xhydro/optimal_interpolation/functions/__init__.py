@@ -1,1 +1,1 @@
-"""Initialization of the optimal interpolation functions package."""
+"""Initialization of the optimal interpolation functions module."""

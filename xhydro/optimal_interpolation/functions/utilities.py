@@ -2,6 +2,7 @@
 
 import csv
 import os
+from collections.abc import Hashable
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -9,7 +10,7 @@ import numpy as np
 import xarray as xr
 
 
-def read_csv_file(csv_filename):
+def read_csv_file(csv_filename: str):
     """
     Read values from a CSV file and return them as a list.
 
@@ -20,7 +21,7 @@ def read_csv_file(csv_filename):
 
     Returns
     -------
-    list :
+    list
         A list containing the values from the CSV file.
     """
     items = []
@@ -37,7 +38,7 @@ def read_csv_file(csv_filename):
     return items
 
 
-def find_index(array, key, value):
+def find_index(array: list, key: Hashable, value: str):
     """
     Find the index of an element in a list based on a specified key-value pair.
 
@@ -52,7 +53,7 @@ def find_index(array, key, value):
 
     Returns
     -------
-    int:
+    int
         Returns the index of the element in the list where the key-value pair matches.
         Returns -1 if the element is not found.
     """
@@ -72,7 +73,7 @@ def convert_list_to_dict(t):
 
     Returns
     -------
-    dict:
+    dict
         A dictionary created from the input list.
     """
     return {k: v for k, v in t}
@@ -82,7 +83,7 @@ def initialize_nan_arrays(dimensions, percentiles):
     """
     Initialize arrays with NaN values for later population.
 
-    This function preallocates arrays filled with NaN values to the correct size for later data population.
+    This function pre-allocates arrays filled with NaN values to the correct size for later data population.
 
     Parameters
     ----------
@@ -93,8 +94,8 @@ def initialize_nan_arrays(dimensions, percentiles):
 
     Returns
     -------
-    tuple:
-        A tuple of preallocated arrays, each initialized with NaN values.
+    tuple
+        A tuple of pre-allocated arrays, each initialized with NaN values.
     """
     t = [0] * percentiles
     for i in range(percentiles):
@@ -118,7 +119,7 @@ def find_station_section(stations, section_id):
 
     Returns
     -------
-    string:
+    string
         Returns an empty string if the section is not found, otherwise, returns the key
         representing the association between the station and a section.
     """

@@ -5,7 +5,6 @@ import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 
 def test_calculate_average_distance():
     """Test calculating average distance between points."""
-
     # Between 2 points
     x_points = np.array([[0, 3]])
     y_points = np.array([[0, 4]])

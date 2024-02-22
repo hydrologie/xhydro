@@ -1,6 +1,6 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
-
 import numpy as np
+import shapely
 
 
 def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
@@ -8,11 +8,11 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
 
     Parameters
     ----------
-    distances : np.array
+    distances : np.ndarray
         Distances for each data point.
-    values : np.array
+    values : np.ndarray
         Values corresponding to each data point.
-    errors : np.array
+    errors : np.ndarray
         Errors (uncertainties) associated with each value.
     hmax_divider : int, optional
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
@@ -87,19 +87,21 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
-def calculate_average_distance(x_points, y_points):
+def calculate_average_distance(
+    x_points: shapely.Point, y_points: shapely.Point
+) -> np.array:
     """Calculate the average Euclidean distance between points in 2D space.
 
     Parameters
     ----------
-    x_points : list
-        X-coordinates of points.
-    y_points : list
-        Y-coordinates of corresponding points.
+    x_points : shapely.Point
+        List of x-coordinates of points.
+    y_points : shapely.Point
+        List of y-coordinates of corresponding points.
 
     Returns
     -------
-    np.array
+    np.ndarray
         The average Euclidean distance between the points.
     """
     count = x_points.shape[1]
@@ -119,29 +121,28 @@ def calculate_average_distance(x_points, y_points):
     return average_distances
 
 
-def latlon_to_xy(lat, lon, lat0=0, lon0=0):
+def latlon_to_xy(
+    lat: shapely.Point, lon: shapely.Point, lat0: float = 0.0, lon0: float = 0.0
+) -> tuple[np.array, np.array]:
     """Transform the geographic coordinate into the cartesian coordinate.
 
-     Also provides the possibility of shifting the position of the origin at a specific latitude and longitude.
+    Will shift the position of the origin at a specific latitude and longitude if required.
 
     Parameters
     ----------
-    lat : list
-        Latitude points.
-    lon : list
-        Longitude points.
-    lat0 : list, optional
-        Latitude at origin.
-    lon0 : list, optional
-        Longitude at origin.
+    lat : shapey.Point
+        List of latitude points.
+    lon : shapely.Point
+        List of longitude points.
+    lat0 : float
+        Latitude at origin. Defaults to 0.0.
+    lon0 : float
+        Longitude at origin. Defaults to 0.0.
 
     Returns
     -------
-    x : np.array
-        Abscissas points in x direction.
-
-    y : np.array
-        Ordinates points in y direction.
+    tuple[np.array, np.array]
+        Abscissas points and Ordinates points.
     """
     ray = 6371  # km
 
