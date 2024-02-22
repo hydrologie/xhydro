@@ -1,7 +1,8 @@
 """Perform the cross-validation for the optimal interpolation."""
 
 import datetime as dt
-from typing import Optional
+import pathlib
+from typing import Optional, Union
 
 from .functions import optimal_interpolation as opt
 
@@ -9,7 +10,7 @@ from .functions import optimal_interpolation as opt
 def execute(
     start_date: dt.datetime,
     end_date: dt.datetime,
-    files: list[str],
+    files: list[Union[str, pathlib.Path]],
     write_file,
     ratio_var_bg: float = 0.15,
     percentiles: Optional[list[float]] = None,
@@ -24,7 +25,7 @@ def execute(
         Start date of the analysis.
     end_date : datetime.datetime
         End date of the analysis.
-    files : list(str)
+    files : list of str or pathlib.Path
         List of files path for getting flows and watersheds info.
     write_file : str
         Name of the NetCDF file to be created.

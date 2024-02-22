@@ -7,8 +7,13 @@ import scipy.optimize
 from .mathematical_algorithms import calculate_average_distance, eval_covariance_bin
 from .utilities import general_ecf, initialize_nan_arrays
 
-def correction(flow_obs, flow_sim, x_points, y_points, iteration_count=10):
-
+def correction(
+    flow_obs: np.ndarray,
+    flow_sim: np.ndarray,
+    x_points: np.ndarray,
+    y_points: np.ndarray,
+    iteration_count: int = 10,
+) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
     Parameters
@@ -105,8 +110,12 @@ def correction(flow_obs, flow_sim, x_points, y_points, iteration_count=10):
 
 
 def initialize_ajusted_ECF_climate_variables(
-    flow_obs, flow_sim, x_points, y_points, iteration_count
-):
+    flow_obs: np.ndarray,
+    flow_sim: np.ndarray,
+    x_points: np.ndarray,
+    y_points: np.ndarray,
+    iteration_count: int,
+) -> tuple:
     """Initialize variables for adjusted ECF climate.
 
     Parameters
@@ -157,8 +166,12 @@ def initialize_ajusted_ECF_climate_variables(
 
 
 def calculate_ECF_stats(
-    distance, covariance, covariance_weights, valid_heights, valid_heights_count
-):
+    distance: np.ndarray,
+    covariance: np.ndarray,
+    covariance_weights: np.ndarray,
+    valid_heights: np.ndarray,
+    valid_heights_count: int,
+) -> tuple:
     """Calculate statistics for Empirical Covariance Function (ECF).
 
     Parameters
@@ -202,9 +215,13 @@ def calculate_ECF_stats(
 
 
 def initialize_stats_variables(
-    heights, covariances, standard_deviations, iteration_count=10
-):
-    """Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
+    heights: np.ndarray,
+    covariances: np.ndarray,
+    standard_deviations: np.ndarray,
+    iteration_count: int = 10,
+) -> tuple:
+    """
+    Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
 
     Parameters
     ----------
@@ -214,7 +231,7 @@ def initialize_stats_variables(
         Array of covariances.
     standard_deviations : np.ndarray
         Array of standard deviations.
-    iteration_count : int, optional
+    iteration_count : int
         Number of iterations, default is 10.
 
     Returns

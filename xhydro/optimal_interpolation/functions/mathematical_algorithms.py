@@ -1,20 +1,25 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
 import numpy as np
-import shapely
 
 
-def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
-    """Evaluate the covariance of a binomial distribution using a weighted approach.
+def eval_covariance_bin(
+    distances: np.ndarray,
+    values: np.ndarray,
+    errors: np.ndarray,
+    hmax_divider: int = 2,
+    iteration_count: int = 10,
+):
+    """Evaluate the covariance of a binomial distribution.
 
     Parameters
     ----------
     distances : np.ndarray
-        Distances for each data point.
+        Array of distances for each data point.
     values : np.ndarray
-        Values corresponding to each data point.
+        Array of values corresponding to each data point.
     errors : np.ndarray
-        Errors (uncertainties) associated with each value.
-    hmax_divider : int, optional
+        Array of errors (uncertainties) associated with each value.
+    hmax_divider : int
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
     iteration_count : int, optional
         Number of iterations for refining the covariance estimate. Defaults to 10.
@@ -87,16 +92,14 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
-def calculate_average_distance(
-    x_points: shapely.Point, y_points: shapely.Point
-) -> np.array:
+def calculate_average_distance(x_points: np.ndarray, y_points: np.ndarray) -> np.array:
     """Calculate the average Euclidean distance between points in 2D space.
 
     Parameters
     ----------
-    x_points : shapely.Point
+    x_points : np.ndarray
         List of x-coordinates of points.
-    y_points : shapely.Point
+    y_points : np.ndarray
         List of y-coordinates of corresponding points.
 
     Returns
@@ -122,17 +125,17 @@ def calculate_average_distance(
 
 
 def latlon_to_xy(
-    lat: shapely.Point, lon: shapely.Point, lat0: float = 0.0, lon0: float = 0.0
-) -> tuple[np.array, np.array]:
+    lat: np.ndarray, lon: np.ndarray, lat0: float = 0.0, lon0: float = 0.0
+) -> tuple[np.ndarray, np.ndarray]:
     """Transform the geographic coordinate into the cartesian coordinate.
 
     Will shift the position of the origin at a specific latitude and longitude if required.
 
     Parameters
     ----------
-    lat : shapey.Point
+    lat : np.ndarray
         List of latitude points.
-    lon : shapely.Point
+    lon : np.ndarray
         List of longitude points.
     lat0 : float
         Latitude at origin. Defaults to 0.0.
@@ -141,7 +144,7 @@ def latlon_to_xy(
 
     Returns
     -------
-    tuple[np.array, np.array]
+    tuple[np.ndarray, np.ndarray]
         Abscissas points and Ordinates points.
     """
     ray = 6371  # km

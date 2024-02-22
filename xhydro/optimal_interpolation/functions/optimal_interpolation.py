@@ -462,20 +462,20 @@ def retreive_data(args: dict) -> dict[str, Any]:
 
 
 def standardize_points_with_roots(
-    x: np.array, y: np.array, station_count: int, drained_area: np.array
-) -> tuple[np.array, np.array]:
+    x: np.ndarray, y: np.ndarray, station_count: int, drained_area: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Standardize points with roots based on drainage area.
 
     Parameters
     ----------
-    x : array-like
-        X-coordinates of the original points.
-    y : array-like
-        Y-coordinates of the original points.
+    x : np.ndarray
+        Array of x-coordinates of the original points.
+    y : np.ndarray
+        Array of y-coordinates of the original points.
     station_count : int
         The number of stations or points.
-    drained_area : array-like
-        Drainage areas corresponding to each station.
+    drained_area : np.ndarray
+        Array of drainage areas corresponding to each station.
 
     Returns
     -------
@@ -496,7 +496,7 @@ def standardize_points_with_roots(
     return x_points, y_points
 
 
-def parallelize_operation(args, parallelize: bool = True) -> np.array:
+def parallelize_operation(args: dict, parallelize: bool = True) -> np.array:
     """Run the interpolator on the cross-validation and manage parallelization.
 
     Parameters
