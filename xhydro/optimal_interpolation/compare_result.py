@@ -5,14 +5,19 @@ import sys
 
 import numpy as np
 
-import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
+# import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
 import xhydro.optimal_interpolation.functions.utilities as util
 from xhydro.modelling.obj_funcs import get_objective_function
 
 
-def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison=True):
-    """
-    Start the computation of the comparison method.
+def compare(
+    start_date: dt.datetime,
+    end_date: dt.datetime,
+    files: list[str],
+    percentile_to_plot: int = 50,
+    show_comparison: bool = True,
+):
+    """Start the computation of the comparison method.
 
     Parameters
     ----------
@@ -22,15 +27,10 @@ def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison
         End date of the analysis.
     files : list of str
         List of files path for getting observed, simulated, and leave-one-out cross-validation flows.
-    percentile_to_plot : int, optional
+    percentile_to_plot : int
         Percentile value to plot (default is 50).
-    show_comparison : bool, optional
+    show_comparison : bool
         Whether to display the comparison plots (default is True).
-
-    Returns
-    -------
-    None
-
     """
     time = (end_date - start_date).days
 
@@ -97,5 +97,5 @@ def compare(start_date, end_date, files, percentile_to_plot=50, show_comparaison
         kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "kge")
         kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "nse")
 
-    if show_comparaison:
+    if show_comparison:
         util.plot_results(kge, kge_l1o, nse, nse_l1o)

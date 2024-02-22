@@ -5,7 +5,7 @@ import logging
 from collections.abc import Sequence
 from pathlib import Path
 from shutil import copy
-from typing import List, Optional, Union
+from typing import Optional, Union
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
@@ -18,21 +18,35 @@ _default_cache_dir = user_cache_dir("xhydro_testing_data")
 LOGGER = logging.getLogger("XHYDRO")
 
 __all__ = [
+    "get_file",
     "get_local_testdata",
     "open_dataset",
-    "get_file",
 ]
 
 
+# FIXME: Flattered as I am to see xclim's code here, this should all be rewritten to use pooch for data fetching.
+
+
 def file_md5_checksum(fname):
-    """Check that the data respects the md5 checksum."""
+    """Check that the data respects the md5 checksum.
+
+    Parameters
+    ----------
+    fname : str
+        Path to the file to check.
+
+    Returns
+    -------
+    str
+        The md5 checksum of the file.
+    """
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
         hash_md5.update(f.read())
     return hash_md5.hexdigest()
 
 
-def get_local_testdata(
+def get_local_testdata(  # noqa
     patterns: Union[str, Sequence[str]],
     temp_folder: Union[str, Path],
     branch: str = "master",
@@ -56,6 +70,7 @@ def get_local_testdata(
     Returns
     -------
     Union[Path, List[Path]]
+        The matched files found in the cache dir.
     """
     temp_paths = []
 
@@ -123,7 +138,7 @@ def _get(
 
 
 # idea copied from xclim that borrowed it from xarray that was borrowed from Seaborn
-def get_file(
+def get_file(  # noqa
     name: Union[str, Path, Sequence[Union[str, Path]]],
     github_url: str = "https://github.com/hydrologie/xhydro-testdata",
     branch: str = "master",
@@ -147,6 +162,7 @@ def get_file(
     Returns
     -------
     Path or list of Path
+        The path to a fetched file or a list of paths to fetched files.
     """
     if isinstance(name, (str, Path)):
         name = [name]
@@ -188,26 +204,19 @@ def open_dataset(
         Name of the file containing the dataset. If no suffix is given, assumed to be netCDF ('.nc' is appended).
     suffix : str, optional
         If no suffix is given, assumed to be netCDF ('.nc' is appended). For no suffix, set "".
-    dap_url : str, optional
-        URL to OPeNDAP folder where the data is stored. If supplied, supersedes github_url.
     github_url : str
         URL to GitHub repository where the data is stored.
     branch : str, optional
         For GitHub-hosted files, the branch to download from.
-    cache : bool
-        If True, then cache data locally for use on subsequent calls.
     cache_dir : str or Path
         The directory in which to search for and write cached data.
-    \*\*kwds
+    \*\*kwds : dict
         For NetCDF files, keywords passed to xarray.open_dataset.
 
     Returns
     -------
     xr.Dataset
-
-    See Also
-    --------
-    xarray.open_dataset
+        The xarray Dataset object.
     """
     name = Path(name)
     cache_dir = Path(cache_dir)

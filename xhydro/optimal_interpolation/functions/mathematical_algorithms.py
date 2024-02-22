@@ -1,24 +1,38 @@
 """Set of mathematical algorithms required for the optimal interpolation."""
 
 import numpy as np
+import shapely
 
 
-def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_count=10):
-    """
-    Evaluate the covariance of a binomial distribution.
+def eval_covariance_bin(
+    distances: np.array,
+    values: np.array,
+    errors: np.array,
+    hmax_divider: int = 2,
+    iteration_count: int = 10,
+):
+    """Evaluate the covariance of a binomial distribution.
 
-    Parameters:
-    - distances (numpy array): Array of distances for each data point.
-    - values (numpy array): Array of values corresponding to each data point.
-    - errors (numpy array): Array of errors (uncertainties) associated with each value.
-    - hmax_divider (int, optional): Maximum distance for binning is set as hmax_divider times the
-      maximum distance in the input data. Defaults to 2.
-    - iteration_count (int, optional): Number of iterations for refining the covariance estimate.
-      Defaults to 10.
+    Parameters
+    ----------
+    distances : array-like
+        Array of distances for each data point.
+    values : array-like
+        Array of values corresponding to each data point.
+    errors : array-like
+        Array of errors (uncertainties) associated with each value.
+    hmax_divider : int
+        Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
+    iteration_count : int, optional
+        Number of iterations for refining the covariance estimate. Defaults to 10.
 
-    Returns:
-    tuple: A tuple containing arrays for heights, covariance, standard deviation, and row length.
+    Returns
+    -------
+    tuple
+        A tuple containing arrays for heights, covariance, standard deviation, and row length.
 
+    Notes
+    -----
     This function evaluates the covariance of a binomial distribution using a weighted approach.
     It takes three numpy arrays: distances, values, and errors, representing the distance, values,
     and uncertainties for each data point. It also accepts optional parameters:
@@ -27,7 +41,6 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
 
     The function returns a tuple containing arrays for heights, covariance, standard deviation, and row length.
     """
-
     # Step 1: Calculate weights based on errors
     weights = np.power(1 / errors, 2)
     weights = weights / np.sum(weights)
@@ -91,16 +104,22 @@ def eval_covariance_bin(distances, values, errors, hmax_divider=2, iteration_cou
     return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
-def calculate_average_distance(x_points, y_points):
-    """
-    Calculates the average Euclidean distance between points in 2D space.
+def calculate_average_distance(
+    x_points: shapely.Point, y_points: shapely.Point
+) -> np.array:
+    """Calculate the average Euclidean distance between points in 2D space.
 
-    Parameters:
-    - x_points (list): List of x-coordinates of points.
-    - y_points (list): List of y-coordinates of corresponding points.
+    Parameters
+    ----------
+    x_points : shapely.Point
+        List of x-coordinates of points.
+    y_points : shapely.Point
+        List of y-coordinates of corresponding points.
 
-    Returns:
-    float: The average Euclidean distance between the points.
+    Returns
+    -------
+    np.array
+        The average Euclidean distance between the points.
     """
     count = x_points.shape[1]
     average_distances = np.zeros((count, count))
@@ -119,23 +138,29 @@ def calculate_average_distance(x_points, y_points):
     return average_distances
 
 
-def latlon_to_xy(lat, lon, lat0=0, lon0=0):
-    """
-    Transform the geographic coordinate into the cartesian coordinate with a possibility of shifting the position
-    of the origin at a specific latitude and longitude.
+def latlon_to_xy(
+    lat: shapely.Point, lon: shapely.Point, lat0: float = 0.0, lon0: float = 0.0
+) -> tuple[np.array, np.array]:
+    """Transform the geographic coordinate into the cartesian coordinate.
+
+    Will shift the position of the origin at a specific latitude and longitude if required.
 
     Parameters
     ----------
-        lat (list): List of latitude points
-        lon (list) :  List of longitude points
-        lat0 (list), optional :  Latitude at origin
-        lon0 (list), optional :  Longitude at origin
+    lat : shapey.Point
+        List of latitude points.
+    lon : shapely.Point
+        List of longitude points.
+    lat0 : float
+        Latitude at origin. Defaults to 0.0.
+    lon0 : float
+        Longitude at origin. Defaults to 0.0.
+
     Returns
     -------
-        x : Abscissas points
-        y : Ordinates points
+    tuple[np.array, np.array]
+        Abscissas points and Ordinates points.
     """
-    """"""
     ray = 6371  # km
 
     lon = lon - lon0
@@ -154,17 +179,20 @@ def latlon_to_xy(lat, lon, lat0=0, lon0=0):
     return x, y
 
 
-def kge_prime(obs, sim):
+def kge_prime(obs, sim) -> float:
     """Calculate Kling-Gupta Efficiency metric.
+
     Parameters
     ----------
     obs : list
-        List of observed flows
+        List of observed flows.
     sim : list
-        List of simulated flows
+        List of simulated flows.
+
     Returns
     -------
-        float : The KGE efficiency coefficient
+    float
+        The KGE efficiency coefficient.
     """
     is_nan = np.isnan(obs) | np.isnan(sim)
 
@@ -187,18 +215,20 @@ def kge_prime(obs, sim):
     )
 
 
-def nash(obs, sim):
+def nash(obs, sim) -> float:
     """Calculate Nash–Sutcliffe efficiency metric.
 
     Parameters
     ----------
     obs : list
-        List of observed flows
+        List of observed flows.
     sim : list
-        List of simulated flows
+        List of simulated flows.
+
     Returns
     -------
-        float : The Nash–Sutcliffe efficiency metric
+    float
+        The Nash–Sutcliffe efficiency metric.
     """
     sim = np.ma.array(sim, mask=np.isnan(obs))
     obs = np.ma.array(obs, mask=np.isnan(obs))
