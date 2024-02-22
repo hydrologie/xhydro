@@ -7,6 +7,7 @@ import numpy as np
 import statsmodels
 import xarray as xr
 import xclim.indices.stats
+from scipy.stats.mstats import plotting_positions
 from statsmodels.tools import eval_measures
 
 __all__ = [
@@ -265,3 +266,112 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
     out.attrs = ds.attrs
 
     return out
+
+
+def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
+    """Calculate plotting positions for data.
+
+    Parameters
+    ----------
+    data_array : xarray DataArray
+        Input data.
+    alpha : float, optional
+        Plotting position parameter, by default 0.4.
+    beta : float, optional
+        Plotting position parameter, by default 0.4.
+    return_period : bool, optional
+        If True, return periods instead of probabilities, by default True.
+
+    Returns
+    -------
+    xarray DataArray
+        The data with plotting positions assigned.
+
+    Notes
+    -----
+    See scipy.stats.mstats.plotting_positions for typical values for alpha and beta. (0.4, 0.4) : approximately quantile unbiased (Cunnane).
+    """
+    data_copy = data_array.copy(deep=True)
+
+    def vec_plotting_positions(vec_data, alpha=0.4, beta=0.4):
+        """Calculate plotting positions for vectorized data.
+
+        Parameters
+        ----------
+        vec_data : ndarray
+            Input data, with time dimension first.
+        alpha : float, optional
+            Plotting position parameter.
+        beta : float, optional
+            Plotting position parameter.
+
+        Returns
+        -------
+        ndarray
+            Array with plotting positions assigned to valid data points,
+            and NaNs assigned to invalid data points.
+        """
+        out = []
+        if vec_data.ndim == 1:
+            valid = ~np.isnan(vec_data)
+            pp = plotting_positions(vec_data[valid], alpha, beta)
+
+            out = np.full_like(vec_data.astype(float), np.nan)
+            out[valid] = pp
+
+        else:
+            for data in vec_data:
+                valid = ~np.isnan(data)
+                pp = plotting_positions(data[valid], alpha, beta)
+
+                pp_full = np.full_like(data.astype(float), np.nan)
+                pp_full[valid] = pp
+
+                out.append(pp_full)
+        return out
+
+    pp = xr.apply_ufunc(
+        vec_plotting_positions,
+        data_array,
+        alpha,
+        beta,
+        input_core_dims=[["time"], [], []],
+        output_core_dims=[["time"]],
+    )
+
+    if return_period:
+        pp = -1 / (pp - 1)
+
+    for name in pp.data_vars:
+        pp = pp.rename({name: name + "_pp"})
+        pp[name] = data_copy[name]
+
+    return pp
+
+
+def _prepare_plots(params, xmin=1, xmax=10000, npoints=100, log=True):
+    """Prepare x-values for plotting frequency analysis results.
+
+    Parameters
+    ----------
+    params : xarray DataArray
+        Input data.
+    xmin : float, optional
+        Minimum x value, by default 1.
+    xmax : float, optional
+        Maximum x value, by default 10000.
+    npoints : int, optional
+        Number of x values, by default 100.
+    log : bool, optional
+        If True, return log-spaced x values, by default True.
+
+    Returns
+    -------
+    xarray DataArray
+        The data with plotting positions assigned.
+    """
+    if log:
+        x = np.logspace(np.log10(xmin), np.log10(xmax), npoints, endpoint=True)
+    else:
+        x = np.linspace(xmin, xmax, npoints)
+    return parametric_quantiles(params, x)
