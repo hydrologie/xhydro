@@ -4,6 +4,15 @@ import xhydro as xh
 import xhydro.testing.utils as xhu
 
 
+# FIXME: This test is not working
+def test_fake_hydrotel_project(tmp_path):
+    xhu.fake_hydrotel_project(tmp_path, "fake")
+    assert (tmp_path / "fake").exists()
+    assert (tmp_path / "fake" / "projet.csv").exists()
+    assert (tmp_path / "fake" / "simulation" / "simulation.csv").exists()
+    assert (tmp_path / "fake" / "output" / "output.csv").exists()
+
+
 @pytest.mark.requires_docs
 def test_publish_release_notes(tmp_path):
     temp_md_filename = tmp_path.joinpath("version_info.md")

@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 
 from xhydro.modelling.hydrological_modelling import (
+    HydrologicalModel,
     get_hydrological_model_inputs,
-    run_hydrological_model,
 )
 
 

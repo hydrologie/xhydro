@@ -17,10 +17,12 @@ from xscen.io import estimate_chunks, save_to_netcdf
 
 from xhydro.utils import health_checks
 
+from ._hm import HydrologicalModel
+
 __all__ = ["Hydrotel"]
 
 
-class Hydrotel:
+class Hydrotel(HydrologicalModel):
     """Class to handle Hydrotel simulations.
 
     Parameters
@@ -38,7 +40,7 @@ class Hydrotel:
     use_defaults : bool
         If True, use default configuration options loaded from xhydro/modelling/data/hydrotel_defaults/.
         If False, read the configuration options directly from the files in the project folder.
-    executable : str or os.PathLike, optional
+    executable : str or os.PathLike
         Command to run the simulation.
         On Windows, this should be the path to Hydrotel.exe.
 
@@ -84,11 +86,17 @@ class Hydrotel:
 
         if use_defaults is True:
             o = template
+
+            # If the keyword argument specifies the current simulation name, it will be used
             self.simulation_dir = (
                 self.project_dir
                 / "simulation"
-                / o["project_config"]["SIMULATION COURANTE"]
+                / (
+                    project_config.get("SIMULATION COURANTE", None)
+                    or o["project_config"]["SIMULATION COURANTE"]
+                )
             )
+
             self.config_files["simulation"] = self.simulation_dir / "simulation.csv"
             self.config_files["output"] = self.simulation_dir / "output.csv"
 
@@ -108,19 +116,27 @@ class Hydrotel:
             # Read the configuration files from disk
             o["project_config"] = _read_csv(self.config_files["project"])
 
-            # Either the file on disk or the keyword argument must specify the current simulation name
-            if "SIMULATION COURANTE" in project_config:
-                self.simulation_dir = (
-                    self.project_dir
-                    / "simulation"
-                    / project_config["SIMULATION COURANTE"]
+            if (
+                len(
+                    project_config.get("SIMULATION COURANTE", None)
+                    or o["project_config"]["SIMULATION COURANTE"]
                 )
-            else:
-                self.simulation_dir = (
-                    self.project_dir
-                    / "simulation"
-                    / o["project_config"]["SIMULATION COURANTE"]
+                == 0
+            ):
+                raise ValueError(
+                    "'SIMULATION COURANTE' must be specified in either the project configuration file or as a keyword argument for 'project_config'."
                 )
+
+            # If the keyword argument specifies the current simulation name, it will be used
+            self.simulation_dir = (
+                self.project_dir
+                / "simulation"
+                / (
+                    project_config.get("SIMULATION COURANTE", None)
+                    or o["project_config"]["SIMULATION COURANTE"]
+                )
+            )
+
             if not os.path.isdir(self.simulation_dir):
                 raise ValueError(
                     f"The {self.simulation_dir} folder does not exist in the project directory."
@@ -185,6 +201,10 @@ class Hydrotel:
                 / "simulation"
                 / self.project_config["SIMULATION COURANTE"]
             )
+            if not os.path.isdir(self.simulation_dir):
+                raise ValueError(
+                    f"The {self.simulation_dir} folder does not exist in the project directory."
+                )
 
         if simulation_config is not None:
             simulation_config = deepcopy(_fix_os_paths(_fix_dates(simulation_config)))
@@ -225,6 +245,9 @@ class Hydrotel:
         xr.Dataset
             The streamflow file, if 'dry_run' is False.
         """
+        if os.name == "nt" and Path(self.executable).suffix != ".exe":
+            raise ValueError("You must specify the path to Hydrotel.exe")
+
         # Perform basic checkups on the inputs
         self._basic_checks(**(xr_open_kwargs_in or {}))
 
@@ -503,7 +526,8 @@ class Hydrotel:
                 ds["streamflow"].attrs[attr] = orig_attrs[attr]
 
             # Adjust global attributes
-            del ds.attrs["initial_simulation_path"]
+            if "initial_simulation_path" in ds.attrs:
+                del ds.attrs["initial_simulation_path"]
             ds.attrs["Hydrotel_version"] = self.simulation_config[
                 "SIMULATION HYDROTEL VERSION"
             ]
@@ -545,7 +569,7 @@ def _fix_dates(d: dict):
     """Convert dates to the formatting required by HYDROTEL."""
     # Reformat dates
     for key in ["DATE DEBUT", "DATE FIN"]:
-        if key in d and not pd.isnull(d[key]):
+        if len(d.get(key, "")) > 0:
             d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
 
     for key in [

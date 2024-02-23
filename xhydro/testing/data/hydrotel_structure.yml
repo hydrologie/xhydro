@@ -1,6 +1,6 @@
 structure:
   _main:
-    - projet.csv
+    - SLNO.csv
   etat:
     -
   hgm:

@@ -2,6 +2,7 @@
 
 import os
 import re
+import shutil
 from io import StringIO
 from pathlib import Path
 from typing import Optional, TextIO, Union
@@ -11,8 +12,6 @@ import pandas as pd
 import xarray as xr
 import yaml
 from xclim.testing.helpers import test_timeseries as timeseries
-
-testing_data = Path(__file__).parent / "data"
 
 __all__ = [
     "fake_hydrotel_project",
@@ -24,8 +23,8 @@ def fake_hydrotel_project(
     directory: Union[str, os.PathLike],
     name: str,
     *,
-    meteo: Optional[Union[bool, xr.Dataset]] = None,
-    debit_aval: Optional[Union[bool, xr.Dataset]] = None,
+    meteo: Union[bool, xr.Dataset] = False,
+    debit_aval: Union[bool, xr.Dataset] = False,
 ):
     """Create a fake Hydrotel project in the given directory.
 
@@ -35,58 +34,41 @@ def fake_hydrotel_project(
         Directory where the project will be created.
     name : str
         Name of the project.
-    meteo : bool or xr.Dataset, optional
-        Fake meteo timeseries. If True, a 2-year timeseries of zeros (tasmin) and ones (tasmax, pr) is created. Alternatively, provide a Dataset.
-        Leave None to create a fake file.
-    debit_aval : bool or xr.Dataset, optional
-        Fake debit_aval timeseries. If True, a 2-year timeseries of zeros is created. Alternatively, provide a Dataset.
-        Leave None to create a fake file.
+    meteo : bool or xr.Dataset
+        Fake meteo timeseries. If True, a 2-year timeseries is created. Alternatively, provide a Dataset.
+        Leave as False to create a fake file.
+    debit_aval : bool or xr.Dataset
+        Fake debit_aval timeseries. If True, a 2-year timeseries is created. Alternatively, provide a Dataset.
+        Leave as False to create a fake file.
 
     Notes
     -----
-    Uses the directory structure specified in xhydro/testing/hydrotel_structure.yml.
-    Most files are fake and empty, except for the projet.csv, simulation.csv and output.csv files, which are filled with
-    default options taken from xhydro/modelling/data/hydrotel_defaults.yml. If their respective arguments are None,
-    the meteo/SLNO_meteo_GC3H.nc and simulation/simulation/resultat/debit_aval.nc files will also be fake.
+    Uses the directory structure specified in xhydro/testing/data/hydrotel_structure.yml.
+    Most files are fake, except for the projet.csv, simulation.csv and output.csv files, which are filled with
+    default options taken from xhydro/modelling/data/hydrotel_defaults/.
     """
-    project = Path(directory) / name
-    with open(testing_data / "hydrotel_structure.yml") as f:
+    project_dir = Path(directory) / name
+    with open(Path(__file__).parent / "data" / "hydrotel_structure.yml") as f:
         struc = yaml.safe_load(f)["structure"]
-    with open(
-        Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults.yml"
-    ) as f:
-        defaults = yaml.safe_load(f)
 
-    project.mkdir(exist_ok=True, parents=True)
+    default_csv = (
+        Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults"
+    )
+
+    project_dir.mkdir(exist_ok=True, parents=True)
     for k, v in struc.items():
         if k != "_main":
-            project.joinpath(k).mkdir(exist_ok=True, parents=True)
+            project_dir.joinpath(k).mkdir(exist_ok=True, parents=True)
             for file in v:
                 if file in ["simulation.csv", "output.csv"]:
-                    opt = defaults[f"{file.split('.')[0]}_options"]
-                    df = pd.DataFrame.from_dict(opt, orient="index")
-                    df = df.replace({None: ""})
-                    df.to_csv(
-                        project / k / file,
-                        sep=";",
-                        header=False,
-                        columns=[0],
-                    )
-                elif file is not None and Path(file).suffix != ".nc":
-                    (project / k / file).touch()
+                    shutil.copy(default_csv / file, project_dir / k / file)
+                elif file is not None and Path(file).suffix not in [".nc", ".config"]:
+                    (project_dir / k / file).touch()
     for file in struc["_main"]:
-        if file in ["projet.csv"]:
-            opt = defaults["project_options"]
-            df = pd.DataFrame.from_dict(opt, orient="index")
-            df = df.replace({None: ""})
-            df.to_csv(
-                project / file,
-                sep=";",
-                header=False,
-                columns=[0],
-            )
+        if file in ["SLNO.csv"]:
+            shutil.copy(default_csv / "project.csv", project_dir / file)
         elif file is not None:
-            (project / file).touch()
+            (project_dir / file).touch()
 
     # Create fake meteo and debit_aval files
     if isinstance(meteo, bool) and meteo:
@@ -117,10 +99,10 @@ def fake_hydrotel_project(
         for c in ["lat", "lon", "z"]:
             meteo[c] = meteo[c].expand_dims("stations")
     if isinstance(meteo, xr.Dataset):
-        meteo.to_netcdf(project / "meteo" / "SLNO_meteo_GC3H.nc")
+        meteo.to_netcdf(project_dir / "meteo" / "SLNO_meteo_GC3H.nc")
         cfg = pd.Series(
             {
-                "TYPE (STATION/GRID)": "STATION",
+                "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
                 "STATION_DIM_NAME": "stations",
                 "LATITUDE_NAME": "lat",
                 "LONGITUDE_NAME": "lon",
@@ -132,14 +114,14 @@ def fake_hydrotel_project(
             }
         )
         cfg.to_csv(
-            project / "meteo" / "SLNO_meteo_GC3H.nc.config",
+            project_dir / "meteo" / "SLNO_meteo_GC3H.nc.config",
             sep=";",
             header=False,
             columns=[0],
         )
     else:
-        (project / "meteo" / "SLNO_meteo_GC3H.nc").touch()
-        (project / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
+        (project_dir / "meteo" / "SLNO_meteo_GC3H.nc").touch()
+        (project_dir / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
 
     if isinstance(debit_aval, bool) and debit_aval:
         debit_aval = timeseries(
@@ -157,12 +139,18 @@ def fake_hydrotel_project(
             "units": "m3/s",
             "description": "Debit en aval du troncon",
         }
+        # Add attributes to the dataset
+        debit_aval.attrs = {
+            "initial_simulation_path": "path/to/initial/simulation",
+        }
     if isinstance(debit_aval, xr.Dataset):
         debit_aval.to_netcdf(
-            project / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
+            project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
         )
     else:
-        (project / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
+        (
+            project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
+        ).touch()
 
 
 def publish_release_notes(
