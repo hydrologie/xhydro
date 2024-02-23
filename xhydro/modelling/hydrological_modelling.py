@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-__all__ = ["run_hydrological_model"]
+__all__ = ["get_hydrological_model_inputs", "run_hydrological_model"]
 
 
 def run_hydrological_model(model_config: dict):

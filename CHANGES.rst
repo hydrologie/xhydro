@@ -2,7 +2,6 @@
 Changelog
 =========
 
-
 v0.4.0 (unreleased)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
@@ -13,6 +12,9 @@ New features and enhancements
 * Added a new set of functions to support creating and updating `pooch` registries, caching testing datasets from `hydrologie/xhydro-testdata`, and ensuring that testing datasets can be loaded into temporary directories. (:pull:`62`).
 * `xhydro` is now configured to use `pooch` to download and cache testing datasets from `hydrologie/xhydro-testdata`. (:pull:`62`).
 * `xhydro` is now `Semantic Versioning v2.0.0 <https://semver.org/spec/v2.0.0.html>`_ compliant. (:pull:`70`).
+* Added new functions to `xhydro.frequency_analysis.local` to calculate plotting positions and to prepare plots. (:pull:`87`).
+* `xscen` now supports Python3.12. (:pull:`99`).
+* `xscen` now supports `pandas` >= 2.2.0, `xarray` >= 2023.11.0, and `xclim` >= 0.47.0. (:pull:`99`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -31,6 +33,7 @@ Internal changes
     * Updated pre-commit hook versions to the latest available.
     * Formatting tools are now pinned to their pre-commit equivalents.
     * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
+* Added a few functions missing from the API to their respective modules via ``__all__``. (:pull:`99`).
 
 v0.3.0 (2023-12-01)
 -------------------

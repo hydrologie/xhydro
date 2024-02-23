@@ -25,7 +25,7 @@ algorithm.
 import numpy as np
 import xarray as xr
 
-__all__ = ["get_objective_function"]
+__all__ = ["get_objective_function", "transform_flows"]
 
 
 def get_objective_function(
