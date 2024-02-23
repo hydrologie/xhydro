@@ -4,8 +4,8 @@
 import numpy as np
 import pytest
 
+from xhydro.modelling import hydrological_model
 from xhydro.modelling.calibration import perform_calibration
-from xhydro.modelling.hydrological_modelling import DummyModel
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
 
@@ -50,7 +50,7 @@ def test_spotpy_calibration():
 
     # Test dummy model response
     model_config["parameters"] = [5, 5, 5]
-    qsim = _dummy_model(model_config)
+    qsim = hydrological_model(model_config).run()
     assert qsim["qsim"].values[3] == 3500.00
 
     # Also test to ensure SCEUA and take_minimize is required.

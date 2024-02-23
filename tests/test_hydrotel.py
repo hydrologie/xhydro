@@ -18,6 +18,7 @@ class TestHydrotel:
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
 
         model_config = dict(
+            model_name="Hydrotel",
             project_dir=tmpdir / "fake",
             project_file="SLNO.csv",
             use_defaults=True,
@@ -26,7 +27,6 @@ class TestHydrotel:
             output_config={"TMAX_JOUR": "1"},
         )
         ht = hydrological_model(
-            model_name="Hydrotel",
             model_config=model_config,
         )
 

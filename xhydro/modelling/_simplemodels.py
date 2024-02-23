@@ -24,6 +24,8 @@ class DummyModel(HydrologicalModel):
         Drainage area of the catchment.
     parameters : np.ndarray
         Model parameters, length 3.
+    qobs : np.ndarray, optional
+        Observed streamflow in m3/s.
     """
 
     def __init__(
@@ -32,6 +34,7 @@ class DummyModel(HydrologicalModel):
         temperature: xr.DataArray,
         drainage_area: float,
         parameters: np.ndarray,
+        qobs: np.ndarray = None,
     ):
         """Initialize the DummyModel object."""
         warnings.warn(
@@ -42,8 +45,9 @@ class DummyModel(HydrologicalModel):
         self.drainage_area = drainage_area
         self.parameters = parameters
         self.qsim = None
+        self.qobs = qobs
 
-    def run(self):
+    def run(self) -> xr.Dataset:
         """Run the Dummy model.
 
         Returns
@@ -74,7 +78,7 @@ class DummyModel(HydrologicalModel):
 
         return qsim
 
-    def get_input(self):
+    def get_input(self) -> xr.Dataset:
         """Return the input data for the Dummy model.
 
         Returns
@@ -91,7 +95,7 @@ class DummyModel(HydrologicalModel):
             attrs=dict(description="input data for the Dummy Model"),
         )
 
-    def get_streamflow(self):
+    def get_streamflow(self) -> xr.Dataset:
         """Return the simulated streamflow from the Dummy model.
 
         Returns
