@@ -2,7 +2,7 @@ name: xhydro-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.12
+  - python >=3.9,<3.13
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - numpy
@@ -13,7 +13,7 @@ dependencies:
   - spotpy
   - statsmodels
   - xarray
-  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
+  - xclim >=0.47.0
   - xscen >=0.7.1
   - pip
   - pip:
@@ -22,7 +22,7 @@ dependencies:
   - black ==24.1.1
   - blackdoc ==0.3.9
   - bump-my-version >=0.17.1
-  - coveralls >=3.3.1
+#  - coveralls >=3.3.1
   - flake8 >=7.0.0
   - furo
   - ipykernel
@@ -35,7 +35,8 @@ dependencies:
   - pooch
   - pre-commit >=3.3.2
   - pytest >=7.3.1
-  - pytest-cov >=4.0.0
+#  - pytest-cov >=4.0.0
+  - ruff >=0.2.0
   - sphinx
   - sphinx-autoapi
   - sphinx-codeautolink
@@ -48,3 +49,8 @@ dependencies:
   - flit
   # Notebooks
   - hvplot
+  - pip
+  - pip:
+    - coverage  # Not available in conda-forge for Python3.12
+    - coveralls
+    - pytest-cov >=4.0.0
