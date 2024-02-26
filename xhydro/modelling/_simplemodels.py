@@ -104,6 +104,6 @@ class DummyModel(HydrologicalModel):
             Simulated streamflow from the Dummy model, in xarray Dataset format.
         """
         if self.qsim is None:
-            self.run()
+            return self.run()
         else:
             return self.qsim

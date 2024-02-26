@@ -1,18 +1,62 @@
 from pathlib import Path
 
+import numpy as np
 import pytest
+import xarray as xr
+from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro as xh
 import xhydro.testing.utils as xhu
 
 
-# FIXME: This test is not working
-def test_fake_hydrotel_project(tmp_path):
-    xhu.fake_hydrotel_project(tmp_path, "fake")
-    assert (tmp_path / "fake").exists()
-    assert (tmp_path / "fake" / "projet.csv").exists()
-    assert (tmp_path / "fake" / "simulation" / "simulation.csv").exists()
-    assert (tmp_path / "fake" / "output" / "output.csv").exists()
+class TestFakeHydrotelProject:
+    def test_defaults(self, tmp_path):
+        xhu.fake_hydrotel_project(tmp_path, "fake")
+        assert (tmp_path / "fake").exists()
+        assert (tmp_path / "fake" / "SLNO.csv").exists()
+        assert (
+            tmp_path / "fake" / "simulation" / "simulation" / "simulation.csv"
+        ).exists()
+        assert (tmp_path / "fake" / "simulation" / "simulation" / "output.csv").exists()
+
+    def test_files(self, tmp_path):
+        xhu.fake_hydrotel_project(
+            tmp_path,
+            "fake",
+            meteo=True,
+            debit_aval=True,
+        )
+        # Open the files to check if they are valid
+        ds_meteo = xr.open_dataset(tmp_path / "fake" / "meteo" / "SLNO_meteo_GC3H.nc")
+        assert ds_meteo.time.size == 730
+        ds_debit_aval = xr.open_dataset(
+            tmp_path
+            / "fake"
+            / "simulation"
+            / "simulation"
+            / "resultat"
+            / "debit_aval.nc"
+        )
+        assert ds_debit_aval.time.size == 730
+
+    def test_custom(self, tmp_path):
+        meteo = timeseries(
+            np.zeros(365 * 3),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmin",
+            as_dataset=True,
+            units="degC",
+        )
+        xhu.fake_hydrotel_project(
+            tmp_path,
+            "fake",
+            meteo=meteo,
+        )
+        # Open the files to check if they are valid
+        ds_meteo = xr.open_dataset(tmp_path / "fake" / "meteo" / "SLNO_meteo_GC3H.nc")
+        assert ds_meteo.time.size == 1095
+        np.testing.assert_array_equal(ds_meteo.data_vars, ["tasmin"])
 
 
 @pytest.mark.requires_docs

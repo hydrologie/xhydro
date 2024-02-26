@@ -1,4 +1,5 @@
 import os
+import shutil
 from copy import deepcopy
 from pathlib import Path
 
@@ -6,6 +7,8 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from packaging.version import parse
+from xclim import __version__ as __xclim_version__
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.testing
@@ -196,7 +199,9 @@ class TestHydrotel:
         assert list(ds.data_vars) == ["streamflow"]
         np.testing.assert_array_equal(ds.dims, ["time", "station_id"])
         correct_attrs = {
-            "units": "m^3 s-1",
+            "units": (
+                "m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"
+            ),
             "description": "Streamflow at the outlet of the river reach",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
             "long_name": "Streamflow",
@@ -341,6 +346,19 @@ class TestHydrotel:
                 ):
                     ht.run(dry_run=True)
 
+    def test_copypaste(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        # Remove simulation.csv
+        os.remove(tmpdir / "fake" / "simulation" / "simulation" / "simulation.csv")
+        Hydrotel(
+            tmpdir / "fake",
+            "SLNO.csv",
+            use_defaults=True,
+        )
+        assert os.path.exists(
+            tmpdir / "fake" / "simulation" / "simulation" / "simulation.csv"
+        )
+
     def test_errors(self, tmpdir):
         # Missing project folder
         with pytest.raises(ValueError, match="The project folder does not exist."):
@@ -357,3 +375,26 @@ class TestHydrotel:
             match="'SIMULATION COURANTE' must be specified",
         ):
             Hydrotel(tmpdir / "fake", "SLNO.csv", use_defaults=False)
+
+    def test_bad_config(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        # overwrite output.csv with simulation.csv
+        shutil.copy(
+            tmpdir / "fake" / "simulation" / "simulation" / "simulation.csv",
+            tmpdir / "fake" / "simulation" / "simulation" / "output.csv",
+        )
+        with pytest.raises(
+            ValueError, match="configuration file on disk does not appear to be valid"
+        ):
+            Hydrotel(tmpdir / "fake", "SLNO.csv", use_defaults=False)
+
+    def test_bad_overwrite(self, tmpdir):
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake")
+        # overwrite output.csv with simulation.csv
+        with pytest.raises(
+            ValueError, match="Could not find the following keys in the template file"
+        ):
+            _overwrite_csv(
+                tmpdir / "fake" / "simulation" / "simulation" / "output.csv",
+                {"foo": "bar"},
+            )
