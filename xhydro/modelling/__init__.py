@@ -1,6 +1,6 @@
 """The Hydrotel Hydrological Model module.
 
-Prevents circular imports by importing in a very specific order.
+Prevent circular imports by importing in a very specific order.
 isort:skip_file
 """
 
