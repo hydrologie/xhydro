@@ -242,7 +242,7 @@ class SpotSetup:
         qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["qsim"].values
+        return qsim["streamflow"].values
 
     def evaluation(self):
         """Evaluation function for spotpy.
@@ -315,7 +315,7 @@ def perform_calibration(
     epsilon: float = 0.01,
     sampler_kwargs: Optional[dict] = None,
 ):
-    """Perform calibration using spotpy.
+    """Perform calibration using SPOTPY.
 
     This is the entrypoint for the model calibration. After setting-up the
     model_config object and other arguments, calling "perform_calibration" will
@@ -348,10 +348,10 @@ def perform_calibration(
             - "rsr" : Ratio of RMSE to standard deviation.
 
     bounds_high : np.array
-        High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        High bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
     bounds_low : np.array
-        Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        Low bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
     evaluations : int
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.

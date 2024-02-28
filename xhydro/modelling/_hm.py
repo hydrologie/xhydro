@@ -28,7 +28,7 @@ class HydrologicalModel(ABC):
         pass
 
     @abstractmethod
-    def get_input(self, **kwargs) -> xr.Dataset:
+    def get_inputs(self, **kwargs) -> xr.Dataset:
         r"""Get the input data for the hydrological model.
 
         Parameters

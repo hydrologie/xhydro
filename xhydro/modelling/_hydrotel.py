@@ -223,6 +223,7 @@ class Hydrotel(HydrologicalModel):
 
     def run(
         self,
+        check_missing: bool = False,
         dry_run: bool = False,
         xr_open_kwargs_in: dict = None,
         xr_open_kwargs_out: dict = None,
@@ -231,6 +232,10 @@ class Hydrotel(HydrologicalModel):
 
         Parameters
         ----------
+        check_missing : bool
+            If True, also checks for missing values in the dataset.
+            This can be time-consuming for large datasets, so it is False by default. However, note that Hydrotel
+            will not run if there are missing values in the input files.
         dry_run : bool
             If True, returns the command to run the simulation without actually running it.
         xr_open_kwargs_in : dict, optional
@@ -249,7 +254,7 @@ class Hydrotel(HydrologicalModel):
             raise ValueError("You must specify the path to Hydrotel.exe")
 
         # Perform basic checkups on the inputs
-        self._basic_checks(**(xr_open_kwargs_in or {}))
+        self._basic_checks(check_missing=check_missing, **(xr_open_kwargs_in or {}))
 
         if dry_run:
             return f"{self.executable} {self.config_files['project']} -t 1"
@@ -273,7 +278,7 @@ class Hydrotel(HydrologicalModel):
 
         return self.get_streamflow()
 
-    def get_input(
+    def get_inputs(
         self, return_config=False, **kwargs
     ) -> Union[xr.Dataset, tuple[xr.Dataset, dict]]:
         r"""Get the weather file from the simulation.
@@ -351,11 +356,15 @@ class Hydrotel(HydrologicalModel):
             **kwargs,
         )
 
-    def _basic_checks(self, **kwargs):
+    def _basic_checks(self, check_missing: bool = False, **kwargs):
         r"""Perform basic checkups on the inputs before running the simulation.
 
         Parameters
         ----------
+        check_missing : bool
+            If True, also checks for missing values in the dataset.
+            This can be time-consuming for large datasets, so it is False by default. However, note that Hydrotel
+            will not run if there are missing values in the input files.
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -363,11 +372,11 @@ class Hydrotel(HydrologicalModel):
         -----
         This function checks that:
             1. All files mentioned in the configuration exist and all expected entries are filled.
-            2. The dataset has the TIME and STATION (optional) dimensions, and LONGITUDE, LATITUDE, ELEVATION coordinates.
-            3. The dataset has TMIN (degC), TMAX (degC), and PRECIP (mm) variables, named as specified in the configuration.
-            4. The dataset has a standard calendar.
-            5. The frequency is uniform (i.e. all time steps are equally spaced).
-            6. The start and end dates are contained in the dataset.
+            2. The meteorological dataset has the dimensions, coordinates, and variables named in its configuration file.
+            3. The dataset has a standard calendar.
+            4. The frequency is uniform (i.e. all time steps are equally spaced).
+            5. The start and end dates are contained in the dataset.
+            6. The dataset is complete (i.e. no missing values).
 
         The name of the dimensions, coordinates, and variables are checked against the configuration file.
         """
@@ -405,7 +414,7 @@ class Hydrotel(HydrologicalModel):
                     )
 
         # Validate the weather file configuration vs. the weather file itself
-        ds, cfg = self.get_input(return_config=True, **kwargs)
+        ds, cfg = self.get_inputs(return_config=True, **kwargs)
         req = [
             "LATITUDE_NAME",
             "LONGITUDE_NAME",
@@ -467,7 +476,7 @@ class Hydrotel(HydrologicalModel):
         freq = freq.replace("24H", "D")
 
         # Check that the dataset is complete
-        missing = "missing_any"
+        missing = "missing_any" if check_missing else None
 
         health_checks(
             ds,

@@ -55,30 +55,40 @@ class DummyModel(HydrologicalModel):
         xr.Dataset
             Simulated streamflow from the Dummy model, in xarray Dataset format.
         """
-        qsim = np.empty(len(self.precip))
-        for t in range(0, len(self.precip)):
-            qsim[t] = (
-                (
-                    self.precip[t] * self.parameters[0]
-                    + abs(self.temperature[t]) * self.parameters[1]
-                )
-                * self.parameters[2]
-                * self.drainage_area
-            )
+        # Make sure that the input data is in the correct dtype
+        self.precip = self.precip.astype("float64")
+        self.temperature = self.temperature.astype("float64")
+        self.drainage_area = float(self.drainage_area)
+        self.parameters = np.array(self.parameters, dtype="float64")
 
-        time = pd.date_range("2024-01-01", periods=len(self.precip))
-        qsim = xr.Dataset(
-            data_vars=dict(
-                qsim=(["time"], qsim),
-            ),
-            coords=dict(time=time),
-            attrs=dict(description="streamflow simulated by the Dummy Model"),
+        out = (
+            (
+                self.precip * self.parameters[0]
+                + abs(self.temperature) * self.parameters[1]
+            )
+            * self.parameters[2]
+            * self.drainage_area
         )
+        time = pd.date_range("2024-01-01", periods=len(self.precip))
+
+        qsim = xr.DataArray(
+            out,
+            coords=[time],
+            dims=["time"],
+            attrs={
+                "description": "Streamflow simulated by the Dummy Model",
+                "standard_name": "outgoing_water_volume_transport_along_river_channel",
+                "long_name": "Streamflow",
+                "units": "m3 s-1",
+            },
+        )
+        qsim.name = "streamflow"
+        qsim = qsim.to_dataset()
         self.qsim = qsim
 
         return qsim
 
-    def get_input(self) -> xr.Dataset:
+    def get_inputs(self) -> xr.Dataset:
         """Return the input data for the Dummy model.
 
         Returns

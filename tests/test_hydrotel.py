@@ -80,7 +80,7 @@ class TestHydrotel:
             simulation_config=simulation_config,
         )
         if test in ["station", "grid"]:
-            ds = ht.get_input()
+            ds = ht.get_inputs()
             assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
             np.testing.assert_array_equal(ds.tasmin, np.zeros([1, 365 * 2]))
             np.testing.assert_array_equal(ds.tasmax.mean(), 1)
@@ -94,13 +94,13 @@ class TestHydrotel:
                 ValueError,
                 match="Both 'FICHIER GRILLE METEO' and 'FICHIER STATIONS METEO' are specified in the simulation configuration file.",
             ):
-                ht.get_input()
+                ht.get_inputs()
         else:
             with pytest.raises(
                 ValueError,
                 match="You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO'",
             ):
-                ht.get_input()
+                ht.get_inputs()
 
     @pytest.mark.parametrize("test", ["ok", "file", "health"])
     def test_basic(self, tmpdir, test):

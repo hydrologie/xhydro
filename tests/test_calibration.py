@@ -51,7 +51,7 @@ def test_spotpy_calibration():
     # Test dummy model response
     model_config["parameters"] = [5, 5, 5]
     qsim = hydrological_model(model_config).run()
-    assert qsim["qsim"].values[3] == 3500.00
+    assert qsim["streamflow"].values[3] == 3500.00
 
     # Also test to ensure SCEUA and take_minimize is required.
     best_parameters_sceua, best_simulation, best_objfun = perform_calibration(

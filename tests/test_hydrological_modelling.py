@@ -19,7 +19,7 @@ class TestHydrologicalModelling:
             "parameters": np.array([5, 5, 5]),
         }
         qsim = hydrological_model(model_config).run()
-        np.testing.assert_array_equal(qsim["qsim"].values[3], 3500.00)
+        np.testing.assert_array_equal(qsim["streamflow"].values[3], 3500.00)
 
     def test_import_unknown_model(self):
         """Test for unknown model"""
@@ -45,13 +45,13 @@ class TestHydrologicalModelRequirements:
     @pytest.mark.parametrize("model_name", ["Dummy", "Hydrotel"])
     def test_get_model_requirements(self, model_name):
         """Test for required inputs for models"""
-        expected_keys = {
-            "Dummy": 5,
-            "Hydrotel": 7,
-        }
+        expected_keys = {"Dummy": (6, 6), "Hydrotel": (8, 3)}
 
-        required_config = get_hydrological_model_inputs(model_name)
-        assert len(required_config.keys()) == expected_keys[model_name]
+        all_config, _ = get_hydrological_model_inputs(model_name)
+        assert len(all_config.keys()) == expected_keys[model_name][0]
+
+        all_config, _ = get_hydrological_model_inputs(model_name, required_only=True)
+        assert len(all_config.keys()) == expected_keys[model_name][1]
 
 
 class TestDummyModel:
@@ -65,7 +65,7 @@ class TestDummyModel:
             "parameters": np.array([5, 5, 5]),
         }
         dummy = hydrological_model(model_config)
-        ds_in = dummy.get_input()
+        ds_in = dummy.get_inputs()
         np.testing.assert_array_equal(ds_in.precip, model_config["precip"])
         np.testing.assert_array_equal(ds_in.temperature, model_config["temperature"])
         assert len(ds_in.time) == len(model_config["precip"])
@@ -81,6 +81,6 @@ class TestDummyModel:
         }
         dummy = hydrological_model(model_config)
         ds_out = dummy.get_streamflow()
-        np.testing.assert_array_equal(ds_out["qsim"].values[3], 3500.00)
+        np.testing.assert_array_equal(ds_out["streamflow"].values[3], 3500.00)
         assert dummy.qsim.equals(ds_out)
-        assert dummy.run().equals(ds_out)
+        assert dummy.get_streamflow().equals(ds_out)
