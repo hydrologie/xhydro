@@ -229,7 +229,7 @@ markers = [
 ]
 
 [tool.ruff]
-src = [""]
+src = ["xhydro"]
 line-length = 150
 target-version = "py38"
 exclude = [

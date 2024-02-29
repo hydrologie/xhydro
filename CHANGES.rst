@@ -30,12 +30,14 @@ Internal changes
     * `load_registry`: Loads installed (or custom) registry and returns dictionary
     * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
-* The cookiecutter has been updated to the latest commit (:pull:`70`):
+* The cookiecutter has been updated to the latest commit (:pull:`70`, :pull:`106`):
     * Added some workflows (Change file labelling, Cache cleaning, Dependency scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_).
     * The README has been updated to organize badges in a table, including a badge for the OpenSSF Scorecard.
     * Updated pre-commit hook versions to the latest available.
     * Formatting tools are now pinned to their pre-commit equivalents.
     * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
+    * Addressed a handful of misconfigurations in the workflows.
+    * Updated ruff to v0.2.0 and black to v24.2.0.
 * Added a few functions missing from the API to their respective modules via ``__all__``. (:pull:`99`).
 
 v0.3.0 (2023-12-01)

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from xhydro.modelling.calibration import perform_calibration
-from xhydro.modelling.hydrological_modelling import _dummy_model  # noqa
+from xhydro.modelling.hydrological_modelling import _dummy_model
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
 
