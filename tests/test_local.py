@@ -4,10 +4,8 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.local import (  # noqa
-    _get_plotting_positions,
-    _prepare_plots,
-)
+from xhydro.frequency_analysis.local import (_get_plotting_positions,  # noqa
+                                             _prepare_plots)
 
 
 class TestFit:

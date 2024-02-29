@@ -58,7 +58,6 @@ Any comments are welcome!
 """
 
 from copy import deepcopy
-
 # Import packages
 from typing import Optional
 
@@ -69,11 +68,9 @@ from spotpy import analyser
 from spotpy.parameter import Uniform
 
 from xhydro.modelling.hydrological_modelling import run_hydrological_model
-from xhydro.modelling.obj_funcs import (
-    _get_objfun_minimize_or_maximize,
-    _get_optimizer_minimize_or_maximize,
-    get_objective_function,
-)
+from xhydro.modelling.obj_funcs import (_get_objfun_minimize_or_maximize,
+                                        _get_optimizer_minimize_or_maximize,
+                                        get_objective_function)
 
 __all__ = ["perform_calibration"]
 

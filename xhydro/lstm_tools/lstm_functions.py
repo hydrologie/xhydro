@@ -5,22 +5,18 @@ import tensorflow as tf
 import tensorflow.keras.backend as k
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-from xhydro.lstm_tools.create_datasets import (
-    clean_nans_func,
-    clean_nans_func_local,
-    create_dataset_flexible,
-    create_dataset_flexible_local,
-    create_lstm_dataset,
-    create_lstm_dataset_local,
-)
-from xhydro.lstm_tools.LSTM_static import (
-    TrainingGenerator,
-    TrainingGeneratorLocal,
-    define_lstm_model_simple,
-    define_lstm_model_simple_local,
-    run_trained_model,
-    run_trained_model_local,
-)
+from xhydro.lstm_tools.create_datasets import (clean_nans_func,
+                                               clean_nans_func_local,
+                                               create_dataset_flexible,
+                                               create_dataset_flexible_local,
+                                               create_lstm_dataset,
+                                               create_lstm_dataset_local)
+from xhydro.lstm_tools.LSTM_static import (TrainingGenerator,
+                                           TrainingGeneratorLocal,
+                                           define_lstm_model_simple,
+                                           define_lstm_model_simple_local,
+                                           run_trained_model,
+                                           run_trained_model_local)
 
 
 def scale_dataset(
