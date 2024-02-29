@@ -4,9 +4,9 @@ from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
+
 # Special imports from xscen
-from xscen import (climatological_op, compute_deltas, ensemble_stats,
-                   produce_horizon)
+from xscen import climatological_op, compute_deltas, ensemble_stats, produce_horizon
 
 __all__ = [
     "climatological_op",

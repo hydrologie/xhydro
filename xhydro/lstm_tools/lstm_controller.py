@@ -3,14 +3,16 @@
 import os
 import tempfile
 
-from xhydro.lstm_tools.lstm_functions import (perform_initial_train,
-                                              perform_initial_train_local,
-                                              run_model_after_training,
-                                              run_model_after_training_local,
-                                              scale_dataset,
-                                              scale_dataset_local,
-                                              split_dataset,
-                                              split_dataset_local)
+from xhydro.lstm_tools.lstm_functions import (
+    perform_initial_train,
+    perform_initial_train_local,
+    run_model_after_training,
+    run_model_after_training_local,
+    scale_dataset,
+    scale_dataset_local,
+    split_dataset,
+    split_dataset_local,
+)
 
 
 def control_regional_lstm_training(

@@ -2,8 +2,10 @@
 
 import os
 
-from xhydro.lstm_tools.lstm_controller import (control_local_lstm_training,
-                                               control_regional_lstm_training)
+from xhydro.lstm_tools.lstm_controller import (
+    control_local_lstm_training,
+    control_regional_lstm_training,
+)
 
 
 class TestLstmModels:
