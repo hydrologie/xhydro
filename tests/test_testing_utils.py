@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 
-import xhydro as xh
 import xhydro.testing.utils as xhu
 
 
