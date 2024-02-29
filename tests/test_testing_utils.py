@@ -19,9 +19,6 @@ def test_publish_release_notes(tmp_path):
         changelog = f.read()
 
     assert changelog.startswith("# Changelog")
-    version = xh.__version__
-    vsplit = version.split(".")
-
     assert ":user:`" not in changelog
     assert ":issue:`" not in changelog
     assert ":pull:`" not in changelog
