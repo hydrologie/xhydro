@@ -20,6 +20,8 @@ New features and enhancements
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Added `pooch` as an installation dependency. (:pull:`62`).
+* `xhydro` now requires `xarray`>=2023.11.0, `xclim`>=0.48.2, `xscen`>=0.8.3, and, indirectly, `pandas`>=2.2.0. The main breaking change is in how yearly frequencies are called ('YS-' instead of 'AS-'). (:pull:`54`).
+* Functions that output a dict with keys as xrfreq (namely, ``xh.indicators.compute_indicators``) will now return the new nomenclature (e.g. "YS-JAN" instead of "AS-JAN"). (:pull:`54`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
