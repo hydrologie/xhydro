@@ -44,10 +44,10 @@ dependencies = [
   "pyyaml",
   "spotpy",
   "statsmodels",
-  "xarray",
-  "xclim>=0.47.0",
+  "xarray>=2023.11.0",
+  "xclim>=0.48.2",
   "xdatasets>=0.3.1",
-  "xscen>=0.7.1"
+  "xscen>=0.8.3"
 ]
 
 [project.optional-dependencies]
@@ -231,7 +231,7 @@ markers = [
 ]
 
 [tool.ruff]
-src = [""]
+src = ["xhydro"]
 line-length = 150
 target-version = "py38"
 exclude = [

@@ -71,11 +71,6 @@ jobs:
           create-args: >-
             mamba
             python=${{ matrix.python-version }}
-      - name: Downgrade intake-esm (for xscen) and xclim
-        if: matrix.python-version == '3.9'
-        run: |
-          micromamba install -y intake-esm=2023.11.10
-          micromamba install -y xclim=0.47.0
       - name: Conda and Mamba versions
         run: |
           mamba --version

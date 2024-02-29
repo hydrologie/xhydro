@@ -159,7 +159,7 @@ def get_yearly_op(
         "DEC",
     ]
     for i in timeargs:
-        freq = timeargs[i].get("freq", "AS-JAN")
+        freq = timeargs[i].get("freq", "YS-JAN")
         if not xc.core.calendar.compare_offsets(freq, "==", "YS"):
             raise ValueError(
                 f"Frequency {freq} is not supported. Please use a yearly frequency."

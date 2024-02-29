@@ -231,7 +231,7 @@ def publish_release_notes(
             changes = re.sub(search, replacement, changes)
 
     if not file:
-        return
+        return changes
     if isinstance(file, (Path, os.PathLike)):
         file = Path(file).open("w")
     print(changes, file=file)

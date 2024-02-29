@@ -27,6 +27,10 @@ repos:
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
+      - id: python-check-blanket-noqa
+      - id: python-no-eval
+      - id: python-no-log-warn
+      - id: python-use-type-annotations
       - id: rst-inline-touching-normal
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.2.0
@@ -61,7 +65,7 @@ repos:
     rev: v1.35.1
     hooks:
       - id: yamllint
-        args: ['--config-file', '.yamllint.yaml']
+        args: ['--config-file=.yamllint.yaml']
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.28.0
     hooks:

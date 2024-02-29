@@ -4,7 +4,7 @@ Changelog
 
 v0.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -15,10 +15,13 @@ New features and enhancements
 * Added new functions to `xhydro.frequency_analysis.local` to calculate plotting positions and to prepare plots. (:pull:`87`).
 * `xscen` now supports Python3.12. (:pull:`99`).
 * `xscen` now supports `pandas` >= 2.2.0, `xarray` >= 2023.11.0, and `xclim` >= 0.47.0. (:pull:`99`).
+* Added `xh.cc.sampled_indicators` to compute future indicators using a perturbation approach and random sampling. (:pull:`54`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Added `pooch` as an installation dependency. (:pull:`62`).
+* `xhydro` now requires `xarray`>=2023.11.0, `xclim`>=0.48.2, `xscen`>=0.8.3, and, indirectly, `pandas`>=2.2.0. The main breaking change is in how yearly frequencies are called ('YS-' instead of 'AS-'). (:pull:`54`).
+* Functions that output a dict with keys as xrfreq (namely, ``xh.indicators.compute_indicators``) will now return the new nomenclature (e.g. "YS-JAN" instead of "AS-JAN"). (:pull:`54`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -27,12 +30,14 @@ Internal changes
     * `load_registry`: Loads installed (or custom) registry and returns dictionary
     * `populate_testing_data`: Fetches the registry and optionally caches files at a different location (helpful for `pytest-xdist`).
 * Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings are formatted correctly. (:pull:`62`).
-* The cookiecutter has been updated to the latest commit (:pull:`70`):
+* The cookiecutter has been updated to the latest commit (:pull:`70`, :pull:`106`):
     * Added some workflows (Change file labelling, Cache cleaning, Dependency scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_).
     * The README has been updated to organize badges in a table, including a badge for the OpenSSF Scorecard.
     * Updated pre-commit hook versions to the latest available.
     * Formatting tools are now pinned to their pre-commit equivalents.
     * `actions-version-updater.yml` has been replaced by `dependabot <https://docs.github.com/en/code-security/dependabot/working-with-dependabot>`_.
+    * Addressed a handful of misconfigurations in the workflows.
+    * Updated ruff to v0.2.0 and black to v24.2.0.
 * Added a few functions missing from the API to their respective modules via ``__all__``. (:pull:`99`).
 
 v0.3.0 (2023-12-01)

@@ -11,6 +11,7 @@ Welcome to xHydro's documentation!
    usage
    notebooks/hydrological_modelling
    notebooks/local_frequency_analysis
+   notebooks/climate_change
    planification
    apidoc/modules
    contributing
