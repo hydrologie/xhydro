@@ -7,8 +7,6 @@ import pkgutil
 
 import pytest
 
-from xhydro import xhydro  # noqa: F401
-
 
 @pytest.fixture
 def response():
