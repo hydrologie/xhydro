@@ -6,10 +6,32 @@ import numpy as np
 import xhydro.optimal_interpolation.compare_result as cr
 import xhydro.optimal_interpolation.cross_validation as cv
 from xhydro.optimal_interpolation.functions.testdata import get_file
-
+import pooch
+from pathlib import Path
+from zupfile import ZipFile
 
 class Test_optimal_interpolation_integration:
+
     # Set Github URL for getting files for tests
+    GITHUB_URL = "https://github.com/Mayetea/xhydro-testdata"
+    BRANCH_OR_COMMIT_HASH = "optimal_interpolation"
+
+    test_data_path = pooch.retrieve(
+        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
+        known_hash="md5:1ab72270023366d0410eb6972d1e2656",
+    )
+    directory_to_extract_to = Path(test_data_path).parent
+    with ZipFile(test_data_path, 'r') as zip_ref:
+        zip_ref.extractall(directory_to_extract_to)
+
+    station_info_file = directory_to_extract_to / "Info_Station.csv"
+    corresponding_station_file = directory_to_extract_to / "Correspondance_Station.csv"
+    selected_station_file = directory_to_extract_to / "stations_retenues_validation_croisee.csv"
+    flow_obs_info_file = directory_to_extract_to / "A20_HYDOBS_TEST.nc"
+    flow_sim_info_file = directory_to_extract_to / "A20_HYDREP_TEST.nc"
+    flow_l1o_info_file = directory_to_extract_to / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc"
+
+    """
     git_url = "https://github.com/Mayetea/xhydro-testdata"
     branch = "optimal_interpolation"
     dataf = "data/optimal_interpolation/"
@@ -37,6 +59,7 @@ class Test_optimal_interpolation_integration:
         github_url=git_url,
         branch=branch,
     )
+    """
 
     # Make a list with these files paths, required for the code.
     files = [
