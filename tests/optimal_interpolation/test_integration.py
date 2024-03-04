@@ -16,13 +16,15 @@ class Test_optimal_interpolation_integration:
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
 
-
     test_data_path = pooch.retrieve(
         url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
-        known_hash="md5:1ab72270023366d0410eb6972d1e2656")
+        known_hash="md5:1ab72270023366d0410eb6972d1e2656",
+    )
 
-    directory_to_extract_to = Path(test_data_path).parent  # Extract to the same directory as the zip file
-    with ZipFile(test_data_path, 'r') as zip_ref:
+    directory_to_extract_to = Path(
+        test_data_path
+    ).parent  # Extract to the same directory as the zip file
+    with ZipFile(test_data_path, "r") as zip_ref:
         zip_ref.extractall(directory_to_extract_to)
 
     station_info_file = directory_to_extract_to / "Info_Station.csv"
