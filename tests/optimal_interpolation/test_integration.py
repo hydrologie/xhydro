@@ -4,26 +4,23 @@ from pathlib import Path
 
 import numpy as np
 import pooch
-from zupfile import ZipFile
 
 import xhydro.optimal_interpolation.compare_result as cr
 import xhydro.optimal_interpolation.cross_validation as cv
-from xhydro.optimal_interpolation.functions.testdata import get_file
 
 
 class Test_optimal_interpolation_integration:
 
     # Set Github URL for getting files for tests
-    GITHUB_URL = "https://github.com/Mayetea/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "optimal_interpolation"
+    GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
+    BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
 
     test_data_path = pooch.retrieve(
-        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
+        url=f"{GITHUB_URL}/blob/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
         known_hash="md5:1ab72270023366d0410eb6972d1e2656",
     )
+    pooch.Unzip(members=None, extract_dir=Path(test_data_path).parent)
     directory_to_extract_to = Path(test_data_path).parent
-    with ZipFile(test_data_path, "r") as zip_ref:
-        zip_ref.extractall(directory_to_extract_to)
 
     station_info_file = directory_to_extract_to / "Info_Station.csv"
     corresponding_station_file = directory_to_extract_to / "Correspondance_Station.csv"
