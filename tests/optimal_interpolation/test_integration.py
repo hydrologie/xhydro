@@ -1,6 +1,7 @@
 import datetime as dt
 import tempfile
 from pathlib import Path
+from zipfile import ZipFile
 
 import numpy as np
 import pooch
@@ -15,12 +16,14 @@ class Test_optimal_interpolation_integration:
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
 
+
     test_data_path = pooch.retrieve(
-        url=f"{GITHUB_URL}/blob/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
-        known_hash="md5:1ab72270023366d0410eb6972d1e2656",
-    )
-    pooch.Unzip(members=None, extract_dir=Path(test_data_path).parent)
-    directory_to_extract_to = Path(test_data_path).parent
+        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
+        known_hash="md5:1ab72270023366d0410eb6972d1e2656")
+
+    directory_to_extract_to = Path(test_data_path).parent  # Extract to the same directory as the zip file
+    with ZipFile(test_data_path, 'r') as zip_ref:
+        zip_ref.extractall(directory_to_extract_to)
 
     station_info_file = directory_to_extract_to / "Info_Station.csv"
     corresponding_station_file = directory_to_extract_to / "Correspondance_Station.csv"
@@ -33,36 +36,6 @@ class Test_optimal_interpolation_integration:
         directory_to_extract_to
         / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc"
     )
-
-    """
-    git_url = "https://github.com/Mayetea/xhydro-testdata"
-    branch = "optimal_interpolation"
-    dataf = "data/optimal_interpolation/"
-
-    # Prepare files. Get them on the public data repo.
-    station_info_file = get_file(
-        name=dataf + "Info_Station.csv", github_url=git_url, branch=branch
-    )
-    corresponding_station_file = get_file(
-        name=dataf + "Correspondance_Station.csv", github_url=git_url, branch=branch
-    )
-    selected_station_file = get_file(
-        name=dataf + "stations_retenues_validation_croisee.csv",
-        github_url=git_url,
-        branch=branch,
-    )
-    flow_obs_info_file = get_file(
-        name=dataf + "A20_HYDOBS_TEST.nc", github_url=git_url, branch=branch
-    )
-    flow_sim_info_file = get_file(
-        name=dataf + "A20_HYDREP_TEST.nc", github_url=git_url, branch=branch
-    )
-    flow_l1o_info_file = get_file(
-        name=dataf + "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc",
-        github_url=git_url,
-        branch=branch,
-    )
-    """
 
     # Make a list with these files paths, required for the code.
     files = [
