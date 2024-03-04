@@ -7,6 +7,7 @@ dependencies:
   # Main packages
   - cartopy
   - geopandas
+  - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
   - numpy
   - pooch >=1.8.0
