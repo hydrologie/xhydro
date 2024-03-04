@@ -29,7 +29,7 @@ if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
     # See conda-forge/esmf-feedstock#91 and readthedocs/readthedocs.org#4067
     os.environ["ESMFMKFILE"] = str(Path(os.__file__).parent.parent / "esmf.mk")
 
-import xhydro  # noqa
+import xhydro  # noqa: E402
 
 # -- General configuration ---------------------------------------------
 
@@ -109,7 +109,7 @@ author = "Thomas-Charles Fortier Filion"
 # the built documents.
 #
 # The short X.Y version.
-version = xhydro.__version__
+version = xhydro.__version__.split("-")[0]
 # The full version, including alpha/beta/rc tags.
 release = xhydro.__version__
 

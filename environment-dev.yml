@@ -2,7 +2,7 @@ name: xhydro-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.12
+  - python >=3.9,<3.13
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy
@@ -17,20 +17,19 @@ dependencies:
   - stackstac
   - statsmodels
   - tqdm
-  - xagg  # xdatasets dependency; Remove when xdatasets is installable via conda package
-  - xarray
-  - xclim >=0.47.0  # FIXME: Remove pin once our dependencies (xclim, xscen) support pandas 2.2.0
-  - xscen >=0.7.1
+  - xagg
+  - xarray >=2023.11.0
+  - xclim >=0.48.2
+  - xscen >=0.8.3
   - pip >=23.3.0
   - pip:
     - flake8-alphabetize>=0.0.21  # development dependency
-    - xdatasets
+    - xdatasets >=0.3.5
   # Dev
   - black ==24.1.1
   - blackdoc ==0.3.9
-  - bump-my-version >=0.17.1
-  - coverage >=6.2.2,<7.0.0
-  - coveralls >=3.3.1
+  - bump-my-version >=0.18.3
+#  - coveralls >=3.3.1
   - flake8 >=7.0.0
   - flake8-rst-docstrings>=0.3.0
   - furo
@@ -39,13 +38,15 @@ dependencies:
   - isort ==5.13.2
   - jupyter_client
   - nbsphinx
-  - nbval
+#  - nbval >=0.11.0
   - pandoc
   - planetary-computer
   - pooch
   - pre-commit >=3.3.2
   - pystac-client
-  - ruff >=0.1.9
+  - pytest >=8.1.0
+#  - pytest-cov >=4.0.0
+  - ruff >=0.2.0
   - sphinx
   - sphinx-autoapi
   - sphinx-codeautolink
@@ -55,10 +56,16 @@ dependencies:
   - stackstac
   - watchdog >=3.0.0
   # Testing
-  - pytest >=7.3.1
-  - pytest-cov >=4.0.0
+  - pytest >=8.1.0
+#  - pytest-cov >=4.0.0
   - tox >=4.5.1
   # Packaging
   - flit
   # Notebooks
   - hvplot
+  - pip
+  - pip:
+    - coverage  # Not available in conda-forge for Python3.12
+    - coveralls
+    - pytest-cov >=4.0.0
+    - nbval >=0.11.0

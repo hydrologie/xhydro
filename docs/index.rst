@@ -10,6 +10,7 @@ Welcome to xHydro's documentation!
    installation
    usage
    notebooks/local_frequency_analysis
+   notebooks/climate_change
    notebooks/gis
    planification
    apidoc/modules

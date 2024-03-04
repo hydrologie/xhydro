@@ -29,7 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  # "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology"
@@ -50,34 +50,32 @@ dependencies = [
   "stackstac",
   "statsmodels",
   "tqdm",
-  "xarray",
-  "xclim>=0.47.0",
-  "xdatasets>=0.3.1",
-  "xscen>=0.7.1"
+  "xarray>=2023.11.0",
+  "xclim>=0.48.2",
+  "xdatasets>=0.3.5",
+  "xscen>=0.8.3"
 ]
 
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "black==24.2.0",
-  "blackdoc==0.3.9",
-  "bump-my-version>=0.17.1",
-  "coverage>=6.2.2,<8.0.0",
-  "coveralls>=3.3.1",
+  "pip>=23.3.0",
+  "bump-my-version>=0.18.3",
+  "watchdog>=3.0.0",
+  "flake8>=7.0.0",
   "flake8-alphabetize>=0.0.21",
   "flake8-rst-docstrings>=0.3.0",
-  "flake8>=7.0.0",
   "flit>=3.9.0",
-  "isort==5.13.2",
-  "pip>=23.3.0",
-  "pooch",
-  "pre-commit>=3.3.2",
-  "pytest-cov>=4.0.0",
-  "pytest>=7.3.1",
-  "ruff>=0.1.9",
   "tox>=4.5.1",
-  "watchdog>=3.0.0",
-  "tox>=4.5.1"
+  "coverage>=6.2.2,<8.0.0",
+  "coveralls>=3.3.1",
+  "pytest>=8.1.0",
+  "pytest-cov>=4.0.0",
+  "black==24.2.0",
+  "blackdoc==0.3.9",
+  "isort==5.13.2",
+  "pre-commit>=3.3.2",
+  "ruff>=0.2.0"
 ]
 docs = [
   # Documentation and examples
@@ -87,7 +85,7 @@ docs = [
   "ipython",
   "jupyter_client",
   "nbsphinx",
-  "nbval",
+  "nbval >=0.11.0",
   "sphinx",
   "sphinx-autoapi",
   "sphinx-codeautolink",
@@ -115,7 +113,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.3"
+current_version = "0.3.4"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -240,7 +238,7 @@ markers = [
 ]
 
 [tool.ruff]
-src = [""]
+src = ["xhydro"]
 line-length = 150
 target-version = "py38"
 exclude = [
@@ -250,6 +248,11 @@ exclude = [
   "docs",
   "tests"
 ]
+
+[tool.ruff.format]
+line-ending = "auto"
+
+[tool.ruff.lint]
 ignore = [
   "D205",
   "D400",
@@ -263,28 +266,25 @@ select = [
   "W"
 ]
 
-[tool.ruff.flake8-bandit]
+[tool.ruff.lint.flake8-bandit]
 check-typed-exception = true
 
-[tool.ruff.format]
-line-ending = "auto"
-
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["xhydro"]
 case-sensitive = true
 detect-same-package = false
 lines-after-imports = 1
 no-lines-before = ["future", "standard-library"]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 15
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "xhydro/**/__init__.py" = ["F401", "F403"]
 "tests/**/*.py" = ["D100", "D101", "D102", "D103"]
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 max-doc-length = 180
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"

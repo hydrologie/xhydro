@@ -44,7 +44,13 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+            test.pypi.org:443
       - uses: actions/checkout@v4.1.1
       - name: Set up Python3
         uses: actions/setup-python@v5.0.0
@@ -57,7 +63,7 @@ jobs:
         run: |
           python -m flit build
       - name: Publish distribution 📦 to Test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.12
         with:
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true
