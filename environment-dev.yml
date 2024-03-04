@@ -44,8 +44,6 @@ dependencies:
   - pooch
   - pre-commit >=3.3.2
   - pystac-client
-  - pytest >=8.1.0
-#  - pytest-cov >=4.0.0
   - ruff >=0.2.0
   - sphinx
   - sphinx-autoapi
