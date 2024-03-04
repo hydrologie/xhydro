@@ -16,25 +16,33 @@ class Test_optimal_interpolation_integration:
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
 
-
+    # Get data with pooch
     test_data_path = pooch.retrieve(
         url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/optimal_interpolation/OI_data.zip",
-        known_hash="md5:1ab72270023366d0410eb6972d1e2656")
+        known_hash="md5:1ab72270023366d0410eb6972d1e2656",
+    )
 
-    directory_to_extract_to = Path(test_data_path).parent  # Extract to the same directory as the zip file
-    with ZipFile(test_data_path, 'r') as zip_ref:
+    # Extract to a cache path. Easier this way than with the pooch Unzip method, as that one forces the outputs to be
+    # a list of files including full path, which makes it harder to attribute the paths to each variable we need below.
+    directory_to_extract_to = Path(
+        test_data_path
+    ).parent  # Extract to the same directory as the zip file
+    with ZipFile(test_data_path, "r") as zip_ref:
         zip_ref.extractall(directory_to_extract_to)
 
-    station_info_file = directory_to_extract_to / "Info_Station.csv"
-    corresponding_station_file = directory_to_extract_to / "Correspondance_Station.csv"
-    selected_station_file = (
-        directory_to_extract_to / "stations_retenues_validation_croisee.csv"
+    # Read-in all the files and set to paths that we can access later.
+    station_info_file = directory_to_extract_to / "OI_data/Info_Station.csv"
+    corresponding_station_file = (
+        directory_to_extract_to / "OI_data/Correspondance_Station.csv"
     )
-    flow_obs_info_file = directory_to_extract_to / "A20_HYDOBS_TEST.nc"
-    flow_sim_info_file = directory_to_extract_to / "A20_HYDREP_TEST.nc"
+    selected_station_file = (
+        directory_to_extract_to / "OI_data/stations_retenues_validation_croisee.csv"
+    )
+    flow_obs_info_file = directory_to_extract_to / "OI_data/A20_HYDOBS_TEST.nc"
+    flow_sim_info_file = directory_to_extract_to / "OI_data/A20_HYDREP_TEST.nc"
     flow_l1o_info_file = (
         directory_to_extract_to
-        / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc"
+        / "OI_data/A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc"
     )
 
     # Make a list with these files paths, required for the code.
@@ -101,7 +109,6 @@ class Test_optimal_interpolation_integration:
             parallelize=False,
         )
 
-        # TODO: CHECK WHY SOME DAYS HAVE ALL NANS LIKE: result_flows[0][27]
         # Test some output flow values
         np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.05, 2)
         np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.4, 2)
