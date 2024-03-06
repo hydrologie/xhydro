@@ -463,7 +463,9 @@ def standardize_points_with_roots(
     return x_points, y_points
 
 
-def parallelize_operation(args: dict, parallelize: bool = False, max_cores: int = 1) -> np.ndarray:
+def parallelize_operation(
+    args: dict, parallelize: bool = False, max_cores: int = 1
+) -> np.ndarray:
     """Run the interpolator on the cross-validation and manage parallelization.
 
     Parameters
