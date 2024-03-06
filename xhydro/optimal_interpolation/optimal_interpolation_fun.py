@@ -51,12 +51,12 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     if isinstance(args, dict):
         if "x_obs" in args:
             cond = (
-                       np.array_equal(args["x_est"], oi_input["x_est"])
-                       and np.array_equal(args["y_est"], oi_input["y_est"])
-                   ) and (
-                       np.array_equal(args["x_obs"], oi_input["x_obs"])
-                       and np.array_equal(args["y_obs"], oi_input["y_obs"])
-                   )
+                np.array_equal(args["x_est"], oi_input["x_est"])
+                and np.array_equal(args["y_est"], oi_input["y_est"])
+            ) and (
+                np.array_equal(args["x_obs"], oi_input["x_obs"])
+                and np.array_equal(args["y_obs"], oi_input["y_obs"])
+            )
     if cond == 0:
         distance_obs_vs_obs = calculate_average_distance(
             oi_input["x_obs"], oi_input["y_obs"]
@@ -328,8 +328,7 @@ def execute_interpolation(
         percentiles=percentiles,
         iterations=iterations,
         parallelize=parallelize,
-        max_cores=max_cores
-
+        max_cores=max_cores,
     )
 
     # Write results to netcdf file
@@ -474,7 +473,7 @@ def parallelize_operation(
     percentiles,
     iterations,
     parallelize: bool = False,
-    max_cores: int = 1
+    max_cores: int = 1,
 ) -> np.ndarray:
     """Run the interpolator on the cross-validation and manage parallelization.
 
@@ -531,15 +530,18 @@ def parallelize_operation(
 
     # Need to create this to pass to the looping function due to the *p.map() for parallelism.
     # TODO : Try and find a way to make this more explicit instead of passing a dictionary.
-    args = dict({"filtered_dataset": filtered_dataset,
-                 "percentiles": percentiles,
-                 "ratio_var_bg": ratio_var_bg,
-                 "ecf_fun": ecf_fun,
-                 "par_opt": par_opt,
-                 "x_points": x_points,
-                 "y_points": y_points,
-                 "iterations": iterations,
-                 })
+    args = dict(
+        {
+            "filtered_dataset": filtered_dataset,
+            "percentiles": percentiles,
+            "ratio_var_bg": ratio_var_bg,
+            "ecf_fun": ecf_fun,
+            "par_opt": par_opt,
+            "x_points": x_points,
+            "y_points": y_points,
+            "iterations": iterations,
+        }
+    )
 
     # Parallel
     if parallelize:
