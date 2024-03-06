@@ -11,7 +11,7 @@ permissions:  # added using https://github.com/step-security/secure-repo
 jobs:
   cleanup:
     name: Cleanup
-    runs-on: ubuntu-latest<
+    runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:

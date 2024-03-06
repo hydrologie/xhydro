@@ -17,7 +17,7 @@ dependencies:
   - xscen >=0.8.3
   - pip
   - pip:
-    - xdatasets >=0.3.1
+    - xdatasets >=0.3.5
   # Dev
   - black ==24.1.1
   - blackdoc ==0.3.9
@@ -30,11 +30,11 @@ dependencies:
   - isort ==5.13.2
   - jupyter_client
   - nbsphinx
-  - nbval
+#  - nbval >=0.11.0
   - pandoc
   - pooch
   - pre-commit >=3.3.2
-  - pytest >=7.3.1
+  - pytest >=8.1.0
 #  - pytest-cov >=4.0.0
   - ruff >=0.2.0
   - sphinx
@@ -54,3 +54,4 @@ dependencies:
     - coverage  # Not available in conda-forge for Python3.12
     - coveralls
     - pytest-cov >=4.0.0
+    - nbval >=0.11.0
