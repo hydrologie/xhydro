@@ -1,14 +1,16 @@
 """Utilities required for managing data in the interpolation toolbox."""
 
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
-__all__ = ["plot_results",
-           "general_ecf",
-           "write_netcdf_flow_percentiles",
-           ]
+__all__ = [
+    "plot_results",
+    "general_ecf",
+    "write_netcdf_flow_percentiles",
+]
 
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):

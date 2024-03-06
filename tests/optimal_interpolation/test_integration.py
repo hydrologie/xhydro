@@ -2,11 +2,11 @@ import datetime as dt
 import tempfile
 from pathlib import Path
 from zipfile import ZipFile
-import xarray as xr
-import pandas as pd
 
 import numpy as np
+import pandas as pd
 import pooch
+import xarray as xr
 
 import xhydro.optimal_interpolation.compare_result as cr
 import xhydro.optimal_interpolation.cross_validation as cv
@@ -34,10 +34,15 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     # Read-in all the files and set to paths that we can access later.
     corresponding_station_file = directory_to_extract_to / "station_correspondence.nc"
-    selected_station_file = directory_to_extract_to / "stations_retenues_validation_croisee.csv"
+    selected_station_file = (
+        directory_to_extract_to / "stations_retenues_validation_croisee.csv"
+    )
     flow_obs_info_file = directory_to_extract_to / "A20_HYDOBS_TEST_corrected.nc"
     flow_sim_info_file = directory_to_extract_to / "A20_HYDREP_TEST_corrected.nc"
-    flow_l1o_info_file = directory_to_extract_to / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST_corrected.nc"
+    flow_l1o_info_file = (
+        directory_to_extract_to
+        / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST_corrected.nc"
+    )
 
     flow_obs = xr.open_dataset(flow_obs_info_file)
     flow_sim = xr.open_dataset(flow_sim_info_file)
@@ -164,7 +169,8 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
             crossvalidation_stations=self.crossvalidation_stations,
-            show_comparison=False)
+            show_comparison=False,
+        )
 
 
 class TestOptimalInterpolationIntegrationOriginalDEHFiles:
@@ -205,29 +211,54 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
     # Correct files to get them into the correct shape.
     df = pd.read_csv(station_info_file, sep=None, dtype=str)
     flow_obs = xr.open_dataset(flow_obs_info_file)
-    flow_obs = flow_obs.assign({'centroid_lat': ('station', df["Latitude Centroide BV"].astype(np.float32))})
-    flow_obs = flow_obs.assign({'centroid_lon': ('station', df["Longitude Centroide BV"].astype(np.float32))})
-    flow_obs = flow_obs.assign({'classement': ('station', df["Classement"].astype(np.float32))})
-    flow_obs = flow_obs.assign({'station_id': ('station', flow_obs["station_id"].values.astype(str))})
-    flow_obs = flow_obs.assign({'streamflow': (('station', 'time'), flow_obs["Dis"].values)})
+    flow_obs = flow_obs.assign(
+        {"centroid_lat": ("station", df["Latitude Centroide BV"].astype(np.float32))}
+    )
+    flow_obs = flow_obs.assign(
+        {"centroid_lon": ("station", df["Longitude Centroide BV"].astype(np.float32))}
+    )
+    flow_obs = flow_obs.assign(
+        {"classement": ("station", df["Classement"].astype(np.float32))}
+    )
+    flow_obs = flow_obs.assign(
+        {"station_id": ("station", flow_obs["station_id"].values.astype(str))}
+    )
+    flow_obs = flow_obs.assign(
+        {"streamflow": (("station", "time"), flow_obs["Dis"].values)}
+    )
 
     df = pd.read_csv(corresponding_station_file, sep=None, dtype=str)
     station_correspondence = xr.Dataset(
-        {'reach_id': ('station', df["troncon_id"]), "station_id": ("station", df["No.Station"])}
+        {
+            "reach_id": ("station", df["troncon_id"]),
+            "station_id": ("station", df["No.Station"]),
+        }
     )
 
     flow_sim = xr.open_dataset(flow_sim_info_file)
-    flow_sim = flow_sim.assign({'station_id': ('station', flow_sim["station_id"].values.astype(str))})
-    flow_sim = flow_sim.assign({'streamflow': (('station', 'time'), flow_sim["Dis"].values)})
-    flow_sim["station_id"].values[143] = 'SAGU99999'  # Forcing to change due to double value wtf.
-    flow_sim["station_id"].values[7] = 'BRKN99999'  # Forcing to change due to double value wtf.
+    flow_sim = flow_sim.assign(
+        {"station_id": ("station", flow_sim["station_id"].values.astype(str))}
+    )
+    flow_sim = flow_sim.assign(
+        {"streamflow": (("station", "time"), flow_sim["Dis"].values)}
+    )
+    flow_sim["station_id"].values[
+        143
+    ] = "SAGU99999"  # Forcing to change due to double value wtf.
+    flow_sim["station_id"].values[
+        7
+    ] = "BRKN99999"  # Forcing to change due to double value wtf.
 
     df_validation = pd.read_csv(selected_station_file, sep=None, dtype=str)
     crossvalidation_stations = list(df_validation["No_station"])
 
     flow_l1o = xr.open_dataset(flow_l1o_info_file)
-    flow_l1o = flow_l1o.assign({'station_id': ('station', flow_l1o["station_id"].values.astype(str))})
-    flow_l1o = flow_l1o.assign({'streamflow': (('percentile', 'station', 'time'), flow_l1o["Dis"].values)})
+    flow_l1o = flow_l1o.assign(
+        {"station_id": ("station", flow_l1o["station_id"].values.astype(str))}
+    )
+    flow_l1o = flow_l1o.assign(
+        {"streamflow": (("percentile", "station", "time"), flow_l1o["Dis"].values)}
+    )
     tt = flow_l1o["time"].dt.round(freq="D")
     flow_l1o = flow_l1o.assign_coords(time=tt.values)
 
@@ -350,4 +381,5 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
             crossvalidation_stations=self.crossvalidation_stations,
-            show_comparison=False)
+            show_comparison=False,
+        )

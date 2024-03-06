@@ -5,7 +5,10 @@ from functools import partial
 import numpy as np
 import scipy.optimize
 
-from xhydro.optimal_interpolation.mathematical_algorithms import calculate_average_distance, eval_covariance_bin
+from xhydro.optimal_interpolation.mathematical_algorithms import (
+    calculate_average_distance,
+    eval_covariance_bin,
+)
 from xhydro.optimal_interpolation.utilities import general_ecf
 
 

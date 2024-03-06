@@ -122,7 +122,10 @@ def calculate_average_distance(x_points: np.ndarray, y_points: np.ndarray) -> np
 
 
 def latlon_to_xy(
-    lat: np.ndarray, lon: np.ndarray, lat0: np.array = np.array([0.0]), lon0: np.array = np.array([0.0])
+    lat: np.ndarray,
+    lon: np.ndarray,
+    lat0: np.array = np.array([0.0]),
+    lon0: np.array = np.array([0.0]),
 ) -> tuple[np.ndarray, np.ndarray]:
     """Transform the geographic coordinate into the cartesian coordinate.
 

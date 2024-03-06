@@ -1,6 +1,7 @@
 """Perform the cross-validation for the optimal interpolation."""
 
 from typing import Optional
+
 import xarray as xr
 
 from xhydro.optimal_interpolation import optimal_interpolation_fun as opt
