@@ -329,7 +329,7 @@ def execute_interpolation(
         "percentiles": percentiles,
         "iterations": iterations,
     }
-    flow_quantiles = parallelize_operation(args, parallelize=parallelize)
+    flow_quantiles = parallelize_operation(args, parallelize=parallelize, max_cores=max_cores)
 
     # Write results to netcdf file
     util.write_netcdf_flow_percentiles(
