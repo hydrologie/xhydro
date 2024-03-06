@@ -51,12 +51,12 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     if isinstance(args, dict):
         if "x_obs" in args:
             cond = (
-                np.array_equal(args["x_est"], oi_input["x_est"])
-                and np.array_equal(args["y_est"], oi_input["y_est"])
-            ) and (
-                np.array_equal(args["x_obs"], oi_input["x_obs"])
-                and np.array_equal(args["y_obs"], oi_input["y_obs"])
-            )
+                       np.array_equal(args["x_est"], oi_input["x_est"])
+                       and np.array_equal(args["y_est"], oi_input["y_est"])
+                   ) and (
+                       np.array_equal(args["x_obs"], oi_input["x_obs"])
+                       and np.array_equal(args["y_obs"], oi_input["y_obs"])
+                   )
     if cond == 0:
         distance_obs_vs_obs = calculate_average_distance(
             oi_input["x_obs"], oi_input["y_obs"]
@@ -318,18 +318,18 @@ def execute_interpolation(
         iteration_count=iterations,
     )
 
-    # Create tuple with all info, required for the parallel processing.
-    args = {
-        "filtered_dataset": filtered_dataset,
-        "ecf_fun": ecf_fun,
-        "par_opt": par_opt,
-        "x_points": x_points,
-        "y_points": y_points,
-        "ratio_var_bg": ratio_var_bg,
-        "percentiles": percentiles,
-        "iterations": iterations,
-    }
-    flow_quantiles = parallelize_operation(args, parallelize=parallelize, max_cores=max_cores)
+    flow_quantiles = parallelize_operation(
+        filtered_dataset=filtered_dataset,
+        ecf_fun=ecf_fun,
+        par_opt=par_opt,
+        x_points=x_points,
+        y_points=y_points,
+        ratio_var_bg=ratio_var_bg,
+        percentiles=percentiles,
+        iterations=iterations,
+        parallelize=parallelize,
+        max_cores=max_cores
+    )
 
     # Write results to netcdf file
     util.write_netcdf_flow_percentiles(
@@ -464,14 +464,37 @@ def standardize_points_with_roots(
 
 
 def parallelize_operation(
-    args: dict, parallelize: bool = False, max_cores: int = 1
+    filtered_dataset: xr.Dataset,
+    ecf_fun,
+    par_opt,
+    x_points,
+    y_points,
+    ratio_var_bg,
+    percentiles,
+    iterations,
+    parallelize: bool = False,
+    max_cores: int = 1
 ) -> np.ndarray:
     """Run the interpolator on the cross-validation and manage parallelization.
 
     Parameters
     ----------
-    args : dict
-        A dictionary containing the necessary information for the interpolation.
+    filtered_dataset : xr.Dataset
+        Flow data from qobs and qsim aligned according to the validation stations required.
+    ecf_fun : str
+        The function to use for the empirical distribution correction.
+    par_opt : dict
+        Parameters for the ecf_fun function, calibrated beforehand.
+    x_points : np.ndarray
+        Array of x-coordinates of the transformed catchment locations.
+    y_points : np.ndarray
+        Array of y-coordinates of the transformed catchment locations.
+    ratio_var_bg : float
+        Ratio for background variance (default is 0.15).
+    percentiles : list(float), optional
+        List of percentiles to analyze (default is [0.25, 0.50, 0.75, 1.00]).
+    iterations : int
+        Number of iterations for the interpolation (default is 10).
     parallelize : bool
         Flag indicating whether to parallelize the interpolation.
     max_cores : int
@@ -496,14 +519,26 @@ def parallelize_operation(
        5. Collect the results and unzip the tuple returning from pool.map.
        6. Close the pool and return the parsed results.
     """
-    filtered_dataset = args["filtered_dataset"]
     station_count = len(filtered_dataset["centroid_lat"].values)
     time_range = len(filtered_dataset["time"].values)
-    percentiles = args["percentiles"]
 
     flow_quantiles = np.array(
         [np.empty((time_range, station_count)) * np.nan] * len(percentiles)
     )
+
+    station_count = len(filtered_dataset["centroid_lat"].values)
+
+    # Need to create this to pass to the looping function due to the *p.map() for parallelism.
+    # TODO : Try and find a way to make this more explicit instead of passing a dictionary.
+    args = dict({"filtered_dataset": filtered_dataset,
+                 "percentiles": percentiles,
+                 "ratio_var_bg": ratio_var_bg,
+                 "ecf_fun": ecf_fun,
+                 "par_opt": par_opt,
+                 "x_points": x_points,
+                 "y_points": y_points,
+                 "iterations": iterations,
+                 })
 
     # Parallel
     if parallelize:
