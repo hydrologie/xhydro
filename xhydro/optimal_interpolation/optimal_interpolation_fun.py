@@ -6,10 +6,9 @@ from multiprocessing import Pool
 from typing import Any
 
 import numpy as np
-from numpy import ndarray, dtype, floating
-
-from scipy.stats import norm
 import xarray as xr
+from numpy import dtype, floating, ndarray
+from scipy.stats import norm
 
 import xhydro.optimal_interpolation.ECF_climate_correction as ecf_cc  # noqa
 import xhydro.optimal_interpolation.mathematical_algorithms as ma
@@ -17,9 +16,10 @@ import xhydro.optimal_interpolation.utilities as util
 
 from .mathematical_algorithms import calculate_average_distance
 
-__all__ = ["optimal_interpolation",
-           "execute_interpolation",
-           ]
+__all__ = [
+    "optimal_interpolation",
+    "execute_interpolation",
+]
 
 
 def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
@@ -51,12 +51,12 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     if isinstance(args, dict):
         if "x_obs" in args:
             cond = (
-                       np.array_equal(args["x_est"], oi_input["x_est"])
-                       and np.array_equal(args["y_est"], oi_input["y_est"])
-                   ) and (
-                       np.array_equal(args["x_obs"], oi_input["x_obs"])
-                       and np.array_equal(args["y_obs"], oi_input["y_obs"])
-                   )
+                np.array_equal(args["x_est"], oi_input["x_est"])
+                and np.array_equal(args["y_est"], oi_input["y_est"])
+            ) and (
+                np.array_equal(args["x_obs"], oi_input["x_obs"])
+                and np.array_equal(args["y_obs"], oi_input["y_obs"])
+            )
     if cond == 0:
         distance_obs_vs_obs = calculate_average_distance(
             oi_input["x_obs"], oi_input["y_obs"]
@@ -82,7 +82,11 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     o_eo_j = np.tile(oi_input["var_obs"], (observed_count, 1))
     o_eo_i = np.tile(oi_input["var_obs"], (1, observed_count))
 
-    o_ij = (np.sqrt(o_eo_j) * np.sqrt(o_eo_i)) * np.eye(len(o_eo_j), len(o_eo_j[0])) / beo_i
+    o_ij = (
+        (np.sqrt(o_eo_j) * np.sqrt(o_eo_i))
+        * np.eye(len(o_eo_j), len(o_eo_j[0]))
+        / beo_i
+    )
 
     if cond == 0:
         distance_obs_vs_est = np.zeros((1, observed_count))
@@ -132,7 +136,9 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     return oi_output, args
 
 
-def loop_optimal_interpolation_stations(args: tuple[int, dict]) -> ndarray[Any, dtype[floating[Any]]]:
+def loop_optimal_interpolation_stations(
+    args: tuple[int, dict]
+) -> ndarray[Any, dtype[floating[Any]]]:
     """Apply optimal interpolation to a single validation site (station) for the selected time range.
 
     Parameters
@@ -177,7 +183,10 @@ def loop_optimal_interpolation_stations(args: tuple[int, dict]) -> ndarray[Any, 
 
     # Compute difference between the obs and sim log-transformed flows for the
     # calibration basins
-    difference = (selected_flow_obs[:, index_calibration] - selected_flow_sim[:, index_calibration])
+    difference = (
+        selected_flow_obs[:, index_calibration]
+        - selected_flow_sim[:, index_calibration]
+    )
     vsim_at_est = selected_flow_sim[:, index_validation]
 
     # Create and update dictionary for the interpolation input data. This object
@@ -274,11 +283,12 @@ def execute_interpolation(
     list
         A list containing the flow quantiles for each desired percentile.
     """
-    filtered_dataset = retrieve_data(flow_obs=flow_obs,
-                                     flow_sim=flow_sim,
-                                     station_correspondence=station_correspondence,
-                                     crossvalidation_stations=crossvalidation_stations
-                                     )
+    filtered_dataset = retrieve_data(
+        flow_obs=flow_obs,
+        flow_sim=flow_sim,
+        station_correspondence=station_correspondence,
+        crossvalidation_stations=crossvalidation_stations,
+    )
 
     # Project centroid lat/longs in a plane to get distances in km
     x, y = ma.latlon_to_xy(
@@ -289,7 +299,10 @@ def execute_interpolation(
     )
 
     x_points, y_points = standardize_points_with_roots(
-        x, y, len(filtered_dataset["station_id"].values), filtered_dataset["drainage_area"].values,
+        x,
+        y,
+        len(filtered_dataset["station_id"].values),
+        filtered_dataset["drainage_area"].values,
     )
 
     # create the weighting function parameters
@@ -329,11 +342,12 @@ def execute_interpolation(
     return flow_quantiles
 
 
-def retrieve_data(flow_obs: xr.Dataset,
-                  flow_sim: xr.Dataset,
-                  station_correspondence: xr.Dataset,
-                  crossvalidation_stations: list
-                  ) -> xr.Dataset:
+def retrieve_data(
+    flow_obs: xr.Dataset,
+    flow_sim: xr.Dataset,
+    station_correspondence: xr.Dataset,
+    crossvalidation_stations: list,
+) -> xr.Dataset:
     """Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
 
     Parameters
@@ -369,18 +383,24 @@ def retrieve_data(flow_obs: xr.Dataset,
         cv_station_id = crossvalidation_stations[i]
 
         # Get the station number from the obs database which has the same codification for station ids.
-        index_correspondence = np.where(station_correspondence["station_id"] == cv_station_id)[0][0]
+        index_correspondence = np.where(
+            station_correspondence["station_id"] == cv_station_id
+        )[0][0]
         station_code = station_correspondence["reach_id"][index_correspondence]
 
         # Search for data in the Qsim file
         index_in_sim = np.where(flow_sim["station_id"].values == station_code.data)[0]
         sup_sim = flow_sim["drainage_area"].values[index_in_sim]
-        selected_flow_sim[:, i] = flow_sim["streamflow"].isel(station=index_in_sim) / sup_sim
+        selected_flow_sim[:, i] = (
+            flow_sim["streamflow"].isel(station=index_in_sim) / sup_sim
+        )
 
         # Get the flows from the Qsim file
         index_in_obs = np.where(flow_obs["station_id"] == cv_station_id)[0]
         sup_obs = flow_obs["drainage_area"].values[index_in_obs]
-        selected_flow_obs[:, i] = flow_obs["streamflow"].isel(station=index_in_obs) / sup_obs
+        selected_flow_obs[:, i] = (
+            flow_obs["streamflow"].isel(station=index_in_obs) / sup_obs
+        )
         drainage_area[i] = sup_obs
         centroid_lon[i] = flow_obs["centroid_lon"][index_in_obs].values
         centroid_lat[i] = flow_obs["centroid_lat"][index_in_obs].values
@@ -389,14 +409,17 @@ def retrieve_data(flow_obs: xr.Dataset,
     selected_flow_obs = np.log(selected_flow_obs)
     selected_flow_sim = np.log(selected_flow_sim)
 
-    filtered_dataset = xr.Dataset({'station_id': ('station', crossvalidation_stations),
-                                   "centroid_lat": ("station", centroid_lat),
-                                   "centroid_lon": ("station", centroid_lon),
-                                   "flow_obs": (("time", "station"), selected_flow_obs),
-                                   "flow_sim": (("time", "station"), selected_flow_sim),
-                                   "time": ("time", flow_obs["time"].data),
-                                   "drainage_area": ("station", drainage_area),
-                                   })
+    filtered_dataset = xr.Dataset(
+        {
+            "station_id": ("station", crossvalidation_stations),
+            "centroid_lat": ("station", centroid_lat),
+            "centroid_lon": ("station", centroid_lon),
+            "flow_obs": (("time", "station"), selected_flow_obs),
+            "flow_sim": (("time", "station"), selected_flow_sim),
+            "time": ("time", flow_obs["time"].data),
+            "drainage_area": ("station", drainage_area),
+        }
+    )
 
     return filtered_dataset
 
@@ -470,7 +493,9 @@ def parallelize_operation(args: dict, parallelize: bool = True) -> np.ndarray:
     time_range = len(filtered_dataset["time"].values)
     percentiles = args["percentiles"]
 
-    flow_quantiles = np.array([np.empty((time_range, station_count)) * np.nan] * len(percentiles))
+    flow_quantiles = np.array(
+        [np.empty((time_range, station_count)) * np.nan] * len(percentiles)
+    )
 
     # Parallel
     if parallelize:
