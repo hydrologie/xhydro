@@ -89,6 +89,7 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
         x_est = oi_input["x_est"]
         y_est = oi_input["y_est"]
 
+        # TODO: Check to see if we can accelerate this calculation
         for i in range(estimated_count):
             for j in range(observed_count // 2):
                 distance_obs_vs_est[i, j] = np.mean(
@@ -243,8 +244,9 @@ def execute_interpolation(
     ratio_var_bg,
     percentiles,
     iterations,
-    parallelize,
     write_file,
+    parallelize: bool = False,
+    max_cores: int = 1,
 ):
     """Execute the main code, including setting constants to files, times, etc.
 
@@ -264,10 +266,12 @@ def execute_interpolation(
         Desired percentiles for flow quantiles.
     iterations : int
         The number of iterations for the interpolation.
-    parallelize : bool
-        Flag indicating whether to parallelize the interpolation.
     write_file : str
         Name of the NetCDF file to be created.
+    parallelize : bool
+        Flag indicating whether to parallelize the interpolation.
+    max_cores : int
+        Maximum number of cores to use for parallel processing.
 
     Returns
     -------
@@ -436,7 +440,7 @@ def standardize_points_with_roots(
     return x_points, y_points
 
 
-def parallelize_operation(args: dict, parallelize: bool = True) -> np.ndarray:
+def parallelize_operation(args: dict, parallelize: bool = False, max_cores: int = 1) -> np.ndarray:
     """Run the interpolator on the cross-validation and manage parallelization.
 
     Parameters
@@ -445,6 +449,8 @@ def parallelize_operation(args: dict, parallelize: bool = True) -> np.ndarray:
         A dictionary containing the necessary information for the interpolation.
     parallelize : bool
         Flag indicating whether to parallelize the interpolation.
+    max_cores : int
+        Maximum number of cores to use for parallel processing.
 
     Returns
     -------
@@ -475,6 +481,8 @@ def parallelize_operation(args: dict, parallelize: bool = True) -> np.ndarray:
     # Parallel
     if parallelize:
         processes_count = os.cpu_count() / 2 - 1
+        processes_count = min(processes_count, max_cores)
+
         p = Pool(int(processes_count))
         args_i = [(i, args) for i in range(0, station_count)]
         flow_quantiles_station = zip(

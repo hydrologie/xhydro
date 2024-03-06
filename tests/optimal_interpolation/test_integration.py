@@ -78,6 +78,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=False,
+            max_cores=1,
         )
 
         # Test some output flow values
@@ -107,6 +108,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=False,
+            max_cores=1,
         )
 
         # Test some output flow values
@@ -136,6 +138,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=True,
+            max_cores=16,
         )
 
         # Test some output flow values
@@ -261,6 +264,7 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=False,
+            max_cores=1,
         )
 
         # Test some output flow values
@@ -290,6 +294,7 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=False,
+            max_cores=1,
         )
 
         # Test some output flow values
@@ -319,6 +324,7 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             percentiles=self.percentiles,
             iterations=self.iterations,
             parallelize=True,
+            max_cores=16,
         )
 
         # Test some output flow values

@@ -30,6 +30,7 @@ def eval_covariance_bin(
     tuple
         Arrays for heights, covariance, standard deviation, and row length.
     """
+    # TODO: Check to see if np.cov can simplify some elements in this code.
     # Step 1: Calculate weights based on errors
     weights = np.power(1 / errors, 2)
     weights = weights / np.sum(weights)
@@ -102,6 +103,7 @@ def calculate_average_distance(x_points: np.ndarray, y_points: np.ndarray) -> np
     np.ndarray
         The average Euclidean distance between the points.
     """
+    # TODO: Check to see if GeoPy or haversine could work
     count = x_points.shape[1]
     average_distances = np.zeros((count, count))
 

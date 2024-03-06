@@ -18,6 +18,7 @@ def execute(
     percentiles: Optional[list[float]] = None,
     iterations: int = 10,
     parallelize: bool = False,
+    max_cores: int = 1,
 ):
     """Run the interpolation algorithm for cross-validation.
 
@@ -41,7 +42,8 @@ def execute(
         Number of iterations for the interpolation (default is 10).
     parallelize : bool
         Execute the profiler in parallel or in series (default is False).
-
+    max_cores : int
+        Maximum number of cores to use for parallel processing.
     Returns
     -------
     list
@@ -58,8 +60,9 @@ def execute(
         ratio_var_bg=ratio_var_bg,
         percentiles=percentiles,
         iterations=iterations,
-        parallelize=parallelize,
         write_file=write_file,
+        parallelize=parallelize,
+        max_cores=max_cores,
     )
 
     return results
