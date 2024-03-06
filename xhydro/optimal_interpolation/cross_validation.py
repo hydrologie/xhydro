@@ -1,17 +1,19 @@
 """Perform the cross-validation for the optimal interpolation."""
 
-import datetime as dt
-import pathlib
-from typing import Optional, Union
+from typing import Optional
+import xarray as xr
 
-from .functions import optimal_interpolation as opt
+from xhydro.optimal_interpolation import optimal_interpolation_fun as opt
+
+__all__ = ["execute"]
 
 
 def execute(
-    start_date: dt.datetime,
-    end_date: dt.datetime,
-    files: list[Union[str, pathlib.Path]],
-    write_file,
+    flow_obs: xr.Dataset,
+    flow_sim: xr.Dataset,
+    station_correspondence: xr.Dataset,
+    crossvalidation_stations: list,
+    write_file: str,
     ratio_var_bg: float = 0.15,
     percentiles: Optional[list[float]] = None,
     iterations: int = 10,
@@ -21,12 +23,14 @@ def execute(
 
     Parameters
     ----------
-    start_date : datetime.datetime
-        Start date of the analysis.
-    end_date : datetime.datetime
-        End date of the analysis.
-    files : list of str or pathlib.Path
-        List of files path for getting flows and watersheds info.
+    flow_obs : xr.Dataset
+        Streamflow and catchment properties dataset for observed data.
+    flow_sim : xr.Dataset
+        Streamflow and catchment properties dataset for simulated data.
+    station_correspondence: xr.Dataset
+        Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
+    crossvalidation_stations: list
+        Observed hydrometric dataset stations to be used in the cross-validation step.
     write_file : str
         Name of the NetCDF file to be created.
     ratio_var_bg : float
@@ -47,10 +51,10 @@ def execute(
         percentiles = [0.25, 0.50, 0.75, 1.00]
 
     results = opt.execute_interpolation(
-        start_date,
-        end_date,
-        time_range=(end_date - start_date).days + 1,
-        files=files,
+        flow_obs=flow_obs,
+        flow_sim=flow_sim,
+        station_correspondence=station_correspondence,
+        crossvalidation_stations=crossvalidation_stations,
         ratio_var_bg=ratio_var_bg,
         percentiles=percentiles,
         iterations=iterations,

@@ -5,8 +5,8 @@ from functools import partial
 import numpy as np
 import scipy.optimize
 
-from .mathematical_algorithms import calculate_average_distance, eval_covariance_bin
-from .utilities import general_ecf, initialize_nan_arrays
+from xhydro.optimal_interpolation.mathematical_algorithms import calculate_average_distance, eval_covariance_bin
+from xhydro.optimal_interpolation.utilities import general_ecf
 
 
 def correction(
@@ -41,9 +41,9 @@ def correction(
     difference = flow_sim - flow_obs
     time_range = np.shape(difference)[0]
 
-    heights, covariances, standard_deviations = initialize_nan_arrays(
-        (time_range, iteration_count), 3
-    )
+    heights = np.empty((time_range, iteration_count)) * np.nan
+    covariances = np.empty((time_range, iteration_count)) * np.nan
+    standard_deviations = np.empty((time_range, iteration_count)) * np.nan
 
     input_opt = {
         "hmax_divider": 2,
@@ -64,18 +64,18 @@ def correction(
             is_nan_horizontal = is_nan[: len(distance)]
             is_nan_vertical = is_nan_horizontal.reshape(1, len(distance))
 
-            distancePC = distance[~is_nan_horizontal]
-            distancePC = distancePC[:, ~is_nan_vertical[0, :]]
+            distance_pc = distance[~is_nan_horizontal]
+            distance_pc = distance_pc[:, ~is_nan_vertical[0, :]]
 
-            h_b, cov_b, std_b, NP = eval_covariance_bin(
-                distancePC,
+            h_b, cov_b, std_b, num_p = eval_covariance_bin(
+                distance_pc,
                 ecart_jour,
                 errors,
                 input_opt["hmax_divider"],
                 iteration_count,
             )
 
-            if len(NP[0]) >= 10:
+            if len(num_p[0]) >= 10:
                 heights[i, :] = h_b[0, 0:11]
                 covariances[i, :] = cov_b[0, 0:11]
                 standard_deviations[i, :] = std_b[0, 0:11]
@@ -109,62 +109,6 @@ def correction(
     )["x"]
 
     return ecf_fun, par_opt
-
-
-def initialize_ajusted_ECF_climate_variables(
-    flow_obs: np.ndarray,
-    flow_sim: np.ndarray,
-    x_points: np.ndarray,
-    y_points: np.ndarray,
-    iteration_count: int,
-) -> tuple:
-    """Initialize variables for adjusted ECF climate.
-
-    Parameters
-    ----------
-    flow_obs : np.ndarray
-        Array of observed flow data.
-    flow_sim : np.ndarray
-        Array of simulated flow data.
-    x_points : np.ndarray
-        X-coordinate points for stations.
-    y_points : np.ndarray
-        Y-coordinate points for stations.
-    iteration_count : int
-        Number of iterations for the interpolation.
-
-    Returns
-    -------
-    tuple
-        A tuple containing the following:
-        - difference: Difference between simulated and observed flows.
-        - station_count: Number of stations.
-        - time_range: Number of time steps in the data.
-        - heights: Array to store heights.
-        - covariances: Array to store covariances.
-        - standard_deviations: Array to store standard deviations.
-    """
-    difference = flow_sim - flow_obs
-
-    station_count = np.shape(x_points)[1]
-    time_range = np.shape(difference)[0]
-
-    heights = np.empty((time_range, iteration_count))
-    covariances = np.empty((time_range, iteration_count))
-    standard_deviations = np.empty((time_range, iteration_count))
-
-    heights[:, :] = np.nan
-    covariances[:, :] = np.nan
-    standard_deviations[:, :] = np.nan
-
-    return (
-        difference,
-        station_count,
-        time_range,
-        heights,
-        covariances,
-        standard_deviations,
-    )
 
 
 def calculate_ECF_stats(

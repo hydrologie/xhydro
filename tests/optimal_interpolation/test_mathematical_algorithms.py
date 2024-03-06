@@ -1,6 +1,6 @@
 import numpy as np
 
-import xhydro.optimal_interpolation.functions.mathematical_algorithms as ma
+import xhydro.optimal_interpolation.mathematical_algorithms as ma
 
 
 def test_calculate_average_distance():

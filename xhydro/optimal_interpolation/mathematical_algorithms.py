@@ -60,16 +60,10 @@ def eval_covariance_bin(
     cl = np.unique(np.quantile(distances, quantiles))
 
     # Initialize arrays for results
-    returned_covariance = np.empty((1, iteration_count))
-    returned_heights = np.empty((1, iteration_count))
-    returned_standard = np.empty((1, iteration_count))
-    returned_row_length = np.empty((1, iteration_count))
-
-    # Set initial values to NaN
-    returned_covariance[:, :] = np.nan
-    returned_heights[:, :] = np.nan
-    returned_standard[:, :] = np.nan
-    returned_row_length[:, :] = np.nan
+    returned_covariance = np.empty((1, iteration_count)) * np.nan
+    returned_heights = np.empty((1, iteration_count)) * np.nan
+    returned_standard = np.empty((1, iteration_count)) * np.nan
+    returned_row_length = np.empty((1, iteration_count)) * np.nan
 
     # Step 6: Iterate over distance bins
     for i in range(0, len(cl) - 1):
@@ -126,7 +120,7 @@ def calculate_average_distance(x_points: np.ndarray, y_points: np.ndarray) -> np
 
 
 def latlon_to_xy(
-    lat: np.ndarray, lon: np.ndarray, lat0: float = 0.0, lon0: float = 0.0
+    lat: np.ndarray, lon: np.ndarray, lat0: np.array = np.array([0.0]), lon0: np.array = np.array([0.0])
 ) -> tuple[np.ndarray, np.ndarray]:
     """Transform the geographic coordinate into the cartesian coordinate.
 
@@ -138,9 +132,9 @@ def latlon_to_xy(
         List of latitude points.
     lon : np.ndarray
         List of longitude points.
-    lat0 : float
+    lat0 : array-like
         Latitude at origin. Defaults to 0.0.
-    lon0 : float
+    lon0 : array-like
         Longitude at origin. Defaults to 0.0.
 
     Returns

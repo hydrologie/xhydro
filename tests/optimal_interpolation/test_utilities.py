@@ -1,21 +1,6 @@
 import numpy as np
 
-import xhydro.optimal_interpolation.functions.utilities as util
-
-
-def test_convert_tuple_to_dict():
-    tuple_to_convert = [["test", 0], [1, "test"]]
-    assert util.convert_list_to_dict(tuple_to_convert) == {"test": 0, 1: "test"}
-
-
-def test_initialize_nan_arrays():
-    dimensions = (2, 3)
-    quantities = 4
-    return_values = util.initialize_nan_arrays(dimensions, quantities)
-
-    assert len(return_values) == quantities
-    assert len(return_values[0]) == 2
-    assert len(return_values[0][0]) == 3
+import xhydro.optimal_interpolation.utilities as util
 
 
 def test_general_ecf():

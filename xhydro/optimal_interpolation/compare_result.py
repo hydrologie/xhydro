@@ -1,20 +1,21 @@
 """Compare results between simulations and observations."""
 
-import datetime as dt
-import pathlib
 import sys
-from typing import Union
-
+import xarray as xr
 import numpy as np
 
-import xhydro.optimal_interpolation.functions.utilities as util
+import xhydro.optimal_interpolation.utilities as util
 from xhydro.modelling.obj_funcs import get_objective_function
+
+__all__ = ["compare"]
 
 
 def compare(
-    start_date: dt.datetime,
-    end_date: dt.datetime,
-    files: list[Union[str, pathlib.Path]],
+    flow_obs: xr.Dataset,
+    flow_sim: xr.Dataset,
+    flow_l1o: xr.Dataset,
+    station_correspondence: xr.Dataset,
+    crossvalidation_stations: list,
     percentile_to_plot: int = 50,
     show_comparison: bool = True,
 ):
@@ -22,40 +23,25 @@ def compare(
 
     Parameters
     ----------
-    start_date : datetime
-        Start date of the analysis.
-    end_date : datetime
-        End date of the analysis.
-    files : list of str or pathlib.Path
-        List of files path for getting observed, simulated, and leave-one-out cross-validation flows.
+    flow_obs : xr.Dataset
+        Streamflow and catchment properties dataset for observed data.
+    flow_sim : xr.Dataset
+        Streamflow and catchment properties dataset for simulated data.
+    flow_l1o : xr.Dataset
+        Streamflow and catchment properties dataset for simulated leave-one-out cross-validation results.
+    station_correspondence: xr.Dataset
+        Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
+    crossvalidation_stations: list
+        Observed hydrometric dataset stations to be used in the cross-validation step.
     percentile_to_plot : int
         Percentile value to plot (default is 50).
     show_comparison : bool
         Whether to display the comparison plots (default is True).
     """
-    time = (end_date - start_date).days
-
-    station_validation, station_mapping, obs_data, sim_data, l1o_data = util.load_files(
-        files
-    )
-
-    # Read station id
-    stations_id = obs_data["station_id"]
-    sections_id = sim_data["station_id"]
-    l1o_stations_id = l1o_data["station_id"]
-
-    # Read drainage area
-    da_obs = obs_data.drainage_area
-    da_sim = sim_data.drainage_area
-    da_l1o = l1o_data.drainage_area
-
-    # Read discharge percentiles
-    dis_obs = obs_data.Dis
-    dis_sim = sim_data.Dis
-    dis_l1o = l1o_data.Dis
+    time_range = len(flow_obs["time"].values)
 
     # Read percentiles list (which percentile thresholds were used)
-    percentile = l1o_data.percentile
+    percentile = flow_l1o["percentile"]
 
     # Find position of the desired percentile
     idx_pct = np.where(percentile == percentile_to_plot)[0]
@@ -66,37 +52,46 @@ def compare(
              in percent (i.e. 50th percentile = 50)"
         )
 
-    time_range = int(time)
-    station_count = len(station_validation)
-    debit_sim, debit_obs, debit_l1o = util.initialize_nan_arrays(
-        (time_range, station_count), 3
-    )
+    station_count = len(crossvalidation_stations)
+    selected_flow_sim = np.empty((time_range, station_count)) * np.nan
+    selected_flow_obs = np.empty((time_range, station_count)) * np.nan
+    selected_flow_l1o = np.empty((time_range, station_count)) * np.nan
 
     for i in range(0, station_count):
         print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
+        # For each validation station:
+        cv_station_id = crossvalidation_stations[i]
 
-        station_id = station_validation[i][0]
-        associate_section = util.find_station_section(station_mapping, station_id)
+        # Get the station number from the obs database which has the same codification for station ids.
+        index_correspondence = np.where(station_correspondence["station_id"] == cv_station_id)[0][0]
+        station_code = station_correspondence["reach_id"][index_correspondence]
 
-        idx_section = util.find_index(sections_id, "station_id", associate_section)
-        idx_stat = util.find_index(stations_id, "station_id", station_id)
-        idx_stat_l1o = util.find_index(l1o_stations_id, "station_id", station_id)
+        # Search for data in the Qsim file
+        index_in_sim = np.where(flow_sim["station_id"].values == station_code.data)[0]
+        sup_sim = flow_sim["drainage_area"].values[index_in_sim]
+        selected_flow_sim[:, i] = flow_sim["streamflow"].isel(station=index_in_sim) / sup_sim
 
-        sup_sim = da_sim[idx_section].item()
-        sup_obs = da_obs[idx_stat].item()
-        sup = da_l1o[idx_stat_l1o].item()
+        # Get data in Qobs file
+        index_in_obs = np.where(flow_obs["station_id"] == cv_station_id)[0]
+        sup_obs = flow_obs["drainage_area"].values[index_in_obs]
+        selected_flow_obs[:, i] = flow_obs["streamflow"].isel(station=index_in_obs) / sup_obs
 
-        debit_sim[:, i] = dis_sim[idx_section, 0:time_range].values[:] / sup_sim
-        debit_obs[:, i] = dis_obs[idx_stat, 0:time_range].values[:] / sup_obs
-        debit_l1o[:, i] = dis_l1o[idx_pct, idx_stat_l1o, 0:time_range].values[:] / sup
+        # Get data in Leave one out file
+        index_in_l1o = np.where(flow_l1o["station_id"] == cv_station_id)[0]
+        sup_l1o = flow_obs["drainage_area"].values[index_in_l1o]
+        selected_flow_l1o[:, i] = flow_l1o["streamflow"].isel(station=index_in_l1o, percentile=idx_pct).squeeze() / sup_l1o
 
-    kge, nse, kge_l1o, nse_l1o = util.initialize_nan_arrays(station_count, 4)
+    # Prepare the arrays for kge results
+    kge = np.empty(station_count) * np.nan
+    nse = np.empty(station_count) * np.nan
+    kge_l1o = np.empty(station_count) * np.nan
+    nse_l1o = np.empty(station_count) * np.nan
 
     for n in range(0, station_count):
-        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], "kge")
-        kge[n] = get_objective_function(debit_obs[:, n], debit_sim[:, n], "nse")
-        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "kge")
-        kge[n] = get_objective_function(debit_obs[:, n], debit_l1o[:, n], "nse")
+        kge[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "kge")
+        nse[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "nse")
+        kge_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "kge")
+        nse_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "nse")
 
     if show_comparison:
         util.plot_results(kge, kge_l1o, nse, nse_l1o)
