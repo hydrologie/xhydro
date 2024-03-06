@@ -150,8 +150,10 @@ class Hydrotel(HydrologicalModel):
 
             # Check that the configuration files on disk have the right entries
             for cfg in ["project", "simulation", "output"]:
+                # Spaces and underscores are interchangeable in the configuration files
                 if not all(
-                    o in template[f"{cfg}_config"] for o in o[f"{cfg}_config"]
+                    o.replace(" ", "_") in template[f"{cfg}_config"]
+                    for o in o[f"{cfg}_config"]
                 ) and len(o[f"{cfg}_config"]) != len(template[f"{cfg}_config"]):
                     raise ValueError(
                         f"The {cfg} configuration file on disk does not appear to be valid."
@@ -279,12 +281,14 @@ class Hydrotel(HydrologicalModel):
         return self.get_streamflow()
 
     def get_inputs(
-        self, return_config=False, **kwargs
+        self, subset_time: bool = False, return_config=False, **kwargs
     ) -> Union[xr.Dataset, tuple[xr.Dataset, dict]]:
         r"""Get the weather file from the simulation.
 
         Parameters
         ----------
+        subset_time : bool
+            If True, only return the weather data for the time period specified in the simulation configuration file.
         return_config : bool
             Whether to return the configuration file as well. If True, returns a tuple of (dataset, configuration).
         \*\*kwargs : dict
@@ -318,6 +322,11 @@ class Hydrotel(HydrologicalModel):
             self.project_dir / weather_file,
             **kwargs,
         )
+
+        if subset_time:
+            start_date = self.simulation_config["DATE DEBUT"]
+            end_date = self.simulation_config["DATE FIN"]
+            ds = ds.sel(time=slice(start_date, end_date))
 
         if return_config is False:
             return ds

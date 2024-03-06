@@ -102,6 +102,60 @@ class TestHydrotel:
             ):
                 ht.get_inputs()
 
+    @pytest.mark.parametrize("subset", [True, False])
+    def test_input_dates(self, tmpdir, subset):
+        meteo = timeseries(
+            np.zeros(365 * 10),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmin",
+            as_dataset=True,
+            units="K",
+        )
+        meteo["tasmax"] = timeseries(
+            np.ones(365 * 10),
+            start="2001-01-01",
+            freq="D",
+            variable="tasmax",
+            units="degC",
+        )
+        meteo["pr"] = timeseries(
+            np.ones(365 * 10) * 10,
+            start="2001-01-01",
+            freq="D",
+            variable="pr",
+            units="mm",
+        )
+        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
+        meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77})
+        for c in ["lat", "lon"]:
+            meteo[c] = meteo[c].expand_dims("stations")
+
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, "fake", meteo=meteo)
+
+        date_debut = "2002-01-01"
+        date_fin = "2005-12-31"
+        simulation_config = {
+            "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
+            "DATE DEBUT": date_debut,
+            "DATE FIN": date_fin,
+            "PAS DE TEMPS": 24,
+        }
+        ht = Hydrotel(
+            project_dir=tmpdir / "fake",
+            project_file="SLNO.csv",
+            use_defaults=True,
+            simulation_config=simulation_config,
+        )
+
+        ds = ht.get_inputs(subset_time=subset)
+        if subset:
+            assert ds.time.min().dt.strftime("%Y-%m-%d").item() == date_debut
+            assert ds.time.max().dt.strftime("%Y-%m-%d").item() == date_fin
+        else:
+            assert ds.time.min().dt.strftime("%Y-%m-%d").item() == "2001-01-01"
+            assert ds.time.max().dt.strftime("%Y-%m-%d").item() == "2010-12-29"
+
     @pytest.mark.parametrize("test", ["ok", "file", "health"])
     def test_basic(self, tmpdir, test):
         meteo = True
