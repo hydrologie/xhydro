@@ -20,7 +20,8 @@
   ],
   "keywords": [
     "hydrology",
-    "xarray"
+    "xarray",
+    "xhydro"
   ],
   "license": "Apache-2.0",
   "language": "eng",
