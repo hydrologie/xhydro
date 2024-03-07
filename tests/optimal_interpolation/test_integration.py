@@ -16,7 +16,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
+    BRANCH_OR_COMMIT_HASH = "main"
 
     # Get data with pooch
     test_data_path = pooch.retrieve(
@@ -175,7 +175,7 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "optimal-interpolation"
+    BRANCH_OR_COMMIT_HASH = "main"
 
     # Get data with pooch
     test_data_path = pooch.retrieve(
