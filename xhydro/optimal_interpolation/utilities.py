@@ -7,8 +7,8 @@ import numpy as np
 import xarray as xr
 
 __all__ = [
-    "plot_results",
     "general_ecf",
+    "plot_results",
     "write_netcdf_flow_percentiles",
 ]
 
@@ -128,19 +128,22 @@ def write_netcdf_flow_percentiles(
                 discharge, (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0])
             ),
         )
-        ds["percentile"] = ("percentile", percentile)
+        ds = ds.assign_coords(percentile=("percentile", percentile))
+
     else:
         ds["streamflow"] = (
             ["station_id", "time"],
             np.transpose(discharge, (axis_stations[0][0], axis_time[0][0])),
         )
 
-    # Other variables
-    ds["time"] = ("time", time)
     ds["lat"] = ("station_id", lat)
     ds["lon"] = ("station_id", lon)
     ds["drainage_area"] = ("station_id", drain_area)
-    ds["station_id"] = ("station_id", station_id)
+
+    ds.assign_coords(
+        station_id=("station_id", station_id),
+        time=("time", time),
+    )
 
     # Time bounds
     ta = np.array(time)
@@ -160,8 +163,8 @@ def write_netcdf_flow_percentiles(
         "units": "m3/s",
         "cell_methods": "time: mean",
         "coverage_content_type": "modelResult",
-        "coordinates": "time station_id",
     }
+
     ds["lat"].attrs = {
         "long_name": "latitude_of_river_stretch_outlet",
         "standard_name": "latitude",
@@ -180,8 +183,8 @@ def write_netcdf_flow_percentiles(
         "standard_name": "drainage_area",
         "units": "km2",
         "coverage_content_type": "auxiliaryInformation",
-        "coordinates": "lat lon station_id",
     }
+
     ds["station_id"].attrs = {"long_name": "Station ID", "cf_role": "timeseries_id"}
 
     # Write to file

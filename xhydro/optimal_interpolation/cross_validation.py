@@ -10,8 +10,8 @@ __all__ = ["execute"]
 
 
 def execute(
-    flow_obs: xr.Dataset,
-    flow_sim: xr.Dataset,
+    qobs: xr.Dataset,
+    qsim: xr.Dataset,
     station_correspondence: xr.Dataset,
     crossvalidation_stations: list,
     write_file: str,
@@ -25,13 +25,13 @@ def execute(
 
     Parameters
     ----------
-    flow_obs : xr.Dataset
+    qobs : xr.Dataset
         Streamflow and catchment properties dataset for observed data.
-    flow_sim : xr.Dataset
+    qsim : xr.Dataset
         Streamflow and catchment properties dataset for simulated data.
-    station_correspondence: xr.Dataset
+    station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
-    crossvalidation_stations: list
+    crossvalidation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
     write_file : str
         Name of the NetCDF file to be created.
@@ -45,6 +45,7 @@ def execute(
         Execute the profiler in parallel or in series (default is False).
     max_cores : int
         Maximum number of cores to use for parallel processing.
+
     Returns
     -------
     list
@@ -54,8 +55,8 @@ def execute(
         percentiles = [0.25, 0.50, 0.75, 1.00]
 
     results = opt.execute_interpolation(
-        flow_obs=flow_obs,
-        flow_sim=flow_sim,
+        qobs=qobs,
+        qsim=qsim,
         station_correspondence=station_correspondence,
         crossvalidation_stations=crossvalidation_stations,
         ratio_var_bg=ratio_var_bg,

@@ -44,8 +44,8 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST_corrected.nc"
     )
 
-    flow_obs = xr.open_dataset(flow_obs_info_file)
-    flow_sim = xr.open_dataset(flow_sim_info_file)
+    qobs = xr.open_dataset(flow_obs_info_file)
+    qsim = xr.open_dataset(flow_sim_info_file)
     flow_l1o = xr.open_dataset(flow_l1o_info_file)
 
     station_correspondence = xr.open_dataset(corresponding_station_file)
@@ -67,15 +67,14 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
-
         # Get the required times only
-        flow_obs = self.flow_obs.sel(time=slice(self.start_date, self.end_date))
-        flow_sim = self.flow_sim.sel(time=slice(self.start_date, self.end_date))
+        qobs = self.qobs.sel(time=slice(self.start_date, self.end_date))
+        qsim = self.qsim.sel(time=slice(self.start_date, self.end_date))
 
         # Run the code and obtain the resulting flows.
         result_flows = cv.execute(
-            flow_obs,
-            flow_sim,
+            qobs,
+            qsim,
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -104,8 +103,8 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         end_date = dt.datetime(2018, 12, 31)
 
         result_flows = cv.execute(
-            self.flow_obs.sel(time=slice(start_date, end_date)),
-            self.flow_sim.sel(time=slice(start_date, end_date)),
+            self.qobs.sel(time=slice(start_date, end_date)),
+            self.qsim.sel(time=slice(start_date, end_date)),
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -131,11 +130,10 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
-
         # Run the interpolation and get flows
         result_flows = cv.execute(
-            self.flow_obs.sel(time=slice(self.start_date, self.end_date)),
-            self.flow_sim.sel(time=slice(self.start_date, self.end_date)),
+            self.qobs.sel(time=slice(self.start_date, self.end_date)),
+            self.qsim.sel(time=slice(self.start_date, self.end_date)),
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -164,8 +162,8 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         end_date = dt.datetime(2018, 12, 30)
 
         cr.compare(
-            flow_obs=self.flow_obs.sel(time=slice(start_date, end_date)),
-            flow_sim=self.flow_sim.sel(time=slice(start_date, end_date)),
+            qobs=self.qobs.sel(time=slice(start_date, end_date)),
+            qsim=self.qsim.sel(time=slice(start_date, end_date)),
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
             crossvalidation_stations=self.crossvalidation_stations,
@@ -210,22 +208,18 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     # Correct files to get them into the correct shape.
     df = pd.read_csv(station_info_file, sep=None, dtype=str)
-    flow_obs = xr.open_dataset(flow_obs_info_file)
-    flow_obs = flow_obs.assign(
+    qobs = xr.open_dataset(flow_obs_info_file)
+    qobs = qobs.assign(
         {"centroid_lat": ("station", df["Latitude Centroide BV"].astype(np.float32))}
     )
-    flow_obs = flow_obs.assign(
+    qobs = qobs.assign(
         {"centroid_lon": ("station", df["Longitude Centroide BV"].astype(np.float32))}
     )
-    flow_obs = flow_obs.assign(
-        {"classement": ("station", df["Classement"].astype(np.float32))}
+    qobs = qobs.assign({"classement": ("station", df["Classement"].astype(np.float32))})
+    qobs = qobs.assign(
+        {"station_id": ("station", qobs["station_id"].values.astype(str))}
     )
-    flow_obs = flow_obs.assign(
-        {"station_id": ("station", flow_obs["station_id"].values.astype(str))}
-    )
-    flow_obs = flow_obs.assign(
-        {"streamflow": (("station", "time"), flow_obs["Dis"].values)}
-    )
+    qobs = qobs.assign({"streamflow": (("station", "time"), qobs["Dis"].values)})
 
     df = pd.read_csv(corresponding_station_file, sep=None, dtype=str)
     station_correspondence = xr.Dataset(
@@ -235,17 +229,15 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         }
     )
 
-    flow_sim = xr.open_dataset(flow_sim_info_file)
-    flow_sim = flow_sim.assign(
-        {"station_id": ("station", flow_sim["station_id"].values.astype(str))}
+    qsim = xr.open_dataset(flow_sim_info_file)
+    qsim = qsim.assign(
+        {"station_id": ("station", qsim["station_id"].values.astype(str))}
     )
-    flow_sim = flow_sim.assign(
-        {"streamflow": (("station", "time"), flow_sim["Dis"].values)}
-    )
-    flow_sim["station_id"].values[
+    qsim = qsim.assign({"streamflow": (("station", "time"), qsim["Dis"].values)})
+    qsim["station_id"].values[
         143
     ] = "SAGU99999"  # Forcing to change due to double value wtf.
-    flow_sim["station_id"].values[
+    qsim["station_id"].values[
         7
     ] = "BRKN99999"  # Forcing to change due to double value wtf.
 
@@ -279,15 +271,14 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
-
         # Get the required times only
-        flow_obs = self.flow_obs.sel(time=slice(self.start_date, self.end_date))
-        flow_sim = self.flow_sim.sel(time=slice(self.start_date, self.end_date))
+        qobs = self.qobs.sel(time=slice(self.start_date, self.end_date))
+        qsim = self.qsim.sel(time=slice(self.start_date, self.end_date))
 
         # Run the code and obtain the resulting flows.
         result_flows = cv.execute(
-            flow_obs,
-            flow_sim,
+            qobs,
+            qsim,
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -316,8 +307,8 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         end_date = dt.datetime(2018, 12, 31)
 
         result_flows = cv.execute(
-            self.flow_obs.sel(time=slice(start_date, end_date)),
-            self.flow_sim.sel(time=slice(start_date, end_date)),
+            self.qobs.sel(time=slice(start_date, end_date)),
+            self.qsim.sel(time=slice(start_date, end_date)),
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -343,11 +334,10 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
-
         # Run the interpolation and get flows
         result_flows = cv.execute(
-            self.flow_obs.sel(time=slice(self.start_date, self.end_date)),
-            self.flow_sim.sel(time=slice(self.start_date, self.end_date)),
+            self.qobs.sel(time=slice(self.start_date, self.end_date)),
+            self.qsim.sel(time=slice(self.start_date, self.end_date)),
             self.station_correspondence,
             self.crossvalidation_stations,
             write_file=self.write_file,
@@ -376,8 +366,8 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         end_date = dt.datetime(2018, 12, 30)
 
         cr.compare(
-            flow_obs=self.flow_obs.sel(time=slice(start_date, end_date)),
-            flow_sim=self.flow_sim.sel(time=slice(start_date, end_date)),
+            qobs=self.qobs.sel(time=slice(start_date, end_date)),
+            qsim=self.qsim.sel(time=slice(start_date, end_date)),
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
             crossvalidation_stations=self.crossvalidation_stations,

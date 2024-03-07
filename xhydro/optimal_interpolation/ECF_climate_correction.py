@@ -13,8 +13,8 @@ from xhydro.optimal_interpolation.utilities import general_ecf
 
 
 def correction(
-    flow_obs: np.ndarray,
-    flow_sim: np.ndarray,
+    qobs: np.ndarray,
+    qsim: np.ndarray,
     x_points: np.ndarray,
     y_points: np.ndarray,
     iteration_count: int = 10,
@@ -23,9 +23,9 @@ def correction(
 
     Parameters
     ----------
-    flow_obs : np.ndarray
+    qobs : np.ndarray
         Array of observed flow data.
-    flow_sim : np.ndarray
+    qsim : np.ndarray
         Array of simulated flow data.
     x_points : np.ndarray
         X-coordinate points for stations.
@@ -41,7 +41,7 @@ def correction(
         - ecf_fun: Partial function for the error covariance function.
         - par_opt: Optimized parameters for the interpolation.
     """
-    difference = flow_sim - flow_obs
+    difference = qsim - qobs
     time_range = np.shape(difference)[0]
 
     heights = np.empty((time_range, iteration_count)) * np.nan

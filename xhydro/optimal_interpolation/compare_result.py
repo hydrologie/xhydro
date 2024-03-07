@@ -12,8 +12,8 @@ __all__ = ["compare"]
 
 
 def compare(
-    flow_obs: xr.Dataset,
-    flow_sim: xr.Dataset,
+    qobs: xr.Dataset,
+    qsim: xr.Dataset,
     flow_l1o: xr.Dataset,
     station_correspondence: xr.Dataset,
     crossvalidation_stations: list,
@@ -24,22 +24,22 @@ def compare(
 
     Parameters
     ----------
-    flow_obs : xr.Dataset
+    qobs : xr.Dataset
         Streamflow and catchment properties dataset for observed data.
-    flow_sim : xr.Dataset
+    qsim : xr.Dataset
         Streamflow and catchment properties dataset for simulated data.
     flow_l1o : xr.Dataset
         Streamflow and catchment properties dataset for simulated leave-one-out cross-validation results.
-    station_correspondence: xr.Dataset
+    station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
-    crossvalidation_stations: list
+    crossvalidation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
     percentile_to_plot : int
         Percentile value to plot (default is 50).
     show_comparison : bool
         Whether to display the comparison plots (default is True).
     """
-    time_range = len(flow_obs["time"].values)
+    time_range = len(qobs["time"].values)
 
     # Read percentiles list (which percentile thresholds were used)
     percentile = flow_l1o["percentile"]
@@ -70,22 +70,22 @@ def compare(
         station_code = station_correspondence["reach_id"][index_correspondence]
 
         # Search for data in the Qsim file
-        index_in_sim = np.where(flow_sim["station_id"].values == station_code.data)[0]
-        sup_sim = flow_sim["drainage_area"].values[index_in_sim]
+        index_in_sim = np.where(qsim["station_id"].values == station_code.data)[0]
+        sup_sim = qsim["drainage_area"].values[index_in_sim]
         selected_flow_sim[:, i] = (
-            flow_sim["streamflow"].isel(station=index_in_sim) / sup_sim
+            qsim["streamflow"].isel(station=index_in_sim) / sup_sim
         )
 
         # Get data in Qobs file
-        index_in_obs = np.where(flow_obs["station_id"] == cv_station_id)[0]
-        sup_obs = flow_obs["drainage_area"].values[index_in_obs]
+        index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
+        sup_obs = qobs["drainage_area"].values[index_in_obs]
         selected_flow_obs[:, i] = (
-            flow_obs["streamflow"].isel(station=index_in_obs) / sup_obs
+            qobs["streamflow"].isel(station=index_in_obs) / sup_obs
         )
 
         # Get data in Leave one out file
         index_in_l1o = np.where(flow_l1o["station_id"] == cv_station_id)[0]
-        sup_l1o = flow_obs["drainage_area"].values[index_in_l1o]
+        sup_l1o = qobs["drainage_area"].values[index_in_l1o]
         selected_flow_l1o[:, i] = (
             flow_l1o["streamflow"]
             .isel(station=index_in_l1o, percentile=idx_pct)

@@ -17,8 +17,8 @@ import xhydro.optimal_interpolation.utilities as util
 from .mathematical_algorithms import calculate_average_distance
 
 __all__ = [
-    "optimal_interpolation",
     "execute_interpolation",
+    "optimal_interpolation",
 ]
 
 
@@ -37,6 +37,7 @@ def optimal_interpolation(oi_input: dict, args: dict) -> tuple[dict, dict]:
     tuple
         A tuple containing the updated oi_output dictionary and the modified args dictionary.
     """
+    # TODO: Change variables that are input here, instead of dict pass more explicit. Need to find a way around the parallel comuputation
     if len(args) == 0:
         args = {}
 
@@ -155,13 +156,14 @@ def loop_optimal_interpolation_stations(
     ndarray
         A list containing the quantiles of the flow values for each percentile over the specified time range.
     """
+    # TODO: Change variables that are input here, instead of dict pass more explicit. Need to find a way around the parallel comuputation
     (station_index, args) = args
 
     filtered_dataset = args["filtered_dataset"]
     station_count = len(filtered_dataset["centroid_lat"].values)
     time_range = len(filtered_dataset["time"].values)
-    selected_flow_obs = filtered_dataset["flow_obs"].values
-    selected_flow_sim = filtered_dataset["flow_sim"].values
+    selected_flow_obs = filtered_dataset["qobs"].values
+    selected_flow_sim = filtered_dataset["qsim"].values
     drainage_area = filtered_dataset["drainage_area"].values
 
     percentiles = args["percentiles"]
@@ -246,8 +248,8 @@ def loop_optimal_interpolation_stations(
 
 
 def execute_interpolation(
-    flow_obs: xr.Dataset,
-    flow_sim: xr.Dataset,
+    qobs: xr.Dataset,
+    qsim: xr.Dataset,
     station_correspondence: xr.Dataset,
     crossvalidation_stations: list,
     ratio_var_bg,
@@ -261,13 +263,13 @@ def execute_interpolation(
 
     Parameters
     ----------
-    flow_obs : xr.Dataset
+    qobs : xr.Dataset
         Streamflow and catchment properties dataset for observed data.
-    flow_sim : xr.Dataset
+    qsim : xr.Dataset
         Streamflow and catchment properties dataset for simulated data.
-    station_correspondence: xr.Dataset
+    station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
-    crossvalidation_stations: list
+    crossvalidation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
     ratio_var_bg : float
         Ratio for background variance.
@@ -288,8 +290,8 @@ def execute_interpolation(
         A list containing the flow quantiles for each desired percentile.
     """
     filtered_dataset = retrieve_data(
-        flow_obs=flow_obs,
-        flow_sim=flow_sim,
+        qobs=qobs,
+        qsim=qsim,
         station_correspondence=station_correspondence,
         crossvalidation_stations=crossvalidation_stations,
     )
@@ -311,8 +313,8 @@ def execute_interpolation(
 
     # create the weighting function parameters
     ecf_fun, par_opt = ecf_cc.correction(
-        filtered_dataset["flow_obs"].values,
-        filtered_dataset["flow_sim"].values,
+        filtered_dataset["qobs"].values,
+        filtered_dataset["qsim"].values,
         x_points,
         y_points,
         iteration_count=iterations,
@@ -347,8 +349,8 @@ def execute_interpolation(
 
 
 def retrieve_data(
-    flow_obs: xr.Dataset,
-    flow_sim: xr.Dataset,
+    qobs: xr.Dataset,
+    qsim: xr.Dataset,
     station_correspondence: xr.Dataset,
     crossvalidation_stations: list,
 ) -> xr.Dataset:
@@ -356,13 +358,13 @@ def retrieve_data(
 
     Parameters
     ----------
-    flow_obs : xr.Dataset
+    qobs : xr.Dataset
         Streamflow and catchment properties dataset for observed data.
-    flow_sim : xr.Dataset
+    qsim : xr.Dataset
         Streamflow and catchment properties dataset for simulated data.
-    station_correspondence: xr.Dataset
+    station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
-    crossvalidation_stations: list
+    crossvalidation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
 
     Returns
@@ -371,7 +373,7 @@ def retrieve_data(
         An xr.Dataset containing the retrieved and preprocessed data for the OI algorithm.
     """
     # Get some information from the input files
-    time_range = len(flow_obs["time"].values)
+    time_range = len(qobs["time"].values)
     station_count = len(crossvalidation_stations)  # Number of validation stations
 
     # Preallocate some matrices
@@ -393,21 +395,21 @@ def retrieve_data(
         station_code = station_correspondence["reach_id"][index_correspondence]
 
         # Search for data in the Qsim file
-        index_in_sim = np.where(flow_sim["station_id"].values == station_code.data)[0]
-        sup_sim = flow_sim["drainage_area"].values[index_in_sim]
+        index_in_sim = np.where(qsim["station_id"].values == station_code.data)[0]
+        sup_sim = qsim["drainage_area"].values[index_in_sim]
         selected_flow_sim[:, i] = (
-            flow_sim["streamflow"].isel(station=index_in_sim) / sup_sim
+            qsim["streamflow"].isel(station=index_in_sim) / sup_sim
         )
 
         # Get the flows from the Qsim file
-        index_in_obs = np.where(flow_obs["station_id"] == cv_station_id)[0]
-        sup_obs = flow_obs["drainage_area"].values[index_in_obs]
+        index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
+        sup_obs = qobs["drainage_area"].values[index_in_obs]
         selected_flow_obs[:, i] = (
-            flow_obs["streamflow"].isel(station=index_in_obs) / sup_obs
+            qobs["streamflow"].isel(station=index_in_obs) / sup_obs
         )
         drainage_area[i] = sup_obs
-        centroid_lon[i] = flow_obs["centroid_lon"][index_in_obs].values
-        centroid_lat[i] = flow_obs["centroid_lat"][index_in_obs].values
+        centroid_lon[i] = qobs["centroid_lon"][index_in_obs].values
+        centroid_lat[i] = qobs["centroid_lat"][index_in_obs].values
 
     # Transformation log-débit pour l'interpolation
     selected_flow_obs = np.log(selected_flow_obs)
@@ -418,9 +420,9 @@ def retrieve_data(
             "station_id": ("station", crossvalidation_stations),
             "centroid_lat": ("station", centroid_lat),
             "centroid_lon": ("station", centroid_lon),
-            "flow_obs": (("time", "station"), selected_flow_obs),
-            "flow_sim": (("time", "station"), selected_flow_sim),
-            "time": ("time", flow_obs["time"].data),
+            "qobs": (("time", "station"), selected_flow_obs),
+            "qsim": (("time", "station"), selected_flow_sim),
+            "time": ("time", qobs["time"].data),
             "drainage_area": ("station", drainage_area),
         }
     )
