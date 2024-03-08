@@ -1,20 +1,24 @@
 """LSTM model definition and tools for LSTM model training."""
 
 import math
+
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as k
 from tensorflow.keras.models import load_model
+
 from xhydro.modelling.obj_funcs import get_objective_function
+
 from .create_datasets import _create_lstm_dataset, _create_lstm_dataset_local
 
-__all__ = ["_TrainingGenerator",
-           "_TrainingGeneratorLocal",
-           "define_lstm_model_simple",
-           "define_lstm_model_simple_local",
-           "run_trained_model",
-           "run_trained_model_local",
-           ]
+__all__ = [
+    "_TrainingGenerator",
+    "_TrainingGeneratorLocal",
+    "define_lstm_model_simple",
+    "define_lstm_model_simple_local",
+    "run_trained_model",
+    "run_trained_model_local",
+]
 
 
 class _TrainingGenerator(tf.keras.utils.Sequence):
@@ -60,7 +64,7 @@ class _TrainingGenerator(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Get one of the batches by taking the 'batch_size' first elements from the list of remaining indices."""
-        inds = self.indices[idx * self.batch_size: (idx + 1) * self.batch_size]
+        inds = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x = self.x[inds]
         batch_x_static = self.x_static[inds]
         batch_x_q_stds = self.x_q_stds[inds]
@@ -111,7 +115,7 @@ class _TrainingGeneratorLocal(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Get one of the batches by taking the 'batch_size' first elements from the list of remaining indices."""
-        inds = self.indices[idx * self.batch_size: (idx + 1) * self.batch_size]
+        inds = self.indices[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x = self.x[inds]
         batch_y = self.y[inds]
 
@@ -157,9 +161,9 @@ class _TestingGenerator(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Get one of the batches by taking the 'batch_size' first elements from the list of remaining indices."""
-        batch_x = self.x[idx * self.batch_size: (idx + 1) * self.batch_size]
+        batch_x = self.x[idx * self.batch_size : (idx + 1) * self.batch_size]
         batch_x_static = self.x_static[
-            idx * self.batch_size: (idx + 1) * self.batch_size
+            idx * self.batch_size : (idx + 1) * self.batch_size
         ]
         return [np.array(batch_x), np.array(batch_x_static)], np.array(batch_x_static)
 
@@ -192,7 +196,7 @@ class _TestingGeneratorLocal(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         """Get one of the batches by taking the 'batch_size' first elements from the list of remaining indices."""
-        batch_x = self.x[idx * self.batch_size: (idx + 1) * self.batch_size]
+        batch_x = self.x[idx * self.batch_size : (idx + 1) * self.batch_size]
 
         return [np.array(batch_x)]
 

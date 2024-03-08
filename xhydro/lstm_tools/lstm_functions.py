@@ -8,15 +8,16 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from xhydro.lstm_tools.create_datasets import *
 from xhydro.lstm_tools.LSTM_static import *
 
-__all__ = ["_perform_initial_train",
-           "_perform_initial_train_local",
-           "run_model_after_training",
-           "run_model_after_training_local",
-           "_scale_dataset",
-           "_scale_dataset_local",
-           "_split_dataset",
-           "_split_dataset_local",
-           ]
+__all__ = [
+    "_perform_initial_train",
+    "_perform_initial_train_local",
+    "_scale_dataset",
+    "_scale_dataset_local",
+    "_split_dataset",
+    "_split_dataset_local",
+    "run_model_after_training",
+    "run_model_after_training_local",
+]
 
 
 def _scale_dataset(
@@ -136,7 +137,7 @@ def _scale_dataset(
 
     for tmp in range(0, arr_dynamic.shape[0]):
         dynamic_data = np.vstack(
-            [dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0]: train_idx[tmp, 1], 1:]]
+            [dynamic_data, arr_dynamic[tmp, train_idx[tmp, 0] : train_idx[tmp, 1], 1:]]
         )
 
     # Fit the scaler using only the training watersheds
@@ -240,7 +241,7 @@ def _scale_dataset_local(
     all_idx[0] = int(0)
     all_idx[1] = arr_qobs.shape[0]
 
-    dynamic_data = arr_dynamic[train_idx[0]: train_idx[1], 1:]
+    dynamic_data = arr_dynamic[train_idx[0] : train_idx[1], 1:]
 
     # Fit the scaler using only the training watersheds
     scaler_dynamic = StandardScaler()  # Use standardization by mean and std
@@ -627,6 +628,7 @@ def _perform_initial_train_local(
         and should only be used as a last resort (such as for CI testing and debugging).
     seed : int, optional
         Value to seed the random number generator to replicate tests. Set to None for operational use.
+
     Returns
     -------
     code

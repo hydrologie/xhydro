@@ -1,18 +1,20 @@
 """Tools to create the datasets to be used in LSTM model training and simulation."""
 
-import numpy as np
-import xarray as xr
 import os
 from pathlib import Path
 from typing import Union
 
-__all__ = ["_remove_nans_func_local",
-           "_remove_nans_func",
-           "_create_lstm_dataset_local",
-           "_create_lstm_dataset",
-           "_create_dataset_flexible_local",
-           "_create_dataset_flexible",
-           ]
+import numpy as np
+import xarray as xr
+
+__all__ = [
+    "_create_dataset_flexible",
+    "_create_dataset_flexible_local",
+    "_create_lstm_dataset",
+    "_create_lstm_dataset_local",
+    "_remove_nans_func",
+    "_remove_nans_func_local",
+]
 
 
 def _create_dataset_flexible(
@@ -224,7 +226,7 @@ def _create_lstm_dataset(
         idx_w = idx[w]
         print("Currently working on watershed no: " + str(w))
         x_w, x_w_static, x_w_q_std, y_w = _extract_watershed_block(
-            arr_w_dynamic=arr_dynamic[w, idx_w[0]: idx_w[1], :],
+            arr_w_dynamic=arr_dynamic[w, idx_w[0] : idx_w[1], :],
             arr_w_static=arr_static[w, :],
             q_std_w=q_stds[w],
             window_size=window_size,
@@ -279,7 +281,7 @@ def _create_lstm_dataset_local(
         x_static and x_q_stds. Usually the observed streamflow for the day associated to each of the training points.
     """
     x, y = _extract_watershed_block_local(
-        arr_dynamic=arr_dynamic[idx[0]: idx[1], :],
+        arr_dynamic=arr_dynamic[idx[0] : idx[1], :],
         window_size=window_size,
     )
 
@@ -321,7 +323,10 @@ def _extract_windows_vectorized(
 
 
 def _extract_watershed_block(
-    arr_w_dynamic: np.ndarray, arr_w_static: np.ndarray, q_std_w: np.ndarray, window_size: int
+    arr_w_dynamic: np.ndarray,
+    arr_w_static: np.ndarray,
+    q_std_w: np.ndarray,
+    window_size: int,
 ):
     """Extract all series of the desired window length over all features for a given watershed.
 
@@ -417,7 +422,9 @@ def _extract_watershed_block_local(arr_dynamic: np.ndarray, window_size: int):
     return x, y
 
 
-def _remove_nans_func(y: np.ndarray, x: np.ndarray, x_q_std: np.ndarray, x_static: np.ndarray):
+def _remove_nans_func(
+    y: np.ndarray, x: np.ndarray, x_q_std: np.ndarray, x_static: np.ndarray
+):
     """Check for nans in the variable "y" and remove all lines containing those nans in all datasets.
 
     Parameters
