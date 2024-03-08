@@ -15,7 +15,7 @@ class TestLstmModels:
 
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "lstm"
+    BRANCH_OR_COMMIT_HASH = "main"
 
     # Get data with pooch
     input_data_filename_regional = pooch.retrieve(
