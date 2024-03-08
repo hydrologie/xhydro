@@ -69,11 +69,10 @@ jobs:
           cache-downloads: true
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
+      - name: conda and micromamba versions
         run: |
-          mamba --version
+          conda --version
           echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
