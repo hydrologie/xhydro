@@ -58,7 +58,7 @@ def watershed_delineation(
         GeoDataFrame containing the watershed boundaries.
     """
     # level 12 HydroBASINS polygons dataset url (North America only at the moment)
-    url = "https://s3.us-east-1.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
+    url = "https://s3.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
 
     coordinates = [coordinates] if isinstance(coordinates, tuple) else coordinates
 
@@ -137,9 +137,9 @@ def watershed_properties(
     gdf : gpd.GeoDataFrame
         GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
     unique_id : str
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+        The column name in the GeoDataFrame that serves as a unique identifier.
     projected_crs : int
-        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+        The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
     output_format : str
         One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
 
@@ -153,22 +153,18 @@ def watershed_properties(
     projected_gdf = gdf.to_crs(projected_crs)
 
     # Calculate watershed properties
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-
-        output_dataset = gdf.loc[:, gdf.columns != gdf.geometry.name]
-        output_dataset["area"] = projected_gdf.area
-        output_dataset["perimeter"] = projected_gdf.length
-        output_dataset["gravelius"] = (
-            output_dataset.perimeter / 2 / np.sqrt(np.pi * output_dataset.area)
-        )
-        output_dataset["centroid"] = gdf.centroid.apply(lambda x: (x.x, x.y))
+    output_dataset = gdf.loc[:, gdf.columns != gdf.geometry.name]
+    output_dataset["area"] = projected_gdf.area
+    output_dataset["perimeter"] = projected_gdf.length
+    output_dataset["gravelius"] = (
+        output_dataset.perimeter / 2 / np.sqrt(np.pi * output_dataset.area)
+    )
+    output_dataset["centroid"] = gdf.centroid.apply(lambda x: (x.x, x.y))
 
     if unique_id is not None:
         output_dataset.set_index(unique_id, inplace=True)
 
     if output_format in ("xarray", "xr.Dataset"):
-        # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
         output_dataset = output_dataset.to_xarray()
         output_dataset["area"].attrs = {"units": "m2"}
         output_dataset["perimeter"].attrs = {"units": "m"}
@@ -227,13 +223,10 @@ def _compute_watershed_boundaries(
         gdf_basin = gdf_basin_exploded.loc[[gdf_basin_exploded.area.idxmax()]]
 
     # Raise warning for invalid or out of extent coordinates
-    print(gdf_basin)
     if gdf_basin.shape[0] == 0:
-        with warnings.catch_warnings():
-            warnings.simplefilter("always")
-            warnings.warn(
-                f"Could not return a watershed boundary for coordinates {coordinates}."
-            )
+        warnings.warn(
+            f"Could not return a watershed boundary for coordinates {coordinates}."
+        )
     return gdf_basin
 
 
@@ -271,11 +264,7 @@ def _recursive_upstream_lookup(
     return all_upstream_indexes
 
 
-def _count_pixels_from_bbox(
-    gdf, idx, catalog, unique_id, values_to_classes, year, pbar
-):
-    bbox_of_interest = gdf.iloc[[idx]].total_bounds
-
+def _merge_stac_dataset(catalog, bbox_of_interest, year):
     search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
     items = search.item_collection()
 
@@ -283,7 +272,7 @@ def _count_pixels_from_bbox(
     # our merged dataset. Get the EPSG code of the first item and the nodata value.
     item = items[0]
 
-    # Create a single DataArray from multiple results, with the corresponding
+    # Create a single DataArray from out multiple resutls with the corresponding
     # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
     # matches our data, since stackstac will use float64 by default.
     stack = (
@@ -304,7 +293,6 @@ def _count_pixels_from_bbox(
     )
 
     merged = stack.squeeze().compute()
-
     if year == "latest":
         year = str(merged.time.dt.year[-1].values)
     else:
@@ -313,6 +301,15 @@ def _count_pixels_from_bbox(
             raise TypeError(f"Expected year argument {year} to be a digit.")
 
     merged = merged.sel(time=year).min("time")
+    return merged, item
+
+
+def _count_pixels_from_bbox(
+    gdf, idx, catalog, unique_id, values_to_classes, year, pbar
+):
+    bbox_of_interest = gdf.iloc[[idx]].total_bounds
+
+    merged, _ = _merge_stac_dataset(catalog, bbox_of_interest, year)
 
     data = merged.data.ravel()
     df = pd.DataFrame(
@@ -385,9 +382,6 @@ def land_use_classification(
         axis=0,
     ).fillna(0)
 
-    # if 255 in output_dataset.columns:
-    #     output_dataset = output_dataset.drop(columns=[255])
-
     if unique_id is not None:
         output_dataset.index.name = unique_id
 
@@ -444,42 +438,7 @@ def land_use_plot(
 
     bbox_of_interest = gdf.total_bounds
 
-    search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
-    items = search.item_collection()
-
-    # The STAC metadata contains some information we'll want to use when creating
-    # our merged dataset. Get the EPSG code of the first item and the nodata value.
-    item = items[0]
-
-    # Create a single DataArray from out multiple resutls with the corresponding
-    # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
-    # matches our data, since stackstac will use float64 by default.
-    stack = (
-        stackstac.stack(
-            items,
-            dtype=np.ubyte,
-            fill_value=255,
-            bounds_latlon=bbox_of_interest,
-            epsg=item.properties["proj:epsg"],
-            sortby_date=False,
-        )
-        .assign_coords(
-            time=pd.to_datetime([item.properties["start_datetime"] for item in items])
-            .tz_convert(None)
-            .to_numpy()
-        )
-        .sortby("time")
-    )
-
-    merged = stack.squeeze().compute()
-    if year == "latest":
-        year = str(merged.time.dt.year[-1].values)
-    else:
-        year = str(year)
-        if not year.isdigit():
-            raise TypeError(f"Expected year argument {year} to be a digit.")
-
-    merged = merged.sel(time=year).min("time")
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
 
     epsg = proj.ext(item).epsg
 
