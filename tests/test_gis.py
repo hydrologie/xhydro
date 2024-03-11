@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 import xdatasets as xd
+from pystac_client.exceptions import APIError
 
 import xhydro as xh
 
@@ -108,13 +109,13 @@ class TestWatershedOperations:
         assert ds_properties.area.attrs["units"] == "m2"
         assert ds_properties.perimeter.attrs["units"] == "m"
         assert ds_properties.gravelius.attrs["units"] == "m/m"
-        assert ds_properties.centroid.attrs["units"] == ("degreesE", "degreesN")
+        assert ds_properties.centroid.attrs["units"] == ("degree_east", "degree_north")
 
         output_dataset = watershed_properties_data.set_index(unique_id).to_xarray()
         output_dataset["area"].attrs = {"units": "m2"}
         output_dataset["perimeter"].attrs = {"units": "m"}
         output_dataset["gravelius"].attrs = {"units": "m/m"}
-        output_dataset["centroid"].attrs = {"units": ("degreesE", "degreesN")}
+        output_dataset["centroid"].attrs = {"units": ("degree_east", "degree_north")}
 
         xr.testing.assert_equal(ds_properties, output_dataset)
 
@@ -163,7 +164,11 @@ class TestWatershedOperations:
         df.index.name = "Station"
         return df
 
-    @pytest.mark.parametrize("year,", [("latest"), ("2018")])
+    @pytest.mark.xfail(
+        raises=APIError,
+        reason="Test is rate-limited by Microsoft Planetary Computer API.",
+    )
+    @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification(
         self, land_classification_data_latest, land_classification_data_2018, year
     ):
@@ -171,6 +176,8 @@ class TestWatershedOperations:
             df_expected = land_classification_data_latest
         elif year == "2018":
             df_expected = land_classification_data_2018
+        else:
+            raise ValueError(f"Invalid year argument {year}.")
 
         for unique_id in ["Station", None]:
             df = xh.gis.land_use_classification(
@@ -181,16 +188,17 @@ class TestWatershedOperations:
 
             pd.testing.assert_frame_equal(df, df_expected)
 
-    @pytest.mark.parametrize("year,", [("latest"), ("2018")])
+    @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification_xarray(
         self, land_classification_data_latest, land_classification_data_2018, year
     ):
         for unique_id in ["Station", None]:
             if year == "latest":
                 df_expected = land_classification_data_latest
-
             elif year == "2018":
                 df_expected = land_classification_data_2018
+            else:
+                raise ValueError(f"Invalid year argument {year}.")
 
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
@@ -209,7 +217,7 @@ class TestWatershedOperations:
 
             xr.testing.assert_equal(ds_classification, ds_expected)
 
-    @pytest.mark.parametrize("unique_id,", [("Station"), (None)])
+    @pytest.mark.parametrize("unique_id,", ["Station", None])
     def test_land_classification_plot(self, unique_id, monkeypatch):
         monkeypatch.setattr(plt, "show", lambda: None)
         xh.gis.land_use_plot(self.gdf, unique_id=unique_id, idx=0)

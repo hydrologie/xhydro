@@ -29,7 +29,7 @@ if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
     # See conda-forge/esmf-feedstock#91 and readthedocs/readthedocs.org#4067
     os.environ["ESMFMKFILE"] = str(Path(os.__file__).parent.parent / "esmf.mk")
 
-import xhydro  # noqa
+import xhydro  # noqa: E402
 
 # -- General configuration ---------------------------------------------
 
@@ -79,13 +79,11 @@ extlinks = {
 
 # Generate documentation from Jupyter notebooks.
 skip_notebooks = os.getenv("SKIP_NOTEBOOKS")
-if skip_notebooks or os.getenv("READTHEDOCS_VERSION_TYPE") in [
-    "branch",
-    "external",
-]:
-    if skip_notebooks:
-        warnings.warn("Not executing notebooks.")
+if skip_notebooks:
+    warnings.warn("Not executing notebooks.")
     nbsphinx_execute = "never"
+elif os.getenv("GITHUB_ACTIONS"):
+    nbsphinx_execute = "always"
 else:
     nbsphinx_execute = "auto"
 
@@ -111,7 +109,7 @@ author = "Thomas-Charles Fortier Filion"
 # the built documents.
 #
 # The short X.Y version.
-version = xhydro.__version__
+version = xhydro.__version__.split("-")[0]
 # The full version, including alpha/beta/rc tags.
 release = xhydro.__version__
 
@@ -122,9 +120,9 @@ release = xhydro.__version__
 # Usually you set "language" from the command line for these cases.
 language = "en"
 
-# Set the locales
+# Sphinx-intl configuration
 locale_dirs = ["locales"]
-gettext_compact = False
+gettext_compact = False  # optional
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

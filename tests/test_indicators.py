@@ -25,9 +25,9 @@ class TestComputeVolume:
         mult = 86400 if freq == "D" else 86400 * 365
         np.testing.assert_array_equal(out, da * mult)
         assert out.attrs["long_name"] == "Foo"
-        assert out.attrs["units"] == "m^3"
         assert out.attrs["cell_methods"] == "time: sum"
         assert out.attrs["description"] == "Volume of water"
+        assert out.attrs["units"] == "m3"
 
     def test_units(self):
         da = timeseries(
@@ -38,9 +38,11 @@ class TestComputeVolume:
         )
 
         out_m3 = xh.indicators.compute_volume(da)
-        assert out_m3.attrs["units"] == "m^3"
         out_hm3 = xh.indicators.compute_volume(da, out_units="hm3")
-        assert out_hm3.attrs["units"] == "hm^3"
+
+        assert out_m3.attrs["units"] == "m3"
+        assert out_hm3.attrs["units"] == "hm3"
+
         np.testing.assert_array_equal(out_m3 * 1e-6, out_hm3)
 
 
@@ -57,9 +59,9 @@ class TestGetYearlyOp:
     def test_get_yearly_op(self, op):
         timeargs = {
             "annual": {},
-            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"},
-            "winterdoy": {"doy_bounds": [335, 59], "freq": "AS-DEC"},
-            "winterdjf": {"season": ["DJF"], "freq": "AS-DEC"},
+            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
+            "winterdoy": {"doy_bounds": [335, 59], "freq": "YS-DEC"},
+            "winterdjf": {"season": ["DJF"], "freq": "YS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
 
@@ -109,7 +111,7 @@ class TestGetYearlyOp:
             )
 
     def test_missing(self):
-        timeargs = {"winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"}}
+        timeargs = {"winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"}}
         out = xh.indicators.get_yearly_op(
             self.ds,
             op="max",
@@ -146,7 +148,7 @@ class TestGetYearlyOp:
 
         timeargs = {
             "annual": {},
-            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"},
+            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
         out_sum = xh.indicators.get_yearly_op(
@@ -227,7 +229,7 @@ class TestGetYearlyOp:
                 op="max",
                 timeargs={"annual": {"season": ["DJF"], "doy_bounds": [200, 300]}},
             )
-        with pytest.warns(UserWarning, match="The frequency is not AS-DEC"):
+        with pytest.warns(UserWarning, match="The frequency is not YS-DEC"):
             xh.indicators.get_yearly_op(
                 self.ds, op="max", timeargs={"annual": {"season": ["DJF"]}}
             )
@@ -242,6 +244,6 @@ class TestGetYearlyOp:
                 self.ds,
                 op="max",
                 timeargs={
-                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "AS-DEC"}
+                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "YS-DEC"}
                 },
             )

@@ -1,4 +1,5 @@
 """Module to compute geospatial operations useful in hydrology."""
+
 from __future__ import annotations
 
 import os
@@ -56,7 +57,7 @@ def watershed_delineation(
     gpd.GeoDataFrame
         GeoDataFrame containing the watershed boundaries.
     """
-    # level 12 HydroBASINS polygons dataset url (North-Ameroca only at the moment)
+    # level 12 HydroBASINS polygons dataset url (North America only at the moment)
     url = "https://s3.us-east-1.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
 
     coordinates = [coordinates] if isinstance(coordinates, tuple) else coordinates
@@ -172,7 +173,7 @@ def watershed_properties(
         output_dataset["area"].attrs = {"units": "m2"}
         output_dataset["perimeter"].attrs = {"units": "m"}
         output_dataset["gravelius"].attrs = {"units": "m/m"}
-        output_dataset["centroid"].attrs = {"units": ("degreesE", "degreesN")}
+        output_dataset["centroid"].attrs = {"units": ("degree_east", "degree_north")}
 
     return output_dataset
 
@@ -282,7 +283,7 @@ def _count_pixels_from_bbox(
     # our merged dataset. Get the EPSG code of the first item and the nodata value.
     item = items[0]
 
-    # Create a single DataArray from out multiple resutls with the corresponding
+    # Create a single DataArray from multiple results, with the corresponding
     # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
     # matches our data, since stackstac will use float64 by default.
     stack = (
@@ -333,7 +334,7 @@ def land_use_classification(
     unique_id: str = None,
     output_format: str = "geopandas",
     collection="io-lulc-9-class",
-    year="latest",
+    year: str | int = "latest",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """Calculate land use classification.
 

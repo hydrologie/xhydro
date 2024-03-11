@@ -1,4 +1,5 @@
 """Hydrological analysis library built with xarray."""
+
 from . import cc, gis, indicators, utils
 
 # Import top-level functions
@@ -6,4 +7,4 @@ from . import cc, gis, indicators, utils
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
-__version__ = "0.3.3"
+__version__ = "0.3.4"

@@ -1,0 +1,49 @@
+# Example taken from https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#managing-caches
+name: Cleanup Caches on Pull Request Merge
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:  # added using https://github.com/step-security/secure-repo
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+
+      - uses: actions/checkout@v4.1.1
+
+      - name: Cleanup
+        run: |
+          gh extension install actions/gh-actions-cache
+
+          REPO=${{ github.repository }}
+          BRANCH="refs/pull/${{ github.event.pull_request.number }}/merge"
+
+          echo "Fetching list of cache key"
+          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
+
+          ## Setting this to not fail the workflow while deleting cache keys.
+          set +e
+          echo "Deleting caches..."
+          for cacheKey in $cacheKeysForPR
+          do
+              gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+          done
+          echo "Done"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

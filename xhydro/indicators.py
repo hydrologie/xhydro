@@ -1,4 +1,5 @@
 """Module to compute indicators using xclim's build_indicator_module_from_yaml."""
+
 import warnings
 from typing import Optional
 
@@ -81,12 +82,12 @@ def get_yearly_op(
         Dictionary of time arguments for the operation.
         Keys are the name of the period that will be added to the results (e.g. "winter", "summer", "annual").
         Values are up to two dictionaries, with both being optional.
-        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "AS-JAN", "AS-DEC").
-        It needs to be a yearly frequency. Defaults to "AS-JAN".
+        The first is {'freq': str}, where str is a frequency supported by xarray (e.g. "YS", "YS-JAN", "YS-DEC").
+        It needs to be a yearly frequency. Defaults to "YS-JAN".
         The second is an indexer as supported by :py:func:`xclim.core.calendar.select_time`.
         Defaults to {}, which means the whole year.
         See :py:func:`xclim.core.calendar.select_time` for more information.
-        Examples: {"winter": {"freq": "AS-DEC", "date_bounds": ["12-01", "02-28"]}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
+        Examples: {"winter": {"freq": "YS-DEC", "date_bounds": ["12-01", "02-28"]}}, {"jan": {"freq": "YS", "month": 1}}, {"annual": {}}.
     missing : str
         How to handle missing values. One of "skip", "any", "at_least_n", "pct", "wmo".
         See :py:func:`xclim.core.missing` for more information.
@@ -158,7 +159,7 @@ def get_yearly_op(
         "DEC",
     ]
     for i in timeargs:
-        freq = timeargs[i].get("freq", "AS-JAN")
+        freq = timeargs[i].get("freq", "YS-JAN")
         if not xc.core.calendar.compare_offsets(freq, "==", "YS"):
             raise ValueError(
                 f"Frequency {freq} is not supported. Please use a yearly frequency."
@@ -171,10 +172,10 @@ def get_yearly_op(
         if (
             "season" in indexer.keys()
             and "DJF" in indexer["season"]
-            and freq != "AS-DEC"
+            and freq != "YS-DEC"
         ):
             warnings.warn(
-                "The frequency is not AS-DEC, but the season indexer includes DJF. "
+                "The frequency is not YS-DEC, but the season indexer includes DJF. "
                 "This will lead to misleading results."
             )
         elif (
@@ -206,7 +207,7 @@ def get_yearly_op(
             if freq == "YS" or (month_start != month_labels.index(freq.split("-")[1])):
                 warnings.warn(
                     f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. "
-                    f"You should use 'AS-{month_labels[month_start - 1]}' as the frequency."
+                    f"You should use 'YS-{month_labels[month_start - 1]}' as the frequency."
                 )
 
         identifier = f"{input_var}{window if window > 1 else ''}_{op}_{i.lower()}"
