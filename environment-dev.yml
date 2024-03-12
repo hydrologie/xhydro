@@ -10,6 +10,7 @@ dependencies:
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
   - numpy
+  - planetary-computer
   - pystac
   - pystac-client
   - pooch >=1.8.0
