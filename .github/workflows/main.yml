@@ -16,9 +16,12 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
+      - unlabeled
   pull_request_review:
     types:
       - submitted
+      - edited
 
 concurrency:
   # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
