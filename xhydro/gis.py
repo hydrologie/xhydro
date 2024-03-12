@@ -129,7 +129,7 @@ def watershed_properties(
     The calculated properties are :
     - area
     - perimeter
-    - gravenlius
+    - gravelius
     - centroid coordinates
 
     Parameters
