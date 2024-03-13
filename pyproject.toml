@@ -40,7 +40,7 @@ dependencies = [
   "cartopy",
   "geopandas",
   "intake <2.0.0", # This should be set by xdatasets once on conda-forge
-  "intake-esm <2024.2.6; python_version == '3.9'", # pin needed for intake-esm (dependency of xscen) to work with Python3.9
+  "intake-esm !=2024.2.6", # pin needed for intake-esm (dependency of xscen) to work with Python3.9
   "leafmap",
   "numpy",
   "planetary-computer",
