@@ -4,7 +4,7 @@ Changelog
 
 v0.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,6 +21,7 @@ Internal changes
     * Added a `Makefile` recipe to facilitate installation of `esmpy` when `esmf` is installed and visible on the `$PATH`.
     * Added a `Makefile` recipe for running tests over Jupyter notebooks.
     * Synchronized dependencies between `pyproject.toml` and `conda` configuration files.
+* Moved the notebooks under a Usage section in the documentation. (:issue:`114`, :pull:`118`).
 
 v0.3.4 (2024-02-29)
 -------------------
