@@ -2,7 +2,7 @@
 Changelog
 =========
 
-v0.4.0 (unreleased)
+v0.3.5 (2024-03-20)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
