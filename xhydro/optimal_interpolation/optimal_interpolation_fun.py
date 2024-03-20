@@ -11,7 +11,7 @@ import xarray as xr
 from numpy import dtype, floating, ndarray
 from scipy.stats import norm
 
-import xhydro.optimal_interpolation.ECF_climate_correction as ecf_cc  # noqa
+import xhydro.optimal_interpolation.ECF_climate_correction as ecf_cc
 import xhydro.optimal_interpolation.utilities as util
 
 __all__ = [
