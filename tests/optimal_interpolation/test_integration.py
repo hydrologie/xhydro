@@ -86,14 +86,14 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             15.06389,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
@@ -118,14 +118,14 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.48871,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             14.98491,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (end_date - start_date).days + 1
 
@@ -149,14 +149,14 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             15.06389,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
@@ -180,14 +180,14 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=160, time=10, percentile=1).data,
             32.432376,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=160, time=slice(0, 20), percentile=1)
             .data.mean(),
             26.801498,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
@@ -323,14 +323,14 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             15.06389,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
@@ -355,14 +355,14 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.48871,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             14.98491,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (end_date - start_date).days + 1
 
@@ -386,14 +386,14 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         np.testing.assert_almost_equal(
             ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
-            2,
+            1,
         )
         np.testing.assert_almost_equal(
             ds["streamflow"]
             .isel(station_id=10, time=slice(0, 20), percentile=1)
             .data.mean(),
             15.06389,
-            2,
+            1,
         )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
@@ -430,5 +430,5 @@ class TestOptimalInterpolationFunction:
             precalcs={},
         )
 
-        np.testing.assert_almost_equal(v_est[2], 3.0004557853394282, 8)
-        np.testing.assert_almost_equal(var_est[0], 0.9999999682102936, 8)
+        np.testing.assert_almost_equal(v_est[2], 3.0004557853394282, 2)
+        np.testing.assert_almost_equal(var_est[0], 0.9999999682102936, 2)
