@@ -1,6 +1,7 @@
 """Empirical Covariance Function variogram calibration package."""
 
 from functools import partial
+
 import haversine
 import numpy as np
 import scipy.optimize
@@ -60,7 +61,9 @@ def correction(
 
     # Pairwise distance between all observation stations.
     observation_latlong = list(zip(centroid_lat_obs, centroid_lon_obs))
-    distance = haversine.haversine_vector(observation_latlong, observation_latlong, comb=True)
+    distance = haversine.haversine_vector(
+        observation_latlong, observation_latlong, comb=True
+    )
 
     # For each timestep, we will compute the histogram bins and other data required to provide the data for the ECF
     # function optimizer.
@@ -82,7 +85,9 @@ def correction(
 
             # Sanity check: length of distance_pc should be equal to ecart_jour.
             if len(day_diff) != distance_pc.shape[0]:
-                raise AssertionError("Ecart_jour not equal to the size of distance_pc in histogram bin definition.")
+                raise AssertionError(
+                    "Ecart_jour not equal to the size of distance_pc in histogram bin definition."
+                )
 
             # Sort the data into bins and get their stats.
             h_b, cov_b, std_b, num_p = eval_covariance_bin(
@@ -94,9 +99,9 @@ def correction(
 
             # If there are at least "variogram_bins" number of bins, then add it to the results matrix
             if len(num_p[0]) >= variogram_bins:
-                heights[i, :] = h_b[0, 0:variogram_bins + 1]
-                covariances[i, :] = cov_b[0, 0:variogram_bins + 1]
-                standard_deviations[i, :] = std_b[0, 0:variogram_bins + 1]
+                heights[i, :] = h_b[0, 0 : variogram_bins + 1]
+                covariances[i, :] = cov_b[0, 0 : variogram_bins + 1]
+                standard_deviations[i, :] = std_b[0, 0 : variogram_bins + 1]
 
     # The histogram bins for each day have been calculated. Now is time to prepare the statistics overall for the ECF
     # function fitting for the semi-variogram for the number of days (i.e. weighted average of climatology). This first
@@ -108,7 +113,9 @@ def correction(
     )
 
     # And this second part does the binning of the histogram as was done before for all days.
-    h_b, cov_b, std_b = calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights)
+    h_b, cov_b, std_b = calculate_ECF_stats(
+        distance, covariance, covariance_weights, valid_heights
+    )
 
     # This determines the shape of the fit that we want the optimizer to fit to the correlation variogram.
     ecf_fun = partial(general_ecf, form=form)
@@ -125,7 +132,10 @@ def correction(
     # Perform the training using the bounds for the parameters as passed by the users before.
     par_opt = scipy.optimize.minimize(
         _rmse_func,
-        [np.mean(cov_b), np.mean(h_b) / 3],  # TODO: Find out why the "3" is here. Seems out of place.
+        [
+            np.mean(cov_b),
+            np.mean(h_b) / 3,
+        ],  # TODO: Find out why the "3" is here. Seems out of place.
         bounds=(
             [input_opt["p1_bnds"][0], input_opt["p1_bnds"][1]],
             [0, input_opt["hmax_mult_range_bnds"][1] * 500],
@@ -143,6 +153,7 @@ def calculate_ECF_stats(
     valid_heights: np.ndarray,
 ) -> tuple:
     """Calculate statistics for Empirical Covariance Function (ECF), climatological version.
+
     Uses the histogram data from all previous days and reapplies the same steps, but inputs are of size (timesteps x
     variogram_bins). So if we use many days to compute the histogram bins, we get a histogram per day. This function
     generates a single output from a new histogram.
@@ -178,7 +189,9 @@ def calculate_ECF_stats(
     for i in range(valid_heights_count - 1):
 
         # Find the indices of the data that need to go into that bin
-        ind = np.where((distance >= valid_heights[i]) & (distance < valid_heights[i + 1]))
+        ind = np.where(
+            (distance >= valid_heights[i]) & (distance < valid_heights[i + 1])
+        )
 
         # Compute the mean distance of points in that bin
         h_b[i] = np.mean(distance[ind])
@@ -248,7 +261,7 @@ def eval_covariance_bin(
     distances = distances[distances < hmax]
 
     # Step 5: Define quantiles for binning
-    quantiles = np.linspace(0.0, 1.0, num=variogram_bins+1)
+    quantiles = np.linspace(0.0, 1.0, num=variogram_bins + 1)
 
     # Step 6: Get the edge values of each bin / class, based on the unraveled distance vector (timesteps x stations)
     cl = np.unique(np.quantile(distances, quantiles))
@@ -256,10 +269,10 @@ def eval_covariance_bin(
     # Initialize arrays for results, for all data that will go into each bin. Using the final bins after the unique
     # function in case of many values in the same bin (ex. zeros), so len(cl)-1 = number of actual bins (because
     # cl are edges).
-    returned_covariance = np.empty((1, len(cl)-1)) * np.nan
-    returned_heights = np.empty((1, len(cl)-1)) * np.nan
-    returned_standard = np.empty((1, len(cl)-1)) * np.nan
-    returned_row_length = np.empty((1, len(cl)-1)) * np.nan
+    returned_covariance = np.empty((1, len(cl) - 1)) * np.nan
+    returned_heights = np.empty((1, len(cl) - 1)) * np.nan
+    returned_standard = np.empty((1, len(cl) - 1)) * np.nan
+    returned_row_length = np.empty((1, len(cl) - 1)) * np.nan
 
     # Step 6: Iterate over distance bins.
     for i in range(0, len(cl) - 1):
@@ -361,4 +374,4 @@ def general_ecf(h, par, form):
     elif form == 3:
         return par[0] * np.exp(-h / par[1])
     elif form == 4:
-        return par[0] * np.exp(-(h**par[1])/par[0])
+        return par[0] * np.exp(-(h ** par[1]) / par[0])

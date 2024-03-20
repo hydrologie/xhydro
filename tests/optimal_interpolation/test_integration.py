@@ -1,7 +1,7 @@
 import datetime as dt
+from functools import partial
 from pathlib import Path
 from zipfile import ZipFile
-from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -83,8 +83,18 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.21767,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            15.06389,
+            2,
+        )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
         # Test a different data range to verify that the last entry is different
@@ -105,8 +115,18 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         )
 
         # Verify results
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.48871, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 14.98491, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.48871,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            14.98491,
+            2,
+        )
         assert len(ds["time"].data) == (end_date - start_date).days + 1
 
     def test_cross_validation_execute_parallel(self):
@@ -126,8 +146,18 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.21767,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            15.06389,
+            2,
+        )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
     def test_operational_optimal_interpolation_run(self):
@@ -147,8 +177,18 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=160, time=10, percentile=1).data, 32.432376, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=160, time=slice(0, 20), percentile=1).data.mean(), 26.801498, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=160, time=10, percentile=1).data,
+            32.432376,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=160, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            26.801498,
+            2,
+        )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
     def test_compare_result_compare(self):
@@ -280,8 +320,18 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.21767,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            15.06389,
+            2,
+        )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
         # Test a different data range to verify that the last entry is different
@@ -302,8 +352,18 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         )
 
         # Verify results
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.48871, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 14.98491, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.48871,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            14.98491,
+            2,
+        )
         assert len(ds["time"].data) == (end_date - start_date).days + 1
 
     def test_cross_validation_execute_parallel(self):
@@ -323,8 +383,18 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
-        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        np.testing.assert_almost_equal(
+            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            21.21767,
+            2,
+        )
+        np.testing.assert_almost_equal(
+            ds["streamflow"]
+            .isel(station_id=10, time=slice(0, 20), percentile=1)
+            .data.mean(),
+            15.06389,
+            2,
+        )
         assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
     def test_compare_result_compare(self):
@@ -347,17 +417,17 @@ class TestOptimalInterpolationFunction:
         # Run the code and obtain the resulting flows.
         ecf_fun = partial(general_ecf, form=4)
         v_est, var_est, _ = opt.optimal_interpolation(
-                                                 lat_est=np.array([-0.5, -0.25, 0.25, 0.5]),
-                                                 lon_est=np.array([-0.5, -0.25, 0.25, 0.5]),
-                                                 lat_obs=np.array([-1.0, 0.0, 1.0]),
-                                                 lon_obs=np.array([-1.0, 0.0, 1.0]),
-                                                 ecf=partial(ecf_fun, par=[1.0, 0.5]),
-                                                 bg_var_obs=np.array([1.0, 1.0, 1.0]),
-                                                 bg_var_est=np.array([1.0, 1.0, 1.0, 1.0]),
-                                                 var_obs=np.array([0.25, 0.25, 0.25]),
-                                                 bg_departures=np.array([0.2, 0.3, 0.1]),
-                                                 bg_est=np.array([1.0, 4.0, 3.0, 5.0]),
-                                                 precalcs={},
+            lat_est=np.array([-0.5, -0.25, 0.25, 0.5]),
+            lon_est=np.array([-0.5, -0.25, 0.25, 0.5]),
+            lat_obs=np.array([-1.0, 0.0, 1.0]),
+            lon_obs=np.array([-1.0, 0.0, 1.0]),
+            ecf=partial(ecf_fun, par=[1.0, 0.5]),
+            bg_var_obs=np.array([1.0, 1.0, 1.0]),
+            bg_var_est=np.array([1.0, 1.0, 1.0, 1.0]),
+            var_obs=np.array([0.25, 0.25, 0.25]),
+            bg_departures=np.array([0.2, 0.3, 0.1]),
+            bg_est=np.array([1.0, 4.0, 3.0, 5.0]),
+            precalcs={},
         )
 
         np.testing.assert_almost_equal(v_est[2], 3.0004557853394282, 8)
