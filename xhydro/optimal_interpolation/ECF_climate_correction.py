@@ -1,38 +1,33 @@
-"""Empirical Covariance Function climate correction package."""
+"""Empirical Covariance Function variogram calibration package."""
 
 from functools import partial
-
+import haversine
 import numpy as np
 import scipy.optimize
-
-from xhydro.optimal_interpolation.mathematical_algorithms import (
-    calculate_average_distance,
-    eval_covariance_bin,
-)
-from xhydro.optimal_interpolation.utilities import general_ecf
+import xarray as xr
 
 
 def correction(
-    qobs: np.ndarray,
-    qsim: np.ndarray,
-    x_points: np.ndarray,
-    y_points: np.ndarray,
-    iteration_count: int = 10,
+    qobs: xr.Dataset,
+    qsim: xr.Dataset,
+    centroid_lon_obs: np.ndarray,
+    centroid_lat_obs: np.ndarray,
+    variogram_bins: int = 10,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
     Parameters
     ----------
-    qobs : np.ndarray
-        Array of observed flow data.
-    qsim : np.ndarray
-        Array of simulated flow data.
-    x_points : np.ndarray
-        X-coordinate points for stations.
-    y_points : np.ndarray
-        Y-coordinate points for stations.
-    iteration_count : int, optional
-        Number of iterations for the interpolation. Default is 10.
+    qobs : xr.Dataset
+        An xarray Dataset of observed flow data.
+    qsim : xr.Dataset
+        An xarray Dataset of simulated flow data.
+    centroid_lon_obs : np.ndarray
+        Longitude vector of the catchment centroids for the observed stations.
+    centroid_lat_obs : np.ndarray
+        Latitude vector of the catchment centroids for the observed stations.
+    variogram_bins : int, optional
+        Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
 
     Returns
     -------
@@ -41,76 +36,103 @@ def correction(
         - ecf_fun: Partial function for the error covariance function.
         - par_opt: Optimized parameters for the interpolation.
     """
-    difference = qsim - qobs
-    time_range = np.shape(difference)[0]
+    # Calculate the difference between the background field (qsim) and the point observations (qobs) at the station
+    # locations.
+    difference = qsim.values - qobs.values
 
-    heights = np.empty((time_range, iteration_count)) * np.nan
-    covariances = np.empty((time_range, iteration_count)) * np.nan
-    standard_deviations = np.empty((time_range, iteration_count)) * np.nan
+    # Number of timesteps. Probably a better way to get this, maybe from qobs or qsim parent variable?
+    time_range = len(qobs.time)
 
+    # Preallocate matrices for all timesteps for the heights of the histograms, the covariances and standard deviations
+    # of the values within each bin of the histogram.
+    heights = np.empty((time_range, variogram_bins)) * np.nan
+    covariances = np.empty((time_range, variogram_bins)) * np.nan
+    standard_deviations = np.empty((time_range, variogram_bins)) * np.nan
+
+    # TODO: Some user-defined inputs that should be parameterized
+    # Form of the ECF function, more could be added. Should also be parameterized.
+    form = 3
     input_opt = {
         "hmax_divider": 2,
         "p1_bnds": [0.95, 1],
         "hmax_mult_range_bnds": [0.05, 3],
     }
-    form = 3
 
-    distance = calculate_average_distance(x_points, y_points)
+    # Pairwise distance between all observation stations.
+    observation_latlong = list(zip(centroid_lat_obs, centroid_lon_obs))
+    distance = haversine.haversine_vector(observation_latlong, observation_latlong, comb=True)
 
+    # For each timestep, we will compute the histogram bins and other data required to provide the data for the ECF
+    # function optimizer.
     for i in range(time_range):
+        # Check for NaN observed streamflow data points (if difference is NaN, necessarily obs is NaN. But in case a sim
+        # also provides a NaN, then take the difference instead).
         is_nan = np.isnan(difference[i, :])
-        ecart_jour = difference[i, ~is_nan]
-        errors = np.ones(len(ecart_jour))
 
-        if len(ecart_jour) >= 10:
+        # Calculate the error for this particular day and remove NaN days.
+        day_diff = difference[i, ~is_nan]
 
-            is_nan_horizontal = is_nan[: len(distance)]
-            is_nan_vertical = is_nan_horizontal.reshape(1, len(distance))
+        # If there are at least as many stations worth of data as there are required bins, we can compute the histogram.
+        if len(day_diff) >= variogram_bins:
 
-            distance_pc = distance[~is_nan_horizontal]
-            distance_pc = distance_pc[:, ~is_nan_vertical[0, :]]
+            # Get the stations that did not have NaN observations. Since the matrix is 2D due to pairwise distances,
+            # need to remove rows and columns of NaN-stations from the distance matrix distance_pc.
+            distance_pc = np.delete(distance, is_nan, axis=0)
+            distance_pc = np.delete(distance_pc, is_nan, axis=1)
 
+            # Sanity check: length of distance_pc should be equal to ecart_jour.
+            if len(day_diff) != distance_pc.shape[0]:
+                raise AssertionError("Ecart_jour not equal to the size of distance_pc in histogram bin definition.")
+
+            # Sort the data into bins and get their stats.
             h_b, cov_b, std_b, num_p = eval_covariance_bin(
-                distance_pc,
-                ecart_jour,
-                errors,
-                input_opt["hmax_divider"],
-                iteration_count,
+                distances=distance_pc,
+                values=day_diff,
+                hmax_divider=input_opt["hmax_divider"],
+                variogram_bins=variogram_bins,
             )
 
-            if len(num_p[0]) >= 10:
-                heights[i, :] = h_b[0, 0:11]
-                covariances[i, :] = cov_b[0, 0:11]
-                standard_deviations[i, :] = std_b[0, 0:11]
+            # If there are at least "variogram_bins" number of bins, then add it to the results matrix
+            if len(num_p[0]) >= variogram_bins:
+                heights[i, :] = h_b[0, 0:variogram_bins + 1]
+                covariances[i, :] = cov_b[0, 0:variogram_bins + 1]
+                standard_deviations[i, :] = std_b[0, 0:variogram_bins + 1]
 
-    distance, covariance, covariance_weights, valid_heights, valid_heights_count = (
+    # The histogram bins for each day have been calculated. Now is time to prepare the statistics overall for the ECF
+    # function fitting for the semi-variogram for the number of days (i.e. weighted average of climatology). This first
+    # function reformats the data according to the timesteps and computes the weighted average histograms.
+    distance, covariance, covariance_weights, valid_heights = (
         initialize_stats_variables(
-            heights, covariances, standard_deviations, iteration_count
+            heights, covariances, standard_deviations, variogram_bins
         )
     )
 
-    h_b, cov_b, std_b = calculate_ECF_stats(
-        distance, covariance, covariance_weights, valid_heights, valid_heights_count
-    )
+    # And this second part does the binning of the histogram as was done before for all days.
+    h_b, cov_b, std_b = calculate_ECF_stats(distance, covariance, covariance_weights, valid_heights)
 
-    # Nouvelle approche pour le ecf_fun, au lieu d'avoir des lambdas on y va avec des partial.
+    # This determines the shape of the fit that we want the optimizer to fit to the correlation variogram.
     ecf_fun = partial(general_ecf, form=form)
 
+    # Weight according to the inverse of the variance of each bin and then normalize them
     weights = 1 / np.power(std_b, 2)
     weights = weights / np.sum(weights)
 
+    # Define the objective function used for the ECF function training.
     def _rmse_func(par):
+        # Compute the RMSE of the fit between the observations and variogram fit according to the ecf_fun chosen.
         return np.sqrt(np.mean(weights * np.power(ecf_fun(h=h_b, par=par) - cov_b, 2)))
 
+    # Perform the training using the bounds for the parameters as passed by the users before.
     par_opt = scipy.optimize.minimize(
         _rmse_func,
-        [np.mean(cov_b), np.mean(h_b) / 3],
+        [np.mean(cov_b), np.mean(h_b) / 3],  # TODO: Find out why the "3" is here. Seems out of place.
         bounds=(
             [input_opt["p1_bnds"][0], input_opt["p1_bnds"][1]],
             [0, input_opt["hmax_mult_range_bnds"][1] * 500],
         ),
     )["x"]
 
+    # Return the fitting function as determined by the user and the optimal calibrated parameter set.
     return ecf_fun, par_opt
 
 
@@ -119,9 +141,11 @@ def calculate_ECF_stats(
     covariance: np.ndarray,
     covariance_weights: np.ndarray,
     valid_heights: np.ndarray,
-    valid_heights_count: int,
 ) -> tuple:
-    """Calculate statistics for Empirical Covariance Function (ECF).
+    """Calculate statistics for Empirical Covariance Function (ECF), climatological version.
+    Uses the histogram data from all previous days and reapplies the same steps, but inputs are of size (timesteps x
+    variogram_bins). So if we use many days to compute the histogram bins, we get a histogram per day. This function
+    generates a single output from a new histogram.
 
     Parameters
     ----------
@@ -133,8 +157,6 @@ def calculate_ECF_stats(
         Array of weights for covariances.
     valid_heights : np.ndarray
         Array of valid heights.
-    valid_heights_count : int
-        Number of valid heights.
 
     Returns
     -------
@@ -144,30 +166,138 @@ def calculate_ECF_stats(
         - cov_b: Array of weighted average covariances for each height bin.
         - std_b: Array of standard deviations for each height bin.
     """
+    valid_heights_count = len(valid_heights)
+
+    # Create the empty arrays for the covariance, height and standard_deviation matrices for the correct number of bins
+    # (This is valid_heights_count -1)
     cov_b = np.zeros(valid_heights_count - 1)
     h_b = np.zeros(valid_heights_count - 1)
     std_b = np.zeros(valid_heights_count - 1)
+
+    # For each bin, get and aggregate the data that fits into that bin.
     for i in range(valid_heights_count - 1):
-        ind = np.where(
-            (distance >= valid_heights[i]) & (distance < valid_heights[i + 1])
-        )
+
+        # Find the indices of the data that need to go into that bin
+        ind = np.where((distance >= valid_heights[i]) & (distance < valid_heights[i + 1]))
+
+        # Compute the mean distance of points in that bin
         h_b[i] = np.mean(distance[ind])
 
+        # Get the weights for that bin
         weight = covariance_weights[ind] / np.sum(covariance_weights[ind])
 
+        # Get the covariance, weighted average of the covariance
         cov_b[i] = np.sum(weight * covariance[ind])
         average = np.average(covariance[ind], weights=weight)
+
+        # Get the weighted average of the covariance error field
         variance = np.average((covariance[ind] - average) ** 2, weights=weight)
+
+        # Get the standard deviation of the error field
         std_b[i] = np.sqrt(variance)
 
     return h_b, cov_b, std_b
+
+
+def eval_covariance_bin(
+    distances: np.ndarray,
+    values: np.ndarray,
+    hmax_divider: int = 2,
+    variogram_bins: int = 10,
+):
+    """Evaluate the covariance of a binomial distribution.
+
+    Parameters
+    ----------
+    distances : np.ndarray
+        Array of distances for each data point.
+    values : np.ndarray
+        Array of values corresponding to each data point.
+    hmax_divider : int
+        Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
+    variogram_bins : int, optional
+        Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
+
+    Returns
+    -------
+    tuple
+        Arrays for heights, covariance, standard deviation, and row length.
+    """
+    # Step 1: Calculate weights based on errors
+    weights = np.power(1 / np.ones(len(values)), 2)
+    weights = weights / np.sum(weights)
+
+    # Step 2: Calculate weighted average and variances
+    weighted_average = np.sum(values * weights) / np.sum(weights)
+    variances = np.var(values, ddof=1)
+
+    # Step 3: Calculate covariance matrix
+    weighted_values = values - weighted_average
+    covariance = weighted_values * weighted_values[:, np.newaxis]
+    covariance_weight = weights * weights[:, np.newaxis]
+
+    # Flatten matrices for further processing and binning
+    covariance = covariance.reshape(len(values) * len(values))
+    covariance_weight = covariance_weight.reshape(len(values) * len(values))
+    distances = distances.reshape(len(distances) * len(distances))
+
+    # Step 4: Apply distance threshold (hmax) for binning. Keep only those catchments that are less than
+    # hmax/hmax_divider.
+    hmax = max(distances) / hmax_divider
+    covariance = covariance[distances < hmax]
+    distances = distances[distances < hmax]
+
+    # Step 5: Define quantiles for binning
+    quantiles = np.linspace(0.0, 1.0, num=variogram_bins+1)
+
+    # Step 6: Get the edge values of each bin / class, based on the unraveled distance vector (timesteps x stations)
+    cl = np.unique(np.quantile(distances, quantiles))
+
+    # Initialize arrays for results, for all data that will go into each bin. Using the final bins after the unique
+    # function in case of many values in the same bin (ex. zeros), so len(cl)-1 = number of actual bins (because
+    # cl are edges).
+    returned_covariance = np.empty((1, len(cl)-1)) * np.nan
+    returned_heights = np.empty((1, len(cl)-1)) * np.nan
+    returned_standard = np.empty((1, len(cl)-1)) * np.nan
+    returned_row_length = np.empty((1, len(cl)-1)) * np.nan
+
+    # Step 6: Iterate over distance bins.
+    for i in range(0, len(cl) - 1):
+
+        # For each bin (between edges), find all distance values falling in this bin.
+        ind = np.where((distances >= cl[i]) & (distances < cl[i + 1]))[0]
+
+        # Take the mean value of all distances values within the bin.
+        returned_heights[:, i] = np.mean(distances[ind])
+        # Take the covariance weights and covariance values of stations in the bin
+        selected_covariance_weight = covariance_weight[ind]
+        selected_covariance = covariance[ind]
+
+        # Step 7: Calculate covariance, standard deviation, and row length
+        weight = selected_covariance_weight / np.sum(selected_covariance_weight)
+
+        # Compute the weighted covariance within the bin
+        returned_covariance[:, i] = (
+            np.sum(weight)
+            / (np.power(np.sum(weight), 2) - np.sum(np.power(weight, 2)))
+            * np.sum(weight * selected_covariance)
+        ) / variances
+
+        # Get the standard variation of the covariances of stations in the bin
+        returned_standard[:, i] = np.sqrt(np.var(selected_covariance))
+
+        # Also get the number of stations within that bin.
+        returned_row_length[:, i] = len(ind)
+
+    # Step 8: Return the final results as a tuple
+    return returned_heights, returned_covariance, returned_standard, returned_row_length
 
 
 def initialize_stats_variables(
     heights: np.ndarray,
     covariances: np.ndarray,
     standard_deviations: np.ndarray,
-    iteration_count: int = 10,
+    variogram_bins: int = 10,
 ) -> tuple:
     """
     Initialize variables for statistical calculations in an Empirical Covariance Function (ECF).
@@ -180,8 +310,8 @@ def initialize_stats_variables(
         Array of covariances.
     standard_deviations : np.ndarray
         Array of standard deviations.
-    iteration_count : int
-        Number of iterations, default is 10.
+    variogram_bins : int, optional
+        Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
 
     Returns
     -------
@@ -191,11 +321,9 @@ def initialize_stats_variables(
         - covariance: Array of covariances.
         - covariance_weights: Array of weights for covariances.
         - valid_heights: Array of valid heights.
-        - valid_heights_count: Number of valid heights.
     """
-    quantities = np.linspace(0, 1, iteration_count + 1)
-    valid_heights = np.unique(np.quantile(heights[~np.isnan(heights)], quantities))
-    valid_heights_count = len(valid_heights)
+    quantiles = np.linspace(0.0, 1.0, variogram_bins + 1)
+    valid_heights = np.unique(np.quantile(heights[~np.isnan(heights)], quantiles))
 
     distance = heights.T.reshape(len(heights) * len(heights[0]))
     covariance = covariances.T.reshape(len(covariances) * len(covariances[0]))
@@ -206,4 +334,31 @@ def initialize_stats_variables(
         2,
     )
 
-    return distance, covariance, covariance_weights, valid_heights, valid_heights_count
+    return distance, covariance, covariance_weights, valid_heights
+
+
+def general_ecf(h, par, form):
+    """Define the form of the Error Covariance Function (ECF) equations.
+
+    Parameters
+    ----------
+    h : float or array
+        The distance or distances at which to evaluate the ECF.
+    par : list
+        Parameters for the ECF equation.
+    form : int
+        The form of the ECF equation to use (1, 2, or other).
+
+    Returns
+    -------
+    float or array:
+        The calculated ECF values based on the specified form.
+    """
+    if form == 1:  # From Lachance-Cloutier et al. 2017.
+        return par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+    elif form == 2:
+        return par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+    elif form == 3:
+        return par[0] * np.exp(-h / par[1])
+    elif form == 4:
+        return par[0] * np.exp(-(h**par[1])/par[0])

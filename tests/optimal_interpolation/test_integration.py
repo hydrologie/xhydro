@@ -1,7 +1,7 @@
 import datetime as dt
-import tempfile
 from pathlib import Path
 from zipfile import ZipFile
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -9,7 +9,8 @@ import pooch
 import xarray as xr
 
 import xhydro.optimal_interpolation.compare_result as cr
-import xhydro.optimal_interpolation.cross_validation as cv
+import xhydro.optimal_interpolation.optimal_interpolation_fun as opt
+from xhydro.optimal_interpolation.ECF_climate_correction import general_ecf
 
 
 class TestOptimalInterpolationIntegrationCorrectedFiles:
@@ -50,11 +51,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     station_correspondence = xr.open_dataset(corresponding_station_file)
     df_validation = pd.read_csv(selected_station_file, sep=None, dtype=str)
-    crossvalidation_stations = list(df_validation["No_station"])
-
-    # Path to file to be written to
-    tmpdir = tempfile.mkdtemp()
-    write_file = tmpdir + "/" + "Test_OI_results.nc"
+    observation_stations = list(df_validation["No_station"])
 
     # Start and end dates for the simulation. Short period for the test.
     start_date = dt.datetime(2018, 11, 1)
@@ -62,8 +59,8 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     # Set some variables to use in the tests
     ratio_var_bg = 0.15
-    percentiles = [0.25, 0.50, 0.75]
-    iterations = 10
+    percentiles = [25.0, 50.0, 75.0]
+    variogram_bins = 10
 
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
@@ -72,90 +69,87 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         qsim = self.qsim.sel(time=slice(self.start_date, self.end_date))
 
         # Run the code and obtain the resulting flows.
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             qobs,
             qsim,
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=False,
             max_cores=1,
+            leave_one_out_cv=True,
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
-
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.3669, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
-
-        # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
         # Test a different data range to verify that the last entry is different
         start_date = dt.datetime(2018, 10, 31)
         end_date = dt.datetime(2018, 12, 31)
 
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             self.qobs.sel(time=slice(start_date, end_date)),
             self.qsim.sel(time=slice(start_date, end_date)),
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=False,
             max_cores=1,
+            leave_one_out_cv=True,
         )
 
-        # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.0505, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.3878, 2)
-
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.82, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 52.28, 2)
-
-        # Test the time range duration
-        assert len(result_flows[0]) == (end_date - start_date).days + 1
-        assert len(result_flows[1]) == (end_date - start_date).days + 1
-        assert len(result_flows[2]) == (end_date - start_date).days + 1
+        # Verify results
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.48871, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 14.98491, 2)
+        assert len(ds["time"].data) == (end_date - start_date).days + 1
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
         # Run the interpolation and get flows
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             self.qobs.sel(time=slice(self.start_date, self.end_date)),
             self.qsim.sel(time=slice(self.start_date, self.end_date)),
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=True,
-            max_cores=16,
+            max_cores=3,
+            leave_one_out_cv=True,
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.3669, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
+    def test_operational_optimal_interpolation_run(self):
+        """Test the operational version of the optimal interpolation code."""
+        # Run the interpolation and get flows
+        ds = opt.execute_interpolation(
+            self.qobs.sel(time=slice(self.start_date, self.end_date)),
+            self.qsim.sel(time=slice(self.start_date, self.end_date)),
+            self.station_correspondence,
+            self.observation_stations,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            variogram_bins=self.variogram_bins,
+            parallelize=False,
+            max_cores=1,
+            leave_one_out_cv=False,
+        )
 
-        # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
+        # Test some output flow values
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=160, time=10, percentile=1).data, 32.432376, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=160, time=slice(0, 20), percentile=1).data.mean(), 26.801498, 2)
+        assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
     def test_compare_result_compare(self):
         start_date = dt.datetime(2018, 11, 1)
@@ -166,7 +160,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             qsim=self.qsim.sel(time=slice(start_date, end_date)),
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
-            crossvalidation_stations=self.crossvalidation_stations,
+            observation_stations=self.observation_stations,
             show_comparison=False,
         )
 
@@ -242,7 +236,7 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
     ] = "BRKN99999"  # Forcing to change due to double value wtf.
 
     df_validation = pd.read_csv(selected_station_file, sep=None, dtype=str)
-    crossvalidation_stations = list(df_validation["No_station"])
+    observation_stations = list(df_validation["No_station"])
 
     flow_l1o = xr.open_dataset(flow_l1o_info_file)
     flow_l1o = flow_l1o.assign(
@@ -256,18 +250,14 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     # Now we are all in dataset format!
 
-    # Path to file to be written to
-    tmpdir = tempfile.mkdtemp()
-    write_file = tmpdir + "/" + "Test_OI_results.nc"
-
     # Start and end dates for the simulation. Short period for the test.
     start_date = dt.datetime(2018, 11, 1)
     end_date = dt.datetime(2019, 1, 1)
 
     # Set some variables to use in the tests
     ratio_var_bg = 0.15
-    percentiles = [0.25, 0.50, 0.75]
-    iterations = 10
+    percentiles = [25.0, 50.0, 75.0]
+    variogram_bins = 10
 
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
@@ -276,90 +266,66 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         qsim = self.qsim.sel(time=slice(self.start_date, self.end_date))
 
         # Run the code and obtain the resulting flows.
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             qobs,
             qsim,
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=False,
             max_cores=1,
+            leave_one_out_cv=True,
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
-
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.3669, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
-
-        # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
         # Test a different data range to verify that the last entry is different
         start_date = dt.datetime(2018, 10, 31)
         end_date = dt.datetime(2018, 12, 31)
 
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             self.qobs.sel(time=slice(start_date, end_date)),
             self.qsim.sel(time=slice(start_date, end_date)),
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=False,
             max_cores=1,
+            leave_one_out_cv=True,
         )
 
-        # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 8.0505, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.3878, 2)
-
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.82, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 52.28, 2)
-
-        # Test the time range duration
-        assert len(result_flows[0]) == (end_date - start_date).days + 1
-        assert len(result_flows[1]) == (end_date - start_date).days + 1
-        assert len(result_flows[2]) == (end_date - start_date).days + 1
+        # Verify results
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.48871, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 14.98491, 2)
+        assert len(ds["time"].data) == (end_date - start_date).days + 1
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
         # Run the interpolation and get flows
-        result_flows = cv.execute(
+        ds = opt.execute_interpolation(
             self.qobs.sel(time=slice(self.start_date, self.end_date)),
             self.qsim.sel(time=slice(self.start_date, self.end_date)),
             self.station_correspondence,
-            self.crossvalidation_stations,
-            write_file=self.write_file,
+            self.observation_stations,
             ratio_var_bg=self.ratio_var_bg,
             percentiles=self.percentiles,
-            iterations=self.iterations,
+            variogram_bins=self.variogram_bins,
             parallelize=True,
-            max_cores=16,
+            max_cores=3,
+            leave_one_out_cv=True,
         )
 
         # Test some output flow values
-        np.testing.assert_almost_equal(result_flows[1][-1, 0], 7.9, 2)
-        np.testing.assert_almost_equal(result_flows[1][-2, 0], 8.04, 2)
-
-        # To randomize to test direct values
-        np.testing.assert_almost_equal(np.nanmean(result_flows[0][:, :]), 29.3669, 2)
-        np.testing.assert_almost_equal(np.nanmean(result_flows[2][:, :]), 51.26, 2)
-
-        # Test the time range duration
-        assert len(result_flows[0]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[1]) == (self.end_date - self.start_date).days + 1
-        assert len(result_flows[2]) == (self.end_date - self.start_date).days + 1
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=10, percentile=1).data, 21.21767, 2)
+        np.testing.assert_almost_equal(ds["streamflow"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(), 15.06389, 2)
+        assert len(ds["time"].data) == (self.end_date - self.start_date).days + 1
 
     def test_compare_result_compare(self):
         start_date = dt.datetime(2018, 11, 1)
@@ -370,6 +336,29 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             qsim=self.qsim.sel(time=slice(start_date, end_date)),
             flow_l1o=self.flow_l1o.sel(time=slice(start_date, end_date)),
             station_correspondence=self.station_correspondence,
-            crossvalidation_stations=self.crossvalidation_stations,
+            observation_stations=self.observation_stations,
             show_comparison=False,
         )
+
+
+class TestOptimalInterpolationFunction:
+    def test_optimal_interpolation_test_data(self):
+        """Test the optimal interpolation code for a single day."""
+        # Run the code and obtain the resulting flows.
+        ecf_fun = partial(general_ecf, form=4)
+        v_est, var_est, _ = opt.optimal_interpolation(
+                                                 lat_est=np.array([-0.5, -0.25, 0.25, 0.5]),
+                                                 lon_est=np.array([-0.5, -0.25, 0.25, 0.5]),
+                                                 lat_obs=np.array([-1.0, 0.0, 1.0]),
+                                                 lon_obs=np.array([-1.0, 0.0, 1.0]),
+                                                 ecf=partial(ecf_fun, par=[1.0, 0.5]),
+                                                 bg_var_obs=np.array([1.0, 1.0, 1.0]),
+                                                 bg_var_est=np.array([1.0, 1.0, 1.0, 1.0]),
+                                                 var_obs=np.array([0.25, 0.25, 0.25]),
+                                                 bg_departures=np.array([0.2, 0.3, 0.1]),
+                                                 bg_est=np.array([1.0, 4.0, 3.0, 5.0]),
+                                                 precalcs={},
+        )
+
+        np.testing.assert_almost_equal(v_est[2], 3.0004557853394282, 8)
+        np.testing.assert_almost_equal(var_est[0], 0.9999999682102936, 8)

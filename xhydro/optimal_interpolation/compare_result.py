@@ -1,7 +1,5 @@
 """Compare results between simulations and observations."""
 
-import sys
-
 import numpy as np
 import xarray as xr
 
@@ -16,7 +14,7 @@ def compare(
     qsim: xr.Dataset,
     flow_l1o: xr.Dataset,
     station_correspondence: xr.Dataset,
-    crossvalidation_stations: list,
+    observation_stations: list,
     percentile_to_plot: int = 50,
     show_comparison: bool = True,
 ):
@@ -32,14 +30,14 @@ def compare(
         Streamflow and catchment properties dataset for simulated leave-one-out cross-validation results.
     station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
-    crossvalidation_stations : list
+    observation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
     percentile_to_plot : int
         Percentile value to plot (default is 50).
     show_comparison : bool
         Whether to display the comparison plots (default is True).
     """
-    time_range = len(qobs["time"].values)
+    time_range = len(qobs["time"])
 
     # Read percentiles list (which percentile thresholds were used)
     percentile = flow_l1o["percentile"]
@@ -47,13 +45,13 @@ def compare(
     # Find position of the desired percentile
     idx_pct = np.where(percentile == percentile_to_plot)[0]
     if idx_pct is None:
-        sys.exit(
+        raise ValueError(
             "The desired percentile is not computed in the results file \
              provided. Please make sure your percentile value is expressed \
              in percent (i.e. 50th percentile = 50)"
         )
 
-    station_count = len(crossvalidation_stations)
+    station_count = len(observation_stations)
     selected_flow_sim = np.empty((time_range, station_count)) * np.nan
     selected_flow_obs = np.empty((time_range, station_count)) * np.nan
     selected_flow_l1o = np.empty((time_range, station_count)) * np.nan
@@ -61,7 +59,7 @@ def compare(
     for i in range(0, station_count):
         print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
         # For each validation station:
-        cv_station_id = crossvalidation_stations[i]
+        cv_station_id = observation_stations[i]
 
         # Get the station number from the obs database which has the same codification for station ids.
         index_correspondence = np.where(
