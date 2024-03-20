@@ -5,22 +5,32 @@ dependencies:
   - python >=3.9,<3.13
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
+  - cartopy
+  - geopandas
+  - intake <2.0.0 # This should be set by xdatasets once on conda-forge
+  - leafmap
   - numpy
+  - planetary-computer
+  - pystac
+  - pystac-client
   - pooch >=1.8.0
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
+  - rasterio
   - spotpy
+  - stackstac
   - statsmodels
-  - xarray
-  - xclim >=0.47.0
-  - xscen >=0.7.1
+  - tqdm
+  - xarray >=2023.11.0
+  - xclim >=0.48.2
+  - xscen >=0.8.3
   - pip
   - pip:
     - haversine
-    - xdatasets
+    - xdatasets >=0.3.5
   # Dev
   - black ==24.1.1
   - blackdoc ==0.3.9
-  - bump-my-version >=0.17.1
+  - bump-my-version >=0.18.3
 #  - coveralls >=3.3.1
   - flake8 >=7.0.0
   - furo
@@ -29,7 +39,7 @@ dependencies:
   - isort ==5.13.2
   - jupyter_client
   - nbsphinx
-  - nbval
+#  - nbval >=0.11.0
   - pandoc
   - pooch
   - pre-commit >=3.3.2
@@ -48,8 +58,10 @@ dependencies:
   - flit
   # Notebooks
   - hvplot
+  - xagg
   - pip
   - pip:
     - coverage  # Not available in conda-forge for Python3.12
     - coveralls
     - pytest-cov >=4.0.0
+    - nbval >=0.11.0

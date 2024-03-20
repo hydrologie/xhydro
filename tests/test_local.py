@@ -4,10 +4,7 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.local import (  # noqa
-    _get_plotting_positions,
-    _prepare_plots,
-)
+from xhydro.frequency_analysis.local import _get_plotting_positions, _prepare_plots
 
 
 class TestFit:
@@ -75,16 +72,16 @@ class TestFit:
             as_dataset=True,
         )
         params = xhfa.local.fit(ds, distributions=["gamma"], min_years=miny)
-        np.testing.assert_array_almost_equal(
-            params.streamflow,
-            (
-                np.array(
-                    [[9.95357815e00, -3.07846650e01, 1.56498193e01]]
-                    if miny == 10
-                    else [[np.nan, np.nan, np.nan]]
-                )
-            ),
-        )
+        if miny == 10:
+            np.testing.assert_array_almost_equal(
+                params.streamflow,
+                [[9.95357815e00, -3.07846650e01, 1.56498193e01]],
+            )
+        elif miny == 15:
+            np.testing.assert_array_almost_equal(
+                params.streamflow,
+                [[np.nan, np.nan, np.nan]],
+            )
 
 
 @pytest.mark.parametrize("mode", ["max", "min", "foo"])

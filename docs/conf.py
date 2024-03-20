@@ -16,6 +16,7 @@
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
+import warnings
 from pathlib import Path
 
 import os
@@ -28,7 +29,7 @@ if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
     # See conda-forge/esmf-feedstock#91 and readthedocs/readthedocs.org#4067
     os.environ["ESMFMKFILE"] = str(Path(os.__file__).parent.parent / "esmf.mk")
 
-import xhydro  # noqa
+import xhydro  # noqa: E402
 
 # -- General configuration ---------------------------------------------
 
@@ -77,7 +78,14 @@ extlinks = {
 }
 
 # Generate documentation from Jupyter notebooks.
-nbsphinx_execute = "always"
+skip_notebooks = os.getenv("SKIP_NOTEBOOKS")
+if skip_notebooks:
+    warnings.warn("Not executing notebooks.")
+    nbsphinx_execute = "never"
+elif os.getenv("GITHUB_ACTIONS"):
+    nbsphinx_execute = "always"
+else:
+    nbsphinx_execute = "auto"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -101,7 +109,7 @@ author = "Thomas-Charles Fortier Filion"
 # the built documents.
 #
 # The short X.Y version.
-version = xhydro.__version__
+version = xhydro.__version__.split("-")[0]
 # The full version, including alpha/beta/rc tags.
 release = xhydro.__version__
 

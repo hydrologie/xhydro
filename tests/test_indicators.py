@@ -1,7 +1,5 @@
 import numpy as np
 import pytest
-from packaging.version import parse
-from xclim import __version__ as __xclim_version__
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro as xh
@@ -29,11 +27,7 @@ class TestComputeVolume:
         assert out.attrs["long_name"] == "Foo"
         assert out.attrs["cell_methods"] == "time: sum"
         assert out.attrs["description"] == "Volume of water"
-
-        if parse(__xclim_version__) < parse("0.48.0"):
-            assert out.attrs["units"] == "m^3"
-        else:
-            assert out.attrs["units"] == "m3"
+        assert out.attrs["units"] == "m3"
 
     def test_units(self):
         da = timeseries(
@@ -46,12 +40,8 @@ class TestComputeVolume:
         out_m3 = xh.indicators.compute_volume(da)
         out_hm3 = xh.indicators.compute_volume(da, out_units="hm3")
 
-        if parse(__xclim_version__) < parse("0.48.0"):
-            assert out_m3.attrs["units"] == "m^3"
-            assert out_hm3.attrs["units"] == "hm^3"
-        else:
-            assert out_m3.attrs["units"] == "m3"
-            assert out_hm3.attrs["units"] == "hm3"
+        assert out_m3.attrs["units"] == "m3"
+        assert out_hm3.attrs["units"] == "hm3"
 
         np.testing.assert_array_equal(out_m3 * 1e-6, out_hm3)
 
@@ -69,9 +59,9 @@ class TestGetYearlyOp:
     def test_get_yearly_op(self, op):
         timeargs = {
             "annual": {},
-            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"},
-            "winterdoy": {"doy_bounds": [335, 59], "freq": "AS-DEC"},
-            "winterdjf": {"season": ["DJF"], "freq": "AS-DEC"},
+            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
+            "winterdoy": {"doy_bounds": [335, 59], "freq": "YS-DEC"},
+            "winterdjf": {"season": ["DJF"], "freq": "YS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
 
@@ -121,7 +111,7 @@ class TestGetYearlyOp:
             )
 
     def test_missing(self):
-        timeargs = {"winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"}}
+        timeargs = {"winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"}}
         out = xh.indicators.get_yearly_op(
             self.ds,
             op="max",
@@ -158,7 +148,7 @@ class TestGetYearlyOp:
 
         timeargs = {
             "annual": {},
-            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "AS-DEC"},
+            "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
         out_sum = xh.indicators.get_yearly_op(
@@ -254,6 +244,6 @@ class TestGetYearlyOp:
                 self.ds,
                 op="max",
                 timeargs={
-                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "AS-DEC"}
+                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "YS-DEC"}
                 },
             )

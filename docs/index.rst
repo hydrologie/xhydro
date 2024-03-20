@@ -8,8 +8,7 @@ Welcome to xHydro's documentation!
 
    readme
    installation
-   usage
-   notebooks/local_frequency_analysis
+   notebooks/index
    planification
    apidoc/modules
    contributing
