@@ -2,6 +2,27 @@
 Changelog
 =========
 
+v0.4.0 (unreleased)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* `xhydro` has implemented a `gis` module that facilitates geospatial tasks needed for gathering hydrological inputs. (:issue:`60`, :pull:`61`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added a workflow based on `actions/labeler` to automatically label Pull Requests based on files changed. (:pull:`68`).
+* Added a conditional trigger to the `test-notebooks` job to run in advance of pull request approval in the event that the notebooks found within `docs/notebooks` have been modified (labeled `"notebooks"`). (:pull:`68`).
+* Significant changes to the Continuous Integration (CI) setup. (:pull:`65`):
+    * Added a workflow configuration using ``label_on_approval.yml`` and modifications of ``main.yml`` so that fewer tests are run on Pull Requests before they are fully approved.
+    * Added some `pre-commit` configurations to both clean up the code within notebooks (`NbQA`) and strip their outputs (`nbstripout`).
+    * `tox` is now fully v4.0-compliant.
+    * Added a `Makefile` recipe to facilitate installation of `esmpy` when `esmf` is installed and visible on the `$PATH`.
+    * Added a `Makefile` recipe for running tests over Jupyter notebooks.
+    * Synchronized dependencies between `pyproject.toml` and `conda` configuration files.
+* Moved the notebooks under a Usage section in the documentation. (:issue:`114`, :pull:`118`).
+
 v0.3.4 (2024-02-29)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`).

@@ -8,10 +8,7 @@ Welcome to xHydro's documentation!
 
    readme
    installation
-   usage
-   notebooks/hydrological_modelling
-   notebooks/local_frequency_analysis
-   notebooks/climate_change
+   notebooks/index
    planification
    apidoc/modules
    contributing
