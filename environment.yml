@@ -15,4 +15,5 @@ dependencies:
   - xscen >=0.7.1
   - pip
   - pip:
+    - haversine
     - xdatasets

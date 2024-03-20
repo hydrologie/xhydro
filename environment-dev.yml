@@ -15,6 +15,7 @@ dependencies:
   - xscen >=0.7.1
   - pip
   - pip:
+    - haversine
     - xdatasets
   # Dev
   - black ==24.1.1
