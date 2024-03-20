@@ -1,10 +1,10 @@
 """Package containing the optimal interpolation functions."""
 
 import os
-from typing import Optional
 from functools import partial
 from multiprocessing import Pool
-from typing import Any
+from typing import Any, Optional
+
 import haversine
 import numpy as np
 import xarray as xr
@@ -87,10 +87,10 @@ def optimal_interpolation(
     if isinstance(precalcs, dict):
         if "lat_obs" in precalcs:
             cond = (
-                np.array_equal(precalcs["lat_obs"], lat_obs) and
-                np.array_equal(precalcs["lon_obs"], lon_obs) and
-                np.array_equal(precalcs["lat_est"], lat_est) and
-                np.array_equal(precalcs["lon_est"], lon_est)
+                np.array_equal(precalcs["lat_obs"], lat_obs)
+                and np.array_equal(precalcs["lon_obs"], lon_obs)
+                and np.array_equal(precalcs["lat_est"], lat_est)
+                and np.array_equal(precalcs["lon_est"], lon_est)
             )
 
     # Depending on the status of the "cond" flag, either use the precalculated values or recalculate them.
@@ -100,11 +100,15 @@ def optimal_interpolation(
     else:
         # Not computed, so calculate and update the precalcs dict for later usage.
         observation_latlong = list(zip(lat_obs, lon_obs))
-        distance_obs_vs_obs = haversine.haversine_vector(observation_latlong, observation_latlong, comb=True)
+        distance_obs_vs_obs = haversine.haversine_vector(
+            observation_latlong, observation_latlong, comb=True
+        )
 
         # Also recompute the distance matrix between observation and estimation sites.
         simulation_latlong = list(zip(lat_est, lon_est))
-        distance_obs_vs_est = haversine.haversine_vector(observation_latlong, simulation_latlong, comb=True)
+        distance_obs_vs_est = haversine.haversine_vector(
+            observation_latlong, simulation_latlong, comb=True
+        )
 
         # And store for later
         precalcs["distance_obs_obs"] = distance_obs_vs_obs
@@ -115,7 +119,7 @@ def optimal_interpolation(
         precalcs["lon_est"] = lon_est
 
     # Start doing the actual optimal interpolation math. "b" = background field variables; "o" = observations.
-    covariance_obs_vs_obs = (ecf(distance_obs_vs_obs) / ecf(0))
+    covariance_obs_vs_obs = ecf(distance_obs_vs_obs) / ecf(0)
 
     # Background error at observation site
     beo_j = np.tile(bg_var_obs, (observed_count, 1))
@@ -129,7 +133,7 @@ def optimal_interpolation(
     o_eo_i = o_eo_j.T
 
     # Observation error covariance matrix
-    o_ij = ((np.sqrt(o_eo_j) * np.sqrt(o_eo_i)) * np.eye(len(o_eo_j)) / beo_i)
+    o_ij = (np.sqrt(o_eo_j) * np.sqrt(o_eo_i)) * np.eye(len(o_eo_j)) / beo_i
 
     # Background error at estimation site
     b_e_e = np.tile(np.resize(bg_var_est, (1, observed_count)), (estimated_count, 1))
@@ -246,25 +250,27 @@ def loop_optimal_interpolation_stations_cross_validation(
 
         # Apply the interpolator and get outputs
         v_est, var_est, precalcs = optimal_interpolation(
-                                                         lat_obs=centroid_lat_obs[index_calibration[idx]].values,
-                                                         lon_obs=centroid_lon_obs[index_calibration[idx]].values,
-                                                         lat_est=centroid_lat_sim[index_validation].values,
-                                                         lon_est=centroid_lon_sim[index_validation].values,
-                                                         ecf=partial(ecf_fun, par=par_opt),
-                                                         bg_var_obs=np.ones(idx.sum()),
-                                                         bg_var_est=np.ones(len(index_validation)),
-                                                         var_obs=np.ones(idx.sum()) * ratio_var_bg,
-                                                         bg_departures=difference[j, idx],
-                                                         bg_est=vsim_at_est[j, :],
-                                                         precalcs=precalcs,
-                                                        )
+            lat_obs=centroid_lat_obs[index_calibration[idx]].values,
+            lon_obs=centroid_lon_obs[index_calibration[idx]].values,
+            lat_est=centroid_lat_sim[index_validation].values,
+            lon_est=centroid_lon_sim[index_validation].values,
+            ecf=partial(ecf_fun, par=par_opt),
+            bg_var_obs=np.ones(idx.sum()),
+            bg_var_est=np.ones(len(index_validation)),
+            var_obs=np.ones(idx.sum()) * ratio_var_bg,
+            bg_departures=difference[j, idx],
+            bg_est=vsim_at_est[j, :],
+            precalcs=precalcs,
+        )
 
         # Get variance properties
         var_bg = np.var(difference[j, idx])
         var_est = var_est * var_bg
 
         # Get the percentile values for each desired percentile.
-        vals = norm.ppf(np.array(percentiles) / 100.0, loc=v_est, scale=np.sqrt(var_est))
+        vals = norm.ppf(
+            np.array(percentiles) / 100.0, loc=v_est, scale=np.sqrt(var_est)
+        )
 
         # Get the values in real units and scale according to drainage area
         vals = np.exp(vals) * drainage_area[station_index]
@@ -322,7 +328,9 @@ def optimal_interpolation_operational_control(
     centroid_lon_sim = full_background_dataset["centroid_lon"]
 
     # Define the vector of flow quantiles. We compute one value per time step and per percentile as requested by user.
-    flow_quantiles = np.array([np.empty((time_range, station_count)) * np.nan] * len(percentiles))
+    flow_quantiles = np.array(
+        [np.empty((time_range, station_count)) * np.nan] * len(percentiles)
+    )
 
     # Compute difference between the obs and sim log-transformed flows for the calibration basins
     difference = selected_flow_obs - selected_flow_sim
@@ -342,17 +350,17 @@ def optimal_interpolation_operational_control(
 
         # Apply the interpolator and get outputs
         v_est, var_est, precalcs = optimal_interpolation(
-                                                         lat_obs=centroid_lat_obs.values[idx],
-                                                         lon_obs=centroid_lon_obs.values[idx],
-                                                         lat_est=centroid_lat_sim.values,
-                                                         lon_est=centroid_lon_sim.values,
-                                                         ecf=partial(ecf_fun, par=par_opt),
-                                                         bg_var_obs=np.ones(idx.sum()),
-                                                         bg_var_est=np.ones(len(centroid_lon_sim)),
-                                                         var_obs=np.ones(idx.sum()) * ratio_var_bg,
-                                                         bg_departures=difference[j, idx],
-                                                         bg_est=vsim_at_est[j, :],
-                                                         precalcs=precalcs,
+            lat_obs=centroid_lat_obs.values[idx],
+            lon_obs=centroid_lon_obs.values[idx],
+            lat_est=centroid_lat_sim.values,
+            lon_est=centroid_lon_sim.values,
+            ecf=partial(ecf_fun, par=par_opt),
+            bg_var_obs=np.ones(idx.sum()),
+            bg_var_est=np.ones(len(centroid_lon_sim)),
+            var_obs=np.ones(idx.sum()) * ratio_var_bg,
+            bg_departures=difference[j, idx],
+            bg_est=vsim_at_est[j, :],
+            precalcs=precalcs,
         )
 
         # Get variance properties
@@ -362,7 +370,11 @@ def optimal_interpolation_operational_control(
         # For all stations, we need to compute the percentiles and un-log-transform the log transformation of flow.
         for stat in range(0, len(v_est)):
             # Get the percentile values for each desired percentile.
-            vals = norm.ppf(np.array(percentiles) / 100.0, loc=v_est[stat], scale=np.sqrt(var_est[stat]))
+            vals = norm.ppf(
+                np.array(percentiles) / 100.0,
+                loc=v_est[stat],
+                scale=np.sqrt(var_est[stat]),
+            )
             # Get the values in real units and scale according to drainage area
             vals = np.exp(vals) * full_background_dataset["drainage_area"].values[stat]
 
@@ -439,7 +451,7 @@ def execute_interpolation(
         centroid_lon_obs=filtered_dataset["centroid_lon"].values,
         centroid_lat_obs=filtered_dataset["centroid_lat"].values,
         variogram_bins=variogram_bins,
-        )
+    )
 
     # If the user wants to do leave-one-out cross-validation, then the Qsims should be the same as Qobs file as we need
     # data at the same stations.
@@ -584,7 +596,9 @@ def retrieve_data(
     all_drainage_area = qsim["drainage_area"].values
     all_flow_sim = np.empty(qsim["streamflow"].shape)
     for j in range(0, len(all_drainage_area)):
-        all_flow_sim[j, :] = np.log(qsim["streamflow"].isel(station=j).values / all_drainage_area[j])
+        all_flow_sim[j, :] = np.log(
+            qsim["streamflow"].isel(station=j).values / all_drainage_area[j]
+        )
     centroid_lat = qsim["lat"].values
     centroid_lon = qsim["lon"].values
 
@@ -693,7 +707,9 @@ def run_leave_one_out_cross_validation(
     # Serial
     else:
         for i in range(0, station_count):
-            flow_quantiles_station = loop_optimal_interpolation_stations_cross_validation((i, args))
+            flow_quantiles_station = (
+                loop_optimal_interpolation_stations_cross_validation((i, args))
+            )
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][:, i] = flow_quantiles_station[k][:]
 
