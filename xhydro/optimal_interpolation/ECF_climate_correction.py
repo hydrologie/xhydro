@@ -9,8 +9,8 @@ import xarray as xr
 
 
 def correction(
-    qobs: xr.Dataset,
-    qsim: xr.Dataset,
+    da_qobs: xr.DataArray,
+    da_qsim: xr.DataArray,
     centroid_lon_obs: np.ndarray,
     centroid_lat_obs: np.ndarray,
     variogram_bins: int = 10,
@@ -19,10 +19,10 @@ def correction(
 
     Parameters
     ----------
-    qobs : xr.Dataset
-        An xarray Dataset of observed flow data.
-    qsim : xr.Dataset
-        An xarray Dataset of simulated flow data.
+    da_qobs : xr.DataArray
+        An xarray DataArray of observed flow data.
+    da_qsim : xr.DataArray
+        An xarray DataArray of simulated flow data.
     centroid_lon_obs : np.ndarray
         Longitude vector of the catchment centroids for the observed stations.
     centroid_lat_obs : np.ndarray
@@ -39,10 +39,10 @@ def correction(
     """
     # Calculate the difference between the background field (qsim) and the point observations (qobs) at the station
     # locations.
-    difference = qsim.values - qobs.values
+    difference = da_qsim.values - da_qobs.values
 
     # Number of timesteps. Probably a better way to get this, maybe from qobs or qsim parent variable?
-    time_range = len(qobs.time)
+    time_range = len(da_qobs.time)
 
     # Preallocate matrices for all timesteps for the heights of the histograms, the covariances and standard deviations
     # of the values within each bin of the histogram.
@@ -83,10 +83,10 @@ def correction(
             distance_pc = np.delete(distance, is_nan, axis=0)
             distance_pc = np.delete(distance_pc, is_nan, axis=1)
 
-            # Sanity check: length of distance_pc should be equal to ecart_jour.
+            # Sanity check: length of distance_pc should be equal to day_diff.
             if len(day_diff) != distance_pc.shape[0]:
                 raise AssertionError(
-                    "Ecart_jour not equal to the size of distance_pc in histogram bin definition."
+                    "day_diff not equal to the size of distance_pc in histogram bin definition."
                 )
 
             # Sort the data into bins and get their stats.
@@ -350,7 +350,11 @@ def initialize_stats_variables(
     return distance, covariance, covariance_weights, valid_heights
 
 
-def general_ecf(h, par, form):
+def general_ecf(
+    h: np.ndarray,
+    par: list,
+    form: int
+):
     """Define the form of the Error Covariance Function (ECF) equations.
 
     Parameters

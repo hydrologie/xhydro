@@ -50,7 +50,7 @@ def plot_results(kge, kge_l1o, nse, nse_l1o):
 def prepare_flow_percentiles_dataset(
     station_id, lon, lat, drain_area, time, percentile, discharge
 ):
-    """Write discharge data to a NetCDF file.
+    """Write discharge data as an xarray.Dataset.
 
     Parameters
     ----------

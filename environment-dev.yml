@@ -7,6 +7,7 @@ dependencies:
   # Main packages
   - cartopy
   - geopandas
+  - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
   - numpy
@@ -25,7 +26,6 @@ dependencies:
   - xscen >=0.8.3
   - pip
   - pip:
-    - haversine
     - xdatasets >=0.3.5
   # Dev
   - black ==24.1.1

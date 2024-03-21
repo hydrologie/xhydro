@@ -1,10 +1,13 @@
 """Compare results between simulations and observations."""
 
+import logging
 import numpy as np
 import xarray as xr
 
 import xhydro.optimal_interpolation.utilities as util
 from xhydro.modelling.obj_funcs import get_objective_function
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["compare"]
 
@@ -29,7 +32,7 @@ def compare(
     flow_l1o : xr.Dataset
         Streamflow and catchment properties dataset for simulated leave-one-out cross-validation results.
     station_correspondence : xr.Dataset
-        Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
+        Matching between the tag in the simulated files and the observed station number for the obs dataset.
     observation_stations : list
         Observed hydrometric dataset stations to be used in the cross-validation step.
     percentile_to_plot : int
@@ -57,7 +60,7 @@ def compare(
     selected_flow_l1o = np.empty((time_range, station_count)) * np.nan
 
     for i in range(0, station_count):
-        print("Lecture des données..." + str(i + 1) + "/" + str(station_count))
+        logger.info(f"Reading data from station {i+1} of {station_count}")
         # For each validation station:
         cv_station_id = observation_stations[i]
 

@@ -25,7 +25,7 @@ def optimal_interpolation(
     lon_obs: np.ndarray,
     lat_est: np.ndarray,
     lon_est: np.ndarray,
-    ecf: str,
+    ecf: partial,
     bg_var_obs: np.ndarray,
     bg_var_est: np.ndarray,
     var_obs: np.ndarray,
@@ -45,7 +45,7 @@ def optimal_interpolation(
         Vector of latitudes of the estimation/simulation stations catchment centroids.
     lon_est : np.ndarray
         Vector of longitudes of the estimation/simulation stations catchment centroids.
-    ecf : str
+    ecf : partial
         The function to use for the empirical distribution correction. It is a partial function from functools. The
         error covariance is a function of distance h, and this partial function represents this relationship.
     bg_var_obs : np.ndarray
@@ -83,6 +83,7 @@ def optimal_interpolation(
     # simulation points are the same as the previous time step (same NaN positions, so same stations contributing), then
     # simply load the distance matrix that was computed at the previous timestep. If it did change, we need to
     # recompute, and save it for the next iteration.
+    # TODO: Check to see if xESMG reuse_weights could be useful here.
     cond = False
     if isinstance(precalcs, dict):
         if "lat_obs" in precalcs:
@@ -171,18 +172,18 @@ def loop_optimal_interpolation_stations_cross_validation(
     args : tuple
         A tuple containing the station index and a dictionary with various information.
         The dictionary should include the following keys and associated variables:
-        -filtered_dataset: The dataset containing observed and simulated streamflow along with catchment sizes and
+        - filtered_dataset: The dataset containing observed and simulated streamflow along with catchment sizes and
         centroid locations. Used to calculate deviations between observation stations and the simulated values at those
         locations.
-        -full_background_dataset: The dataset containing the simulated stations where we want to apply the optimal
+        - full_background_dataset: The dataset containing the simulated stations where we want to apply the optimal
         interpolation results. This is the full background field, and is usually the complete simulated streamflow
         domain.
-        -percentiles: The percentiles that we want to extract from the optimal interpolation at each station and time-
+        - percentiles: The percentiles that we want to extract from the optimal interpolation at each station and time-
         step.
-        -ratio_var_bg: The ratio of the observation variance to that of the background field (estimated).
-        -ecf_fun: The partial function related to the Error Covariance Function model that estimates error covariance as
-        a function of distance.
-        -par_opt: The optimized parameters for the ecf_fun partial function.
+        - ratio_var_bg: The ratio of the observation variance to that of the background field (estimated).
+        - ecf_fun: The partial function related to the Error Covariance Function model that estimates error covariance
+        as a function of distance.
+        - par_opt: The optimized parameters for the ecf_fun partial function.
 
     Returns
     -------
@@ -286,7 +287,7 @@ def optimal_interpolation_operational_control(
     full_background_dataset: xr.Dataset,
     percentiles: list,
     ratio_var_bg: float,
-    ecf_fun: str,
+    ecf_fun: partial,
     par_opt: list,
 ) -> ndarray[Any, dtype[floating[Any]]]:
     """Apply optimal interpolation to a single validation site (station) for the selected time range.
@@ -303,7 +304,7 @@ def optimal_interpolation_operational_control(
         The percentiles that we want to extract from the optimal interpolation at each station and timestep.
     ratio_var_bg : float
         The ratio of the observation variance to that of the background field (estimated).
-    ecf_fun : str
+    ecf_fun : partial
         The partial function related to the Error Covariance Function model that estimates error covariance as a
         function of distance.
     par_opt : array-like
@@ -406,7 +407,7 @@ def execute_interpolation(
     qsim : xr.Dataset
         Streamflow and catchment properties dataset for simulated data.
     station_correspondence : xr.Dataset
-        Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
+        Correspondence between the tag in the simulated files and the observed station number for the obs dataset.
     observation_stations : list
         Observed hydrometric dataset stations to be used in the ECF function building and optimal interpolation
         application step.
@@ -431,7 +432,7 @@ def execute_interpolation(
     ds : xr.Dataset
         An xarray dataset containing the flow quantiles and all the associated metadata.
     """
-    # Set default flow quantiles to evaluate if none are provided.
+    # Set default flow percentiles to evaluate if none are provided.
     if percentiles is None:
         percentiles = [25.0, 50.0, 75.0, 99.0]
 
@@ -445,8 +446,8 @@ def execute_interpolation(
 
     # create the weighting function parameters using climatological errors (i.e. over many timesteps)
     ecf_fun, par_opt = ecf_cc.correction(
-        qobs=filtered_dataset["qobs"],
-        qsim=filtered_dataset["qsim"],
+        da_qobs=filtered_dataset["qobs"],
+        da_qsim=filtered_dataset["qsim"],
         centroid_lon_obs=filtered_dataset["centroid_lon"].values,
         centroid_lat_obs=filtered_dataset["centroid_lat"].values,
         variogram_bins=variogram_bins,
@@ -619,10 +620,10 @@ def retrieve_data(
 def run_leave_one_out_cross_validation(
     filtered_dataset: xr.Dataset,
     full_background_dataset: xr.Dataset,
-    ecf_fun,
-    par_opt,
-    ratio_var_bg,
-    percentiles,
+    ecf_fun: partial,
+    par_opt: list,
+    ratio_var_bg: float,
+    percentiles: list,
     parallelize: bool = False,
     max_cores: int = 1,
 ) -> np.ndarray:
@@ -635,7 +636,7 @@ def run_leave_one_out_cross_validation(
     full_background_dataset : xr.Dataset
         Flow data from all the simulations used in the background field. Also has other metadata such as drainage area,
         and lat/lon of catchment centroids.
-    ecf_fun : str
+    ecf_fun : partial
         The function to use for the empirical distribution correction.
     par_opt : dict
         Parameters for the ecf_fun function, calibrated beforehand.
