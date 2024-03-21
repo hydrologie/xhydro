@@ -1,6 +1,7 @@
 """Compare results between simulations and observations."""
 
 import logging
+
 import numpy as np
 import xarray as xr
 

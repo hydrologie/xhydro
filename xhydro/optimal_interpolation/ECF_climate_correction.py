@@ -350,11 +350,7 @@ def initialize_stats_variables(
     return distance, covariance, covariance_weights, valid_heights
 
 
-def general_ecf(
-    h: np.ndarray,
-    par: list,
-    form: int
-):
+def general_ecf(h: np.ndarray, par: list, form: int):
     """Define the form of the Error Covariance Function (ECF) equations.
 
     Parameters
