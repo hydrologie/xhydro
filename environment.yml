@@ -7,6 +7,7 @@ dependencies:
   # Main packages
   - cartopy
   - geopandas
+  - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
   - numpy

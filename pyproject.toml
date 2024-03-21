@@ -39,6 +39,7 @@ dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy",
   "geopandas",
+  "haversine",
   "intake <2.0.0", # This should be set by xdatasets once on conda-forge
   "intake-esm !=2024.2.6", # pin needed for intake-esm (dependency of xscen) to work with Python3.9
   "leafmap",
@@ -110,7 +111,6 @@ docs = [
 
 [tool.black]
 target-version = [
-  "py38",
   "py39",
   "py310",
   "py311",
@@ -118,7 +118,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.5-dev.1"
+current_version = "0.3.6-dev.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -203,10 +203,10 @@ exclude = [
 
 [tool.isort]
 profile = "black"
-py_version = 38
+py_version = 39
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 show_error_codes = true
 warn_return_any = true
 warn_unused_configs = true
@@ -245,13 +245,12 @@ markers = [
 [tool.ruff]
 src = ["xhydro"]
 line-length = 150
-target-version = "py38"
+target-version = "py39"
 exclude = [
   ".eggs",
   ".git",
   "build",
-  "docs",
-  "tests"
+  "docs"
 ]
 
 [tool.ruff.format]
