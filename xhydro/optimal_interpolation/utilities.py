@@ -105,6 +105,7 @@ def prepare_flow_percentiles_dataset(
     ds["lat"] = ("station_id", lat)
     ds["lon"] = ("station_id", lon)
     ds["drainage_area"] = ("station_id", drain_area)
+    ds["station"] = ("station", station_id)
 
     ds.assign_coords(
         station_id=("station_id", station_id),
