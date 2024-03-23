@@ -4,7 +4,16 @@ import os
 import tempfile
 from pathlib import Path
 
-from xhydro.lstm_tools.lstm_functions import *
+from xhydro.lstm_tools.lstm_functions import (
+    perform_initial_train,
+    perform_initial_train_local,
+    run_model_after_training,
+    run_model_after_training_local,
+    scale_dataset,
+    scale_dataset_local,
+    split_dataset,
+    split_dataset_local,
+)
 
 
 def control_regional_lstm_training(
@@ -25,7 +34,6 @@ def control_regional_lstm_training(
     filename_base: str = "LSTM_results",
     simulation_phases: list = None,
     name_of_saved_model: str = None,
-    seed: int = None,
 ):
     """Control the regional LSTM model training and simulation.
 
@@ -90,8 +98,6 @@ def control_regional_lstm_training(
         training, validation, testing and complete periods, respectively.
     name_of_saved_model : str
         Path to the model that has been pre-trained if required for simulations.
-    seed : int, optional
-        Value to seed the random number generator to replicate tests. Set to None for operational use.
 
     Returns
     -------
@@ -139,7 +145,7 @@ def control_regional_lstm_training(
         valid_idx,
         test_idx,
         all_idx,
-    ) = _scale_dataset(
+    ) = scale_dataset(
         input_data_filename,
         dynamic_var_tags,
         qsim_pos,
@@ -159,7 +165,7 @@ def control_regional_lstm_training(
             x_valid_static,
             x_valid_q_stds,
             y_valid,
-        ) = _split_dataset(
+        ) = split_dataset(
             arr_dynamic,
             arr_static,
             q_stds,
@@ -170,7 +176,7 @@ def control_regional_lstm_training(
         )
 
         # Do the main large-scale training
-        _perform_initial_train(
+        perform_initial_train(
             use_parallel,
             window_size,
             batch_size,
@@ -186,7 +192,6 @@ def control_regional_lstm_training(
             name_of_saved_model,
             training_func=training_func,
             use_cpu=use_cpu,
-            seed=seed,
         )
 
     if do_simulation:
@@ -234,7 +239,6 @@ def control_local_lstm_training(
     filename_base: str = "LSTM_results",
     simulation_phases: list = None,
     name_of_saved_model: str = None,
-    seed: int = None,
 ):
     """Control the regional LSTM model training and simulation.
 
@@ -296,8 +300,6 @@ def control_local_lstm_training(
         training, validation, testing and complete periods, respectively.
     name_of_saved_model : str
         Path to the model that has been pre-trained if required for simulations.
-    seed : int, optional
-        Value to seed the random number generator to replicate tests. Set to None for operational use.
 
     Returns
     -------
@@ -335,7 +337,7 @@ def control_local_lstm_training(
         name_of_saved_model = str(Path(tmpdir) / f"{filename_base}.h5")
 
     # Import and scale dataset
-    arr_dynamic, train_idx, valid_idx, test_idx, all_idx = _scale_dataset_local(
+    arr_dynamic, train_idx, valid_idx, test_idx, all_idx = scale_dataset_local(
         input_data_filename,
         dynamic_var_tags,
         qsim_pos,
@@ -345,12 +347,12 @@ def control_local_lstm_training(
 
     if do_train:
         # Split into train and valid
-        x_train, y_train, x_valid, y_valid = _split_dataset_local(
+        x_train, y_train, x_valid, y_valid = split_dataset_local(
             arr_dynamic, train_idx, window_size, valid_idx
         )
 
         # Do the main large-scale training
-        _perform_initial_train_local(
+        perform_initial_train_local(
             use_parallel,
             window_size,
             batch_size,
@@ -362,7 +364,6 @@ def control_local_lstm_training(
             name_of_saved_model,
             training_func=training_func,
             use_cpu=use_cpu,
-            seed=seed,
         )
 
     if do_simulation:

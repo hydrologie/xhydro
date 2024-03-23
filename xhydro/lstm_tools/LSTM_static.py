@@ -9,11 +9,13 @@ from tensorflow.keras.models import load_model
 
 from xhydro.modelling.obj_funcs import get_objective_function
 
-from .create_datasets import _create_lstm_dataset, _create_lstm_dataset_local
+from .create_datasets import create_lstm_dataset, create_lstm_dataset_local
 
 __all__ = [
-    "_TrainingGenerator",
-    "_TrainingGeneratorLocal",
+    "TestingGenerator",
+    "TestingGeneratorLocal",
+    "TrainingGenerator",
+    "TrainingGeneratorLocal",
     "define_lstm_model_simple",
     "define_lstm_model_simple_local",
     "run_trained_model",
@@ -21,7 +23,7 @@ __all__ = [
 ]
 
 
-class _TrainingGenerator(tf.keras.utils.Sequence):
+class TrainingGenerator(tf.keras.utils.Sequence):
     """Create a training generator to manage the GPU memory during training.
 
     Parameters
@@ -49,14 +51,13 @@ class _TrainingGenerator(tf.keras.utils.Sequence):
     self : An object containing the subset of the total data that is selected for this batch.
     """
 
-    def __init__(self, x_set, x_set_static, x_set_q_stds, y_set, batch_size, seed=None):
+    def __init__(self, x_set, x_set_static, x_set_q_stds, y_set, batch_size):
         self.x = x_set
         self.x_static = x_set_static
         self.x_q_stds = x_set_q_stds
         self.y = y_set
         self.batch_size = batch_size
         self.indices = np.arange(self.x.shape[0])
-        self.seed = seed
 
     def __len__(self):
         """Get total number of batches to generate"""
@@ -76,12 +77,10 @@ class _TrainingGenerator(tf.keras.utils.Sequence):
 
     def on_epoch_end(self):
         """Shuffle the dataset before the next batch sampling to ensure randomness, helping convergence."""
-        if self.seed is not None:
-            np.random.seed(seed=self.seed)
         np.random.shuffle(self.indices)
 
 
-class _TrainingGeneratorLocal(tf.keras.utils.Sequence):
+class TrainingGeneratorLocal(tf.keras.utils.Sequence):
     """Create a training generator to manage the GPU memory during training.
 
     Parameters
@@ -102,12 +101,11 @@ class _TrainingGeneratorLocal(tf.keras.utils.Sequence):
     self : An object containing the subset of the total data that is selected for this batch.
     """
 
-    def __init__(self, x_set, y_set, batch_size, seed=None):
+    def __init__(self, x_set, y_set, batch_size):
         self.x = x_set
         self.y = y_set
         self.batch_size = batch_size
         self.indices = np.arange(self.x.shape[0])
-        self.seed = seed
 
     def __len__(self):
         """Get total number of batches to generate"""
@@ -123,13 +121,10 @@ class _TrainingGeneratorLocal(tf.keras.utils.Sequence):
 
     def on_epoch_end(self):
         """Shuffle the dataset before the next batch sampling to ensure randomness, helping convergence."""
-        if self.seed is not None:
-            np.random.seed(seed=self.seed)
-
         np.random.shuffle(self.indices)
 
 
-class _TestingGenerator(tf.keras.utils.Sequence):
+class TestingGenerator(tf.keras.utils.Sequence):
     """Create a testing generator to manage the GPU memory during training.
 
     Parameters
@@ -168,7 +163,7 @@ class _TestingGenerator(tf.keras.utils.Sequence):
         return [np.array(batch_x), np.array(batch_x_static)], np.array(batch_x_static)
 
 
-class _TestingGeneratorLocal(tf.keras.utils.Sequence):
+class TestingGeneratorLocal(tf.keras.utils.Sequence):
     """Create a testing generator to manage the GPU memory during training.
 
     Parameters
@@ -498,7 +493,7 @@ def run_trained_model(
     )
 
     # Training Database
-    x, x_static, _, y = _create_lstm_dataset(
+    x, x_static, _, y = create_lstm_dataset(
         arr_dynamic=arr_dynamic[:, :, :],
         arr_static=arr_static,
         q_stds=q_stds,
@@ -508,7 +503,7 @@ def run_trained_model(
         remove_nans=remove_nans,
     )
 
-    y_pred = model_lstm.predict(_TestingGenerator(x, x_static, batch_size=batch_size))
+    y_pred = model_lstm.predict(TestingGenerator(x, x_static, batch_size=batch_size))
     y_pred = np.squeeze(y_pred)
 
     # Rescale observed and simulated streamflow from mm/d to m^3/s
@@ -571,14 +566,14 @@ def run_trained_model_local(
     )
 
     # Training Database
-    x, y = _create_lstm_dataset_local(
+    x, y = create_lstm_dataset_local(
         arr_dynamic=arr_dynamic,
         window_size=window_size,
         idx=idx_scenario,
         remove_nans=remove_nans,
     )
 
-    y_pred = model_lstm.predict(_TestingGeneratorLocal(x, batch_size=batch_size))
+    y_pred = model_lstm.predict(TestingGeneratorLocal(x, batch_size=batch_size))
     y_pred = np.squeeze(y_pred)
 
     # Compute the Kling-Gupta Efficiency (KGE) for the watershed

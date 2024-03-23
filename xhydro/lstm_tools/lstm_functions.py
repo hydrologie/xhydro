@@ -5,22 +5,37 @@ import tensorflow as tf
 import tensorflow.keras.backend as k
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-from xhydro.lstm_tools.create_datasets import *
-from xhydro.lstm_tools.LSTM_static import *
+# TODO: Cannot use star imports, pre-commit screams.
+from xhydro.lstm_tools.create_datasets import (
+    create_dataset_flexible,
+    create_dataset_flexible_local,
+    create_lstm_dataset,
+    create_lstm_dataset_local,
+    remove_nans_func,
+    remove_nans_func_local,
+)
+from xhydro.lstm_tools.LSTM_static import (
+    TrainingGenerator,
+    TrainingGeneratorLocal,
+    define_lstm_model_simple,
+    define_lstm_model_simple_local,
+    run_trained_model,
+    run_trained_model_local,
+)
 
 __all__ = [
-    "_perform_initial_train",
-    "_perform_initial_train_local",
-    "_scale_dataset",
-    "_scale_dataset_local",
-    "_split_dataset",
-    "_split_dataset_local",
+    "perform_initial_train",
+    "perform_initial_train_local",
     "run_model_after_training",
     "run_model_after_training_local",
+    "scale_dataset",
+    "scale_dataset_local",
+    "split_dataset",
+    "split_dataset_local",
 ]
 
 
-def _scale_dataset(
+def scale_dataset(
     input_data_filename: str,
     dynamic_var_tags: list,
     qsim_pos: list,
@@ -79,7 +94,7 @@ def _scale_dataset(
         Indices of the full period. Contains 2 values per watershed: start and end indices.
     """
     # Create the dataset
-    arr_dynamic, arr_static, arr_qobs = _create_dataset_flexible(
+    arr_dynamic, arr_static, arr_qobs = create_dataset_flexible(
         input_data_filename, dynamic_var_tags, qsim_pos, static_var_tags
     )
 
@@ -165,7 +180,7 @@ def _scale_dataset(
     )
 
 
-def _scale_dataset_local(
+def scale_dataset_local(
     input_data_filename: str,
     dynamic_var_tags: list,
     qsim_pos: list,
@@ -214,7 +229,7 @@ def _scale_dataset_local(
         Indices of the full period. Contains 2 values per watershed: start and end indices.
     """
     # Create the dataset
-    arr_dynamic, arr_qobs = _create_dataset_flexible_local(
+    arr_dynamic, arr_qobs = create_dataset_flexible_local(
         input_data_filename, dynamic_var_tags, qsim_pos
     )
 
@@ -259,7 +274,7 @@ def _scale_dataset_local(
     )
 
 
-def _split_dataset(
+def split_dataset(
     arr_dynamic: np.array,
     arr_static: np.array,
     q_stds: np.array,
@@ -326,7 +341,7 @@ def _split_dataset(
         validation points.
     """
     # Training dataset
-    x_train, x_train_static, x_train_q_stds, y_train = _create_lstm_dataset(
+    x_train, x_train_static, x_train_q_stds, y_train = create_lstm_dataset(
         arr_dynamic=arr_dynamic,
         arr_static=arr_static,
         q_stds=q_stds,
@@ -336,12 +351,12 @@ def _split_dataset(
     )
 
     # Remove Nans
-    y_train, x_train, x_train_q_stds, x_train_static = _remove_nans_func(
+    y_train, x_train, x_train_q_stds, x_train_static = remove_nans_func(
         y_train, x_train, x_train_q_stds, x_train_static
     )
 
     # Validation dataset
-    x_valid, x_valid_static, x_valid_q_stds, y_valid = _create_lstm_dataset(
+    x_valid, x_valid_static, x_valid_q_stds, y_valid = create_lstm_dataset(
         arr_dynamic=arr_dynamic,
         arr_static=arr_static,
         q_stds=q_stds,
@@ -351,7 +366,7 @@ def _split_dataset(
     )
 
     # Remove nans
-    y_valid, x_valid, x_valid_q_stds, x_valid_static = _remove_nans_func(
+    y_valid, x_valid, x_valid_q_stds, x_valid_static = remove_nans_func(
         y_valid, x_valid, x_valid_q_stds, x_valid_static
     )
 
@@ -367,7 +382,7 @@ def _split_dataset(
     )
 
 
-def _split_dataset_local(
+def split_dataset_local(
     arr_dynamic: np.ndarray,
     train_idx: np.ndarray,
     window_size: int,
@@ -409,25 +424,25 @@ def _split_dataset_local(
         validation points.
     """
     # Training dataset
-    x_train, y_train = _create_lstm_dataset_local(
+    x_train, y_train = create_lstm_dataset_local(
         arr_dynamic=arr_dynamic, window_size=window_size, idx=train_idx
     )
 
     # Remove nans
-    y_train, x_train = _remove_nans_func_local(y_train, x_train)
+    y_train, x_train = remove_nans_func_local(y_train, x_train)
 
     # Validation dataset
-    x_valid, y_valid = _create_lstm_dataset_local(
+    x_valid, y_valid = create_lstm_dataset_local(
         arr_dynamic=arr_dynamic, window_size=window_size, idx=valid_idx
     )
 
     # Remove nans
-    y_valid, x_valid = _remove_nans_func_local(y_valid, x_valid)
+    y_valid, x_valid = remove_nans_func_local(y_valid, x_valid)
 
     return x_train, y_train, x_valid, y_valid
 
 
-def _perform_initial_train(
+def perform_initial_train(
     use_parallel: bool,
     window_size: int,
     batch_size: int,
@@ -443,7 +458,6 @@ def _perform_initial_train(
     name_of_saved_model: str,
     training_func: str,
     use_cpu: bool = False,
-    seed: int = None,
 ):
     """Train the LSTM model using preprocessed data.
 
@@ -503,13 +517,6 @@ def _perform_initial_train(
         Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be
         performed on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow
         and should only be used as a last resort (such as for CI testing and debugging).
-    seed : int, optional
-        Value to seed the random number generator to replicate tests. Set to None for operational use.
-
-    Returns
-    -------
-    code
-        Adding this just because linter will not let me put nothing.
     """
     success = 0
     while success == 0:
@@ -541,22 +548,20 @@ def _perform_initial_train(
             tf.config.set_visible_devices([], "GPU")
 
         h = model_lstm.fit(
-            _TrainingGenerator(
+            TrainingGenerator(
                 x_train,
                 x_train_static,
                 x_train_q_stds,
                 y_train,
                 batch_size=batch_size,
-                seed=seed,
             ),
             epochs=epochs,
-            validation_data=_TrainingGenerator(
+            validation_data=TrainingGenerator(
                 x_valid,
                 x_valid_static,
                 x_valid_q_stds,
                 y_valid,
                 batch_size=batch_size,
-                seed=seed,
             ),
             callbacks=[callback],
             verbose=1,
@@ -565,10 +570,8 @@ def _perform_initial_train(
         if not np.isnan(h.history["loss"][-1]):
             success = 1
 
-    return 0
 
-
-def _perform_initial_train_local(
+def perform_initial_train_local(
     use_parallel: bool,
     window_size: int,
     batch_size: int,
@@ -580,7 +583,6 @@ def _perform_initial_train_local(
     name_of_saved_model: str,
     training_func: str,
     use_cpu: bool = False,
-    seed: int = None,
 ):
     """Train the LSTM model using preprocessed data on a local catchment.
 
@@ -626,8 +628,6 @@ def _perform_initial_train_local(
         Flag to force the training and simulations to be performed on the CPU rather than on the GPU(s). Must be
         performed on a CPU that has AVX and AVX2 instruction sets, or tensorflow will fail. CPU training is very slow
         and should only be used as a last resort (such as for CI testing and debugging).
-    seed : int, optional
-        Value to seed the random number generator to replicate tests. Set to None for operational use.
 
     Returns
     -------
@@ -662,18 +662,16 @@ def _perform_initial_train_local(
             tf.config.set_visible_devices([], "GPU")
 
         h = model_lstm.fit(
-            _TrainingGeneratorLocal(
+            TrainingGeneratorLocal(
                 x_train,
                 y_train,
                 batch_size=batch_size,
-                seed=seed,
             ),
             epochs=epochs,
-            validation_data=_TrainingGeneratorLocal(
+            validation_data=TrainingGeneratorLocal(
                 x_valid,
                 y_valid,
                 batch_size=batch_size,
-                seed=seed,
             ),
             callbacks=[callback],
             verbose=1,

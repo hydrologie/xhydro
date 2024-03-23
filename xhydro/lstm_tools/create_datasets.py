@@ -8,18 +8,17 @@ import numpy as np
 import xarray as xr
 
 __all__ = [
-    "_create_dataset_flexible",
-    "_create_dataset_flexible_local",
-    "_create_lstm_dataset",
-    "_create_lstm_dataset_local",
-    "_remove_nans_func",
-    "_remove_nans_func_local",
+    "create_dataset_flexible",
+    "create_dataset_flexible_local",
+    "create_lstm_dataset",
+    "create_lstm_dataset_local",
+    "remove_nans_func",
+    "remove_nans_func_local",
 ]
 
 
-def _create_dataset_flexible(
-    # filename: Union[str, os.Pathlike], # TODO: change to os.Pathlike, currently errors for me.
-    filename: str,
+def create_dataset_flexible(
+    filename: Union[str, os.PathLike],
     dynamic_var_tags: list,
     qsim_pos: list,
     static_var_tags: list,
@@ -101,9 +100,8 @@ def _create_dataset_flexible(
     return arr_dynamic, arr_static, arr_qobs
 
 
-def _create_dataset_flexible_local(
-    # filename: Union[str, os.Pathlike],  #TODO: fix Pathlike issue.
-    filename: str,
+def create_dataset_flexible_local(
+    filename: Union[str, os.PathLike],
     dynamic_var_tags: list,
     qsim_pos: list,
 ):
@@ -116,7 +114,7 @@ def _create_dataset_flexible_local(
 
     Parameters
     ----------
-    filename : str or os.Pathlike
+    filename : str or os.PathLike
         Path to the netcdf file containing the required input and target data for the LSTM. The ncfile must contain a
         dataset named "qobs" and "drainage_area" for the code to work, as these are required as target and scaling for
         training, respectively.
@@ -163,7 +161,7 @@ def _create_dataset_flexible_local(
     return arr_dynamic, arr_qobs
 
 
-def _create_lstm_dataset(
+def create_lstm_dataset(
     arr_dynamic: np.ndarray,
     arr_static: np.ndarray,
     q_stds: np.ndarray,
@@ -234,7 +232,7 @@ def _create_lstm_dataset(
 
         # remove nans
         if remove_nans:
-            y_w, x_w, x_w_q_std, x_w_static = _remove_nans_func(
+            y_w, x_w, x_w_q_std, x_w_static = remove_nans_func(
                 y_w, x_w, x_w_q_std, x_w_static
             )
 
@@ -246,7 +244,7 @@ def _create_lstm_dataset(
     return x, x_static, x_q_stds, y
 
 
-def _create_lstm_dataset_local(
+def create_lstm_dataset_local(
     arr_dynamic: np.ndarray,
     window_size: int,
     idx: np.ndarray,
@@ -287,7 +285,7 @@ def _create_lstm_dataset_local(
 
     # Remove nans
     if remove_nans:
-        y, x = _remove_nans_func_local(y, x)
+        y, x = remove_nans_func_local(y, x)
 
     return x, y
 
@@ -422,7 +420,7 @@ def _extract_watershed_block_local(arr_dynamic: np.ndarray, window_size: int):
     return x, y
 
 
-def _remove_nans_func(
+def remove_nans_func(
     y: np.ndarray, x: np.ndarray, x_q_std: np.ndarray, x_static: np.ndarray
 ):
     """Check for nans in the variable "y" and remove all lines containing those nans in all datasets.
@@ -461,7 +459,7 @@ def _remove_nans_func(
     return y, x, x_q_stds, x_static
 
 
-def _remove_nans_func_local(y: np.ndarray, x: np.ndarray):
+def remove_nans_func_local(y: np.ndarray, x: np.ndarray):
     """Check for nans in the variable "y" and remove all lines containing those nans in all datasets.
 
     Parameters

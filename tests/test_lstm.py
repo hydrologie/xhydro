@@ -59,7 +59,6 @@ class TestLstmModels:
         training_func = "nse_scaled"
         do_train = True
 
-        # TODO: Added Seed but it does not seem to work. Optimizer might have its own internal RNG.
         kge_results, flow_results, name_of_saved_model = control_regional_lstm_training(
             self.input_data_filename_regional,
             self.dynamic_var_tags,
@@ -77,7 +76,6 @@ class TestLstmModels:
             training_func=training_func,
             filename_base=self.filename_base,
             simulation_phases=self.simulation_phases,
-            seed=1,  # TODO: See if we can fix a seed in Tensorflow/Keras optimizers.
         )
 
         assert len(kge_results[0]) == 4
