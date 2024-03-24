@@ -18,3 +18,8 @@
       - '.github/workflows/*'
       - 'tox.ini'
       - 'Makefile'
+
+'notebooks':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/notebooks/**/*.ipynb'

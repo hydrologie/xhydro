@@ -68,6 +68,12 @@ lint: lint/flake8 lint/black ## check style
 test: ## run tests quickly with the default Python
 	python -m pytest
 
+test-notebooks: ## run tests on notebooks and compare outputs
+	pytest --no-cov --nbval --rootdir=tests/ docs/notebooks
+
+test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
+
 test-all: ## run tests on every Python version with tox
 	tox
 
@@ -107,8 +113,12 @@ dist: clean ## builds source and wheel package
 release: dist ## package and upload a release
 	python -m flit publish dist/*
 
-install: clean ## install the package to the active Python's site-packages
+ESMF_VERSION := $(shell cat $(ESMFMKFILE) | grep "ESMF_VERSION_STRING=" | awk -F= '{print $$2}' | tr -d "'")
+install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
+	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
+
+install: install-esmpy ## install the package to the active Python's site-packages
 	python -m flit install
 
-dev: clean ## install the package to the active Python's site-packages
+dev: install-esmpy ## install the package to the active Python's site-packages
 	python -m flit install --symlink
