@@ -44,11 +44,13 @@ dependencies = [
   "intake-esm !=2024.2.6", # pin needed for intake-esm (dependency of xscen) to work with Python3.9
   "leafmap",
   "numpy",
+  "pandas",
   "planetary-computer",
   "pooch >=1.8.0",
   "pydantic >=2.0,<2.5.3",
   "pystac",
   "pystac-client",
+  "pyyaml",
   "rasterio",
   "ravenpy",
   "spotpy",
