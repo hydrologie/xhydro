@@ -16,11 +16,42 @@ __all__ = [
     "TestingGeneratorLocal",
     "TrainingGenerator",
     "TrainingGeneratorLocal",
-    "define_lstm_model_simple",
-    "define_lstm_model_simple_local",
+    "get_list_of_LSTM_models",
     "run_trained_model",
     "run_trained_model_local",
 ]
+
+
+def get_list_of_LSTM_models(model_structure):
+    """Create a training generator to manage the GPU memory during training.
+
+    Parameters
+    ----------
+    model_structure : str
+        The name of the LSTM model to use for training. Must correspond to one of the models present in LSTM_static.py.
+        The "model_structure_dict" must be updated when new models are added.
+
+    Returns
+    -------
+    function :
+        Handle to the LSTM model function.
+    """
+    # Create a list of available models:
+    try:
+        model_structure_dict = {
+            "simple_local_lstm": _simple_local_lstm,
+            "simple_regional_lstm": _simple_regional_lstm,
+            "dummy_local_lstm": _dummy_local_lstm,
+            "dummy_regional_lstm": _dummy_regional_lstm,
+        }
+    except Exception:
+        raise ValueError(
+            "The LSTM model structure desired is not present in the available model dictionary."
+        )
+
+    model_handle = model_structure_dict[model_structure]
+
+    return model_handle
 
 
 class TrainingGenerator(tf.keras.utils.Sequence):
@@ -265,7 +296,161 @@ def _nse_scaled_loss(data, y_pred):
     return scaled_loss
 
 
-def define_lstm_model_simple(
+def _simple_regional_lstm(
+    window_size: int,
+    n_dynamic_features: int,
+    n_static_features: int,
+    training_func: str,
+    checkpoint_path: str = "tmp.h5",
+):
+    """Define the LSTM model structure and hyperparameters to use. Must be updated by users to modify model structures.
+
+    Parameters
+    ----------
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow.
+        Usually set to 365 days to get one year of previous data. This makes the model heavier and longer to train but
+        can improve results.
+    n_dynamic_features : int
+        Number of dynamic (i.e. time-series) variables that are used for training and simulating the model.
+    n_static_features : int
+        Number of static (i.e. catchment descriptor) variables that are used to define the regional LSTM model and allow
+        it to modulate simulations according to catchment properties.
+    training_func : str
+        Name of the objective function used for training. For a regional model, it is highly recommended to use the
+        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
+    checkpoint_path : str
+        Sting containing the path of the file where the trained model will be saved.
+
+    Returns
+    -------
+    model_lstm : Tensorflow model
+        The tensorflow model that will be trained, along with all of its default hyperparameters and training options.
+    callback : list
+        List of tensorflow objects that allow performing operations after each training epoch.
+    """
+    x_in_365 = tf.keras.layers.Input(shape=(window_size, n_dynamic_features))
+    x_in_static = tf.keras.layers.Input(shape=n_static_features)
+
+    # LSTM 365 day
+    x_365 = tf.keras.layers.LSTM(128, return_sequences=True)(x_in_365)
+    x_365 = tf.keras.layers.LSTM(128, return_sequences=False)(x_365)
+    x_365 = tf.keras.layers.Dropout(0.1)(x_365)
+
+    # Dense statics
+    x_static = tf.keras.layers.Dense(24, activation="relu")(x_in_static)
+    x_static = tf.keras.layers.Dropout(0.2)(x_static)
+
+    # Concatenate the model
+    x = tf.keras.layers.Concatenate()([x_365, x_static])
+    x = tf.keras.layers.Dense(12, activation="relu")(x)
+    x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+    x_out = tf.keras.layers.Dense(1, activation="relu")(x)
+
+    model_lstm = tf.keras.models.Model([x_in_365, x_in_static], [x_out])
+    if training_func == "nse_scaled":
+        model_lstm.compile(
+            loss=_nse_scaled_loss, optimizer=tf.keras.optimizers.AdamW(clipnorm=0.1)
+        )
+    elif training_func == "kge":
+        model_lstm.compile(
+            loss=_kge_loss, optimizer=tf.keras.optimizers.AdamW(clipnorm=0.1)
+        )
+
+    callback = [
+        tf.keras.callbacks.ModelCheckpoint(
+            checkpoint_path,
+            save_freq="epoch",
+            save_best_only=True,
+            monitor="val_loss",
+            mode="min",
+            verbose=1,
+        ),
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss", mode="min", verbose=1, patience=15
+        ),
+        tf.keras.callbacks.LearningRateScheduler(_step_decay),
+    ]
+
+    return model_lstm, callback
+
+
+def _simple_local_lstm(
+    window_size: int,
+    n_dynamic_features: int,
+    training_func: str,
+    checkpoint_path: str = "tmp.h5",
+):
+    """Define the local LSTM model structure and hyperparameters to use.
+
+    Must be updated by users to modify model structures.
+
+    Parameters
+    ----------
+    window_size : int
+        Number of days of look-back for training and model simulation. LSTM requires a large backwards-looking window to
+        allow the model to learn from long-term weather patterns and history to predict the next day's streamflow.
+        Usually set to 365 days to get one year of previous data. This makes the model heavier and longer to train but
+        can improve results.
+    n_dynamic_features : int
+        Number of dynamic (i.e. time-series) variables that are used for training and simulating the model.
+    training_func : str
+        Name of the objective function used for training. For a regional model, it is highly recommended to use the
+        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
+    checkpoint_path : str
+        Sting containing the path of the file where the trained model will be saved.
+
+    Returns
+    -------
+    model_lstm : Tensorflow model
+        The tensorflow model that will be trained, along with all of its default hyperparameters and training options.
+    callback : list
+        List of tensorflow objects that allow performing operations after each training epoch.
+    """
+    x_in_365 = tf.keras.layers.Input(shape=(window_size, n_dynamic_features))
+
+    # Single LSTM layer
+    x_365 = tf.keras.layers.LSTM(32, return_sequences=True)(x_in_365)
+    x_365 = tf.keras.layers.LSTM(32, return_sequences=False)(x_365)
+    x_365 = tf.keras.layers.Dropout(0.1)(x_365)  # Add dropout layer for robustness
+
+    # Pass to a simple Dense layer with relu activation and LeakyReLU activation
+    x = tf.keras.layers.Dense(12, activation="relu")(x_365)
+    x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
+
+    # pass to a 1-unit dense layer representing output flow.
+    x_out = tf.keras.layers.Dense(1, activation="relu")(x)
+
+    # Build model
+    model_lstm = tf.keras.models.Model([x_in_365], [x_out])
+
+    if training_func == "kge":
+        model_lstm.compile(
+            loss=_kge_loss, optimizer=tf.keras.optimizers.AdamW(clipnorm=0.1)
+        )
+    else:
+        raise ValueError("training_func can only be kge for the local training model.")
+
+    callback = [
+        tf.keras.callbacks.ModelCheckpoint(
+            checkpoint_path,
+            save_freq="epoch",
+            save_best_only=True,
+            monitor="val_loss",
+            mode="min",
+            verbose=1,
+        ),
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss", mode="min", verbose=1, patience=15
+        ),
+        tf.keras.callbacks.LearningRateScheduler(_step_decay),
+    ]
+
+    return model_lstm, callback
+
+
+def _dummy_regional_lstm(
     window_size: int,
     n_dynamic_features: int,
     n_static_features: int,
@@ -339,7 +524,7 @@ def define_lstm_model_simple(
     return model_lstm, callback
 
 
-def define_lstm_model_simple_local(
+def _dummy_local_lstm(
     window_size: int,
     n_dynamic_features: int,
     training_func: str,

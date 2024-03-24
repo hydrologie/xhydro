@@ -70,6 +70,8 @@ def create_dataset_flexible(
 
     # Perform the analysis for qobs first.
     arr_qobs = ds.qobs.values.astype(np.float32)
+    if ds.qobs.dims[0] == "time":
+        arr_qobs = arr_qobs.T
     arr_qobs = arr_qobs / ds.drainage_area.values[:, np.newaxis] * 86.4
 
     # Prepare the dynamic data array and set qobs as the first value
@@ -82,7 +84,8 @@ def create_dataset_flexible(
     for i in range(len(dynamic_var_tags)):
         # Read the data and put in a tmp var
         tmp = ds[dynamic_var_tags[i]].values.astype(np.float32)
-
+        if ds.qobs.dims[0] == "time":
+            tmp = tmp.T
         # If the variable must be scaled, do it
         if qsim_pos[i]:
             tmp = tmp / ds.drainage_area.values[:, np.newaxis] * 86.4
@@ -145,7 +148,7 @@ def create_dataset_flexible_local(
     # Prepare the dynamic data array and set qobs as the first value
     arr_dynamic = np.empty(shape=[n_days, len(dynamic_var_tags) + 1], dtype=np.float32)
     arr_dynamic[:] = np.nan
-    arr_dynamic[:, 0] = arr_qobs
+    arr_dynamic[:, 0] = np.squeeze(arr_qobs)
 
     for i in range(len(dynamic_var_tags)):
         # Read the data and put in a tmp var
@@ -156,9 +159,9 @@ def create_dataset_flexible_local(
             tmp = tmp / ds.drainage_area.values * 86.4
 
         # Set the data in the main dataset
-        arr_dynamic[:, i + 1] = tmp
+        arr_dynamic[:, i + 1] = np.squeeze(tmp)
 
-    return arr_dynamic, arr_qobs
+    return arr_dynamic, np.squeeze(arr_qobs)
 
 
 def create_lstm_dataset(
@@ -415,7 +418,7 @@ def _extract_watershed_block_local(arr_dynamic: np.ndarray, window_size: int):
     y = x[:, -1, 0]
 
     # Remove qobs from the features
-    x = np.delete(x, 0, axis=1)
+    x = np.delete(x, 0, axis=2)
 
     return x, y
 

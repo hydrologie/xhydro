@@ -43,8 +43,10 @@ class TestLstmModels:
     simulation_phases = ["test"]
     # Tags for the dynamic variables in the netcdf files.
     dynamic_var_tags = ["tasmax_MELCC", "rf", "Qsim"]
+
     # Scale variable according to area. Used for simulated flow inputs.
-    qsim_pos = [False, False, True]
+    qsim_pos = [False, False, False, False, False]
+
     # static variables used to condition flows on catchment properties
     static_var_tags = [
         "drainage_area",
@@ -72,6 +74,7 @@ class TestLstmModels:
             use_cpu=self.use_cpu,
             use_parallel=self.use_parallel,
             do_train=do_train,
+            model_structure="dummy_regional_lstm",
             do_simulation=self.do_simulation,
             training_func=training_func,
             filename_base=self.filename_base,
@@ -98,6 +101,7 @@ class TestLstmModels:
             use_cpu=self.use_cpu,
             use_parallel=self.use_parallel,
             do_train=do_train,
+            model_structure="dummy_regional_lstm",
             do_simulation=self.do_simulation,
             training_func=training_func,
             filename_base=self.filename_base,
@@ -127,6 +131,7 @@ class TestLstmModels:
             use_cpu=self.use_cpu,
             use_parallel=self.use_parallel,
             do_train=do_train,
+            model_structure="dummy_local_lstm",
             do_simulation=self.do_simulation,
             training_func=training_func,
             filename_base=self.filename_base,

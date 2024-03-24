@@ -17,8 +17,7 @@ from xhydro.lstm_tools.create_datasets import (
 from xhydro.lstm_tools.LSTM_static import (
     TrainingGenerator,
     TrainingGeneratorLocal,
-    define_lstm_model_simple,
-    define_lstm_model_simple_local,
+    get_list_of_LSTM_models,
     run_trained_model,
     run_trained_model_local,
 )
@@ -443,6 +442,7 @@ def split_dataset_local(
 
 
 def perform_initial_train(
+    model_structure: str,
     use_parallel: bool,
     window_size: int,
     batch_size: int,
@@ -463,6 +463,9 @@ def perform_initial_train(
 
     Parameters
     ----------
+    model_structure : str
+        The version of the LSTM model that we want to use to apply to our data. Must be the name of a function that
+        exists in LSTM_static.py.
     use_parallel : bool
         Flag to make use of multiple GPUs to accelerate training further. Models trained on multiple GPUs can have
         larger batch_size values as different batches can be run on different GPUs in parallel. Speedup is not linear as
@@ -526,7 +529,8 @@ def perform_initial_train(
             strategy = tf.distribute.MirroredStrategy()
             print(f"Number of devices: {strategy.num_replicas_in_sync}")
             with strategy.scope():
-                model_lstm, callback = define_lstm_model_simple(
+                model_func = get_list_of_LSTM_models(model_structure)
+                model_lstm, callback = model_func(
                     window_size=window_size,
                     n_dynamic_features=x_train.shape[2],
                     n_static_features=x_train_static.shape[1],
@@ -535,14 +539,18 @@ def perform_initial_train(
                 )
                 print("USING MULTIPLE GPU SETUP")
         else:
-            model_lstm, callback = define_lstm_model_simple(
+            model_func = get_list_of_LSTM_models(model_structure)
+            model_lstm, callback = model_func(
                 window_size=window_size,
                 n_dynamic_features=x_train.shape[2],
                 n_static_features=x_train_static.shape[1],
                 training_func=training_func,
                 checkpoint_path=name_of_saved_model,
             )
-            print("USING SINGLE GPU")
+            if use_cpu:
+                print("USING CPU")
+            else:
+                print("USING SINGLE GPU")
 
         if use_cpu:
             tf.config.set_visible_devices([], "GPU")
@@ -572,6 +580,7 @@ def perform_initial_train(
 
 
 def perform_initial_train_local(
+    model_structure: str,
     use_parallel: bool,
     window_size: int,
     batch_size: int,
@@ -588,6 +597,9 @@ def perform_initial_train_local(
 
     Parameters
     ----------
+    model_structure : str
+        The version of the LSTM model that we want to use to apply to our data. Must be the name of a function that
+        exists in LSTM_static.py.
     use_parallel : bool
         Flag to make use of multiple GPUs to accelerate training further. Models trained on multiple GPUs can have
         larger batch_size values as different batches can be run on different GPUs in parallel. Speedup is not linear as
@@ -642,7 +654,8 @@ def perform_initial_train_local(
             strategy = tf.distribute.MirroredStrategy()
             print(f"Number of devices: {strategy.num_replicas_in_sync}")
             with strategy.scope():
-                model_lstm, callback = define_lstm_model_simple_local(
+                model_func = get_list_of_LSTM_models(model_structure)
+                model_lstm, callback = model_func(
                     window_size=window_size,
                     n_dynamic_features=x_train.shape[2],
                     training_func=training_func,
@@ -650,13 +663,17 @@ def perform_initial_train_local(
                 )
                 print("USING MULTIPLE GPU SETUP")
         else:
-            model_lstm, callback = define_lstm_model_simple_local(
+            model_func = get_list_of_LSTM_models(model_structure)
+            model_lstm, callback = model_func(
                 window_size=window_size,
                 n_dynamic_features=x_train.shape[2],
                 training_func=training_func,
                 checkpoint_path=name_of_saved_model,
             )
-            print("USING SINGLE GPU")
+            if use_cpu:
+                print("USING CPU")
+            else:
+                print("USING SINGLE GPU")
 
         if use_cpu:
             tf.config.set_visible_devices([], "GPU")

@@ -29,6 +29,7 @@ def control_regional_lstm_training(
     use_cpu: bool = True,
     use_parallel: bool = False,
     do_train: bool = True,
+    model_structure: str = "dummy_regional_lstm",
     do_simulation: bool = True,
     training_func: str = "nse_scaled",
     filename_base: str = "LSTM_results",
@@ -83,13 +84,17 @@ def control_regional_lstm_training(
     do_train : bool
         Indicate that the code should perform the training step. This is not required as a pre-trained model could be
         used to perform a simulation by passing an existing model in "name_of_saved_model".
+    model_structure : str
+        The version of the LSTM model that we want to use to apply to our data. Must be the name of a function that
+        exists in LSTM_static.py.
     do_simulation : bool
         Indicate that simulations should be performed to obtain simulated streamflow and KGE metrics on the watersheds
         of interest, using the "name_of_saved_model" pre-trained model. If set to True and 'do_train' is True, then the
         new trained model will be used instead.
     training_func : str
-        Name of the objective function used for training. For a regional model, it is highly recommended to use the
-        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
+        For a regional model, it is highly recommended to use the scaled nse_loss variable that uses the standard
+        deviation of streamflow as inputs. For a local model, the "kge" function is preferred. Defaults to "nse_scaled"
+        if unspecified by the user. Can be one of ["kge", "nse_scaled"].
     filename_base : str
         Name of the trained model that will be trained if it does not already exist. Do not add the ".h5" extension, it
         will be added automatically.
@@ -177,6 +182,7 @@ def control_regional_lstm_training(
 
         # Do the main large-scale training
         perform_initial_train(
+            model_structure,
             use_parallel,
             window_size,
             batch_size,
@@ -234,8 +240,9 @@ def control_local_lstm_training(
     use_cpu: bool = True,
     use_parallel: bool = False,
     do_train: bool = True,
+    model_structure: str = "dummy_local_lstm",
     do_simulation: bool = True,
-    training_func: str = "nse_scaled",
+    training_func: str = "kge",
     filename_base: str = "LSTM_results",
     simulation_phases: list = None,
     name_of_saved_model: str = None,
@@ -285,13 +292,17 @@ def control_local_lstm_training(
     do_train : bool
         Indicate that the code should perform the training step. This is not required as a pre-trained model could be
         used to perform a simulation by passing an existing model in "name_of_saved_model".
+    model_structure : str
+        The version of the LSTM model that we want to use to apply to our data. Must be the name of a function that
+        exists in LSTM_static.py.
     do_simulation : bool
         Indicate that simulations should be performed to obtain simulated streamflow and KGE metrics on the watersheds
         of interest, using the "name_of_saved_model" pre-trained model. If set to True and 'do_train' is True, then the
         new trained model will be used instead.
     training_func : str
-        Name of the objective function used for training. For a regional model, it is highly recommended to use the
-        scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
+        For a regional model, it is highly recommended to use the scaled nse_loss variable that uses the standard
+        deviation of streamflow as inputs. For a local model, the "kge" function is preferred. Defaults to "kge" if
+        unspecified by the user. Can be one of ["kge", "nse_scaled"].
     filename_base : str
         Name of the trained model that will be trained if it does not already exist. Do not add the ".h5" extension, it
         will be added automatically.
@@ -353,6 +364,7 @@ def control_local_lstm_training(
 
         # Do the main large-scale training
         perform_initial_train_local(
+            model_structure,
             use_parallel,
             window_size,
             batch_size,

@@ -8,4 +8,5 @@ Usage
     climate_change
     gis
     local_frequency_analysis
+    lstm
     optimal_interpolation
