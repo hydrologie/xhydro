@@ -9,7 +9,6 @@ from ravenpy.config import commands as rc
 from ravenpy.config.emulators import GR4JCN, HBVEC, HMETS, HYPR, SACSMA, Blended, Mohyse
 from ravenpy.ravenpy import run
 
-
 import os
 import re
 import shutil
@@ -29,83 +28,92 @@ from xhydro.utils import health_checks
 
 from ._hm import HydrologicalModel
 
-
 __all__ = ["RavenpyModel"]
+
 
 class RavenpyModel(HydrologicalModel):
 
     def __init__(
         self,
-        project_dir: Union[str, os.PathLike],
-        project_file: str,
-        *,
-        project_config: Optional[dict] = None,
-        simulation_config: Optional[dict] = None,
-        output_config: Optional[dict] = None,
-        use_defaults: bool = True,
-        executable: Union[str, os.PathLike] = "hydrotel",
+        model_name: str,
+        parameters: np.ndarray,
+        drainage_area: Union[str, os.PathLike],
+        elevation: str,
+        latitude,
+        longitude,
+        start_date,
+        end_date,
+        qobs_path,
+        alt_names_flow,
+        meteo_file,
+        data_type,
+        alt_names_meteo,
+        meteo_station_properties,
+        rain_snow_fraction="RAINSNOW_DINGMAN",
+        evaporation="PET_PRIESTLEY_TAYLOR",
+        **kwargs,
     ):
 
-
         # Create HRU object for ravenpy based on catchment properties
+        self.model_simulations = None
+        self.qsim = None
         hru = dict(
-            area=model_config["drainage_area"],
-            elevation=model_config["elevation"],
-            latitude=model_config["latitude"],
-            longitude=model_config["longitude"],
+            area=drainage_area,
+            elevation=elevation,
+            latitude=latitude,
+            longitude=longitude,
             hru_type="land",
         )
 
         # Create the emulator configuration
-        default_emulator_config = dict(
+        self.default_emulator_config = dict(
             HRUs=[hru],
-            StartDate=model_config["start_date"],
-            EndDate=model_config["end_date"],
-            ObservationData=[
-                rc.ObservationData.from_nc(
-                    model_config["qobs_path"], alt_names=model_config["alt_names_flow"]
-                )
-            ],
+            params=parameters,
+            StartDate=start_date,
+            EndDate=end_date,
+            ObservationData=[rc.ObservationData.from_nc(qobs_path, alt_names=alt_names_flow)],
             Gauge=[
                 rc.Gauge.from_nc(
-                    model_config[
-                        "meteo_file"
-                    ],  # Chemin d'accès au fichier contenant la météo
-                    data_type=model_config[
-                        "data_type"
-                    ],  # Liste de toutes les variables contenues dans le fichier
-                    alt_names=model_config[
-                        "alt_names_meteo"
-                    ],  # Mapping entre les noms des variables requises et celles dans le fichier.
-                    data_kwds=model_config["meteo_station_properties"],
+                    meteo_file,  # Chemin d'accès au fichier contenant la météo
+                    data_type=data_type,  # Liste de toutes les variables contenues dans le fichier
+                    alt_names=alt_names_meteo,
+                    # Mapping entre les noms des variables requises et celles dans le fichier.
+                    data_kwds=meteo_station_properties,
                 )
             ],
-            RainSnowFraction="RAINSNOW_DINGMAN",
-            Evaporation="PET_PRIESTLEY_TAYLOR",
+            RainSnowFraction=rain_snow_fraction,
+            Evaporation=evaporation,
+            **kwargs
         )
+        self.meteo_file = meteo_file
+        self.qobs = xr.open_dataset(qobs_path)
+        self.model_name = model_name.lower()
 
-        model_name = model_config["model_name"].lower()
+    def run(self) -> Union[str, xr.Dataset]:
+
+        default_emulator_config = self.default_emulator_config
+        model_name = self.model_name
 
         if model_name == "gr4jcn":
-            m = GR4JCN(params=model_config["parameters"], **default_emulator_config)
+            self.model = GR4JCN(**default_emulator_config)
         elif model_name == "hmets":
-            m = HMETS(params=model_config["parameters"], **default_emulator_config)
+            self.model = HMETS(**default_emulator_config)
         elif model_name == "mohyse":
-            m = Mohyse(params=model_config["parameters"], **default_emulator_config)
+            self.model = Mohyse(**default_emulator_config)
         elif model_name == "hbvec":
             default_emulator_config.pop("RainSnowFraction")
-            m = HBVEC(params=model_config["parameters"], **default_emulator_config)
+            self.model = HBVEC(**default_emulator_config)
         elif model_name == "hypr":
-            m = HYPR(params=model_config["parameters"], **default_emulator_config)
+            self.model = HYPR(**default_emulator_config)
         elif model_name == "sacsma":
-            m = SACSMA(params=model_config["parameters"], **default_emulator_config)
+            self.model = SACSMA(**default_emulator_config)
         elif model_name == "blended":
-            m = Blended(params=model_config["parameters"], **default_emulator_config)
+            self.model = Blended(**default_emulator_config)
         else:
             raise ValueError("Hydrological model is an unknown Ravenpy variant.")
 
         workdir = Path(tempfile.mkdtemp(prefix="NB4"))
-        m.write_rv(workdir=workdir)
+        self.model.write_rv(workdir=workdir)
 
         outputs_path = run(modelname="raven", configdir=workdir)
         outputs = OutputReader(path=outputs_path)
@@ -115,4 +123,20 @@ class RavenpyModel(HydrologicalModel):
         if "nbasins" in qsim.dims:
             qsim = qsim.squeeze()
 
+        self.qsim = qsim
+        self.model_simulations = outputs
+
         return qsim
+
+    def get_streamflow(self):
+
+        return self.qsim
+
+    def get_inputs(self) -> xr.Dataset:
+        ds = xr.open_dataset(self.meteo_file)
+
+        start_date = self.default_emulator_config["StartDate"]
+        end_date = self.default_emulator_config["EndDate"]
+        ds = ds.sel(time=slice(start_date, end_date))
+
+        return ds

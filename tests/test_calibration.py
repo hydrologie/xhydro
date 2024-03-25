@@ -5,6 +5,7 @@ import datetime as dt
 from copy import deepcopy
 
 import numpy as np
+import pooch
 import pytest
 import xarray as xr
 
@@ -144,6 +145,19 @@ def test_transform():
 
 class TestRavenpyModelCalibration:
     """Test calibration of RavenPy models."""
+    # Set Github URL for getting files for tests
+    GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
+    BRANCH_OR_COMMIT_HASH = "ravenpy_data"
+
+    # Get data from xhydro-testdata repo
+    meteo_file = pooch.retrieve(
+        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/ravenpy/ERA5_Riviere_Rouge_global.nc",
+        known_hash="md5:de985fa27ddceac690aeb34182a93f11",
+    )
+    qobs_path = pooch.retrieve(
+        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/ravenpy/Debit_Riviere_Rouge.nc",
+        known_hash="md5:5b0feedc34333244b1d9e9c251323478",
+    )
 
     # List of types of data provided to Raven in the meteo file
     data_type = ["TEMP_MAX", "TEMP_MIN", "PRECIP"]
@@ -152,17 +166,13 @@ class TestRavenpyModelCalibration:
     alt_names_meteo = {"TEMP_MIN": "tmin", "TEMP_MAX": "tmax", "PRECIP": "pr"}
     alt_names_flow = "qobs"
 
-    qobs_path = "/home/richard/src/xhydro/xhydro/tests/Debit_Riviere_Rouge.nc"
-
     start_date = dt.datetime(1985, 1, 1)
     end_date = dt.datetime(1986, 12, 31)
 
     model_config = {
-        "meteo_file": "/home/richard/src/xhydro/xhydro/tests/ERA5_Riviere_Rouge_global.nc",
+        "meteo_file": meteo_file,
         "qobs_path": qobs_path,
-        "qobs": xr.open_dataset(qobs_path)
-        .qobs.sel(time=slice(start_date, end_date))
-        .values,
+        "qobs": xr.open_dataset(qobs_path).qobs.sel(time=slice(start_date, end_date)).values,
         "drainage_area": np.array([100.0]),
         "elevation": np.array([250.5]),
         "latitude": np.array([46.0]),
