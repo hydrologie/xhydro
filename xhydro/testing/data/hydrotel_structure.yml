@@ -1,0 +1,83 @@
+structure:
+  _main:
+    - SLNO.csv
+  etat:
+    -
+  hgm:
+    - malbaie.hgm
+  hydro:
+    - station.sth
+  info:
+    - uhrh_amont.txt
+  meteo:
+    - SLNO_meteo_GC3H.nc
+    - SLNO_meteo_GC3H.nc.config
+    - SLNO_meteo_GC3H.pth
+  neige:
+    - station.stn
+  physio:
+    - ind_fol.def
+    - pro_rac.def
+  physitel:
+    - altitude.tif
+    - CoordSys.txt
+    - lacs.dbf
+    - lacs.prj
+    - lacs.shp
+    - lacs.shx
+    - noeuds.nds
+    - occupation_sol.cla
+    - orientation.tif
+    - pente.tif
+    - point.rdx
+    - proprietehydrolique.sol
+    - rivieres.dbf
+    - rivieres.prj
+    - rivieres.shp
+    - rivieres.shx
+    - troncon.trl
+    - type_sol.cla
+    - uhrh.csv
+    - uhrh.dbf
+    - uhrh.prj
+    - uhrh.shp
+    - uhrh.shx
+    - uhrh.tif
+  prevision:
+    - station.spr
+  simulation/simulation:
+    - bv3c.csv
+    - cequeau.csv
+    - correction.csv
+    - degre_jour_modifie.csv
+    - etp-mc-guiness.csv
+    - grillemeteo.csv
+    - grilleprevision.csv
+    - hydro_quebec.csv
+    - lecture_acheminement.csv
+    - lecture_bilan_vertical.csv
+    - lecture_etp.csv
+    - lecture_fonte_neige.csv
+    - lecture_interpolation.csv
+    - lecture_ruisselement.csv
+    - lecture_tempsol.csv
+    - linacre.csv
+    - moyenne_3_stations.csv
+    - onde_cinematique.csv
+    - onde_cinematique_modifiee.csv
+    - output_bassin.csv
+    - output.csv
+    - output_exutoire.csv
+    - penman.csv
+    - penman_monteith.csv
+    - priestlay_taylor.csv
+    - rankinen.csv
+    - rayonnement_net.csv
+    - simulation.csv
+    - simulation.gsb
+    - simulation.sbc
+    - thiessen.csv
+    - thornthwaite.csv
+    - thorsen.csv
+  simulation/simulation/resultat:
+    - debit_aval.nc

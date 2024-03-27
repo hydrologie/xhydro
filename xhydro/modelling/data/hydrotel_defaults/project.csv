@@ -1,0 +1,12 @@
+PROJET HYDROTEL VERSION;
+
+FICHIER ALTITUDE;physitel/altitude.tif
+FICHIER PENTE;physitel/pente.tif
+FICHIER ORIENTATION;physitel/orientation.tif
+FICHIER ZONE;physitel/uhrh.tif
+FICHIER NOEUD;physitel/noeuds.nds
+FICHIER TRONCON;physitel/troncon.trl
+FICHIER PIXELS;physitel/point.rdx
+FICHIER MILIEUX HUMIDES PROFONDEUR TRONCONS;
+
+SIMULATION COURANTE;simulation
