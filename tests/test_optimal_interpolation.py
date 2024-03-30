@@ -62,6 +62,11 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
     percentiles = [25.0, 50.0, 75.0]
     variogram_bins = 10
 
+    form = 3
+    hmax_divider = 2.0
+    p1_bnds = [0.95, 1]
+    hmax_mult_range_bnds = [0.05, 3]
+
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
         # Get the required times only
@@ -80,6 +85,10 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             parallelize=False,
             max_cores=1,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Test some output flow values
@@ -112,6 +121,10 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             parallelize=False,
             max_cores=1,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Verify results
@@ -143,6 +156,10 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             parallelize=True,
             max_cores=3,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Test some output flow values
@@ -174,6 +191,10 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             parallelize=False,
             max_cores=1,
             leave_one_out_cv=False,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Test some output flow values
@@ -202,6 +223,30 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             station_correspondence=self.station_correspondence,
             observation_stations=self.observation_stations,
             show_comparison=False,
+        )
+
+    def test_optimal_interpolation_no_time_dim(self):
+        """Test the OI for data with no time dimension such as indicators."""
+        # Get the required times only
+        qobs = self.qobs.sel(time=dt.datetime(2018, 12, 20))
+        qsim = self.qsim.sel(time=dt.datetime(2018, 12, 20))
+
+        # Run the code and obtain the resulting flows.
+        ds = opt.execute_interpolation(
+            qobs,
+            qsim,
+            self.station_correspondence,
+            self.observation_stations,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            variogram_bins=self.variogram_bins,
+            parallelize=False,
+            max_cores=1,
+            leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
 
@@ -299,6 +344,11 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
     percentiles = [25.0, 50.0, 75.0]
     variogram_bins = 10
 
+    form = 3
+    hmax_divider = 2.0
+    p1_bnds = [0.95, 1]
+    hmax_mult_range_bnds = [0.05, 3]
+
     def test_cross_validation_execute(self):
         """Test the cross validation of optimal interpolation."""
         # Get the required times only
@@ -317,6 +367,10 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             parallelize=False,
             max_cores=1,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Test some output flow values
@@ -349,6 +403,10 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             parallelize=False,
             max_cores=1,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Verify results
@@ -380,6 +438,10 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
             parallelize=True,
             max_cores=3,
             leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
         # Test some output flow values
