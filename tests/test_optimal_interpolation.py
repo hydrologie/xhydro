@@ -232,7 +232,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         qsim = self.qsim.sel(time=dt.datetime(2018, 12, 20))
 
         # Run the code and obtain the resulting flows.
-        ds = opt.execute_interpolation(
+        _ = opt.execute_interpolation(
             qobs,
             qsim,
             self.station_correspondence,

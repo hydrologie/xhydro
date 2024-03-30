@@ -18,7 +18,6 @@ def correction(
     hmax_divider: float = 2.0,
     p1_bnds: list = [0.95, 1],
     hmax_mult_range_bnds: list = [0.05, 3],
-
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
@@ -160,7 +159,7 @@ def correction(
         ],  # TODO: Find out why the "3" is here. Seems out of place.
         bounds=(
             [p1_bnds[0], p1_bnds[1]],
-            [hmax_mult_range_bnds[0]*hmax, hmax_mult_range_bnds[1]*hmax],
+            [hmax_mult_range_bnds[0] * hmax, hmax_mult_range_bnds[1] * hmax],
         ),
     )["x"]
 
