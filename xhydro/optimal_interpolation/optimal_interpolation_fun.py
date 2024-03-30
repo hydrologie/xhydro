@@ -5,6 +5,7 @@ from functools import partial
 from multiprocessing import Pool
 from typing import Any, Optional
 
+import datetime as dt
 import haversine
 import numpy as np
 import xarray as xr
@@ -601,7 +602,10 @@ def retrieve_data(
     selected_flow_sim = np.log(selected_flow_sim)
 
     if (time_range == 1) and (len(selected_flow_obs) == 1):
-        time = qobs["time"].values[np.newaxis]
+        if "time" in qobs.dims:
+            time = qobs["time"].values[np.newaxis]
+        else:
+            time=np.array([dt.datetime(2000,1,1)])
     else:
         time = qobs["time"].values
 

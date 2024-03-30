@@ -225,7 +225,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             show_comparison=False,
         )
 
-    def test_optimal_interpolation_no_time_dim(self):
+    def test_optimal_interpolation_single_time_dim(self):
         """Test the OI for data with no time dimension such as indicators."""
         # Get the required times only
         qobs = self.qobs.sel(time=dt.datetime(2018, 12, 20))
@@ -249,6 +249,29 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
+    def test_optimal_interpolation_no_time_dim(self):
+        """Test the OI for data with no time dimension such as indicators."""
+        # Get the required times only
+        qobs = self.qobs.isel(time=10).drop("time")
+        qsim = self.qsim.isel(time=10).drop("time")
+
+        # Run the code and obtain the resulting flows.
+        _ = opt.execute_interpolation(
+            qobs,
+            qsim,
+            self.station_correspondence,
+            self.observation_stations,
+            ratio_var_bg=self.ratio_var_bg,
+            percentiles=self.percentiles,
+            variogram_bins=self.variogram_bins,
+            parallelize=False,
+            max_cores=1,
+            leave_one_out_cv=True,
+            form=self.form,
+            hmax_divider=self.hmax_divider,
+            p1_bnds=self.p1_bnds,
+            hmax_mult_range_bnds=self.hmax_mult_range_bnds,
+        )
 
 class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
