@@ -3,17 +3,12 @@
 import inspect
 from copy import deepcopy
 
-from ._hydrotel import Hydrotel
-from ._simplemodels import DummyModel
-from ._ravenpy_models import RavenpyModel
-
-import tempfile
-from pathlib import Path
-
-
 from ravenpy.config import commands as rc
 from ravenpy.config.emulators import GR4JCN, HBVEC, HMETS, HYPR, SACSMA, Blended, Mohyse
 
+from ._hydrotel import Hydrotel
+from ._ravenpy_models import RavenpyModel
+from ._simplemodels import DummyModel
 
 __all__ = ["get_hydrological_model_inputs", "hydrological_model"]
 
@@ -34,17 +29,20 @@ def hydrological_model(model_config):
     Hydrotel or DummyModel
         An instance of the hydrological model.
     """
-
     if "model_name" not in model_config:
         raise ValueError("The model name must be provided in the model configuration.")
 
     model_config = deepcopy(model_config)
-    model_name = model_config.pop("model_name")
+    model_name = model_config["model_name"]
 
     if model_name == "Hydrotel":
+        model_config.pop("model_name")
         return Hydrotel(**model_config)
+
     elif model_name == "Dummy":
+        model_config.pop("model_name")
         return DummyModel(**model_config)
+
     elif model_name.lower() in [
         "gr4jcn",
         "hmets",
@@ -83,7 +81,15 @@ def get_hydrological_model_inputs(
         model = DummyModel
     elif model_name == "Hydrotel":
         model = Hydrotel
-    elif model_name.lower() in ["blended", "gr4jcn", "hbvec", "hmets", "hypr", "mohyse", "sacsma"]:
+    elif model_name.lower() in [
+        "blended",
+        "gr4jcn",
+        "hbvec",
+        "hmets",
+        "hypr",
+        "mohyse",
+        "sacsma",
+    ]:
         model = RavenpyModel
     else:
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")

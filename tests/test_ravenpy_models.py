@@ -1,8 +1,8 @@
-import pytest
-import pooch
-from pathlib import Path
 import datetime as dt
+
 import numpy as np
+import pooch
+import pytest
 import xarray as xr
 
 from xhydro.modelling import RavenpyModel
@@ -10,6 +10,7 @@ from xhydro.modelling import RavenpyModel
 
 class TestRavenpyModels:
     """Test configurations of RavenPy models."""
+
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "ravenpy_data"
@@ -38,7 +39,9 @@ class TestRavenpyModels:
     longitude = np.array([-80.75])
 
     # Station properties. Using the same as for the catchment, but could be different.
-    meteo_station_properties = {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}
+    meteo_station_properties = {
+        "ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}
+    }
     rain_snow_fraction = "RAINSNOW_DINGMAN"
     evaporation = "PET_PRIESTLEY_TAYLOR"
 
@@ -48,27 +51,28 @@ class TestRavenpyModels:
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation,
-                           global_parameter=global_parameter,
-                           )
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+            global_parameter=global_parameter,
+        )
 
         qsim = rpm.run()
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
         qsim2 = rpm.get_streamflow()
         assert qsim == qsim2
         met = rpm.get_inputs()
@@ -77,86 +81,89 @@ class TestRavenpyModels:
     def test_ravenpy_hmets(self):
         model_name = "hmets"
         parameters = [
-                    9.5019,
-                    0.2774,
-                    6.3942,
-                    0.6884,
-                    1.2875,
-                    5.4134,
-                    2.3641,
-                    0.0973,
-                    0.0464,
-                    0.1998,
-                    0.0222,
-                    -1.0919,
-                    2.6851,
-                    0.3740,
-                    1.0000,
-                    0.4739,
-                    0.0114,
-                    0.0243,
-                    0.0069,
-                    310.7211,
-                    916.1947,
-                ]
+            9.5019,
+            0.2774,
+            6.3942,
+            0.6884,
+            1.2875,
+            5.4134,
+            2.3641,
+            0.0973,
+            0.0464,
+            0.1998,
+            0.0222,
+            -1.0919,
+            2.6851,
+            0.3740,
+            1.0000,
+            0.4739,
+            0.0114,
+            0.0243,
+            0.0069,
+            310.7211,
+            916.1947,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation
-                           )
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
 
     def test_ravenpy_mohyse(self):
         """Test for MOHYSE ravenpy model"""
         model_name = "mohyse"
         parameters = [
-                    1.0,
-                    0.0468,
-                    4.2952,
-                    2.658,
-                    0.4038,
-                    0.0621,
-                    0.0273,
-                    0.0453,
-                    0.9039,
-                    5.6167,
-                ]
+            1.0,
+            0.0468,
+            4.2952,
+            2.658,
+            0.4038,
+            0.0621,
+            0.0273,
+            0.0453,
+            0.9039,
+            5.6167,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation)
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
 
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
 
     @pytest.mark.skip(
         reason="Weird error with negative simulated PET in ravenpy for HBVEC."
@@ -165,49 +172,51 @@ class TestRavenpyModels:
         """Test for HBV-EC ravenpy model"""
         model_name = "hbvec"
         parameters = [
-                    0.059,
-                    4.072,
-                    2.002,
-                    0.035,
-                    0.10,
-                    0.506,
-                    3.44,
-                    38.32,
-                    0.46,
-                    0.063,
-                    2.278,
-                    4.87,
-                    0.57,
-                    0.045,
-                    0.878,
-                    18.941,
-                    2.037,
-                    0.445,
-                    0.677,
-                    1.141,
-                    1.024,
-                ]
+            0.059,
+            4.072,
+            2.002,
+            0.035,
+            0.10,
+            0.506,
+            3.44,
+            38.32,
+            0.46,
+            0.063,
+            2.278,
+            4.87,
+            0.57,
+            0.045,
+            0.878,
+            18.941,
+            2.037,
+            0.445,
+            0.677,
+            1.141,
+            1.024,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation)
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
 
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
 
     @pytest.mark.skip(
         reason="Weird error with negative simulated PET in ravenpy for HYPR."
@@ -216,164 +225,170 @@ class TestRavenpyModels:
         """Test for HYPR ravenpy model"""
         model_name = "hypr"
         parameters = [
-                    -0.186,
-                    2.92,
-                    0.031,
-                    0.439,
-                    0.465,
-                    0.117,
-                    13.1,
-                    0.404,
-                    1.21,
-                    59.1,
-                    0.166,
-                    4.10,
-                    0.822,
-                    41.5,
-                    5.85,
-                    0.69,
-                    0.924,
-                    1.64,
-                    1.59,
-                    2.51,
-                    1.14,
-                ]
+            -0.186,
+            2.92,
+            0.031,
+            0.439,
+            0.465,
+            0.117,
+            13.1,
+            0.404,
+            1.21,
+            59.1,
+            0.166,
+            4.10,
+            0.822,
+            41.5,
+            5.85,
+            0.69,
+            0.924,
+            1.64,
+            1.59,
+            2.51,
+            1.14,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation)
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
 
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
 
     def test_ravenpy_sacsma(self):
         """Test for SAC-SMA ravenpy model"""
         model_name = "sacsma"
         parameters = [
-                    0.01,
-                    0.05,
-                    0.3,
-                    0.05,
-                    0.05,
-                    0.13,
-                    0.025,
-                    0.06,
-                    0.06,
-                    1.0,
-                    40.0,
-                    0.0,
-                    0.0,
-                    0.1,
-                    0.0,
-                    0.01,
-                    1.5,
-                    0.482,
-                    4.1,
-                    1.0,
-                    1.0,
-                ]
+            0.01,
+            0.05,
+            0.3,
+            0.05,
+            0.05,
+            0.13,
+            0.025,
+            0.06,
+            0.06,
+            1.0,
+            40.0,
+            0.0,
+            0.0,
+            0.1,
+            0.0,
+            0.01,
+            1.5,
+            0.482,
+            4.1,
+            1.0,
+            1.0,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation)
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
 
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)
 
     def test_ravenpy_blended(self):
         """Test for Blended ravenpy model"""
         model_name = "blended"
         parameters = [
-                    0.029,
-                    2.21,
-                    2.16,
-                    0.00023,
-                    21.74,
-                    1.56,
-                    6.21,
-                    0.91,
-                    0.035,
-                    0.25,
-                    0.00022,
-                    1.214,
-                    0.0473,
-                    0.207,
-                    0.078,
-                    -1.34,
-                    0.22,
-                    3.84,
-                    0.29,
-                    0.483,
-                    4.1,
-                    12.83,
-                    0.594,
-                    1.65,
-                    1.71,
-                    0.372,
-                    0.0712,
-                    0.019,
-                    0.408,
-                    0.94,
-                    -1.856,
-                    2.36,
-                    1.0,
-                    1.0,
-                    0.0075,
-                    0.53,
-                    0.0289,
-                    0.961,
-                    0.613,
-                    0.956,
-                    0.101,
-                    0.0928,
-                    0.747,
-                ]
+            0.029,
+            2.21,
+            2.16,
+            0.00023,
+            21.74,
+            1.56,
+            6.21,
+            0.91,
+            0.035,
+            0.25,
+            0.00022,
+            1.214,
+            0.0473,
+            0.207,
+            0.078,
+            -1.34,
+            0.22,
+            3.84,
+            0.29,
+            0.483,
+            4.1,
+            12.83,
+            0.594,
+            1.65,
+            1.71,
+            0.372,
+            0.0712,
+            0.019,
+            0.408,
+            0.94,
+            -1.856,
+            2.36,
+            1.0,
+            1.0,
+            0.0075,
+            0.53,
+            0.0289,
+            0.961,
+            0.613,
+            0.956,
+            0.101,
+            0.0928,
+            0.747,
+        ]
 
-        rpm = RavenpyModel(model_name=model_name,
-                           parameters=parameters,
-                           drainage_area=self.drainage_area,
-                           elevation=self.elevation,
-                           latitude=self.latitude,
-                           longitude=self.longitude,
-                           start_date=self.start_date,
-                           end_date=self.end_date,
-                           qobs_path=self.qobs_path,
-                           alt_names_flow=self.alt_names_flow,
-                           meteo_file=self.meteo_file,
-                           data_type=self.data_type,
-                           alt_names_meteo=self.alt_names_meteo,
-                           meteo_station_properties=self.meteo_station_properties,
-                           rain_snow_fraction=self.rain_snow_fraction,
-                           evaporation=self.evaporation)
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            drainage_area=self.drainage_area,
+            elevation=self.elevation,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            qobs_path=self.qobs_path,
+            alt_names_flow=self.alt_names_flow,
+            meteo_file=self.meteo_file,
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+        )
 
         qsim = rpm.run()
 
-        assert qsim["qsim"].shape == (1827,)
+        assert qsim["streamflow"].shape == (1827,)

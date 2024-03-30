@@ -145,9 +145,10 @@ def test_transform():
 
 class TestRavenpyModelCalibration:
     """Test calibration of RavenPy models."""
+
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "ravenpy_data"
+    BRANCH_OR_COMMIT_HASH = "main"
 
     # Get data from xhydro-testdata repo
     meteo_file = pooch.retrieve(
@@ -172,7 +173,9 @@ class TestRavenpyModelCalibration:
     model_config = {
         "meteo_file": meteo_file,
         "qobs_path": qobs_path,
-        "qobs": xr.open_dataset(qobs_path).qobs.sel(time=slice(start_date, end_date)).values,
+        "qobs": xr.open_dataset(qobs_path)
+        .qobs.sel(time=slice(start_date, end_date))
+        .values,
         "drainage_area": np.array([100.0]),
         "elevation": np.array([250.5]),
         "latitude": np.array([46.0]),
