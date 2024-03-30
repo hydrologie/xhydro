@@ -1,11 +1,11 @@
 """Package containing the optimal interpolation functions."""
 
+import datetime as dt
 import os
 from functools import partial
 from multiprocessing import Pool
 from typing import Any, Optional
 
-import datetime as dt
 import haversine
 import numpy as np
 import xarray as xr
@@ -605,7 +605,7 @@ def retrieve_data(
         if "time" in qobs.dims:
             time = qobs["time"].values[np.newaxis]
         else:
-            time=np.array([dt.datetime(2000,1,1)])
+            time = np.array([dt.datetime(2000, 1, 1)])
     else:
         time = qobs["time"].values
 

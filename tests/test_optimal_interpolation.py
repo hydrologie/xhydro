@@ -273,6 +273,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
 
+
 class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
     # Set Github URL for getting files for tests
