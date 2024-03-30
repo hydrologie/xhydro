@@ -3,9 +3,6 @@
 import inspect
 from copy import deepcopy
 
-from ravenpy.config import commands as rc
-from ravenpy.config.emulators import GR4JCN, HBVEC, HMETS, HYPR, SACSMA, Blended, Mohyse
-
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
 from ._simplemodels import DummyModel
@@ -106,65 +103,3 @@ def get_hydrological_model_inputs(
     all_config = {"model_name": model_name, **all_config}
 
     return all_config, model.__doc__
-
-
-def _ravenpy_model(model_config: dict):
-
-    # Create HRU object for ravenpy based on catchment properties
-    hru = dict(
-        area=model_config["drainage_area"],
-        elevation=model_config["elevation"],
-        latitude=model_config["latitude"],
-        longitude=model_config["longitude"],
-        hru_type="land",
-    )
-
-    # Create the emulator configuration
-    default_emulator_config = dict(
-        HRUs=[hru],
-        StartDate=model_config["start_date"],
-        EndDate=model_config["end_date"],
-        ObservationData=[
-            rc.ObservationData.from_nc(
-                model_config["qobs_path"], alt_names=model_config["alt_names_flow"]
-            )
-        ],
-        Gauge=[
-            rc.Gauge.from_nc(
-                model_config[
-                    "meteo_file"
-                ],  # Chemin d'accès au fichier contenant la météo
-                data_type=model_config[
-                    "data_type"
-                ],  # Liste de toutes les variables contenues dans le fichier
-                alt_names=model_config[
-                    "alt_names_meteo"
-                ],  # Mapping entre les noms des variables requises et celles dans le fichier.
-                data_kwds=model_config["meteo_station_properties"],
-            )
-        ],
-        RainSnowFraction="RAINSNOW_DINGMAN",
-        Evaporation="PET_PRIESTLEY_TAYLOR",
-    )
-
-    model_name = model_config["model_name"].lower()
-
-    if model_name == "gr4jcn":
-        m = GR4JCN(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "hmets":
-        m = HMETS(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "mohyse":
-        m = Mohyse(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "hbvec":
-        default_emulator_config.pop("RainSnowFraction")
-        m = HBVEC(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "hypr":
-        m = HYPR(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "sacsma":
-        m = SACSMA(params=model_config["parameters"], **default_emulator_config)
-    elif model_name == "blended":
-        m = Blended(params=model_config["parameters"], **default_emulator_config)
-    else:
-        raise ValueError("Hydrological model is an unknown Ravenpy variant.")
-
-    return m
