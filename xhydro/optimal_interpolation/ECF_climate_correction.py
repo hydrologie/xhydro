@@ -16,8 +16,8 @@ def correction(
     variogram_bins: int = 10,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: list = [0.95, 1],
-    hmax_mult_range_bnds: list = [0.05, 3],
+    p1_bnds: list = None,
+    hmax_mult_range_bnds: list = None,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
@@ -34,14 +34,16 @@ def correction(
     variogram_bins : int, optional
         Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
     form : int
-        The form of the ECF equation to use (1, 2, 3 or 4. See documentation).
+        The form of the ECF equation to use (1, 2, 3 or 4. See Notes below).
     hmax_divider : float
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
-    p1_bnds : list
+    p1_bnds : list, optional
         The lower and upper bounds of the parameters for the first parameter of the ECF equation for variogram fitting.
-    hmax_mult_range_bnds : list
+        Defaults to [0.95, 1.0].
+    hmax_mult_range_bnds : list, optional
         The lower and upper bounds of the parameters for the second parameter of the ECF equation for variogram fitting.
         It is multiplied by "hmax", which is calculated to be the threshold limit for the variogram sill.
+        Defaults to [0.05, 3.0].
 
     Returns
     -------
@@ -49,6 +51,18 @@ def correction(
         A tuple containing the following:
         - ecf_fun: Partial function for the error covariance function.
         - par_opt: Optimized parameters for the interpolation.
+
+    Notes
+    -----
+    The possible forms for the ecf function fitting are as follows:
+        Form 1 (From Lachance-Cloutier et al. 2017; and Garand & Grassotti 1995) :
+            ecf_fun = par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+        Form 2 (Gaussian form) :
+            ecf_fun = par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+        Form 3 :
+            ecf_fun = par[0] * np.exp(-h / par[1])
+        Form 4 :
+            ecf_fun = par[0] * np.exp(-(h ** par[1]) / par[0])
     """
     # Calculate the difference between the background field (qsim) and the point observations (qobs) at the station
     # locations.
@@ -65,6 +79,11 @@ def correction(
     heights = np.empty((time_range, variogram_bins)) * np.nan
     covariances = np.empty((time_range, variogram_bins)) * np.nan
     standard_deviations = np.empty((time_range, variogram_bins)) * np.nan
+
+    if p1_bnds is None:
+        p1_bnds = [0.95, 1]
+    if hmax_mult_range_bnds is None:
+        hmax_mult_range_bnds = [0.05, 3]
 
     # Pairwise distance between all observation stations.
     observation_latlong = list(zip(centroid_lat_obs, centroid_lon_obs))
@@ -381,7 +400,7 @@ def general_ecf(h: np.ndarray, par: list, form: int):
     par : list
         Parameters for the ECF equation.
     form : int
-        The form of the ECF equation to use (1, 2, 3 or 4).
+        The form of the ECF equation to use (1, 2, 3 or 4). See :py:func:`correction` for details.
 
     Returns
     -------

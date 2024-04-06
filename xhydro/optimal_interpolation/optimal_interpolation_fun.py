@@ -1,6 +1,5 @@
 """Package containing the optimal interpolation functions."""
 
-import datetime as dt
 import os
 from functools import partial
 from multiprocessing import Pool
@@ -400,8 +399,8 @@ def execute_interpolation(
     leave_one_out_cv: bool = False,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: list = [0.95, 1],
-    hmax_mult_range_bnds: list = [0.05, 3],
+    p1_bnds: list = None,
+    hmax_mult_range_bnds: list = None,
 ):
     """Run the interpolation algorithm for leave-one-out cross-validation or operational use.
 
@@ -433,11 +432,13 @@ def execute_interpolation(
         The form of the ECF equation to use (1, 2, 3 or 4. See documentation).
     hmax_divider : float
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
-    p1_bnds : list
+    p1_bnds : list, optional
         The lower and upper bounds of the parameters for the first parameter of the ECF equation for variogram fitting.
-    hmax_mult_range_bnds : list
+        Defaults to [0.95, 1].
+    hmax_mult_range_bnds : list, optional
         The lower and upper bounds of the parameters for the second parameter of the ECF equation for variogram fitting.
         It is multiplied by "hmax", which is calculated to be the threshold limit for the variogram sill.
+        Defaults to [0.05, 3].
 
     Returns
     -------
@@ -457,6 +458,11 @@ def execute_interpolation(
         station_correspondence=station_correspondence,
         observation_stations=observation_stations,
     )
+
+    if p1_bnds is None:
+        p1_bnds = [0.95, 1]
+    if hmax_mult_range_bnds is None:
+        hmax_mult_range_bnds = [0.05, 3]
 
     # create the weighting function parameters using climatological errors (i.e. over many timesteps)
     ecf_fun, par_opt = ecf_cc.correction(
@@ -605,7 +611,7 @@ def retrieve_data(
         if "time" in qobs.dims:
             time = qobs["time"].values[np.newaxis]
         else:
-            time = np.array([dt.datetime(2000, 1, 1)])
+            time = np.array([np.nan])
     else:
         time = qobs["time"].values
 

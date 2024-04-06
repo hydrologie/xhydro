@@ -144,7 +144,7 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
     def test_cross_validation_execute_parallel(self):
         """Test the parallel version of the optimal interpolation cross validation."""
-        # Run the interpolation and get flows
+        # Run the interpolation and obtain the resulting flows.
         ds = opt.execute_interpolation(
             self.qobs.sel(time=slice(self.start_date, self.end_date)),
             self.qsim.sel(time=slice(self.start_date, self.end_date)),
@@ -231,8 +231,9 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         qobs = self.qobs.sel(time=dt.datetime(2018, 12, 20))
         qsim = self.qsim.sel(time=dt.datetime(2018, 12, 20))
 
-        # Run the code and obtain the resulting flows.
-        _ = opt.execute_interpolation(
+        # TODO: Generate better data to make sure results compute accurately
+        # Run the code and ensure dataset is of correct size and code does not crash.
+        ds = opt.execute_interpolation(
             qobs,
             qsim,
             self.station_correspondence,
@@ -248,6 +249,9 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             p1_bnds=self.p1_bnds,
             hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
+
+        assert "time" not in ds
+        assert len(ds.percentile) == 3
 
     def test_optimal_interpolation_no_time_dim(self):
         """Test the OI for data with no time dimension such as indicators."""
@@ -255,8 +259,9 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         qobs = self.qobs.isel(time=10).drop("time")
         qsim = self.qsim.isel(time=10).drop("time")
 
-        # Run the code and obtain the resulting flows.
-        _ = opt.execute_interpolation(
+        # TODO: Generate better data to make sure results compute accurately
+        # Run the code and ensure dataset is of correct size and code does not crash.
+        ds = opt.execute_interpolation(
             qobs,
             qsim,
             self.station_correspondence,
@@ -272,6 +277,9 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
             p1_bnds=self.p1_bnds,
             hmax_mult_range_bnds=self.hmax_mult_range_bnds,
         )
+
+        assert "time" not in ds
+        assert len(ds.percentile) == 3
 
 
 class TestOptimalInterpolationIntegrationOriginalDEHFiles:
