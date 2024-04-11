@@ -399,7 +399,7 @@ class TestHydrotel:
     def test_copypaste(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
         # Remove simulation.csv
-        os.remove(tmpdir / "fake" / "simulation" / "simulation" / "simulation.csv")
+        os.remove(tmpdir / "simulation" / "simulation" / "simulation.csv")
         Hydrotel(
             tmpdir,
             "SLNO.csv",
@@ -431,10 +431,18 @@ class TestHydrotel:
             tmpdir / "simulation" / "simulation" / "simulation.csv",
             tmpdir / "simulation" / "simulation" / "output.csv",
         )
-        with pytest.raises(
-            ValueError, match="configuration file on disk does not appear to be valid"
-        ):
+        # Multiple warnings should be raised, so we use a list
+        with pytest.warns(UserWarning) as record:
             Hydrotel(tmpdir, "SLNO.csv", use_defaults=False)
+        assert len(record) == 2
+        assert (
+            "configuration file on disk has some entries that might not be valid."
+            in record[0].message.args[0]
+        )
+        assert (
+            "file on disk has a different number of entries than the template."
+            in record[1].message.args[0]
+        )
 
     def test_bad_overwrite(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
