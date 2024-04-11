@@ -17,4 +17,5 @@ Co-Developers
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Richard Arsenault `@richardarsenault <https://github.com/richardarsenault>`_
+* Francis Gravel `@mayetea <https://github.com/mayetea>`_
