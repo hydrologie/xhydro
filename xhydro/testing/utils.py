@@ -20,8 +20,7 @@ __all__ = [
 
 
 def fake_hydrotel_project(
-    directory: Union[str, os.PathLike],
-    name: str,
+    project_dir: Union[str, os.PathLike],
     *,
     meteo: Union[bool, xr.Dataset] = False,
     debit_aval: Union[bool, xr.Dataset] = False,
@@ -30,10 +29,8 @@ def fake_hydrotel_project(
 
     Parameters
     ----------
-    directory : str or os.PathLike
+    project_dir : str or os.PathLike
         Directory where the project will be created.
-    name : str
-        Name of the project.
     meteo : bool or xr.Dataset
         Fake meteo timeseries. If True, a 2-year timeseries is created. Alternatively, provide a Dataset.
         Leave as False to create a fake file.
@@ -47,7 +44,8 @@ def fake_hydrotel_project(
     Most files are fake, except for the projet.csv, simulation.csv and output.csv files, which are filled with
     default options taken from xhydro/modelling/data/hydrotel_defaults/.
     """
-    project_dir = Path(directory) / name
+    project_dir = Path(project_dir)
+
     with open(Path(__file__).parent / "data" / "hydrotel_structure.yml") as f:
         struc = yaml.safe_load(f)["structure"]
 

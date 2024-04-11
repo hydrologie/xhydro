@@ -10,7 +10,7 @@ import xhydro.testing.utils as xhu
 
 class TestFakeHydrotelProject:
     def test_defaults(self, tmp_path):
-        xhu.fake_hydrotel_project(tmp_path, "fake")
+        xhu.fake_hydrotel_project(tmp_path / "fake")
         assert (tmp_path / "fake").exists()
         assert (tmp_path / "fake" / "SLNO.csv").exists()
         assert (
@@ -21,20 +21,14 @@ class TestFakeHydrotelProject:
     def test_files(self, tmp_path):
         xhu.fake_hydrotel_project(
             tmp_path,
-            "fake",
             meteo=True,
             debit_aval=True,
         )
         # Open the files to check if they are valid
-        ds_meteo = xr.open_dataset(tmp_path / "fake" / "meteo" / "SLNO_meteo_GC3H.nc")
+        ds_meteo = xr.open_dataset(tmp_path / "meteo" / "SLNO_meteo_GC3H.nc")
         assert ds_meteo.time.size == 730
         ds_debit_aval = xr.open_dataset(
-            tmp_path
-            / "fake"
-            / "simulation"
-            / "simulation"
-            / "resultat"
-            / "debit_aval.nc"
+            tmp_path / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
         )
         assert ds_debit_aval.time.size == 730
 
@@ -49,11 +43,10 @@ class TestFakeHydrotelProject:
         )
         xhu.fake_hydrotel_project(
             tmp_path,
-            "fake",
             meteo=meteo,
         )
         # Open the files to check if they are valid
-        ds_meteo = xr.open_dataset(tmp_path / "fake" / "meteo" / "SLNO_meteo_GC3H.nc")
+        ds_meteo = xr.open_dataset(tmp_path / "meteo" / "SLNO_meteo_GC3H.nc")
         assert ds_meteo.time.size == 1095
         np.testing.assert_array_equal(ds_meteo.data_vars, ["tasmin"])
 
