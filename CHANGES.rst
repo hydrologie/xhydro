@@ -12,7 +12,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* Hydrological models are now classes instead of functions and dictionaries. (:pull:`18`).
+* Hydrological models are now classes instead of functions and dictionaries. (:issue:`93`, :pull:`18`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
