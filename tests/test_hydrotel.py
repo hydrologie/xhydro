@@ -221,8 +221,8 @@ class TestHydrotel:
             ):
                 ht._basic_checks()
         elif test == "health":
-            with pytest.raises(
-                ValueError,
+            with pytest.warns(
+                UserWarning,
                 match="The following health checks failed:\n  "
                 "- The dimension 'stations' is missing.\n  "
                 "- The coordinate 'z' is missing.\n  "

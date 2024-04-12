@@ -425,7 +425,7 @@ class Hydrotel(HydrologicalModel):
                         value = self.project_dir / value
                     else:
                         value = self.simulation_dir / value
-                if not Path(value).is_file():
+                if not Path(value).is_file() and Path(value).suffix != ".sth":
                     raise FileNotFoundError(
                         f"The file {value} is mentioned in the configuration, but does not exist."
                     )
@@ -495,6 +495,12 @@ class Hydrotel(HydrologicalModel):
         # Check that the dataset is complete
         missing = "missing_any" if check_missing else None
 
+        # Fix badly formatted files that xclim can't handle
+        if ds[f"{cfg['TMIN_NAME']}"].attrs["units"] == "DEGC":
+            ds[f"{cfg['TMIN_NAME']}"].attrs["units"] = "degC"
+        if ds[f"{cfg['TMAX_NAME']}"].attrs["units"] == "DEGC":
+            ds[f"{cfg['TMAX_NAME']}"].attrs["units"] = "degC"
+
         health_checks(
             ds,
             structure=structure,
@@ -504,7 +510,7 @@ class Hydrotel(HydrologicalModel):
             variables_and_units=variables_and_units,
             freq=freq,
             missing=missing,
-            raise_on=["all"],
+            raise_on=None,
         )
 
     def _standardise_outputs(self, **kwargs):
