@@ -150,13 +150,21 @@ class Hydrotel(HydrologicalModel):
 
             # Check that the configuration files on disk have the right entries
             for cfg in ["project", "simulation", "output"]:
-                # Spaces and underscores are interchangeable in the configuration files
-                if not all(
-                    o.replace(" ", "_") in template[f"{cfg}_config"]
-                    for o in o[f"{cfg}_config"]
-                ) and len(o[f"{cfg}_config"]) != len(template[f"{cfg}_config"]):
-                    raise ValueError(
-                        f"The {cfg} configuration file on disk does not appear to be valid."
+                all_keys_in_template = all(
+                    key.replace(" ", "_")
+                    in (k.replace(" ", "_") for k in template[f"{cfg}_config"])
+                    for key in o[f"{cfg}_config"]
+                )
+                if not all_keys_in_template:
+                    warnings.warn(
+                        f"The {cfg} configuration file on disk has some entries that might not be valid.",
+                        category=UserWarning,
+                    )
+                nkeys_match = len(o[f"{cfg}_config"]) == len(template[f"{cfg}_config"])
+                if not nkeys_match:
+                    warnings.warn(
+                        f"The {cfg} configuration file on disk has a different number of entries than the template.",
+                        category=UserWarning,
                     )
 
         self.project_config = o["project_config"] | project_config
@@ -417,7 +425,7 @@ class Hydrotel(HydrologicalModel):
                         value = self.project_dir / value
                     else:
                         value = self.simulation_dir / value
-                if not Path(value).is_file():
+                if not Path(value).is_file() and Path(value).suffix != ".sth":
                     raise FileNotFoundError(
                         f"The file {value} is mentioned in the configuration, but does not exist."
                     )
@@ -487,6 +495,12 @@ class Hydrotel(HydrologicalModel):
         # Check that the dataset is complete
         missing = "missing_any" if check_missing else None
 
+        # Fix badly formatted files that xclim can't handle
+        if ds[f"{cfg['TMIN_NAME']}"].attrs["units"] == "DEGC":
+            ds[f"{cfg['TMIN_NAME']}"].attrs["units"] = "degC"
+        if ds[f"{cfg['TMAX_NAME']}"].attrs["units"] == "DEGC":
+            ds[f"{cfg['TMAX_NAME']}"].attrs["units"] = "degC"
+
         health_checks(
             ds,
             structure=structure,
@@ -496,7 +510,7 @@ class Hydrotel(HydrologicalModel):
             variables_and_units=variables_and_units,
             freq=freq,
             missing=missing,
-            raise_on=["all"],
+            raise_on=None,
         )
 
     def _standardise_outputs(self, **kwargs):
@@ -687,6 +701,9 @@ def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
     d : dict
         Dictionary of options to write to the file.
     """
+    # Spaces and underscores are sometimes used interchangeably
+    d = {k.replace(" ", "_"): v for k, v in d.items()}
+
     # Open the file
     with open(file) as f:
         lines = f.readlines()
@@ -695,9 +712,11 @@ def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
     overwritten = []
     # clear default values from the template
     for i, line in enumerate(lines):
-        if line.split(";")[0] in d:
+        if line.split(";")[0].replace(" ", "_") in d:
             overwritten.append(line.split(";")[0])
-            lines[i] = f"{line.split(';')[0]};{d[line.split(';')[0]]}\n"
+            lines[i] = (
+                f"{line.split(';')[0]};{d[line.split(';')[0].replace(' ', '_')]}\n"
+            )
 
     if len(overwritten) < len(d):
         raise ValueError(
