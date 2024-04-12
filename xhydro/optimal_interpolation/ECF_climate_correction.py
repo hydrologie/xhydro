@@ -14,6 +14,10 @@ def correction(
     centroid_lon_obs: np.ndarray,
     centroid_lat_obs: np.ndarray,
     variogram_bins: int = 10,
+    form: int = 3,
+    hmax_divider: float = 2.0,
+    p1_bnds: list = None,
+    hmax_mult_range_bnds: list = None,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
@@ -29,6 +33,17 @@ def correction(
         Latitude vector of the catchment centroids for the observed stations.
     variogram_bins : int, optional
         Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
+    form : int
+        The form of the ECF equation to use (1, 2, 3 or 4. See Notes below).
+    hmax_divider : float
+        Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
+    p1_bnds : list, optional
+        The lower and upper bounds of the parameters for the first parameter of the ECF equation for variogram fitting.
+        Defaults to [0.95, 1.0].
+    hmax_mult_range_bnds : list, optional
+        The lower and upper bounds of the parameters for the second parameter of the ECF equation for variogram fitting.
+        It is multiplied by "hmax", which is calculated to be the threshold limit for the variogram sill.
+        Defaults to [0.05, 3.0].
 
     Returns
     -------
@@ -36,13 +51,28 @@ def correction(
         A tuple containing the following:
         - ecf_fun: Partial function for the error covariance function.
         - par_opt: Optimized parameters for the interpolation.
+
+    Notes
+    -----
+    The possible forms for the ecf function fitting are as follows:
+        Form 1 (From Lachance-Cloutier et al. 2017; and Garand & Grassotti 1995) :
+            ecf_fun = par[0] * (1 + h / par[1]) * np.exp(-h / par[1])
+        Form 2 (Gaussian form) :
+            ecf_fun = par[0] * np.exp(-0.5 * np.power(h / par[1], 2))
+        Form 3 :
+            ecf_fun = par[0] * np.exp(-h / par[1])
+        Form 4 :
+            ecf_fun = par[0] * np.exp(-(h ** par[1]) / par[0])
     """
     # Calculate the difference between the background field (qsim) and the point observations (qobs) at the station
     # locations.
     difference = da_qsim.values - da_qobs.values
 
-    # Number of timesteps. Probably a better way to get this, maybe from qobs or qsim parent variable?
-    time_range = len(da_qobs.time)
+    # Number of timesteps. If we have more than 1 timestep, we can use the mean climatological variogram later.
+    if "time" in da_qobs.dims:
+        time_range = len(da_qobs.time)
+    else:
+        time_range = 1
 
     # Preallocate matrices for all timesteps for the heights of the histograms, the covariances and standard deviations
     # of the values within each bin of the histogram.
@@ -50,14 +80,10 @@ def correction(
     covariances = np.empty((time_range, variogram_bins)) * np.nan
     standard_deviations = np.empty((time_range, variogram_bins)) * np.nan
 
-    # TODO: Some user-defined inputs that should be parameterized
-    # Form of the ECF function, more could be added. Should also be parameterized.
-    form = 3
-    input_opt = {
-        "hmax_divider": 2,
-        "p1_bnds": [0.95, 1],
-        "hmax_mult_range_bnds": [0.05, 3],
-    }
+    if p1_bnds is None:
+        p1_bnds = [0.95, 1]
+    if hmax_mult_range_bnds is None:
+        hmax_mult_range_bnds = [0.05, 3]
 
     # Pairwise distance between all observation stations.
     observation_latlong = list(zip(centroid_lat_obs, centroid_lon_obs))
@@ -65,57 +91,71 @@ def correction(
         observation_latlong, observation_latlong, comb=True
     )
 
-    # For each timestep, we will compute the histogram bins and other data required to provide the data for the ECF
-    # function optimizer.
-    for i in range(time_range):
-        # Check for NaN observed streamflow data points (if difference is NaN, necessarily obs is NaN. But in case a sim
-        # also provides a NaN, then take the difference instead).
-        is_nan = np.isnan(difference[i, :])
+    # If there is more than 1 time step, we need to do a climatological mean ECF.
+    if time_range > 1:
+        # For each timestep, we will compute the histogram bins and other data required to provide the data for the ECF
+        # function optimizer.
+        for i in range(time_range):
+            # Check for NaN observed streamflow data points (if difference is NaN, necessarily obs is NaN. But in case a
+            # sim also provides a NaN, then take the difference instead).
+            is_nan = np.isnan(difference[i, :])
 
-        # Calculate the error for this particular day and remove NaN days.
-        day_diff = difference[i, ~is_nan]
+            # Calculate the error for this particular day and remove NaN days.
+            day_diff = difference[i, ~is_nan]
 
-        # If there are at least as many stations worth of data as there are required bins, we can compute the histogram.
-        if len(day_diff) >= variogram_bins:
+            # If there are at least as many stations worth of data as there are required bins, we can compute the
+            # histogram.
+            if len(day_diff) >= variogram_bins:
 
-            # Get the stations that did not have NaN observations. Since the matrix is 2D due to pairwise distances,
-            # need to remove rows and columns of NaN-stations from the distance matrix distance_pc.
-            distance_pc = np.delete(distance, is_nan, axis=0)
-            distance_pc = np.delete(distance_pc, is_nan, axis=1)
+                # Get the stations that did not have NaN observations. Since the matrix is 2D due to pairwise distances,
+                # need to remove rows and columns of NaN-stations from the distance matrix distance_pc.
+                distance_pc = np.delete(distance, is_nan, axis=0)
+                distance_pc = np.delete(distance_pc, is_nan, axis=1)
 
-            # Sanity check: length of distance_pc should be equal to day_diff.
-            if len(day_diff) != distance_pc.shape[0]:
-                raise AssertionError(
-                    "day_diff not equal to the size of distance_pc in histogram bin definition."
+                # Sanity check: length of distance_pc should be equal to day_diff.
+                if len(day_diff) != distance_pc.shape[0]:
+                    raise AssertionError(
+                        "day_diff not equal to the size of distance_pc in histogram bin definition."
+                    )
+
+                # Sort the data into bins and get their stats.
+                h_b, cov_b, std_b, num_p = eval_covariance_bin(
+                    distances=distance_pc,
+                    values=day_diff,
+                    hmax_divider=hmax_divider,
+                    variogram_bins=variogram_bins,
                 )
 
-            # Sort the data into bins and get their stats.
-            h_b, cov_b, std_b, num_p = eval_covariance_bin(
-                distances=distance_pc,
-                values=day_diff,
-                hmax_divider=input_opt["hmax_divider"],
-                variogram_bins=variogram_bins,
+                # If there are at least "variogram_bins" number of bins, then add it to the results matrix
+                if len(num_p[0]) >= variogram_bins:
+                    heights[i, :] = h_b[0, 0 : variogram_bins + 1]
+                    covariances[i, :] = cov_b[0, 0 : variogram_bins + 1]
+                    standard_deviations[i, :] = std_b[0, 0 : variogram_bins + 1]
+
+        # The histogram bins for each day have been calculated. Now is time to prepare the statistics overall for the
+        # ECF function fitting for the semi-variogram for the number of days (i.e. weighted average of climatology).
+        # This first function reformats the data according to the timestep and computes the weighted average histograms.
+        distance, covariance, covariance_weights, valid_heights = (
+            initialize_stats_variables(
+                heights, covariances, standard_deviations, variogram_bins
             )
-
-            # If there are at least "variogram_bins" number of bins, then add it to the results matrix
-            if len(num_p[0]) >= variogram_bins:
-                heights[i, :] = h_b[0, 0 : variogram_bins + 1]
-                covariances[i, :] = cov_b[0, 0 : variogram_bins + 1]
-                standard_deviations[i, :] = std_b[0, 0 : variogram_bins + 1]
-
-    # The histogram bins for each day have been calculated. Now is time to prepare the statistics overall for the ECF
-    # function fitting for the semi-variogram for the number of days (i.e. weighted average of climatology). This first
-    # function reformats the data according to the timesteps and computes the weighted average histograms.
-    distance, covariance, covariance_weights, valid_heights = (
-        initialize_stats_variables(
-            heights, covariances, standard_deviations, variogram_bins
         )
-    )
 
-    # And this second part does the binning of the histogram as was done before for all days.
-    h_b, cov_b, std_b = calculate_ECF_stats(
-        distance, covariance, covariance_weights, valid_heights
-    )
+        # And this second part does the binning of the histogram as was done before for all days.
+        h_b, cov_b, std_b = calculate_ECF_stats(
+            distance, covariance, covariance_weights, valid_heights
+        )
+
+    else:
+        # Just compute the covariance bin as a one-shot deal
+        h_b, cov_b, std_b, num_p = eval_covariance_bin(
+            distances=distance,
+            values=np.squeeze(difference),
+            hmax_divider=hmax_divider,
+            variogram_bins=variogram_bins,
+        )
+
+    hmax = max(np.reshape(distance, (-1, 1))) / hmax_divider
 
     # This determines the shape of the fit that we want the optimizer to fit to the correlation variogram.
     ecf_fun = partial(general_ecf, form=form)
@@ -137,8 +177,8 @@ def correction(
             np.mean(h_b) / 3,
         ],  # TODO: Find out why the "3" is here. Seems out of place.
         bounds=(
-            [input_opt["p1_bnds"][0], input_opt["p1_bnds"][1]],
-            [0, input_opt["hmax_mult_range_bnds"][1] * 500],
+            [p1_bnds[0], p1_bnds[1]],
+            [hmax_mult_range_bnds[0] * hmax, hmax_mult_range_bnds[1] * hmax],
         ),
     )["x"]
 
@@ -215,7 +255,7 @@ def calculate_ECF_stats(
 def eval_covariance_bin(
     distances: np.ndarray,
     values: np.ndarray,
-    hmax_divider: int = 2,
+    hmax_divider: float = 2.0,
     variogram_bins: int = 10,
 ):
     """Evaluate the covariance of a binomial distribution.
@@ -226,7 +266,7 @@ def eval_covariance_bin(
         Array of distances for each data point.
     values : np.ndarray
         Array of values corresponding to each data point.
-    hmax_divider : int
+    hmax_divider : float
         Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
     variogram_bins : int, optional
         Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
@@ -234,7 +274,7 @@ def eval_covariance_bin(
     Returns
     -------
     tuple
-        Arrays for heights, covariance, standard deviation, and row length.
+        Arrays for heights, covariance, standard deviation, row length.
     """
     # Step 1: Calculate weights based on errors
     weights = np.power(1 / np.ones(len(values)), 2)
@@ -360,7 +400,7 @@ def general_ecf(h: np.ndarray, par: list, form: int):
     par : list
         Parameters for the ECF equation.
     form : int
-        The form of the ECF equation to use (1, 2, or other).
+        The form of the ECF equation to use (1, 2, 3 or 4). See :py:func:`correction` for details.
 
     Returns
     -------
