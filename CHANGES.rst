@@ -4,11 +4,13 @@ Changelog
 
 v0.4.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added support for the Hydrotel hydrological model. (:pull:`18`).
+* Added optimal interpolation functions for time-series and streamflow indicators. (:pull:`88`, :pull:`129`).
+* Added optimal interpolation notebooks. (:pull:`123`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^

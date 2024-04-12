@@ -397,6 +397,10 @@ def execute_interpolation(
     parallelize: bool = False,
     max_cores: int = 1,
     leave_one_out_cv: bool = False,
+    form: int = 3,
+    hmax_divider: float = 2.0,
+    p1_bnds: list = None,
+    hmax_mult_range_bnds: list = None,
 ):
     """Run the interpolation algorithm for leave-one-out cross-validation or operational use.
 
@@ -424,6 +428,17 @@ def execute_interpolation(
     leave_one_out_cv : bool
         Flag to determine if the code should be run in leave-one-out cross-validation (True) or should be applied
         operationally (False).
+    form : int
+        The form of the ECF equation to use (1, 2, 3 or 4. See documentation).
+    hmax_divider : float
+        Maximum distance for binning is set as hmax_divider times the maximum distance in the input data. Defaults to 2.
+    p1_bnds : list, optional
+        The lower and upper bounds of the parameters for the first parameter of the ECF equation for variogram fitting.
+        Defaults to [0.95, 1].
+    hmax_mult_range_bnds : list, optional
+        The lower and upper bounds of the parameters for the second parameter of the ECF equation for variogram fitting.
+        It is multiplied by "hmax", which is calculated to be the threshold limit for the variogram sill.
+        Defaults to [0.05, 3].
 
     Returns
     -------
@@ -444,6 +459,11 @@ def execute_interpolation(
         observation_stations=observation_stations,
     )
 
+    if p1_bnds is None:
+        p1_bnds = [0.95, 1]
+    if hmax_mult_range_bnds is None:
+        hmax_mult_range_bnds = [0.05, 3]
+
     # create the weighting function parameters using climatological errors (i.e. over many timesteps)
     ecf_fun, par_opt = ecf_cc.correction(
         da_qobs=filtered_dataset["qobs"],
@@ -451,6 +471,10 @@ def execute_interpolation(
         centroid_lon_obs=filtered_dataset["centroid_lon"].values,
         centroid_lat_obs=filtered_dataset["centroid_lat"].values,
         variogram_bins=variogram_bins,
+        form=form,
+        hmax_divider=hmax_divider,
+        p1_bnds=p1_bnds,
+        hmax_mult_range_bnds=hmax_mult_range_bnds,
     )
 
     # If the user wants to do leave-one-out cross-validation, then the Qsims should be the same as Qobs file as we need
@@ -535,7 +559,10 @@ def retrieve_data(
         field.
     """
     # Get some information from the input files
-    time_range = len(qobs["time"].values)
+    if "time" in qobs.dims:
+        time_range = len(qobs["time"].values)
+    else:
+        time_range = 1
 
     # These should probably be the stations only, not cross-validation, but all observed. For cross-validation, we
     # should then simply remove the ones we don't need.
@@ -580,6 +607,14 @@ def retrieve_data(
     selected_flow_obs = np.log(selected_flow_obs)
     selected_flow_sim = np.log(selected_flow_sim)
 
+    if (time_range == 1) and (len(selected_flow_obs) == 1):
+        if "time" in qobs.dims:
+            time = qobs["time"].values[np.newaxis]
+        else:
+            time = np.array([np.nan])
+    else:
+        time = qobs["time"].values
+
     filtered_dataset = xr.Dataset(
         {
             "station_id": ("station", observation_stations),
@@ -587,7 +622,7 @@ def retrieve_data(
             "centroid_lon": ("station", centroid_lon),
             "qobs": (("time", "station"), selected_flow_obs),
             "qsim": (("time", "station"), selected_flow_sim),
-            "time": ("time", qobs["time"].data),
+            "time": ("time", time),
             "drainage_area": ("station", drainage_area),
         }
     )
@@ -595,6 +630,10 @@ def retrieve_data(
     # Now we also need to make a new dataset that contains all the simulation stations.
     all_drainage_area = qsim["drainage_area"].values
     all_flow_sim = np.empty(qsim["streamflow"].shape)
+
+    if len(all_flow_sim.shape) == 1:
+        all_flow_sim = all_flow_sim[:, np.newaxis]
+
     for j in range(0, len(all_drainage_area)):
         all_flow_sim[j, :] = np.log(
             qsim["streamflow"].isel(station=j).values / all_drainage_area[j]
@@ -609,7 +648,7 @@ def retrieve_data(
             "centroid_lat": ("station", centroid_lat),
             "centroid_lon": ("station", centroid_lon),
             "qsim": (("time", "station"), all_flow_sim.T),
-            "time": ("time", qsim["time"].data),
+            "time": ("time", time),
             "drainage_area": ("station", all_drainage_area),
         }
     )
