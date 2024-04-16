@@ -60,7 +60,7 @@ repos:
     rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==24.3.0' ]
+        additional_dependencies: [ 'black==24.4.0' ]
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
@@ -72,9 +72,9 @@ repos:
     hooks:
       - id: nbqa-pyupgrade
         args: [ '--py39-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.15.0' ]
+        additional_dependencies: [ 'pyupgrade==3.15.2' ]
       - id: nbqa-black
-        additional_dependencies: [ 'black==24.3.0' ]
+        additional_dependencies: [ 'black==24.4.0' ]
       - id: nbqa-isort
         additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/adrienverge/yamllint.git
