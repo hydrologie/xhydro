@@ -68,7 +68,7 @@ import xarray as xr
 from spotpy import analyser
 from spotpy.parameter import Uniform
 
-from xhydro.modelling.hydrological_modelling import run_hydrological_model
+from xhydro.modelling import hydrological_model
 from xhydro.modelling.obj_funcs import (
     _get_objfun_minimize_or_maximize,
     _get_optimizer_minimize_or_maximize,
@@ -153,9 +153,10 @@ class SpotSetup:
         Parameters
         ----------
         model_config : dict
-            The model configuration object that contains all info to run the model.
-            The model function called to run this model should always use this object and read-in data it requires.
-            It will be up to the user to provide the data that the model requires.
+            A dictionary containing the configuration for the hydrological model.
+            Must contain a key "model_name" with the name of the model to use: "Hydrotel".
+            The required keys depend on the model being used. Use the function
+            `xh.modelling.get_hydrological_model_inputs` to get the required keys for a given model.
         obj_func : str
             The objective function used for calibrating. Can be any one of these:
 
@@ -238,10 +239,10 @@ class SpotSetup:
 
         # Run the model and return qsim, with model_config containing the
         # tested parameter set.
-        qsim = run_hydrological_model(self.model_config)
+        qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["qsim"].values
+        return qsim["streamflow"].values
 
     def evaluation(self):
         """Evaluation function for spotpy.
@@ -314,7 +315,7 @@ def perform_calibration(
     epsilon: float = 0.01,
     sampler_kwargs: Optional[dict] = None,
 ):
-    """Perform calibration using spotpy.
+    """Perform calibration using SPOTPY.
 
     This is the entrypoint for the model calibration. After setting-up the
     model_config object and other arguments, calling "perform_calibration" will
@@ -347,10 +348,10 @@ def perform_calibration(
             - "rsr" : Ratio of RMSE to standard deviation.
 
     bounds_high : np.array
-        High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        High bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
     bounds_low : np.array
-        Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+        Low bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
     evaluations : int
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
@@ -471,7 +472,7 @@ def perform_calibration(
     model_config.update({"parameters": best_parameters})
 
     # ... which can be used to run the hydrological model and get the best Qsim.
-    qsim = run_hydrological_model(model_config)
+    qsim = hydrological_model(model_config).run()
 
     # Return the best parameters, qsim and best objective function value.
     return best_parameters, qsim, bestobjf

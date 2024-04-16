@@ -161,16 +161,16 @@ class TestGetYearlyOp:
         ans = {
             "annual": np.array(
                 [
-                    np.sum(np.arange(1, 365 + 1)) * 86400,
-                    np.sum(np.arange(1 + 365, 365 + 365 + 1)) * 86400,
-                    np.sum(np.arange(1 + 730, 365 + 730 + 1)) * 86400,
+                    np.sum(np.arange(1, 365 + 1)) * 86400.0,
+                    np.sum(np.arange(1 + 365, 365 + 365 + 1)) * 86400.0,
+                    np.sum(np.arange(1 + 730, 365 + 730 + 1)) * 86400.0,
                 ]
             ),
             "summer": np.array(
                 [
-                    np.sum(np.arange(200, 300 + 1)) * 86400,
-                    np.sum(np.arange(200 + 365, 300 + 365 + 1)) * 86400,
-                    np.sum(np.arange(200 + 730, 300 + 730 + 1)) * 86400,
+                    np.sum(np.arange(200, 300 + 1)) * 86400.0,
+                    np.sum(np.arange(200 + 365, 300 + 365 + 1)) * 86400.0,
+                    np.sum(np.arange(200 + 730, 300 + 730 + 1)) * 86400.0,
                 ]
             ),
             "winterdate": np.array(
@@ -180,7 +180,7 @@ class TestGetYearlyOp:
                             (np.arange(335, 365 + 1), np.arange(1 + 365, 59 + 365 + 1))
                         )
                     )
-                    * 86400,
+                    * 86400.0,
                     np.sum(
                         np.concatenate(
                             (
@@ -189,8 +189,8 @@ class TestGetYearlyOp:
                             )
                         )
                     )
-                    * 86400,
-                    np.sum(np.arange(335 + 730, 365 + 730 + 1)) * 86400,
+                    * 86400.0,
+                    np.sum(np.arange(335 + 730, 365 + 730 + 1)) * 86400.0,
                 ]
             ),
         }
@@ -206,12 +206,13 @@ class TestGetYearlyOp:
         )
 
         np.testing.assert_array_equal(
-            out_sum.volume_sum_annual, (ans["annual"] - np.array([3, 368, 733]) * 86400)
+            out_sum.volume_sum_annual,
+            (ans["annual"] - np.array([3, 368, 733]) * 86400.0),
         )
         np.testing.assert_array_equal(out_sum.volume_sum_summer, ans["summer"])
         np.testing.assert_array_equal(
             out_sum.volume_sum_winterdate,
-            ans["winterdate"] - np.array([368, 733, 0]) * 86400,
+            ans["winterdate"] - np.array([368, 733, 0]) * 86400.0,
         )
 
     def test_errors(self):
