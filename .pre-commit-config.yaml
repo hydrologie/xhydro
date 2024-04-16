@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
     -   id: pyupgrade
         args: [ '--py39-plus' ]
@@ -42,7 +42,7 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.2
+    rev: v0.3.5
     hooks:
       - id: ruff
   - repo: https://github.com/pycqa/flake8
@@ -52,7 +52,7 @@ repos:
         additional_dependencies: [ 'flake8-alphabetize', 'flake8-rst-docstrings' ]
         args: [ '--config=.flake8' ]
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.6.0
+    rev: v1.7.0
     hooks:
       - id: numpydoc-validation
         exclude: 'tests|docs/conf.py'
@@ -60,21 +60,21 @@ repos:
     rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==24.3.0' ]
+        additional_dependencies: [ 'black==24.4.0' ]
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.6.1
+    rev: 0.7.1
     hooks:
       - id: nbstripout
         files: '.ipynb'
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.7.1
+    rev: 1.8.5
     hooks:
       - id: nbqa-pyupgrade
         args: [ '--py39-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.15.0' ]
+        additional_dependencies: [ 'pyupgrade==3.15.2' ]
       - id: nbqa-black
-        additional_dependencies: [ 'black==24.3.0' ]
+        additional_dependencies: [ 'black==24.4.0' ]
       - id: nbqa-isort
         additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/adrienverge/yamllint.git
@@ -83,7 +83,7 @@ repos:
       - id: yamllint
         args: ['--config-file=.yamllint.yaml']
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.0
+    rev: 0.28.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
