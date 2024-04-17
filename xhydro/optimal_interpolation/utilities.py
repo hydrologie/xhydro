@@ -85,48 +85,80 @@ def prepare_flow_percentiles_dataset(
     axis_time = np.where(np.array(discharge.shape) == len(time))
     axis_stations = np.where(np.array(discharge.shape) == len(drain_area))
 
+    if np.isnan(time[0]):
+        remove_time = True
+    else:
+        remove_time = False
+
     # Prepare discharge data
     if percentile:
         axis_percentile = np.where(np.array(discharge.shape) == len(percentile))
-        ds["streamflow"] = (
-            ["percentile", "station_id", "time"],
-            np.transpose(
-                discharge, (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0])
-            ),
-        )
+        if remove_time:
+            ds["streamflow"] = (
+                ["percentile", "station_id"],
+                np.squeeze(
+                    np.transpose(
+                        discharge,
+                        (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0]),
+                    ),
+                ),
+            )
+        else:
+            ds["streamflow"] = (
+                ["percentile", "station_id", "time"],
+                np.transpose(
+                    discharge,
+                    (axis_percentile[0][0], axis_stations[0][0], axis_time[0][0]),
+                ),
+            )
+
         ds = ds.assign_coords(percentile=("percentile", percentile))
 
     else:
-        ds["streamflow"] = (
-            ["station_id", "time"],
-            np.transpose(discharge, (axis_stations[0][0], axis_time[0][0])),
-        )
+        if remove_time:
+            ds["streamflow"] = (["station_id"], np.squeeze(discharge))
+
+        else:
+            ds["streamflow"] = (
+                ["station_id", "time"],
+                np.transpose(discharge, (axis_stations[0][0], axis_time[0][0])),
+            )
 
     ds["lat"] = ("station_id", lat)
     ds["lon"] = ("station_id", lon)
     ds["drainage_area"] = ("station_id", drain_area)
     ds["station"] = ("station", station_id)
 
-    ds.assign_coords(
-        station_id=("station_id", station_id),
-        time=("time", time),
-        lat=("station_id", lat),
-        lon=("station_id", lon),
-        drainage_area=("station_id", drain_area),
-    )
+    if remove_time:
+        ds.assign_coords(
+            station_id=("station_id", station_id),
+            lat=("station_id", lat),
+            lon=("station_id", lon),
+            drainage_area=("station_id", drain_area),
+        )
+    else:
+        ds.assign_coords(
+            station_id=("station_id", station_id),
+            time=("time", time),
+            lat=("station_id", lat),
+            lon=("station_id", lon),
+            drainage_area=("station_id", drain_area),
+        )
 
     # Time bounds
     ta = np.array(time)
     time_bnds = np.array([ta - 1, time]).T
-    ds["time_bnds"] = (("time", "nbnds"), time_bnds)
 
     # Set attributes
-    ds["time"].attrs = {
-        "long_name": "time",
-        "standard_name": "time",
-        "axis": "T",
-        "bounds": "time_bnds",
-    }
+    if not remove_time:
+        ds["time"].attrs = {
+            "long_name": "time",
+            "standard_name": "time",
+            "axis": "T",
+            "bounds": "time_bnds",
+        }
+        ds["time_bnds"] = (("time", "nbnds"), time_bnds)
+
     ds["streamflow"].attrs = {
         "long_name": "Streamflow",
         "standard_name": "outgoing_water_volume_transport_along_river_channel",
