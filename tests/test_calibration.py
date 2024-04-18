@@ -204,7 +204,7 @@ class TestRavenpyModelCalibration:
         bounds_high = [2.5, 10.0, 700.0, 7.0, 30.0, 1.0]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "gr4jcn"})
+        model_config.update({"model_name": "GR4JCN"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,
@@ -271,7 +271,7 @@ class TestRavenpyModelCalibration:
         model_config = deepcopy(self.model_config)
         model_config.update(
             {
-                "model_name": "hmets",
+                "model_name": "HMETS",
             }
         )
 
@@ -294,7 +294,7 @@ class TestRavenpyModelCalibration:
         bounds_high = [20.0, 1.0, 20.0, 5.0, 0.5, 1.0, 1.0, 1.0, 15.0, 15.0]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "mohyse"})
+        model_config.update({"model_name": "Mohyse"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,
@@ -362,7 +362,7 @@ class TestRavenpyModelCalibration:
         ]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "hbvec"})
+        model_config.update({"model_name": "HBVEC"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,
@@ -430,7 +430,7 @@ class TestRavenpyModelCalibration:
         ]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "hypr"})
+        model_config.update({"model_name": "HYPR"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,
@@ -495,7 +495,7 @@ class TestRavenpyModelCalibration:
         ]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "sacsma"})
+        model_config.update({"model_name": "SACSMA"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,
@@ -604,7 +604,7 @@ class TestRavenpyModelCalibration:
         ]
 
         model_config = deepcopy(self.model_config)
-        model_config.update({"model_name": "blended"})
+        model_config.update({"model_name": "Blended"})
 
         best_parameters, best_simulation, best_objfun = perform_calibration(
             model_config,

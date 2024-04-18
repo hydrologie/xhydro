@@ -2,14 +2,13 @@
 
 import os
 import tempfile
-from pathlib import Path
 from typing import Union
 
 import numpy as np
+import ravenpy.config.emulators
 import xarray as xr
 from ravenpy import OutputReader
 from ravenpy.config import commands as rc
-from ravenpy.config.emulators import GR4JCN, HBVEC, HMETS, HYPR, SACSMA, Blended, Mohyse
 from ravenpy.ravenpy import run
 
 from ._hm import HydrologicalModel
@@ -24,7 +23,7 @@ class RavenpyModel(HydrologicalModel):
     ----------
     model_name : str
         The name of the ravenpy model to run. Can be one of
-        ["blended", "gr4jcn", "hbvec", "hmets", "hypr", "mohyse", "sacsma"].
+        ["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"].
     parameters : np.ndarray
         The model parameters for simulation or calibration.
     drainage_area : float
@@ -53,6 +52,8 @@ class RavenpyModel(HydrologicalModel):
     meteo_station_properties : dict
         The properties of the weather stations providing the meteorological data. Used to adjust weather according to
         differences between station and catchment elevations (adiabatic gradients, etc.).
+    workdir : Union[str, os.PathLike]
+        Path to save the .rv files and model outputs.
     rain_snow_fraction : str
         The method used by raven to split total precipitation into rain and snow.
     evaporation : str
@@ -78,13 +79,19 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
+        workdir: Union[str, os.PathLike] = None,
         rain_snow_fraction="RAINSNOW_DINGMAN",
         evaporation="PET_PRIESTLEY_TAYLOR",
         **kwargs,
     ):
-        # Create HRU object for ravenpy based on catchment properties
+        if workdir is None:
+            workdir = tempfile.mkdtemp(prefix=model_name)
+        self.workdir = workdir
+
         self.model_simulations = None
         self.qsim = None
+
+        # Create HRU object for ravenpy based on catchment properties
         hru = dict(
             area=drainage_area,
             elevation=elevation,
@@ -117,7 +124,7 @@ class RavenpyModel(HydrologicalModel):
         )
         self.meteo_file = meteo_file
         self.qobs = xr.open_dataset(qobs_path)
-        self.model_name = model_name.lower()
+        self.model_name = model_name
 
     def run(self) -> Union[str, xr.Dataset]:
         """Run the ravenpy hydrological model and return simulated streamflow.
@@ -129,33 +136,32 @@ class RavenpyModel(HydrologicalModel):
         """
         default_emulator_config = self.default_emulator_config
         model_name = self.model_name
+        workdir = self.workdir
+
+        if model_name not in [
+            "Blended",
+            "GR4JCN",
+            "HBVEC",
+            "HMETS",
+            "HYPR",
+            "Mohyse",
+            "SACSMA",
+        ]:
+            raise ValueError("The selected model is not available in RavenPy.")
 
         # Need to remove qobs as pydantic forbids extra inputs...
         if "qobs" in default_emulator_config:
             default_emulator_config.pop("qobs")
 
-        if model_name == "gr4jcn":
-            self.model = GR4JCN(**default_emulator_config)
-        elif model_name == "hmets":
-            self.model = HMETS(**default_emulator_config)
-        elif model_name == "mohyse":
-            self.model = Mohyse(**default_emulator_config)
-        elif model_name == "hbvec":
+        if model_name == "HBVEC":
             default_emulator_config.pop("RainSnowFraction")
-            self.model = HBVEC(**default_emulator_config)
-        elif model_name == "hypr":
-            self.model = HYPR(**default_emulator_config)
-        elif model_name == "sacsma":
-            self.model = SACSMA(**default_emulator_config)
-        elif model_name == "blended":
-            self.model = Blended(**default_emulator_config)
-        else:
-            raise ValueError("Hydrological model is an unknown Ravenpy variant.")
 
-        workdir = Path(tempfile.mkdtemp(prefix="NB4"))
+        self.model = getattr(ravenpy.config.emulators, model_name)(
+            **default_emulator_config
+        )
         self.model.write_rv(workdir=workdir)
 
-        outputs_path = run(modelname="raven", configdir=workdir)
+        outputs_path = run(modelname="raven", configdir=workdir, overwrite=True)
         outputs = OutputReader(path=outputs_path)
 
         qsim = (

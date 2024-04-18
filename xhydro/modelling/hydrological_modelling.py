@@ -40,14 +40,14 @@ def hydrological_model(model_config):
         model_config.pop("model_name")
         return DummyModel(**model_config)
 
-    elif model_name.lower() in [
-        "gr4jcn",
-        "hmets",
-        "mohyse",
-        "hbvec",
-        "hypr",
-        "sacsma",
-        "blended",
+    elif model_name in [
+        "Blended",
+        "GR4JCN",
+        "HBVEC",
+        "HMETS",
+        "HYPR",
+        "Mohyse",
+        "SACSMA",
     ]:
         return RavenpyModel(**model_config)
     else:
@@ -78,14 +78,14 @@ def get_hydrological_model_inputs(
         model = DummyModel
     elif model_name == "Hydrotel":
         model = Hydrotel
-    elif model_name.lower() in [
-        "blended",
-        "gr4jcn",
-        "hbvec",
-        "hmets",
-        "hypr",
-        "mohyse",
-        "sacsma",
+    elif model_name in [
+        "Blended",
+        "GR4JCN",
+        "HBVEC",
+        "HMETS",
+        "HYPR",
+        "Mohyse",
+        "SACSMA",
     ]:
         model = RavenpyModel
     else:

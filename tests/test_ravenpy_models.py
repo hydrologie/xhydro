@@ -47,7 +47,7 @@ class TestRavenpyModels:
 
     def test_ravenpy_gr4jcn(self):
         """Test for GR4JCN ravenpy model"""
-        model_name = "gr4jcn"
+        model_name = "GR4JCN"
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
 
@@ -79,7 +79,7 @@ class TestRavenpyModels:
         assert len(met.time) == len(qsim.time)
 
     def test_ravenpy_hmets(self):
-        model_name = "hmets"
+        model_name = "HMETS"
         parameters = [
             9.5019,
             0.2774,
@@ -127,8 +127,8 @@ class TestRavenpyModels:
         assert qsim["streamflow"].shape == (1827,)
 
     def test_ravenpy_mohyse(self):
-        """Test for MOHYSE ravenpy model"""
-        model_name = "mohyse"
+        """Test for Mohyse ravenpy model"""
+        model_name = "Mohyse"
         parameters = [
             1.0,
             0.0468,
@@ -169,8 +169,8 @@ class TestRavenpyModels:
         reason="Weird error with negative simulated PET in ravenpy for HBVEC."
     )
     def test_ravenpy_hbvec(self):
-        """Test for HBV-EC ravenpy model"""
-        model_name = "hbvec"
+        """Test for HBVEC ravenpy model"""
+        model_name = "HBVEC"
         parameters = [
             0.059,
             4.072,
@@ -223,7 +223,7 @@ class TestRavenpyModels:
     )
     def test_ravenpy_hypr(self):
         """Test for HYPR ravenpy model"""
-        model_name = "hypr"
+        model_name = "HYPR"
         parameters = [
             -0.186,
             2.92,
@@ -273,7 +273,7 @@ class TestRavenpyModels:
 
     def test_ravenpy_sacsma(self):
         """Test for SAC-SMA ravenpy model"""
-        model_name = "sacsma"
+        model_name = "SACSMA"
         parameters = [
             0.01,
             0.05,
@@ -323,7 +323,7 @@ class TestRavenpyModels:
 
     def test_ravenpy_blended(self):
         """Test for Blended ravenpy model"""
-        model_name = "blended"
+        model_name = "Blended"
         parameters = [
             0.029,
             2.21,
@@ -392,3 +392,31 @@ class TestRavenpyModels:
         qsim = rpm.run()
 
         assert qsim["streamflow"].shape == (1827,)
+
+    def test_fake_ravenpy(self):
+        """Test for GR4JCN ravenpy model"""
+        model_name = "fake_test"
+        parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+
+        with pytest.raises(ValueError) as pytest_wrapped_e:
+            rpm = RavenpyModel(
+                model_name=model_name,
+                parameters=parameters,
+                drainage_area=self.drainage_area,
+                elevation=self.elevation,
+                latitude=self.latitude,
+                longitude=self.longitude,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                qobs_path=self.qobs_path,
+                alt_names_flow=self.alt_names_flow,
+                meteo_file=self.meteo_file,
+                data_type=self.data_type,
+                alt_names_meteo=self.alt_names_meteo,
+                meteo_station_properties=self.meteo_station_properties,
+                rain_snow_fraction=self.rain_snow_fraction,
+                evaporation=self.evaporation,
+            )
+
+            _ = rpm.run()
+            assert pytest_wrapped_e.type == ValueError
