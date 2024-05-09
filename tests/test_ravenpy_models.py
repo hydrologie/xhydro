@@ -13,7 +13,7 @@ class TestRavenpyModels:
 
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "ravenpy_data"
+    BRANCH_OR_COMMIT_HASH = "main"
 
     # Get data from xhydro-testdata repo
     meteo_file = pooch.retrieve(
