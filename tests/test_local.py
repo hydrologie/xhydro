@@ -16,11 +16,11 @@ class TestFit:
             freq="YS",
             as_dataset=True,
         )
-        params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
+        params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
 
-        np.testing.assert_array_equal(params.dparams, ["a", "skew", "loc", "scale"])
-        np.testing.assert_array_equal(params.scipy_dist, ["gamma", "pearson3"])
-        assert params.streamflow.attrs["scipy_dist"] == ["gamma", "pearson3"]
+        np.testing.assert_array_equal(params.dparams, ["skew", "loc", "scale"])
+        np.testing.assert_array_equal(params.scipy_dist, ["gumbel_r", "pearson3"])
+        assert params.streamflow.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
         assert params.streamflow.attrs["estimator"] == "Maximum likelihood"
         assert params.streamflow.attrs["long_name"] == "Distribution parameters"
         assert (
@@ -31,8 +31,8 @@ class TestFit:
             params.streamflow,
             np.array(
                 [
-                    [9.95357815e00, np.nan, -3.07846650e01, 1.56498193e01],
-                    [np.nan, -2.25674044e-05, 1.25012261e02, 4.74238877e01],
+                    [np.nan, 1.01397803e02, 4.28189713e01],
+                    [-2.25674044e-05, 1.25012261e02, 4.74238877e01],
                 ]
             ),
         )
@@ -71,16 +71,16 @@ class TestFit:
             freq="YS",
             as_dataset=True,
         )
-        params = xhfa.local.fit(ds, distributions=["gamma"], min_years=miny)
+        params = xhfa.local.fit(ds, distributions=["gumbel_r"], min_years=miny)
         if miny == 10:
             np.testing.assert_array_almost_equal(
                 params.streamflow,
-                [[9.95357815e00, -3.07846650e01, 1.56498193e01]],
+                [[101.39780283, 42.81897125]],
             )
         elif miny == 15:
             np.testing.assert_array_almost_equal(
                 params.streamflow,
-                [[np.nan, np.nan, np.nan]],
+                [[np.nan, np.nan]],
             )
 
 
@@ -93,7 +93,7 @@ def test_quantiles(mode):
         freq="YS",
         as_dataset=True,
     )
-    params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
+    params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
 
     if mode == "foo":
         with pytest.raises(ValueError):
@@ -105,7 +105,7 @@ def test_quantiles(mode):
         np.testing.assert_array_equal(
             rp.p_quantile, [0.1, 0.05] if mode == "min" else [0.9, 0.95]
         )
-        np.testing.assert_array_equal(rp.scipy_dist, ["gamma", "pearson3"])
+        np.testing.assert_array_equal(rp.scipy_dist, ["gumbel_r", "pearson3"])
         assert rp.streamflow.attrs["long_name"] == "Return period"
         assert (
             rp.streamflow.attrs["description"]
@@ -115,9 +115,9 @@ def test_quantiles(mode):
         assert rp.streamflow.attrs["mode"] == mode
 
         ans = np.array(
-            [[190.66041057, 214.08102761], [185.78830382, 203.01731036]]
+            [[197.75621673, 228.57850782], [185.78830382, 203.01731036]]
             if mode == "max"
-            else [[66.00067153, 53.58658639], [64.23598869, 47.00660287]]
+            else [[65.68539153, 54.41731141], [64.23598869, 47.00660287]]
         )
         np.testing.assert_array_almost_equal(rp.streamflow, ans)
 
@@ -130,7 +130,7 @@ def test_criteria():
         freq="YS",
         as_dataset=True,
     )
-    params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
+    params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     crit = xhfa.local.criteria(ds, params)
     crit_with_otherdim = xhfa.local.criteria(
         ds.expand_dims("otherdim"), params.expand_dims("otherdim")
@@ -139,14 +139,14 @@ def test_criteria():
         crit.streamflow, crit_with_otherdim.streamflow.squeeze("otherdim")
     )
 
-    np.testing.assert_array_equal(crit.scipy_dist, ["gamma", "pearson3"])
+    np.testing.assert_array_equal(crit.scipy_dist, ["gumbel_r", "pearson3"])
     np.testing.assert_array_equal(crit.criterion, ["aic", "bic", "aicc"])
     assert crit.streamflow.attrs["long_name"] == "Information criteria"
     assert (
         crit.streamflow.attrs["description"]
         == "Information criteria for the distribution parameters."
     )
-    assert crit.streamflow.attrs["scipy_dist"] == ["gamma", "pearson3"]
+    assert crit.streamflow.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
     assert all(
         attr not in crit.streamflow.attrs
         for attr in ["estimator", "method", "min_years"]
@@ -156,7 +156,7 @@ def test_criteria():
         crit.streamflow,
         np.array(
             [
-                [118.19066549, 118.58856076, 118.63510993],
+                [118.78018303, 119.1780783, 119.22462747],
                 [118.12140939, 118.51930466, 118.56585383],
             ]
         ),
@@ -245,7 +245,7 @@ class Testprepare_plots:
         freq="YS",
         as_dataset=True,
     )
-    params = xhfa.local.fit(ds, distributions=["gamma", "pearson3"])
+    params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
 
     def test_prepare_plots_default(self):
         result = _prepare_plots(self.params)
@@ -254,7 +254,7 @@ class Testprepare_plots:
         assert result.return_period.max() == 10000
         expected = np.array(
             [
-                [-30.78466504, 63.64266447, 78.19229358, 88.62699148, 97.15369501],
+                [-np.inf, 63.53899244, 76.87079819, 86.6101638, 94.7189071],
                 [-np.inf, 61.08708903, 79.72126025, 92.05411647, 101.59650405],
             ]
         )
@@ -265,7 +265,7 @@ class Testprepare_plots:
 
         expected = np.array(
             [
-                [-30.78466504, 262.72577254, 281.56238078, 292.27851004, 299.75980757],
+                [-np.inf, 299.22362135, 328.79813435, 346.12452498, 358.42515317],
                 [-np.inf, 235.6878466, 247.41104463, 253.8825982, 258.32114457],
             ]
         )

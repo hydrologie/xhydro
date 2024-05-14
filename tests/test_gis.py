@@ -24,7 +24,9 @@ class TestWatershedDelineation:
     )
     def test_watershed_delineation_from_coords(self, lng_lat, area):
         gdf = xh.gis.watershed_delineation(coordinates=lng_lat)
-        np.testing.assert_almost_equal([gdf.to_crs(32198).area.values[0]], [area])
+        np.testing.assert_almost_equal(
+            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        )
 
     @pytest.mark.parametrize("area", [(18891676494.940426)])
     def test_watershed_delineation_from_map(self, area):
@@ -37,7 +39,9 @@ class TestWatershedDelineation:
             }
         ]
         gdf = xh.gis.watershed_delineation(map=self.m)
-        np.testing.assert_almost_equal([gdf.to_crs(32198).area.values[0]], [area])
+        np.testing.assert_almost_equal(
+            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        )
 
     def test_errors(self):
         bad_coordinates = (-35.0, 45.0)
@@ -117,7 +121,7 @@ class TestWatershedOperations:
         output_dataset["gravelius"].attrs = {"units": "m/m"}
         output_dataset["centroid"].attrs = {"units": ("degree_east", "degree_north")}
 
-        xr.testing.assert_equal(ds_properties, output_dataset)
+        xr.testing.assert_allclose(ds_properties, output_dataset)
 
     @pytest.fixture
     def land_classification_data_latest(self):

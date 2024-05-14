@@ -18,7 +18,7 @@ Breaking changes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* N/A
+* Tests using the `gamma` distribution were changed to the `gumbel_r` to avoid changes in `xclim v0.49.0`. (:pull:`145`).
 
 
 v0.3.5 (2024-03-20)
