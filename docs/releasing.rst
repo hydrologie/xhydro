@@ -13,21 +13,21 @@ A reminder for the **maintainers** on how to deploy. This section is only releva
 
 #. Create a new branch from `main` (e.g. `release-0.2.0`).
 #. Update the `CHANGELOG.rst` file to change the `Unreleased` section to the current date.
-#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`)::
+#. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`):
 
-   .. code-block:: console
+    .. code-block:: console
 
-    bump-my-version bump minor # In most cases, we will be releasing a minor version
-    bump-my-version bump release # This will update the version strings to drop the `dev` suffix
-    git push
+        bump-my-version bump minor # In most cases, we will be releasing a minor version
+        bump-my-version bump release # This will update the version strings to drop the `dev` suffix
+        git push
 
 #. Create a pull request from your branch to `main`.
-#. Once the pull request is merged, create a new release on GitHub. On the main branch, run::
+#. Once the pull request is merged, create a new release on GitHub. On the `main` branch, run:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    git tag v0.2.0
-    git push --tags
+        git tag v0.2.0
+        git push --tags
 
    This will trigger a GitHub workflow to build the package and upload it to TestPyPI. At the same time, the GitHub workflow will create a draft release on GitHub. Assuming that the workflow passes, the final release can then be published on GitHub by finalizing the draft release.
 
@@ -55,21 +55,21 @@ When a new version has been minted (features have been successfully integrated t
 The simple approach
 ~~~~~~~~~~~~~~~~~~~
 
-The simplest approach to packaging for general support (pip wheels) requires that ``flit`` be installed::
+The simplest approach to packaging for general support (pip wheels) requires that `flit` be installed:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    python -m pip install flit
+        python -m pip install flit
 
-From the command line on your Linux distribution, simply run the following from the clone's main dev branch::
+From the command line on your Linux distribution, simply run the following from the clone's main dev branch:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    # To build the packages (sources and wheel)
-    make dist
+        # To build the packages (sources and wheel)
+        make dist
 
-    # To upload to PyPI
-    make release
+        # To upload to PyPI
+        make release
 
 The new version based off of the version checked out will now be available via `pip` (`pip install xhydro`).
 
@@ -83,14 +83,14 @@ Before preparing an initial release on conda-forge, we *strongly* suggest consul
  * https://conda-forge.org/docs/maintainer/adding_pkgs.html
  * https://github.com/conda-forge/staged-recipes
 
-In order to create a new conda build recipe, to be used when proposing packages to the conda-forge repository, we strongly suggest using the ``grayskull`` tool::
+In order to create a new conda build recipe, to be used when proposing packages to the conda-forge repository, we strongly suggest using the `grayskull` tool::
 
-   .. code-block:: console
+    .. code-block:: console
 
-    python -m pip install grayskull
-    grayskull pypi xhydro
+        python -m pip install grayskull
+        grayskull pypi xhydro
 
-For more information on ``grayskull``, please see the following link: https://github.com/conda/grayskull
+For more information on `grayskull`, please see the following link: https://github.com/conda/grayskull
 
 Before updating the main conda-forge recipe, we echo the conda-forge documentation and *strongly* suggest performing the following checks:
  * Ensure that dependencies and dependency versions correspond with those of the tagged version, with open or pinned versions for the `host` requirements.
@@ -110,27 +110,27 @@ Building sources for wide support with `manylinux` image
 
 In order to do ensure best compatibility across architectures, we suggest building wheels using the `PyPA`'s `manylinux` docker images (at time of writing, we endorse using `manylinux_2_24_x86_64`).
 
-With `docker` installed and running, begin by pulling the image::
+With `docker` installed and running, begin by pulling the image:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    sudo docker pull quay.io/pypa/manylinux_2_24_x86_64
+        sudo docker pull quay.io/pypa/manylinux_2_24_x86_64
 
-From the xHydro source folder we can enter into the docker container, providing access to the `src/xhydro` source files by linking them to the running image::
+From the xHydro source folder we can enter into the docker container, providing access to the `src/xhydro` source files by linking them to the running image:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    sudo docker run --rm -ti -v $(pwd):/src/xhydro -w /src/xhydro quay.io/pypa/manylinux_2_24_x86_64 bash
+        sudo docker run --rm -ti -v $(pwd):/src/xhydro -w /src/xhydro quay.io/pypa/manylinux_2_24_x86_64 bash
 
-Finally, to build the wheel, we run it against the provided Python3.9 binary::
+Finally, to build the wheel, we run it against the provided Python3.9 binary:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    /opt/python/cp39-cp39m/bin/python -m build --sdist --wheel
+        /opt/python/cp39-cp39m/bin/python -m build --sdist --wheel
 
-This will then place two files in `xHydro/dist/` ("xhydro-1.2.3-py3-none-any.whl" and "xHydro-1.2.3.tar.gz").
-We can now leave our docker container (`exit`) and continue with uploading the files to PyPI::
+This will then place two files in `xhydro/dist/` ("xhydro-1.2.3-py3-none-any.whl" and "xHydro-1.2.3.tar.gz").
+We can now leave our docker container (`exit`) and continue with uploading the files to PyPI:
 
-   .. code-block:: console
+    .. code-block:: console
 
-    python -m twine upload dist/*
+        python -m twine upload dist/*

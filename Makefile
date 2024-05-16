@@ -86,7 +86,7 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 autodoc: clean-docs ## create sphinx-apidoc files:
-	sphinx-apidoc -o docs/apidoc --private --module-first xhydro
+	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
 initialize-translations: clean-docs ## initialize translations, ignoring autodoc-generated files
 	${MAKE} -C docs gettext
