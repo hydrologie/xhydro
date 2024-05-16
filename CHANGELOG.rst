@@ -15,12 +15,13 @@ New features and enhancements
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * Hydrological models are now classes instead of functions and dictionaries. (:issue:`93`, :pull:`18`).
-* `xhydro` now uses a `'src' layout <https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout>`_ for the package.
+* `xhydro` now uses a `'src' layout <https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout>`_ for the package. (:pull:`147`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Tests using the `gamma` distribution were changed to the `gumbel_r` to avoid changes in `xclim v0.49.0`. (:pull:`145`).
-* The cookiecutter template has been updated to the latest commit. Changes include the addition of a `CODE_OF_CONDUCT.rst` file, the renaming of `CHANGES.rst` to `CHANGELOG.rst`, and many small adjustments to the documentation.
+* The cookiecutter template has been updated to the latest commit. Changes include the addition of a `CODE_OF_CONDUCT.rst` file, the renaming of `CHANGES.rst` to `CHANGELOG.rst`, and many small adjustments to the documentation. (:pull:`147`).
+* Added a CODE_OF_CONDUCT.rst file with Contributor Covenant guidelines. (:pull:`147`).
 
 v0.3.5 (2024-03-20)
 -------------------
