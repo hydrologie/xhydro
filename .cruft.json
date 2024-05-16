@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-  "commit": "f391bbd6ee14ab2478c64a1f78b74bd9903cae81",
+  "commit": "864a4951f201a71e600a51d7c1fbb85aa321112e",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -22,6 +22,7 @@
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "y",
+      "__gh_slug": "TC-FF/xhydro",
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage"
     }
   },

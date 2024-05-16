@@ -5,13 +5,13 @@ Installation
 Stable release
 --------------
 Due to the complexity of the install process of some dependencies, we strongly recommend installing `xhydro` in an Anaconda Python environment.
-To create a working environment and install xHydro, copy the `environment.yml` file from the root of the repository and run the following commands:
+To create a working environment and install xHydro, copy the `environment-dev.yml` file from the root of the repository and run the following commands:
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ mamba env create -f environment.yml
-    $ mamba activate xhydro
-    $ python -m pip install xhydro --no-deps
+     conda env create -f environment-dev.yml
+     conda activate xhydro
+     python -m pip install xhydro --no-deps
 
 This is the preferred method to install `xHydro`, as it will always install the most recent stable release.
 
@@ -29,32 +29,32 @@ To install the latest development version, you can install `xHydro` directly fro
 
 You can either clone the public repository:
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ git clone git@github.com:hydrologie/xhydro
+     git clone git@github.com:hydrologie/xhydro
 
 Or download the `tarball`_:
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ curl -OJL https://github.com/hydrologie/xhydro/tarball/main
+     curl -OJL https://github.com/hydrologie/xhydro/tarball/main
 
 Once you have a copy of the source, you can create a working environment and install `xHydro` in it:
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ mamba env create -f environment.yml
-    $ mamba activate xhydro
-    $ python -m pip install . --no-deps
+     conda env create -f environment.yml
+     conda activate xhydro
+     python -m pip install . --no-deps
 
 When new changes are made to the `Github repo`_, you can update your local copy using:
 
-.. code-block:: console
+    .. code-block:: console
 
-    $ git pull origin main
-    $ mamba env update -n xhydro -f environment.yml
-    $ mamba activate xhydro
-    $ python -m pip install . --no-deps
+     git pull origin main
+     conda env update -n xhydro -f environment.yml
+     conda activate xhydro
+     python -m pip install . --no-deps
 
 .. _Github repo: https://github.com/hydrologie/xhydro
 .. _tarball: https://github.com/hydrologie/xhydro/tarball/main
