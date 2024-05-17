@@ -4,6 +4,7 @@ import inspect
 from copy import deepcopy
 
 from ._hydrotel import Hydrotel
+from ._ravenpy_models import RavenpyModel
 from ._simplemodels import DummyModel
 
 __all__ = ["get_hydrological_model_inputs", "hydrological_model"]
@@ -29,12 +30,26 @@ def hydrological_model(model_config):
         raise ValueError("The model name must be provided in the model configuration.")
 
     model_config = deepcopy(model_config)
-    model_name = model_config.pop("model_name")
+    model_name = model_config["model_name"]
 
     if model_name == "Hydrotel":
+        model_config.pop("model_name")
         return Hydrotel(**model_config)
+
     elif model_name == "Dummy":
+        model_config.pop("model_name")
         return DummyModel(**model_config)
+
+    elif model_name in [
+        "Blended",
+        "GR4JCN",
+        "HBVEC",
+        "HMETS",
+        "HYPR",
+        "Mohyse",
+        "SACSMA",
+    ]:
+        return RavenpyModel(**model_config)
     else:
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
@@ -63,6 +78,16 @@ def get_hydrological_model_inputs(
         model = DummyModel
     elif model_name == "Hydrotel":
         model = Hydrotel
+    elif model_name in [
+        "Blended",
+        "GR4JCN",
+        "HBVEC",
+        "HMETS",
+        "HYPR",
+        "Mohyse",
+        "SACSMA",
+    ]:
+        model = RavenpyModel
     else:
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
