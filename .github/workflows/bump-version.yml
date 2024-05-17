@@ -19,7 +19,7 @@ on:
       - .yamllint.yaml
       - .zenodo.json
       - AUTHORS.rst
-      - CHANGES.rst
+      - CHANGELOG.rst
       - CONTRIBUTING.rst
       - Makefile
       - docs/*.py
@@ -30,7 +30,7 @@ on:
       - pyproject.toml
       - tests/**.py
       - tox.ini
-      - xhydro/__init__.py
+      - src/xhydro/__init__.py
   workflow_dispatch:
 
 permissions:
@@ -52,12 +52,15 @@ jobs:
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-      - uses: actions/checkout@v4.1.1
+      - name: Checkout Repository (no persist-credentials)
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5.1.0
+          fetch-depth: 0
+      - name: Set up Python3
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
-          python-version: "3.9"
+          python-version: "3.x"
       - name: Config Commit Bot
         run: |
           git config --local user.email "bumpversion[bot]@hydrologie.com"
@@ -68,7 +71,7 @@ jobs:
       - name: Current Version
         run: |
           bump-my-version show current_version
-          CURRENT_VERSION="$(grep -E '__version__' xhydro/__init__.py | cut -d ' ' -f3)"
+          CURRENT_VERSION="$(grep -E '__version__' src/xhydro/__init__.py | cut -d ' ' -f3)"
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
       - name: Conditional Bump Version
         run: |
@@ -81,7 +84,7 @@ jobs:
           fi
           bump-my-version show-bump
       - name: Push Changes
-        uses: ad-m/github-push-action@v0.8.0
+        uses: ad-m/github-push-action@d91a481090679876dfc4178fef17f286781251df # v0.8.0
         with:
           force: false
           github_token: ${{ secrets.BUMP_VERSION_TOKEN }}

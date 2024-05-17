@@ -57,13 +57,13 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	ruff xhydro tests
-	flake8 --config=.flake8 xhydro tests
+	ruff check src/xhydro tests
+	flake8 --config=.flake8 src/xhydro tests
 
 lint/black: ## check style with black
-	black --check xhydro tests
-	blackdoc --check xhydro docs
-	isort --check xhydro tests
+	black --check src/xhydro tests
+	blackdoc --check src/xhydro docs
+	isort --check src/xhydro tests
 
 lint: lint/flake8 lint/black ## check style
 
@@ -80,13 +80,13 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source xhydro -m pytest
+	coverage run --source src/xhydro -m pytest
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
 autodoc: clean-docs ## create sphinx-apidoc files:
-	sphinx-apidoc -o docs/apidoc --private --module-first xhydro
+	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
 initialize-translations: clean-docs ## initialize translations, ignoring autodoc-generated files
 	${MAKE} -C docs gettext
@@ -120,7 +120,8 @@ install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
 	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
 
 install: install-esmpy ## install the package to the active Python's site-packages
-	python -m flit install
+	python -m pip install .
 
 dev: install-esmpy ## install the package to the active Python's site-packages
-	python -m flit install --symlink
+	python -m pip install --editable .[all]
+	pre-commit install

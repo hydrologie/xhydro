@@ -25,7 +25,8 @@ jobs:
             github.com:443
             objects.githubusercontent.com:443
 
-      - uses: actions/checkout@v4.1.1
+      - name: Checkout Repository
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
       - name: Cleanup
         run: |

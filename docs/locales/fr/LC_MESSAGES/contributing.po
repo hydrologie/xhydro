@@ -445,10 +445,10 @@ msgstr ""
 
 #: ../../../CONTRIBUTING.rst:175
 msgid ""
-"Update the `CHANGES.rst` file to change the `Unreleased` section to the "
+"Update the `CHANGELOG.rst` file to change the `Unreleased` section to the "
 "current date."
 msgstr ""
-"Mettre à jour le fichier `CHANGES.rst` pour changer la section `Unreleased` "
+"Mettre à jour le fichier `CHANGELOG.rst` pour changer la section `Unreleased` "
 "à la date actuelle."
 
 #: ../../../CONTRIBUTING.rst:176

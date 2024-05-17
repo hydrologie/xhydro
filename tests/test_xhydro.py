@@ -3,7 +3,7 @@
 """Tests for `xhydro` package."""
 
 import pathlib
-import pkgutil
+from importlib.util import find_spec
 
 import pytest
 
@@ -28,9 +28,9 @@ def test_content(response):
 
 def test_package_metadata():
     """Test the package metadata."""
-    project = pkgutil.get_loader("xhydro").get_filename()
+    project = find_spec("xhydro").submodule_search_locations[0]
 
-    metadata = pathlib.Path(project).resolve().parent.joinpath("__init__.py")
+    metadata = pathlib.Path(project).resolve().joinpath("__init__.py")
 
     with open(metadata) as f:
         contents = f.read()
