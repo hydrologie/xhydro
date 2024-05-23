@@ -1,0 +1,3 @@
+class FitError(Exception):
+    pass
+

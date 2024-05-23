@@ -4,8 +4,9 @@ import pandas as pd
 # Load the DataFrames package in Julia
 jl.seval("using DataFrames")
 
+#TODO: fix
 # Define a function to convert Julia DataFrame to pandas DataFrame
-def jldataframe_to_pandas_dataframe(jl_dataframe) -> pd.DataFrame:
+def jl_dataframe_to_pd_dataframe(jl_dataframe) -> pd.DataFrame:
     # Extract column names from the Julia DataFrame
     columns = jl.eval("names($jl_dataframe)")
     print(columns)
@@ -15,7 +16,8 @@ def jldataframe_to_pandas_dataframe(jl_dataframe) -> pd.DataFrame:
     # Create a pandas DataFrame from the extracted data
     return pd.DataFrame(data)
 
-def pandas_dataframe_to_julia_dataframe():
+#TODO 
+def pd_dataframe_to_jl_dataframe(df: pd.DataFrame):
     pass
 
 

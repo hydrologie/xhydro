@@ -1,6 +1,8 @@
-from juliacall import convert as jl_convert  # type: ignore
-
+from xhydro.extreme_value_analysis import py_list_float_to_julia_vector_real
 from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+import pandas as pd
+from juliacall import convert as jl_convert
+from xhydro.extreme_value_analysis.structures.data import jl_dataframe_to_pd_dataframe  
 
 
 def probplot_data(fm):
@@ -19,6 +21,9 @@ def histplot_data(fm):
     return Extremes.histplot_data(fm)
 
 
-# TODO: fix type issue
-# def mrlplot_data(y: list, steps: int):
-#     return Extremes.mrlplot_data(jl_convert(jl.Array, y), steps)
+# TODO: test after type issue fix
+def mrlplot_data(y: list[float], steps: int) -> pd.DataFrame:
+    jl_y = py_list_float_to_julia_vector_real(y)
+    jl_df = Extremes.mrlplot_data(jl_y, steps)
+    pd_df = jl_dataframe_to_pd_dataframe(jl_df)
+    return pd_df
