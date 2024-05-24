@@ -1,4 +1,4 @@
-from xhydro.extreme_value_analysis import py_list_float_to_julia_vector_real
+from xhydro.extreme_value_analysis import py_list_float_to_julia_vector
 from xhydro.extreme_value_analysis.julia_import import Extremes
 
 
@@ -31,5 +31,5 @@ def histplot(fm):
 
 #TODO: test after type issue fix
 def mrlplot(y: list[float], steps:int):
-    jl_y = py_list_float_to_julia_vector_real(y)
+    jl_y = py_list_float_to_julia_vector(y)
     return Extremes.mrlplot(jl_y, steps) 
