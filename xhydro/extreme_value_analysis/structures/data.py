@@ -14,9 +14,10 @@ def jl_dataframe_to_pd_dataframe(jl_dataframe) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 def pd_dataframe_to_jl_dataframe(df: pd.DataFrame):
-    columns = {jl.Symbol(col): py_list_to_julia_vector(df[col].values.tolist()) for col in df.columns}
-    jl_df = jl.DataFrame(columns)
+    jl_columns = {jl.Symbol(col): py_list_to_jl_vector(df[col].values.tolist()) for col in df.columns}
+    jl_df = jl.DataFrame(jl_columns)
     return jl_df
+
 
 #TODO: xarray conversions
 

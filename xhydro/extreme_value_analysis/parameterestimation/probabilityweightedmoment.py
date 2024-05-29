@@ -1,13 +1,55 @@
-from julia_import import Extremes, jl
+from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from xhydro.extreme_value_analysis.structures.dataitem import *
+from xhydro.extreme_value_analysis.structures.data import *
+from xhydro.extreme_value_analysis import *
+from xhydro.extreme_value_analysis.parameterestimation import *
+from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import *
+import pandas as pd
+
+# GEV
+def gevfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
+    jl_y = py_list_to_jl_vector(y)
+    return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_y))
+
+def gevfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = pd_dataframe_to_jl_dataframe(df) 
+    jl_datacol = py_str_to_jl_symbol(datacol)
+    return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_df, jl_datacol))
+
+#TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
+def gevfitpwm_3(model: BlockMaxima) -> PwmAbstractExtremeValueModel:
+    jl_model = jl_blockmaxima_to_py_blockmaxima(model)
+    return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_model))
 
 
-def gevfitpwm(df, datacol: str):
-    return Extremes.gevfitpwm(df, jl.Symbol(datacol))
+# Gumbel
+def gumbelfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
+    jl_y = py_list_to_jl_vector(y)
+    return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_y))
+
+def gumbelfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = pd_dataframe_to_jl_dataframe(df) 
+    jl_datacol = py_str_to_jl_symbol(datacol)
+    return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_df, jl_datacol))
+
+#TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
+def gumbelfitpwm_3(model) -> PwmAbstractExtremeValueModel:
+    jl_model = jl_blockmaxima_to_py_blockmaxima(model)
+    return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_model))
 
 
-def gumbelfitpwm(df, datacol: str):
-    return Extremes.gumbelfitpwm(df, jl.Symbol(datacol))
+# Gp
+def gpfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
+    jl_y = py_list_to_jl_vector(y)
+    return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_y))
 
+def gpfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = pd_dataframe_to_jl_dataframe(df) 
+    jl_datacol = py_str_to_jl_symbol(datacol)
+    return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_df, jl_datacol))
 
-def gpfitpwm(df, datacol: str):
-    return Extremes.gumbelfitpwm(df, jl.Symbol(datacol))
+#TODO: test when py_threshold_exceedance_to_jl_threshold_exceedance is tested
+def gpfitpwm_3(model: ThresholdExceedance) -> PwmAbstractExtremeValueModel:
+    jl_model = py_threshold_exceedance_to_jl_threshold_exceedance(model)
+    return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_model))
+

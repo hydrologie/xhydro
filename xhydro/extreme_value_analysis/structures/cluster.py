@@ -70,7 +70,7 @@ def getcluster(y: list[float], **kwargs) -> list[Cluster]:
             "2. getcluster(y, u, runlength)\n"
         )
 
-    py_clusters = [_jlcluster_to_pycluster(cluster) for cluster in jl_clusters]
+    py_clusters = [jl_cluster_to_py_cluster(cluster) for cluster in jl_clusters]
     return py_clusters
 
 def _getcluster_1(y: list[float], u_1: float = None, u_2: float = None) -> list[Cluster]:
@@ -81,7 +81,7 @@ def _getcluster_2(y: list[float], u: float = None, runlength: int = None) -> lis
         u = jl_convert(jl.Real, u)
         return Extremes.getcluster(y, u, runlength=runlength) 
 
-def _jlcluster_to_pycluster(jl_cluster) -> Cluster:
+def jl_cluster_to_py_cluster(jl_cluster) -> Cluster:
     return Cluster(
         getattr(jl_cluster, 'u₁'), 
         getattr(jl_cluster, 'u₂'), 

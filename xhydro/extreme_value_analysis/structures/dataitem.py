@@ -1,3 +1,4 @@
+from xhydro.extreme_value_analysis import jl_vector_to_py_list
 from xhydro.extreme_value_analysis.julia_import import Extremes, jl
 from juliacall import convert as jl_convert
 
@@ -10,6 +11,9 @@ class Variable(DataItem):
 
     def __init__(self, name: str, value: list[float]):
         self.name, self.value = name, value
+    
+    def __repr__(self):
+        return f"\t\t\t\tname: {self.name}\n\t\t\t\tvalue: {self.value}\n"
 
     def py_variable_to_jl_variable(self):
         return jl.Extremes.Variable(self.name, jl_convert(jl.Vector[jl.Real], self.value))
@@ -26,7 +30,11 @@ class VariableStd(DataItem):
 
 
 
-
+def jl_variable_to_py_variable(jl_variable) -> Variable:
+    return Variable(
+        getattr(jl_variable, "name"),
+        jl_vector_to_py_list(getattr(jl_variable, "value"))
+    )
 
 
     
