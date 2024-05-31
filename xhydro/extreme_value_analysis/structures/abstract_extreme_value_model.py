@@ -66,46 +66,46 @@ def jl_blockmaxima_to_py_blockmaxima(jl_blockmaxima) -> BlockMaxima:
     return BlockMaxima(py_data, jl_location, jl_logscale, jl_shape, py_type)
 
 #TODO: fix
-def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
-    jl_data = py_blockmaxima.data.py_variable_to_jl_variable()
-    jl_locationcov = py_blockmaxima.location.covariate
-    jl_logscalecov = py_blockmaxima.logscale.covariate
-    jl_shapecov = py_blockmaxima.shape.covariate
-
-    x = "GeneralizedExtremeValue"
-
-    if py_blockmaxima.type == "BlockMaxima{Distributions.GeneralizedExtremeValue}":
-        return jl.seval(f"""
-        Extremes.BlockMaxima{x}(
-            {jl_data},
-            locationcov={jl_locationcov},
-            logscalecov={jl_logscalecov},
-            shapecov={jl_shapecov}
-        )::Extremes.BlockMaxima{{Distributions.GeneralizedExtremeValue}}
-        """)
-    elif py_blockmaxima.type == "BlockMaxima{Distributions.Gumbel}":
-        return jl.seval(f"""
-        Extremes.BlockMaxima(
-            {jl_data},
-            locationcov={jl_locationcov},
-            logscalecov={jl_logscalecov}
-        )::Extremes.BlockMaxima{{Distributions.Gumbel}}
-        """)
-    else:
-        raise ValueError("Unsupported BlockMaxima type: {}".format(py_blockmaxima.type))
-
 # def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
 #     jl_data = py_blockmaxima.data.py_variable_to_jl_variable()
 #     jl_locationcov = py_blockmaxima.location.covariate
 #     jl_logscalecov = py_blockmaxima.logscale.covariate
 #     jl_shapecov = py_blockmaxima.shape.covariate
 
+#     x = "GeneralizedExtremeValue"
+
 #     if py_blockmaxima.type == "BlockMaxima{Distributions.GeneralizedExtremeValue}":
-#         return Extremes.BlockMaxima(jl_data, jl_locationcov, jl_logscalecov, jl_shapecov)
+#         return jl.seval(f"""
+#         Extremes.BlockMaxima{x}(
+#             {jl_data},
+#             locationcov={jl_locationcov},
+#             logscalecov={jl_logscalecov},
+#             shapecov={jl_shapecov}
+#         )::Extremes.BlockMaxima{{Distributions.GeneralizedExtremeValue}}
+#         """)
 #     elif py_blockmaxima.type == "BlockMaxima{Distributions.Gumbel}":
-#         return Extremes.BlockMaxima(jl_data, jl_locationcov, jl_logscalecov)
+#         return jl.seval(f"""
+#         Extremes.BlockMaxima(
+#             {jl_data},
+#             locationcov={jl_locationcov},
+#             logscalecov={jl_logscalecov}
+#         )::Extremes.BlockMaxima{{Distributions.Gumbel}}
+#         """)
 #     else:
 #         raise ValueError("Unsupported BlockMaxima type: {}".format(py_blockmaxima.type))
+
+def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
+    jl_data = py_blockmaxima.data.py_variable_to_jl_variable()
+    jl_locationcov = py_blockmaxima.location.covariate
+    jl_logscalecov = py_blockmaxima.logscale.covariate
+    jl_shapecov = py_blockmaxima.shape.covariate
+
+    if py_blockmaxima.type == "BlockMaxima{Distributions.GeneralizedExtremeValue}":
+        return Extremes.BlockMaxima(jl_data, jl_locationcov, jl_logscalecov, jl_shapecov)
+    elif py_blockmaxima.type == "BlockMaxima{Distributions.Gumbel}":
+        return Extremes.BlockMaxima(jl_data, jl_locationcov, jl_logscalecov)
+    else:
+        raise ValueError("Unsupported BlockMaxima type: {}".format(py_blockmaxima.type))
 
 
 class ThresholdExceedance(AbstractExtremeValueModel):

@@ -13,8 +13,8 @@ def gevfitbayes_1(y:list[float], locationcov: list[Variable] = [], logscalecov: 
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
     return jl_bayesian_aev_to_py_aev(Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup))
 
-def gevfitbayes_2(df: pd.DataFrame, datacol: str, locationcovid: list[str] = [], logscalecovid: list[str] = [], shapecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gevfitbayes_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, locationcovid: list[str] = [], logscalecovid: list[str] = [], shapecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     jl_locationcovid, jl_logscalecovid, jl_shapecovid = jl_symbol_fit_parameters([locationcovid, logscalecovid, shapecovid])
     return jl_bayesian_aev_to_py_aev(Extremes.gevfitbayes(jl_df, jl_datacol, locationcovid = jl_locationcovid, logscalecovid = jl_logscalecovid, shapecovid = jl_shapecovid, niter=niter, warmup=warmup))
@@ -31,8 +31,8 @@ def gumbelfitbayes_1(y: list[float], locationcov: list[Variable] = [], logscalec
     jl_locationcov, jl_logscalecov= jl_variable_fit_parameters([locationcov, logscalecov])
     return jl_bayesian_aev_to_py_aev(Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup))
 
-def gumbelfitbayes_2(df: pd.DataFrame, datacol: str, locationcovid: list[str] = [], logscalecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gumbelfitbayes_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, locationcovid: list[str] = [], logscalecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     jl_locationcovid, jl_logscalecovid= jl_symbol_fit_parameters([locationcovid, logscalecovid])
     return jl_bayesian_aev_to_py_aev(Extremes.gevfitbayes(jl_df, jl_datacol, locationcovid = jl_locationcovid, logscalecovid = jl_logscalecovid, niter=niter, warmup=warmup))
@@ -49,8 +49,8 @@ def gpfitbayes_1(y: list[float], logscalecov: list[Variable] = [], shapecov: lis
     jl_logscalecov, jl_shapecov= jl_variable_fit_parameters([logscalecov, shapecov])
     return jl_bayesian_aev_to_py_aev(Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup))
 
-def gpfitbayes_2(df: pd.DataFrame, datacol: str, logscalecovid: list[str] = [], shapecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gpfitbayes_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, logscalecovid: list[str] = [], shapecovid: list[str] = [], niter: int = 5000, warmup: int = 2000) -> BayesianAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     jl_logscalecovid, jl_shapecovid = jl_symbol_fit_parameters([logscalecovid, shapecovid])
     return jl_bayesian_aev_to_py_aev(Extremes.gpfitbayes(jl_df, jl_datacol, logscalecovid = jl_logscalecovid, shapecovid = jl_shapecovid, niter=niter, warmup=warmup))

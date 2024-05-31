@@ -11,8 +11,8 @@ def gevfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
     jl_y = py_list_to_jl_vector(y)
     return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_y))
 
-def gevfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gevfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_df, jl_datacol))
 
@@ -27,8 +27,8 @@ def gumbelfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
     jl_y = py_list_to_jl_vector(y)
     return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_y))
 
-def gumbelfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gumbelfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_df, jl_datacol))
 
@@ -43,8 +43,8 @@ def gpfitpwm_1(y: list[float]) -> PwmAbstractExtremeValueModel:
     jl_y = py_list_to_jl_vector(y)
     return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_y))
 
-def gpfitpwm_2(df: pd.DataFrame, datacol: str) -> PwmAbstractExtremeValueModel:
-    jl_df = pd_dataframe_to_jl_dataframe(df) 
+def gpfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str) -> PwmAbstractExtremeValueModel:
+    jl_df = py_dataframe_to_jl_dataframe(py_dataframe) 
     jl_datacol = py_str_to_jl_symbol(datacol)
     return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_df, jl_datacol))
 
