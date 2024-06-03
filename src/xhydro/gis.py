@@ -17,18 +17,16 @@ import pandas as pd
 import pystac_client
 import rasterio
 import rasterio.features
+import rioxarray
 import stackstac
 import xarray as xr
+import xvec
 from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
 from pystac.extensions.projection import ProjectionExtension as proj
 from shapely import Point
-import rioxarray
-import xvec
-from xrspatial import slope, aspect
 from tqdm.auto import tqdm
-
-
+from xrspatial import aspect, slope
 
 __all__ = [
     "elevation_properties",
@@ -284,9 +282,9 @@ def elevation_properties(
     projected_crs: int = 6622,
     output_format: str = "geopandas",
     operation: str = "mean",
-    dataset_date: str = '2021-04-22'
+    dataset_date: str = "2021-04-22",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Elevation properties are calculated 
+    """Elevation properties are calculated
 
     The calculated properties are :
     - elevation (meters)
@@ -312,7 +310,7 @@ def elevation_properties(
     # Geometries are projected to make calculations more accurate
     projected_gdf = gdf.to_crs(projected_crs)
 
-    collection = 'cop-dem-glo-90'
+    collection = "cop-dem-glo-90"
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
@@ -324,43 +322,47 @@ def elevation_properties(
 
     items = list(search.get_items())
 
-    # Create a mosaic of 
+    # Create a mosaic of
     da = stackstac.stack(items)
-    da = flatten(da, dim="time") # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
-    ds = (da
-        .sel(time=dataset_date)
-        .coarsen({"y": 5, "x": 5}, boundary='trim')
+    da = flatten(
+        da, dim="time"
+    )  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
+    ds = (
+        da.sel(time=dataset_date)
+        .coarsen({"y": 5, "x": 5}, boundary="trim")
         .mean()
-        .to_dataset(name='elevation')
+        .to_dataset(name="elevation")
         .rio.write_crs("epsg:4326", inplace=True)
         .rio.reproject(projected_crs)
         .isel(band=0)
     )
 
     # Use Xvec to extract elevation for each geometry in the projected gdf
-    da_elevation= ds.xvec.zonal_stats(
+    da_elevation = ds.xvec.zonal_stats(
         projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-        )['elevation'].squeeze()
+    )["elevation"].squeeze()
 
     da_slope = slope(ds.elevation)
 
     # Use Xvec to extract slope for each geometry in the projected gdf
-    da_slope = da_slope.to_dataset(name='slope').xvec.zonal_stats(
+    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(
         projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-        )['slope']
-    
+    )["slope"]
+
     output_dataset = xr.merge([da_elevation, da_slope])
 
     # Add attributes for each variable
-    output_dataset['slope'].attrs = {"units": "percent"}
-    output_dataset['elevation'].attrs = {"units": "meters"}
+    output_dataset["slope"].attrs = {"units": "percent"}
+    output_dataset["elevation"].attrs = {"units": "meters"}
 
     if unique_id is not None:
-        output_dataset = output_dataset.assign_coords({unique_id: ('geometry', gdf[unique_id])})
-        output_dataset = output_dataset.swap_dims({'geometry': unique_id})
+        output_dataset = output_dataset.assign_coords(
+            {unique_id: ("geometry", gdf[unique_id])}
+        )
+        output_dataset = output_dataset.swap_dims({"geometry": unique_id})
 
     if output_format in ("geopandas", "gpd.GeoDataFrame"):
-        output_dataset = output_dataset.drop('geometry').to_dataframe()
+        output_dataset = output_dataset.drop("geometry").to_dataframe()
 
     return output_dataset
 
@@ -575,5 +577,3 @@ def land_use_plot(
     gdf.to_crs(epsg).boundary.plot(ax=ax, alpha=0.9, color="black")
 
     return fig
-
-
