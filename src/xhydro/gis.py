@@ -17,23 +17,21 @@ import pandas as pd
 import pystac_client
 import rasterio
 import rasterio.features
+import rioxarray  # noqa: F401
 import stackstac
 import xarray as xr
+import xvec  # noqa: F401
 from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
 from pystac.extensions.projection import ProjectionExtension as proj
 from shapely import Point
-import rioxarray
-import xvec
-from xrspatial import slope, aspect
 from tqdm.auto import tqdm
-
-
+from xrspatial import aspect, slope
 
 __all__ = [
-    "elevation_properties",
     "land_use_classification",
     "land_use_plot",
+    "surface_properties",
     "watershed_delineation",
     "watershed_properties",
 ]
@@ -278,19 +276,23 @@ def _flatten(x, dim="time"):
     return x
 
 
-def elevation_properties(
+def surface_properties(
     gdf: gpd.GeoDataFrame,
     unique_id: str = None,
     projected_crs: int = 6622,
     output_format: str = "geopandas",
     operation: str = "mean",
-    dataset_date: str = '2021-04-22'
+    dataset_date: str = "2021-04-22",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Elevation properties are calculated 
+    """Surface properties for watersheds.
+
+    Surface properties are calculated using Copernicus's GLO-90 Digital Elevation Model. By default, the dataset
+    has a geographic coordinate system (EPSG: 4326) and this function expects a projected crs for more accurate results.
 
     The calculated properties are :
     - elevation (meters)
     - slope (degrees)
+    - aspect ratio (degrees)
 
     Parameters
     ----------
@@ -302,17 +304,20 @@ def elevation_properties(
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
     output_format : str
         One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
+    operation : str
+        Aggregation statistics such as `mean` or `sum`.
+    dataset_date : str
+        Date (%Y-%m-%d) for which to select the imagery from the dataset. Date must be available.
 
     Returns
     -------
     gpd.GeoDataFrame or xr.Dataset
-        Output dataset containing the watershed properties.
+        Output dataset containing the surface properties.
     """
-
     # Geometries are projected to make calculations more accurate
     projected_gdf = gdf.to_crs(projected_crs)
 
-    collection = 'cop-dem-glo-90'
+    collection = "cop-dem-glo-90"
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
@@ -324,43 +329,55 @@ def elevation_properties(
 
     items = list(search.get_items())
 
-    # Create a mosaic of 
+    # Create a mosaic of
     da = stackstac.stack(items)
-    da = flatten(da, dim="time") # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
-    ds = (da
-        .sel(time=dataset_date)
-        .coarsen({"y": 5, "x": 5}, boundary='trim')
+    da = _flatten(
+        da, dim="time"
+    )  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
+    ds = (
+        da.sel(time=dataset_date)
+        .coarsen({"y": 5, "x": 5}, boundary="trim")
         .mean()
-        .to_dataset(name='elevation')
+        .to_dataset(name="elevation")
         .rio.write_crs("epsg:4326", inplace=True)
         .rio.reproject(projected_crs)
         .isel(band=0)
     )
 
     # Use Xvec to extract elevation for each geometry in the projected gdf
-    da_elevation= ds.xvec.zonal_stats(
+    da_elevation = ds.xvec.zonal_stats(
         projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-        )['elevation'].squeeze()
+    )["elevation"].squeeze()
 
     da_slope = slope(ds.elevation)
 
     # Use Xvec to extract slope for each geometry in the projected gdf
-    da_slope = da_slope.to_dataset(name='slope').xvec.zonal_stats(
+    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(
         projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-        )['slope']
-    
-    output_dataset = xr.merge([da_elevation, da_slope])
+    )["slope"]
+
+    da_aspect = aspect(ds.elevation)
+
+    # Use Xvec to extract aspect for each geometry in the projected gdf
+    da_aspect = da_aspect.to_dataset(name="aspect").xvec.zonal_stats(
+        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
+    )["aspect"]
+
+    output_dataset = xr.merge([da_elevation, da_slope, da_aspect]).astype("float32")
 
     # Add attributes for each variable
-    output_dataset['slope'].attrs = {"units": "percent"}
-    output_dataset['elevation'].attrs = {"units": "meters"}
+    output_dataset["slope"].attrs = {"units": "degrees"}
+    output_dataset["aspect"].attrs = {"units": "degrees"}
+    output_dataset["elevation"].attrs = {"units": "m"}
 
     if unique_id is not None:
-        output_dataset = output_dataset.assign_coords({unique_id: ('geometry', gdf[unique_id])})
-        output_dataset = output_dataset.swap_dims({'geometry': unique_id})
+        output_dataset = output_dataset.assign_coords(
+            {unique_id: ("geometry", gdf[unique_id])}
+        )
+        output_dataset = output_dataset.swap_dims({"geometry": unique_id})
 
     if output_format in ("geopandas", "gpd.GeoDataFrame"):
-        output_dataset = output_dataset.drop('geometry').to_dataframe()
+        output_dataset = output_dataset.drop("geometry").to_dataframe()
 
     return output_dataset
 
@@ -575,5 +592,3 @@ def land_use_plot(
     gdf.to_crs(epsg).boundary.plot(ax=ax, alpha=0.9, color="black")
 
     return fig
-
-

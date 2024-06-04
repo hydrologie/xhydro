@@ -124,6 +124,70 @@ class TestWatershedOperations:
         xr.testing.assert_allclose(ds_properties, output_dataset)
 
     @pytest.fixture
+    def surface_properties_data(self):
+        data = {
+            "elevation": {
+                "031501": 33.57301026813054,
+                "031502": 51.393294334667644,
+                "042103": 358.5498543002855,
+            },
+            "slope": {
+                "031501": 0.32461288571357727,
+                "031502": 0.5184836387634277,
+                "042103": 2.5006439685821533,
+            },
+            "aspect": {
+                "031501": 239.02597045898438,
+                "031502": 242.43133544921875,
+                "042103": 178.55764770507812,
+            },
+        }
+
+        df = pd.DataFrame.from_dict(data).astype("float32")
+        df.index.names = ["Station"]
+        return df
+
+    def test_surface_properties(self, surface_properties_data):
+        _properties_name = ["elevation", "slope", "aspect"]
+
+        df_properties = xh.gis.surface_properties(self.gdf)
+        df_properties.index.name = None
+
+        pd.testing.assert_frame_equal(
+            df_properties[_properties_name],
+            surface_properties_data.reset_index(drop=True)[_properties_name],
+        )
+
+    def test_surface_properties_unique_id(self, surface_properties_data):
+        _properties_name = ["elevation", "slope", "aspect"]
+        unique_id = "Station"
+
+        df_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id)
+
+        pd.testing.assert_frame_equal(
+            df_properties[_properties_name],
+            surface_properties_data[_properties_name],
+        )
+
+    def test_surface_properties_xarray(self, surface_properties_data):
+        unique_id = "Station"
+
+        ds_properties = xh.gis.surface_properties(
+            self.gdf, unique_id=unique_id, output_format="xarray"
+        )
+
+        assert ds_properties.elevation.attrs["units"] == "m"
+        assert ds_properties.slope.attrs["units"] == "degrees"
+        assert ds_properties.aspect.attrs["units"] == "degrees"
+
+        output_dataset = surface_properties_data.set_index(unique_id).to_xarray()
+        output_dataset["elevation"].attrs = {"units": "m"}
+        output_dataset["slope"].attrs = {"units": "degrees"}
+        output_dataset["aspect"].attrs = {"units": "degrees"}
+
+        xr.testing.assert_allclose(ds_properties, output_dataset)
+
+    @pytest.fixture
     def land_classification_data_latest(self):
         data = {
             "pct_crops": {"031501": 0.7761508991718495, "042103": 0.0},
