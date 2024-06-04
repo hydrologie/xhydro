@@ -348,7 +348,6 @@ def surface_properties(
     da_elevation = ds.xvec.zonal_stats(
         projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
     )["elevation"].squeeze()
-    ["elevation"].squeeze()
 
     da_slope = slope(ds.elevation)
 
