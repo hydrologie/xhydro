@@ -5,6 +5,7 @@ import pandas as pd
 import xarray as xr
 from xhydro.extreme_value_analysis import *
 from juliacall import convert as jl_convert
+from xhydro.extreme_value_analysis.structures.returnlevel import ReturnLevel
 jl.seval("using DataFrames")
 
 
@@ -186,3 +187,13 @@ def py_list_to_jl_vector(py_list: list):
     
 def jl_vector_to_py_list(jl_vector) -> list:
     return list(jl_vector)
+
+# 6. returnlevel.py
+def py_returnlevel_to_jl_returnlevel(py_returnlevel: ReturnLevel):
+    jl_model = py_returnlevel.model 
+    jl_returnperiod = jl.Real(py_returnlevel.returnperiod)
+    jl_value = py_list_to_jl_vector(py_returnlevel.value)
+    return Extremes.ReturnLevel(jl_model, jl_returnperiod, jl_value)
+
+def jl_returnlevel_to_py_returnlevel(jl_returnlevel) -> ReturnLevel:
+    return ReturnLevel(jl_returnlevel.model, float(jl_returnlevel.returnperiod), list(jl_returnlevel.value))
