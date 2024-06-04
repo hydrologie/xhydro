@@ -318,7 +318,6 @@ def surface_properties(
     projected_gdf = gdf.to_crs(projected_crs)
 
     collection = "cop-dem-glo-90"
-    collection = "cop-dem-glo-90"
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
@@ -330,7 +329,6 @@ def surface_properties(
 
     items = list(search.get_items())
 
-    # Create a mosaic of
     # Create a mosaic of
     da = stackstac.stack(items)
     da = _flatten(
@@ -348,10 +346,9 @@ def surface_properties(
 
     # Use Xvec to extract elevation for each geometry in the projected gdf
     da_elevation = ds.xvec.zonal_stats(
-        da_elevation=ds.xvec.zonal_stats(
-            projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-        )["elevation"].squeeze()
+        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
     )["elevation"].squeeze()
+    ["elevation"].squeeze()
 
     da_slope = slope(ds.elevation)
 
@@ -379,13 +376,8 @@ def surface_properties(
             {unique_id: ("geometry", gdf[unique_id])}
         )
         output_dataset = output_dataset.swap_dims({"geometry": unique_id})
-        output_dataset = output_dataset.assign_coords(
-            {unique_id: ("geometry", gdf[unique_id])}
-        )
-        output_dataset = output_dataset.swap_dims({"geometry": unique_id})
 
     if output_format in ("geopandas", "gpd.GeoDataFrame"):
-        output_dataset = output_dataset.drop("geometry").to_dataframe()
         output_dataset = output_dataset.drop("geometry").to_dataframe()
 
     return output_dataset
