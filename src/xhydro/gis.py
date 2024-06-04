@@ -341,7 +341,6 @@ def surface_properties(
         .coarsen({"y": 5, "x": 5}, boundary="trim")
         .mean()
         .to_dataset(name="elevation")
-        .to_dataset(name="elevation")
         .rio.write_crs("epsg:4326", inplace=True)
         .rio.reproject(projected_crs)
         .isel(band=0)
