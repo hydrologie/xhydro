@@ -1,6 +1,7 @@
 from xhydro.extreme_value_analysis.julia_import import Extremes, jl
 from xhydro.extreme_value_analysis.structures.dataitem import *
-from xhydro.extreme_value_analysis.structures.data import *
+from xhydro.extreme_value_analysis.structures.conversions import *
+
 from xhydro.extreme_value_analysis import *
 from xhydro.extreme_value_analysis.parameterestimation import *
 from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import *
@@ -18,7 +19,7 @@ def gevfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str) -
 
 #TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
 def gevfitpwm_3(model: BlockMaxima) -> PwmAbstractExtremeValueModel:
-    jl_model = jl_blockmaxima_to_py_blockmaxima(model)
+    jl_model = py_blockmaxima_to_jl_blockmaxima(model)
     return jl_pwm_aev_to_py_aev(Extremes.gevfitpwm(jl_model))
 
 
@@ -33,8 +34,8 @@ def gumbelfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str
     return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_df, jl_datacol))
 
 #TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
-def gumbelfitpwm_3(model) -> PwmAbstractExtremeValueModel:
-    jl_model = jl_blockmaxima_to_py_blockmaxima(model)
+def gumbelfitpwm_3(model: BlockMaxima) -> PwmAbstractExtremeValueModel:
+    jl_model = py_blockmaxima_to_jl_blockmaxima(model)
     return jl_pwm_aev_to_py_aev(Extremes.gumbelfitpwm(jl_model))
 
 

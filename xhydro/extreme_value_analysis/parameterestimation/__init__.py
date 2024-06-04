@@ -1,10 +1,9 @@
-from xhydro.extreme_value_analysis import py_str_to_jl_symbol
 from juliacall import convert as jl_convert
 from xhydro.extreme_value_analysis.julia_import import Extremes, jl
 from xhydro.extreme_value_analysis.structures.dataitem import Variable
+from xhydro.extreme_value_analysis.structures.conversions import *
 
 
-# Object conversions
 def jl_symbol_fit_parameters(params: list[list[str]]) -> tuple:
     # python list of lists of julia Symbols
     symbols = [[py_str_to_jl_symbol(symbol) for symbol in params[i]] for i in range(len(params))]

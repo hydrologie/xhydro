@@ -33,6 +33,7 @@ class ClusterError(Exception):
     """Custom exception for cluster-related errors."""
     pass
 
+#TODO: get rid of multiple dispatch, then test
 def getcluster(y: list[float], **kwargs) -> list[Cluster]:
     """
     Get clusters from the data using different methods based on provided arguments.
