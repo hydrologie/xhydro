@@ -4,7 +4,7 @@ Changelog
 
 v0.4.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`), Sébastien Langlois (:user:`sebastienlanglois`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,6 +12,7 @@ New features and enhancements
 * Added support for various hydrological models emulated through the Raven hydrological framework. (:pull:`128`).
 * Added optimal interpolation functions for time-series and streamflow indicators. (:pull:`88`, :pull:`129`).
 * Added optimal interpolation notebooks. (:pull:`123`).
+* Added surface properties (elevation, slope, aspect ratio) to the `gis` module. (:pull:`151`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
