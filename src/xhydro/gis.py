@@ -427,12 +427,19 @@ def _count_pixels_from_bbox(
 ):
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
-    merged, _ = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    epsg = item.properties["proj:epsg"]
+
+    # Mask with polygon
+    merged = merged.rio.write_crs(epsg).rio.clip([gdf.to_crs(epsg).iloc[idx].geometry])
 
     data = merged.data.ravel()
+    data = data[data != 0]
+
     df = pd.DataFrame(
         pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0]
     )
+
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
     else:

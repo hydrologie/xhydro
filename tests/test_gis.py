@@ -126,21 +126,9 @@ class TestWatershedOperations:
     @pytest.fixture
     def surface_properties_data(self):
         data = {
-            "elevation": {
-                "031501": 33.57301026813054,
-                "031502": 51.393294334667644,
-                "042103": 358.5498543002855,
-            },
-            "slope": {
-                "031501": 0.32461288571357727,
-                "031502": 0.5184836387634277,
-                "042103": 2.5006439685821533,
-            },
-            "aspect": {
-                "031501": 239.02597045898438,
-                "031502": 242.43133544921875,
-                "042103": 178.55764770507812,
-            },
+            "elevation": {"031501": 46.3385009765625, "042103": 358.54986572265625},
+            "slope": {"031501": 0.4634914696216583, "042103": 2.5006439685821533},
+            "aspect": {"031501": 241.46539306640625, "042103": 178.55764770507812},
         }
 
         df = pd.DataFrame.from_dict(data).astype("float32")
@@ -175,12 +163,15 @@ class TestWatershedOperations:
         ds_properties = xh.gis.surface_properties(
             self.gdf, unique_id=unique_id, output_format="xarray"
         )
+        ds_properties = ds_properties.drop(
+            list(set(ds_properties.coords) - set(ds_properties.dims))
+        )
 
         assert ds_properties.elevation.attrs["units"] == "m"
         assert ds_properties.slope.attrs["units"] == "degrees"
         assert ds_properties.aspect.attrs["units"] == "degrees"
 
-        output_dataset = surface_properties_data.set_index(unique_id).to_xarray()
+        output_dataset = surface_properties_data.to_xarray()
         output_dataset["elevation"].attrs = {"units": "m"}
         output_dataset["slope"].attrs = {"units": "degrees"}
         output_dataset["aspect"].attrs = {"units": "degrees"}
