@@ -8,26 +8,6 @@ class paramfun:
     def __init__(self, covariate: list[Variable], fun):
         self.covariate, self.fun = covariate, fun
 
-# class Chains:
-#     value: list[float]
-#     names: list[str]
-#     chains: list[int]
-
-#     #TODO: convert range to python type once julia StepRange <-> python equivalent conversion is implemented
-#     def __init__(self, value: list[float], range, names: list[str], chains: list[int]):
-#         self.value, self.range, self.names, self.chains = value, range, names, chains
-
-# def py_chains_to_jl_chains(py_chains: Chains):
-#     jl_value = py_list_to_jl_vector(py_chains.value)
-#     jl_range = py_list_to_jl_vector(py_chains.range)
-#     jl_names = py_list_to_jl_vector(py_chains.names)
-#     jl_chains = py_list_to_jl_vector(py_chains.chains)
-#     # return MambaLite.Chains
-#     pass
-
-# def jl_chains_to_py_chains(jl_chains) -> Chains:
-#     pass
-
 class AbstractExtremeValueModel:
     pass
 

@@ -5,6 +5,7 @@ import pandas as pd
 import xarray as xr
 from xhydro.extreme_value_analysis import *
 from juliacall import convert as jl_convert
+from xhydro.extreme_value_analysis.structures.cluster import Cluster
 from xhydro.extreme_value_analysis.structures.returnlevel import ReturnLevel
 jl.seval("using DataFrames")
 
@@ -47,7 +48,6 @@ def jl_threshold_exceedance_to_py_threshold_exceedance(jl_threshold_exceedence) 
     jl_shape = jl_threshold_exceedence.shape
     return ThresholdExceedance(py_data, jl_logscale, jl_shape)
 
-#TODO: test
 def py_threshold_exceedance_to_jl_threshold_exceedance(py_threshold_exceedance: ThresholdExceedance):
     jl_data = py_variable_to_jl_variable(py_threshold_exceedance.data)
     #TODO: for now, logscale and shape of the py_threshold_exceedance are already in julia format because 
@@ -55,7 +55,6 @@ def py_threshold_exceedance_to_jl_threshold_exceedance(py_threshold_exceedance: 
     # See the comment in jl_threshold_exceedance_to_py_threshold_exceedance
     jl_logscale = py_threshold_exceedance.logscale
     jl_shape = py_threshold_exceedance.shape
-    # return Extremes.ThresholdExceedance(jl_data, jl_logscale, jl_shapecov)
     return Extremes.seval('ThresholdExceedance')(jl_data, jl_logscale, jl_shape)
 
 
@@ -72,15 +71,15 @@ def py_aev_to_jl_aev(abstract_fitted_extreme_value_model: AbstractFittedExtremeV
         raise ValueError(f"Unknown model type: {type(abstract_fitted_extreme_value_model)}")
 
 def py_maximumlikelihood_aev_to_jl_aev(py_model: MaximumLikelihoodAbstractExtremeValueModel):
-    #TODO: smarter way of checking wether it's a BlockMaxima or a ThresholdExceedance
     if(isinstance(py_model.model, BlockMaxima)):
         jl_model = py_blockmaxima_to_jl_blockmaxima(py_model.model)
     elif(isinstance(py_model.model, ThresholdExceedance)):
         jl_model = py_threshold_exceedance_to_jl_threshold_exceedance(py_model.model)
+    else:
+        raise ValueError(f"Unknown model type: {type(py_model.model)}")
     jl_theta = jl_convert(jl.Vector[jl.Float64], py_model.theta)
     return Extremes.MaximumLikelihoodAbstractExtremeValueModel(jl_model,jl_theta)
 
-#TODO: smarter way of checking wether it's a BlockMaxima or a ThresholdExceedance
 def jl_maximumlikelihood_aev_to_py_aev(jl_model) -> MaximumLikelihoodAbstractExtremeValueModel:
     if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"): 
         py_model = jl_blockmaxima_to_py_blockmaxima(jl_model.model)
@@ -92,15 +91,15 @@ def jl_maximumlikelihood_aev_to_py_aev(jl_model) -> MaximumLikelihoodAbstractExt
     return MaximumLikelihoodAbstractExtremeValueModel(py_model, py_theta)
 
 def py_bayesian_aev_to_jl_aev(py_model: BayesianAbstractExtremeValueModel):
-    #TODO: smarter way of checking wether it's a BlockMaxima or a ThresholdExceedance
     if(isinstance(py_model.model, BlockMaxima)):
         jl_model = py_blockmaxima_to_jl_blockmaxima(py_model.model)
     elif(isinstance(py_model.model, ThresholdExceedance)):
         jl_model = py_threshold_exceedance_to_jl_threshold_exceedance(py_model.model)
+    else:
+        raise ValueError(f"Unknown model type: {type(py_model.model)}")
     jl_sim = py_model.sim
     return Extremes.BayesianAbstractExtremeValueModel(jl_model, jl_sim)
 
-#TODO: smarter way of checking wether it's a BlockMaxima or a ThresholdExceedance
 def jl_bayesian_aev_to_py_aev(jl_model) -> BayesianAbstractExtremeValueModel:
     if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"): 
         py_model = jl_blockmaxima_to_py_blockmaxima(jl_model.model)
@@ -114,7 +113,6 @@ def jl_bayesian_aev_to_py_aev(jl_model) -> BayesianAbstractExtremeValueModel:
 def py_pwm_aev_to_jl_aev(py_model: MaximumLikelihoodAbstractExtremeValueModel):
     return py_maximumlikelihood_aev_to_jl_aev(py_model)
 
-#TODO: smarter way of checking wether it's a BlockMaxima or a ThresholdExceedance
 def jl_pwm_aev_to_py_aev(jl_model) -> PwmAbstractExtremeValueModel:
     if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"):
         py_model = jl_blockmaxima_to_py_blockmaxima(jl_model.model)
@@ -150,7 +148,6 @@ def pd_dataframe_to_jl_dataframe(df: pd.DataFrame):
     jl_columns = {jl.Symbol(col): py_list_to_jl_vector(df[col].values.tolist()) for col in df.columns}
     return jl.DataFrame(jl_columns)
 
-
 # xarray.DataArray conversions
 def jl_dataframe_to_xr_dataarray(jl_dataframe) -> xr.DataArray:
     xr_data = [jl_vector_to_py_list(col) for col in jl.eachcol(jl_dataframe)]
@@ -161,7 +158,6 @@ def jl_dataframe_to_xr_dataarray(jl_dataframe) -> xr.DataArray:
 def xr_dataarray_to_jl_dataframe(xr_dataarray: xr.DataArray):
     jl_columns = {jl.Symbol(str(col_name)): jl_convert(jl.Vector[jl.Real], xr_dataarray.sel(x=col_name))  for col_name in xr_dataarray.coords['x'].values}
     return jl.DataFrame(jl_columns)
-
 
 # 4. dataitem.py
 def py_variable_to_jl_variable(py_var: Variable):
@@ -197,3 +193,12 @@ def py_returnlevel_to_jl_returnlevel(py_returnlevel: ReturnLevel):
 
 def jl_returnlevel_to_py_returnlevel(jl_returnlevel) -> ReturnLevel:
     return ReturnLevel(jl_returnlevel.model, float(jl_returnlevel.returnperiod), list(jl_returnlevel.value))
+
+# 7. cluster.py
+def jl_cluster_to_py_cluster(jl_cluster) -> Cluster:
+    return Cluster(
+        getattr(jl_cluster, 'u₁'), 
+        getattr(jl_cluster, 'u₂'), 
+        list(getattr(jl_cluster, 'position')), 
+        list(getattr(jl_cluster, 'value'))
+    )

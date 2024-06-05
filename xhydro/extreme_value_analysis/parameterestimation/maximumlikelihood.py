@@ -30,7 +30,6 @@ def gevfit_4(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, init
     jl_locationcovid, jl_logscalecovid, jl_shapecovid = jl_symbol_fit_parameters([locationcovid, logscalecovid, shapecovid])
     return jl_maximumlikelihood_aev_to_py_aev(Extremes.gevfit(jl_df, jl_datacol, jl_initialvalues, locationcovid = jl_locationcovid, logscalecovid = jl_logscalecovid, shapecovid = jl_shapecovid))
 
-#TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
 def gevfit_5(model: BlockMaxima, initialvalues: list[float]) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_model = py_blockmaxima_to_jl_blockmaxima(model)
     jl_initialvalues = py_list_to_jl_vector(initialvalues)
@@ -61,7 +60,6 @@ def gumbelfit_4(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, i
     jl_locationcovid, jl_logscalecovid= jl_symbol_fit_parameters([locationcovid, logscalecovid])
     return jl_maximumlikelihood_aev_to_py_aev(Extremes.gumbelfit(jl_df, jl_datacol, jl_initialvalues, locationcovid=jl_locationcovid, logscalecovid=jl_logscalecovid))
 
-#TODO: test when py_blockmaxima_to_jl_blockmaxima is fixed
 def gumbelfit_5(model: BlockMaxima, initialvalues:list[float]) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_model = py_blockmaxima_to_jl_blockmaxima(model)
     jl_initialvalues = py_list_to_jl_vector(initialvalues)
@@ -92,7 +90,6 @@ def gpfit_4(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str, initi
     jl_logscalecovid, jl_shapecovid = jl_symbol_fit_parameters([logscalecovid, shapecovid])
     return jl_maximumlikelihood_aev_to_py_aev(Extremes.gpfit(jl_df, jl_datacol, jl_initialvalues, logscalecovid = jl_logscalecovid, shapecovid = jl_shapecovid))
 
-#TODO: test when py_threshold_exceedance_to_jl_threshold_exceedance is tested
 def gpfit_5(model:ThresholdExceedance , initialvalues: list[float]) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_model = py_threshold_exceedance_to_jl_threshold_exceedance(model)
     jl_initialvalues = py_list_to_jl_vector(initialvalues)
