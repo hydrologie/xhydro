@@ -283,6 +283,7 @@ def surface_properties(
     output_format: str = "geopandas",
     operation: str = "mean",
     dataset_date: str = "2021-04-22",
+    collection: str = "cop-dem-glo-90",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """Surface properties for watersheds.
 
@@ -308,6 +309,8 @@ def surface_properties(
         Aggregation statistics such as `mean` or `sum`.
     dataset_date : str
         Date (%Y-%m-%d) for which to select the imagery from the dataset. Date must be available.
+    collection : str
+        Collection name from the Planetary Computer STAC Catalog. Default is `cop-dem-glo-90`.
 
     Returns
     -------
@@ -317,7 +320,6 @@ def surface_properties(
     # Geometries are projected to make calculations more accurate
     projected_gdf = gdf.to_crs(projected_crs)
 
-    collection = "cop-dem-glo-90"
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
     )
