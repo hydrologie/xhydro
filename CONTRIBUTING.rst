@@ -136,7 +136,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git commit -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
-    If ``pre-commit`` hooks fail, try fixing the issues, re-adding the files, and re-committing your changes (or, if need be, you can skip them with `git commit --no-verify`).
+    If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files to be committed, and re-committing your changes (or, if need be, you can skip them with `git commit --no-verify`).
 
 #. Submit a `Pull Request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_ through the GitHub website.
 
@@ -152,7 +152,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         # To simply test that the docs pass build checks
         python -m tox -e docs
 
-#. If changes to your branch are made on Github, you can update your local branch with:
+#. If changes to your branch are made on GitHub, you can update your local branch with:
 
     .. code-block:: console
 
@@ -160,7 +160,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git fetch
         git pull origin name-of-your-bugfix-or-feature
 
-    If you have conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
+    If you have merge conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
     Resolving conflicts from the command line can be tricky. If you are not comfortable with this, you can ignore the last command and instead use a GUI like PyCharm or Visual Studio Code to merge the remote changes and resolve the conflicts.
 
 #. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform similar steps as above to update your branch:
@@ -173,7 +173,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     See the previous step for more information on resolving conflicts.
 
-#. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might required once a maintainer approved the Pull Request to ensure that the tests pass and the documentation can be built.
+#. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might be required after the Pull Request is approved to ensure that the tests pass and the documentation can be built.
 
 #. Once your Pull Request has been accepted and merged to the `main` branch, several automated workflows will be triggered:
 
@@ -200,7 +200,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. If the pull request adds functionality, either update the documentation or create a new notebook in the `docs/notebooks` directory that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
 
-#. The ChangeLog should be updated with a brief description of the changes made in the pull request. If this is your first contribution to the project, please add your name to the `AUTHORS.rst` and `.zenodo.json` files.
+#. The ChangeLog should be updated with a brief description of the changes made in the Pull Request. If this is your first contribution to the project, please add your name and information to the `AUTHORS.rst` and `.zenodo.json` files.
 
 #. The pull request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.ini` files for the supported versions.
 
