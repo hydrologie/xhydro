@@ -1,8 +1,8 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from typing import Optional
 from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import *
 from xhydro.extreme_value_analysis.structures.dataitem import *
 from xhydro.extreme_value_analysis.structures.conversions import *
-from xhydro.extreme_value_analysis import *
+from xhydro.extreme_value_analysis.structures.util import *
 from xhydro.extreme_value_analysis.parameterestimation import *
 import pandas as pd
 

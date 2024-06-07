@@ -67,3 +67,20 @@ def getcluster_2(y: list[float], u: float = None, runlength: int = None) -> list
     u = jl_convert(jl.Real, u)
     jl_clusters = Extremes.getcluster(jl_y, u, runlength=runlength) 
     return [jl_cluster_to_py_cluster(cluster) for cluster in jl_clusters]
+
+#8. Parameter estimation
+def jl_symbol_fit_parameters(params: list[list[str]]) -> tuple:
+    # python list of lists of julia Symbols
+    symbols = [[py_str_to_jl_symbol(symbol) for symbol in params[i]] for i in range(len(params))]
+
+    # python tuple of julia vectors of julia Symbols
+    jl_params = tuple((jl_convert(jl.Vector[jl.Symbol], symbols[i])) for i in range(len(symbols)))
+    return jl_params
+
+def jl_variable_fit_parameters(params: list[list[Variable]]) -> tuple:
+    # python list of lists of julia.Extremes Variables
+    variables = [[variable.py_variable_to_jl_variable() for variable in params[i]] for i in range(len(params))]
+
+    # python tuple of julia vectors of julia.Extremes Variables
+    jl_params = tuple(jl_convert(jl.Vector[jl.Extremes.Variable], variables[i]) for i in range(len(variables)))
+    return jl_params
