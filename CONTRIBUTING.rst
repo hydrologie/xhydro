@@ -198,7 +198,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. All functions should be documented with `docstrings` following the `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ format.
 
-#. If the pull request adds functionality, either update the documentation or create a new notebook in the `docs/notebooks` directory that demonstrates the feature. the Jupyter notebooks located in the documentation should also be updated. Library-defining features should also be listed in ``README.rst``.
+#. If the pull request adds functionality, either update the documentation or create a new notebook in the `docs/notebooks` directory that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
 
 #. The ChangeLog should be updated with a brief description of the changes made in the pull request. If this is your first contribution to the project, please add your name to the `AUTHORS.rst` and `.zenodo.json` files.
 
