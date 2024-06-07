@@ -163,7 +163,15 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     If you have conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
     Resolving conflicts from the command line can be tricky. If you are not comfortable with this, you can ignore the last command and instead use a GUI like PyCharm or Visual Studio Code to merge the remote changes and resolve the conflicts.
 
-#. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform the same steps as above to update your branch, replacing `name-of-your-bugfix-or-feature` with `main`.
+#. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform similar steps as above to update your branch:
+
+    .. code-block:: console
+
+        git checkout name-of-your-bugfix-or-feature
+        git fetch
+        git pull origin main
+
+    See the previous step for more information on resolving conflicts.
 
 #. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might required once a maintainer approved the Pull Request to ensure that the tests pass and the documentation can be built.
 
