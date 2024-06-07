@@ -161,6 +161,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git pull origin name-of-your-bugfix-or-feature
 
     If you have conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
+    Resolving conflicts from the command line can be tricky. If you are not comfortable with this, you can ignore the last command and instead use a GUI like PyCharm or Visual Studio Code to merge the remote changes and resolve the conflicts.
 
 #. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform the same steps as above to update your branch, replacing `name-of-your-bugfix-or-feature` with `main`.
 
