@@ -69,12 +69,19 @@ Get Started!
 
 Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
-#. If you are not already an `xhydro` collaborator, fork the ``xhydro`` repo on GitHub.
-#. Clone your fork locally:
+#. First, clone the ``xhydro`` repo locally.
 
-   .. code-block:: console
+    * If you are not an `xhydro` collaborator, fork the ``xhydro`` repo on GitHub:
 
-        git clone git@github.com:your_name_here/xhydro.git
+       .. code-block:: console
+
+            git clone git@github.com:your_name_here/xhydro.git
+
+    * Otherwise, if you are a collaborator, clone the ``xhydro`` repo locally:
+
+       .. code-block:: console
+
+            git clone git@github.com:hydrologie/xhydro.git
 
 #. Install your local copy into a development environment. You can create a new Anaconda development environment with:
 
@@ -94,7 +101,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
             pre-commit run -a
 
-  If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
+   If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
 
 #. Create a branch for local development:
 
@@ -129,7 +136,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git commit -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
-    If ``pre-commit`` hooks fail, try re-committing your changes (or, if need be, you can skip them with `git commit --no-verify`).
+    If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files to be committed, and re-committing your changes (or, if need be, you can skip them with `git commit --no-verify`).
 
 #. Submit a `Pull Request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_ through the GitHub website.
 
@@ -145,13 +152,36 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         # To simply test that the docs pass build checks
         python -m tox -e docs
 
+#. If changes to your branch are made on GitHub, you can update your local branch with:
+
+    .. code-block:: console
+
+        git checkout name-of-your-bugfix-or-feature
+        git fetch
+        git pull origin name-of-your-bugfix-or-feature
+
+    If you have merge conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
+    Resolving conflicts from the command line can be tricky. If you are not comfortable with this, you can ignore the last command and instead use a GUI like PyCharm or Visual Studio Code to merge the remote changes and resolve the conflicts.
+
+#. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform similar steps as above to update your branch:
+
+    .. code-block:: console
+
+        git checkout name-of-your-bugfix-or-feature
+        git fetch
+        git pull origin main
+
+    See the previous step for more information on resolving conflicts.
+
+#. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might be required after the Pull Request is approved to ensure that the tests pass and the documentation can be built.
+
 #. Once your Pull Request has been accepted and merged to the `main` branch, several automated workflows will be triggered:
 
     - The ``bump-version.yml`` workflow will automatically bump the patch version when pull requests are pushed to the `main` branch on GitHub. **It is not recommended to manually bump the version in your branch when merging (non-release) pull requests (this will cause the version to be bumped twice).**
     - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xhydro` documentation website.
     - If your branch is not a fork (ie: you are a maintainer), your branch will be automatically deleted.
 
-    You will have contributed your first changes to ``xhydro``!
+    You will have contributed to ``xhydro``!
 
 .. warning::
 
@@ -166,9 +196,13 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. The pull request should include tests and should aim to provide `code coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new lines of code. You can use the `--cov-report html --cov xhydro` flags during the call to ``pytest`` to generate an HTML report and analyse the current test coverage.
 
-#. If the pull request adds functionality, the docs should also be updated. Put your new functionality into a function with a docstring, and add the feature to the list in ``README.rst``.
+#. All functions should be documented with `docstrings` following the `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ format.
 
-#. The pull request should work for Python 3.9, 3.10, 3.11, and 3.12. Check that the tests pass for all supported Python versions.
+#. If the pull request adds functionality, either update the documentation or create a new notebook in the `docs/notebooks` directory that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
+
+#. The ChangeLog should be updated with a brief description of the changes made in the Pull Request. If this is your first contribution to the project, please add your name and information to the `AUTHORS.rst` and `.zenodo.json` files.
+
+#. The pull request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.ini` files for the supported versions.
 
 Tips
 ----
