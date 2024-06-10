@@ -7,4 +7,4 @@ from . import cc, gis, indicators, modelling, utils
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
-__version__ = "0.3.6-dev.8"
+__version__ = "0.3.6"
