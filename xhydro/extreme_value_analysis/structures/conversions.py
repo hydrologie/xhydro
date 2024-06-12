@@ -1,12 +1,13 @@
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import *
+from xhydro.extreme_value_analysis.julia_import import Extremes, jl
 from typing import Union
-from juliacall import Main as jl
 import pandas as pd
 import xarray as xr
-from xhydro.extreme_value_analysis import *
 from juliacall import convert as jl_convert
-from xhydro.extreme_value_analysis.structures.cluster import Cluster
-from xhydro.extreme_value_analysis.structures.returnlevel import ReturnLevel
+from .abstract_fitted_extreme_value_model import *
+from .cluster import Cluster
+from .returnlevel import ReturnLevel
+import math
+import numpy as np
 jl.seval("using DataFrames")
 
 
@@ -27,7 +28,7 @@ def jl_blockmaxima_to_py_blockmaxima(jl_blockmaxima) -> BlockMaxima:
 
 def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
     jl_data = py_variable_to_jl_variable(py_blockmaxima.data)
-    #TODO: for now, the location, logscale and shape of the py_blockmaxima are already in julia format because 
+    #TODO: for now, the location, logscale and shape of the py_blockmaxima are already in julia format because
     # I have not been able to do a python paramfun <-> julia paramfun conversion
     # See the comment in jl_blockmaxima_to_py_blockmaxima
     jl_location = py_blockmaxima.location
@@ -40,7 +41,7 @@ def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
         return Extremes.seval('BlockMaxima{Distributions.GeneralizedExtremeValue}')(jl_data, jl_location, jl_logscale, jl_shape)
     else:
         raise ValueError("Unsupported BlockMaxima type: {}".format(py_blockmaxima.type))
-    
+
 def jl_threshold_exceedance_to_py_threshold_exceedance(jl_threshold_exceedence) -> ThresholdExceedance:
     py_data = jl_variable_to_py_variable(jl_threshold_exceedence.data)
     #TODO: create py_logscale, py_shape once julia Function <-> python equivalent conversion is implemented
@@ -50,7 +51,7 @@ def jl_threshold_exceedance_to_py_threshold_exceedance(jl_threshold_exceedence) 
 
 def py_threshold_exceedance_to_jl_threshold_exceedance(py_threshold_exceedance: ThresholdExceedance):
     jl_data = py_variable_to_jl_variable(py_threshold_exceedance.data)
-    #TODO: for now, logscale and shape of the py_threshold_exceedance are already in julia format because 
+    #TODO: for now, logscale and shape of the py_threshold_exceedance are already in julia format because
     # I have not been able to do a python paramfun <-> julia paramfun conversion
     # See the comment in jl_threshold_exceedance_to_py_threshold_exceedance
     jl_logscale = py_threshold_exceedance.logscale
@@ -81,7 +82,7 @@ def py_maximumlikelihood_aev_to_jl_aev(py_model: MaximumLikelihoodAbstractExtrem
     return Extremes.MaximumLikelihoodAbstractExtremeValueModel(jl_model,jl_theta)
 
 def jl_maximumlikelihood_aev_to_py_aev(jl_model) -> MaximumLikelihoodAbstractExtremeValueModel:
-    if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"): 
+    if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"):
         py_model = jl_blockmaxima_to_py_blockmaxima(jl_model.model)
     elif (str(jl.typeof(jl_model.model)) == "ThresholdExceedance"):
         py_model = jl_threshold_exceedance_to_py_threshold_exceedance(jl_model.model)
@@ -101,7 +102,7 @@ def py_bayesian_aev_to_jl_aev(py_model: BayesianAbstractExtremeValueModel):
     return Extremes.BayesianAbstractExtremeValueModel(jl_model, jl_sim)
 
 def jl_bayesian_aev_to_py_aev(jl_model) -> BayesianAbstractExtremeValueModel:
-    if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"): 
+    if (str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.GeneralizedExtremeValue}" or str(jl.typeof(jl_model.model)) == "BlockMaxima{Distributions.Gumbel}"):
         py_model = jl_blockmaxima_to_py_blockmaxima(jl_model.model)
     elif(str(jl.typeof(jl_model.model)) == "ThresholdExceedance"):
         py_model = jl_threshold_exceedance_to_py_threshold_exceedance(jl_model.model)
@@ -174,19 +175,25 @@ def py_str_to_jl_symbol(str: str):
     return jl.Symbol(str)
 
 def py_list_to_jl_vector(py_list: list):
+    # Cleaning up nans and numpy.float32 elements
+    py_list = [x for x in py_list if not math.isnan(x)] #TODO: deal with nans beter
+    py_list = [float(i) if isinstance(i, np.float32) else i for i in py_list]
+
     if all(isinstance(i, float) or isinstance(i, int) for i in py_list):
-        return jl_convert(jl.Vector[jl.Real], py_list) 
-    if all(isinstance(i, str) for i in py_list):
-        return jl_convert(jl.Vector[jl.String], py_list) 
+        return jl_convert(jl.Vector[jl.Real], py_list)
+    elif all(isinstance(i, str) for i in py_list):
+        return jl_convert(jl.Vector[jl.String], py_list)
+    elif not(all(isinstance(i, float) or isinstance(i, int) for i in py_list)) and not(all(isinstance(i, str) for i in py_list)):
+        raise ValueError(f" Cannot convert unsupported type {type(py_list)} to julia vector: all values are not strings or numbers")
     else:
-        return jl_convert(jl.Vector[jl.Any], py_list) # for other types of values
-    
+        raise ValueError(f" Cannot convert unsupported type {type(py_list)} to julia vector")
+
 def jl_vector_to_py_list(jl_vector) -> list:
     return list(jl_vector)
 
 # 6. returnlevel.py
 def py_returnlevel_to_jl_returnlevel(py_returnlevel: ReturnLevel):
-    jl_model = py_returnlevel.model 
+    jl_model = py_returnlevel.model
     jl_returnperiod = jl.Real(py_returnlevel.returnperiod)
     jl_value = py_list_to_jl_vector(py_returnlevel.value)
     return Extremes.ReturnLevel(jl_model, jl_returnperiod, jl_value)
@@ -197,8 +204,8 @@ def jl_returnlevel_to_py_returnlevel(jl_returnlevel) -> ReturnLevel:
 # 7. cluster.py
 def jl_cluster_to_py_cluster(jl_cluster) -> Cluster:
     return Cluster(
-        getattr(jl_cluster, 'u₁'), 
-        getattr(jl_cluster, 'u₂'), 
-        list(getattr(jl_cluster, 'position')), 
+        getattr(jl_cluster, 'u₁'),
+        getattr(jl_cluster, 'u₂'),
+        list(getattr(jl_cluster, 'position')),
         list(getattr(jl_cluster, 'value'))
     )

@@ -1,5 +1,5 @@
-from julia_import import Extremes, jl
-from juliacall import convert as jl_convert  
+from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from juliacall import convert as jl_convert
 
 class Cluster:
     u_1: float
@@ -15,12 +15,12 @@ class Cluster:
 
     def __repr__(self):
         return f"u_1 : {self.u_1} \nu_2 : {self.u_2} \nposition : {self.position} \nvalue : {self.value}"
-    
+
     def length(self) -> int:
         return len(self.position)
-    
+
     def maximum(self) -> int:
         return max(self.value)
-    
+
     def sum(self) -> float:
-        return sum(self.value) 
+        return sum(self.value)

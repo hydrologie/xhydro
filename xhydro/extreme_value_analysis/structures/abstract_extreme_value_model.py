@@ -1,6 +1,6 @@
 from xhydro.extreme_value_analysis import *
 from xhydro.extreme_value_analysis.structures.dataitem import Variable
-from julia_import import *
+from xhydro.extreme_value_analysis.julia_import import *
 
 class paramfun:
     covariate: list[Variable]
