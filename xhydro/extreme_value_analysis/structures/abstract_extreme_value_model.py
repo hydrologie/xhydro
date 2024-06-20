@@ -30,19 +30,3 @@ class ThresholdExceedance(AbstractExtremeValueModel):
         self.data, self.logscale, self.shape = data, logscale, shape
     def __repr__(self):
         return f"\tThresholdExceedance :\n\t\t\tdata:\n {self.data}\n\t\t\tlogscale: {self.logscale}\n\t\t\tshape: {self.shape}"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

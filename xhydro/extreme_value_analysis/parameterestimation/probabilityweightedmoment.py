@@ -50,4 +50,3 @@ def gpfitpwm_2(py_dataframe: Union[pd.DataFrame, xr.DataArray], datacol: str) ->
 def gpfitpwm_3(model: ThresholdExceedance) -> PwmAbstractExtremeValueModel:
     jl_model = py_threshold_exceedance_to_jl_threshold_exceedance(model)
     return jl_pwm_aev_to_py_aev(Extremes.gpfitpwm(jl_model))
-

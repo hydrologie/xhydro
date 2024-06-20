@@ -40,7 +40,7 @@ def py_blockmaxima_to_jl_blockmaxima(py_blockmaxima: BlockMaxima):
     elif py_blockmaxima.type == "BlockMaxima{Distributions.GeneralizedExtremeValue}":
         return Extremes.seval('BlockMaxima{Distributions.GeneralizedExtremeValue}')(jl_data, jl_location, jl_logscale, jl_shape)
     else:
-        raise ValueError("Unsupported BlockMaxima type: {}".format(py_blockmaxima.type))
+        raise ValueError(f"Unsupported BlockMaxima type: {py_blockmaxima.type}")
 
 def jl_threshold_exceedance_to_py_threshold_exceedance(jl_threshold_exceedence) -> ThresholdExceedance:
     py_data = jl_variable_to_py_variable(jl_threshold_exceedence.data)
@@ -190,6 +190,12 @@ def py_list_to_jl_vector(py_list: list):
 
 def jl_vector_to_py_list(jl_vector) -> list:
     return list(jl_vector)
+
+def jl_vector_tuple_to_py_list(jl_vector_tuple) -> list:
+    jl_sub_tuple = jl_vector_tuple[0]
+    py_sub_tuple = tuple(jl_sub_tuple)
+    py_sub_list = list(py_sub_tuple)
+    return py_sub_list
 
 # 6. returnlevel.py
 def py_returnlevel_to_jl_returnlevel(py_returnlevel: ReturnLevel):
