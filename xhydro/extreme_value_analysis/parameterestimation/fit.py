@@ -107,41 +107,48 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
     if len(x) <= nparams: #TODO: sanity check with Jonathan
         return np.asarray([np.nan] * nparams)
 
-    if 31.4 in x:
-        print("KAMIL_PY", x)
-
     # TODO: check how doing exp() affects estimation quality, intervals
     if method == "ML":
         # TODO: find cleaner way of checking dist type
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            param_list = gevfit_1(x).theta
-            param_list[1] = math.exp(param_list[1]) # because gevfit_1(x).theta gives us [loc, log(scale), shape]
+            # param_list = gevfit_1(x).theta
+            # param_list[1] = math.exp(param_list[1]) # because gevfit_1(x).theta gives us [loc, log(scale), shape]
+            param_list = gevfit_1(x)
             params = np.asarray(param_list)
             params = np.roll(params, 1) # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            param_list = gumbelfit_1(x).theta
-            param_list[1] = math.exp(param_list[1]) # because gumbelfit_1(x).theta gives us [loc, log(scale)]
+            # param_list = gumbelfit_1(x).theta
+            # param_list[1] = math.exp(param_list[1]) # because gumbelfit_1(x).theta gives us [loc, log(scale)]
+            param_list = gumbelfit_1(x)
             params = np.asarray(param_list)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             # param_list = gpfit_1(x) # getting parameters [scale, shape] as loc = 0
-            param_list = gpfit_1(x).theta
+            param_list = gpfit_1(x)
             params = np.asarray(param_list)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "PWM":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            param_list = gevfitpwm_1(x).theta
-            param_list[1] = math.exp(param_list[1]) # because gevfitpwm_1(x).theta gives us [loc, log(scale), shape]
+            # param_list = gevfitpwm_1(x).theta
+            # param_list[1] = math.exp(param_list[1]) # because gevfitpwm_1(x).theta gives us [loc, log(scale), shape]
+            # params = np.asarray(param_list)
+
+            param_list = gevfitpwm_1(x)
             params = np.asarray(param_list)
+
             params = np.roll(params, 1) # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            param_list = gumbelfitpwm_1(x).theta
-            param_list[1] = math.exp(param_list[1]) # because gumbelfitpwm_1(x).theta gives us [loc, log(scale)]
+            # param_list = gumbelfitpwm_1(x).theta
+            # param_list[1] = math.exp(param_list[1]) # because gumbelfitpwm_1(x).theta gives us [loc, log(scale)]
+
+            param_list = gumbelfitpwm_1(x)
             params = np.asarray(param_list)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            param_list = gpfitpwm_1(x).theta
-            param_list[0] = math.exp(param_list[0]) # because gpfitpwm_1(x).theta gives us [log(scale), shape]
+            # param_list = gpfitpwm_1(x).theta
+            # param_list[0] = math.exp(param_list[0]) # because gpfitpwm_1(x).theta gives us [log(scale), shape]
+
+            param_list = gpfitpwm_1(x)
             params = np.asarray(param_list)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")

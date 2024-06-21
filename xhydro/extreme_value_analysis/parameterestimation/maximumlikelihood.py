@@ -12,12 +12,12 @@ from xhydro.extreme_value_analysis.structures.conversions import py_list_to_jl_v
 from xhydro.extreme_value_analysis.structures.util import jl_symbol_fit_parameters, jl_variable_fit_parameters
 
 # GEV
-def gevfit_1(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> MaximumLikelihoodAbstractExtremeValueModel:
+def gevfit_1(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
-    jl_model = Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
-    # print(getattr(jl_model, "θ̂")) # TODO: delete
-    return jl_maximumlikelihood_aev_to_py_aev(jl_model)
+    # jl_model = Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
+    # return jl_maximumlikelihood_aev_to_py_aev(jl_model)
+    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov)))
 
 def gevfit_2(y:list[float], initialvalues:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_y, jl_initialvalues = py_list_to_jl_vector(y), py_list_to_jl_vector(initialvalues)
@@ -44,10 +44,11 @@ def gevfit_5(model: BlockMaxima, initialvalues: list[float]) -> MaximumLikelihoo
 
 
 # Gumbel
-def gumbelfit_1(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = []) -> MaximumLikelihoodAbstractExtremeValueModel:
+def gumbelfit_1(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov= jl_variable_fit_parameters([locationcov, logscalecov])
-    return jl_maximumlikelihood_aev_to_py_aev(Extremes.gumbelfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov))
+    # return jl_maximumlikelihood_aev_to_py_aev(Extremes.gumbelfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov))
+    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gumbelfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov)))
 
 def gumbelfit_2(y:list[float], initialvalues: list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = []) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_y, jl_initialvalues = py_list_to_jl_vector(y), py_list_to_jl_vector(initialvalues)
@@ -74,12 +75,13 @@ def gumbelfit_5(model: BlockMaxima, initialvalues:list[float]) -> MaximumLikelih
 
 
 # GP
-#TODO: standardize returns
-def gpfit_1(y:list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = []):
+def gpfit_1(y:list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([logscalecov, shapecov])
-    # return jl_vector_tuple_to_py_list(Extremes.params((Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov))))[1:3] # we only want [scale, shape] because loc = 0
-    return jl_maximumlikelihood_aev_to_py_aev((Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov))) # we only want [scale, shape] because loc = 0
+    # return jl_maximumlikelihood_aev_to_py_aev((Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov))) # we only want [scale, shape] because loc = 0
+    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov)))
+
+
 
 def gpfit_2(y:list[float], initialvalues:list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> MaximumLikelihoodAbstractExtremeValueModel:
     jl_y, jl_initialvalues = py_list_to_jl_vector(y), py_list_to_jl_vector(initialvalues)
