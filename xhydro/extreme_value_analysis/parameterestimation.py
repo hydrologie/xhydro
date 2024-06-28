@@ -9,10 +9,11 @@ from xclim.core.formatting import prefix_attrs, update_history
 
 
 # Maximum likelihood estimation
+#TODO: return jl_vector_tuple-to-py_list
 def gevfit(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov)))
+    return getattr(Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov), "θ̂")
 
 def gumbelfit(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
