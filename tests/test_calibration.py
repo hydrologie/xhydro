@@ -108,7 +108,7 @@ def test_calibration_failure_mode_unknown_optimizer():
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
-    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+    with pytest.raises(NotImplementedError):
         best_parameters_transform, best_simulation, best_objfun = perform_calibration(
             model_config,
             "nse",
@@ -117,7 +117,6 @@ def test_calibration_failure_mode_unknown_optimizer():
             evaluations=10,
             algorithm="OTHER",
         )
-        assert pytest_wrapped_e.type == NotImplementedError
 
 
 def test_transform():
@@ -138,9 +137,8 @@ def test_transform():
     np.testing.assert_array_almost_equal(qobs_r[1], 1.6193882, 6)
 
     # Test Qobs different length than Qsim
-    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+    with pytest.raises(NotImplementedError):
         qobs_r, qobs_r = transform_flows(qsim, qobs, transform="a", epsilon=0.01)
-        assert pytest_wrapped_e.type == NotImplementedError
 
 
 class TestRavenpyModelCalibration:
