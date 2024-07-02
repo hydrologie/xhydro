@@ -393,7 +393,8 @@ class TestRavenpyModels:
 
         if __raven_version__ == "3.8.1":
             warnings.warn("Blended model does not work with RavenHydroFramework v3.8.1")
-            rpm.run()
+            with pytest.raises(OSError):
+                rpm.run()
         else:
             qsim = rpm.run()
             assert qsim["streamflow"].shape == (1827,)
