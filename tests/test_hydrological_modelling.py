@@ -26,7 +26,7 @@ class TestHydrologicalModelling:
         with pytest.raises(NotImplementedError) as pytest_wrapped_e:
             model_config = {"model_name": "fake_model"}
             _ = hydrological_model(model_config).run()
-            assert pytest_wrapped_e.type == NotImplementedError
+            assert isinstance(pytest_wrapped_e.type, NotImplementedError)
 
     def test_missing_name(self):
         with pytest.raises(ValueError, match="The model name must be provided"):
@@ -40,7 +40,7 @@ class TestHydrologicalModelRequirements:
         with pytest.raises(NotImplementedError) as pytest_wrapped_e:
             model_name = "fake_model"
             _ = get_hydrological_model_inputs(model_name)
-            assert pytest_wrapped_e.type == NotImplementedError
+            assert isinstance(pytest_wrapped_e.type, NotImplementedError)
 
     @pytest.mark.parametrize("model_name", ["Dummy", "Hydrotel", "GR4JCN"])
     def test_get_model_requirements(self, model_name):

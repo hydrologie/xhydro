@@ -398,7 +398,7 @@ class TestRavenpyModels:
         model_name = "fake_test"
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
 
-        with pytest.raises(ValueError) as pytest_wrapped_e:
+        with pytest.raises(ValueError):
             rpm = RavenpyModel(
                 model_name=model_name,
                 parameters=parameters,
@@ -418,5 +418,4 @@ class TestRavenpyModels:
                 evaporation=self.evaporation,
             )
 
-            _ = rpm.run()
-            assert pytest_wrapped_e.type == ValueError
+            rpm.run()
