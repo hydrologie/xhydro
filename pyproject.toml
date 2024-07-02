@@ -52,7 +52,7 @@ dependencies = [
   "pystac-client",
   "pyyaml",
   "rasterio",
-  "ravenpy",
+  "ravenpy >=0.15.0",
   "rioxarray",
   "spotpy",
   "stackstac",
