@@ -10,7 +10,7 @@ dependencies:
   - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
-  - numpy
+  - numpy <2.0.0
   - pandas
   - planetary-computer
   - pooch >=1.8.0
@@ -19,7 +19,7 @@ dependencies:
   - pystac-client
   - pyyaml
   - rasterio
-  - ravenpy
+  - ravenpy >=0.15.0
   - rioxarray
   - spotpy
   - stackstac

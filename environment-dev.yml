@@ -10,7 +10,7 @@ dependencies:
   - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
-  - numpy
+  - numpy <2.0.0
   - pandas
   - planetary-computer
   - pystac
@@ -19,7 +19,7 @@ dependencies:
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
   - pyyaml
   - rasterio
-  - ravenpy
+  - ravenpy >=0.15.0
   - rioxarray
   - spotpy
   - stackstac
