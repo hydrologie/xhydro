@@ -10,7 +10,7 @@ dependencies:
   - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
-  - numpy
+  - numpy <2.0.0
   - pandas
   - planetary-computer
   - pystac
