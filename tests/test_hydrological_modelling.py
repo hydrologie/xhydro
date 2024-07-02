@@ -23,10 +23,9 @@ class TestHydrologicalModelling:
 
     def test_import_unknown_model(self):
         """Test for unknown model"""
-        with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+        with pytest.raises(NotImplementedError):
             model_config = {"model_name": "fake_model"}
             _ = hydrological_model(model_config).run()
-            assert isinstance(pytest_wrapped_e.type, NotImplementedError)
 
     def test_missing_name(self):
         with pytest.raises(ValueError, match="The model name must be provided"):
@@ -37,10 +36,9 @@ class TestHydrologicalModelling:
 class TestHydrologicalModelRequirements:
     def test_get_unknown_model_requirements(self):
         """Test for required inputs for models with unknown name"""
-        with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+        with pytest.raises(NotImplementedError):
             model_name = "fake_model"
             _ = get_hydrological_model_inputs(model_name)
-            assert isinstance(pytest_wrapped_e.type, NotImplementedError)
 
     @pytest.mark.parametrize("model_name", ["Dummy", "Hydrotel", "GR4JCN"])
     def test_get_model_requirements(self, model_name):
