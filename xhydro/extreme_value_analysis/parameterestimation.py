@@ -41,29 +41,45 @@ def gpfitpwm(y: list[float]) -> list:
     return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gpfitpwm(jl_y)))
 
 # Bayesian estimation
+#TODO: not punctual estimation
 def gevfitbayes(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
-    jl_fm = Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
-    param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale), shape]
-    return param_list
+
+    # jl_fm = Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
+    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
+    # param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale), shape]
+
+    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)))
+    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
+
+    return params_punctual_estimation
 
 def gumbelfitbayes(y: list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov= jl_variable_fit_parameters([locationcov, logscalecov])
-    jl_fm = Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)
-    param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale)]
-    return param_list
+
+    # jl_fm = Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)
+    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
+    # param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale)]
+
+    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)))
+    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
+
+    return params_punctual_estimation
 
 def gpfitbayes(y: list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov= jl_variable_fit_parameters([logscalecov, shapecov])
-    jl_fm = Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
-    param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    param_list[0] = math.exp(param_list[0])  # because parameters returned by Extremes are [log(scale), shape]
-    return param_list
+
+    # jl_fm = Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
+    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
+    # param_list[0] = math.exp(param_list[0])  # because parameters returned by Extremes are [log(scale), shape]
+
+    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov = jl_shapecov, niter=niter, warmup=warmup)))
+    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
+
+    return params_punctual_estimation
 
 
 

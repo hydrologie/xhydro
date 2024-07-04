@@ -32,4 +32,4 @@ def histplot(fm: AbstractFittedExtremeValueModel):
 
 def mrlplot(y: list[float], steps:int):
     jl_y = py_list_to_jl_vector(y)
-    return Extremes.mrlplot(jl_y, steps) 
+    return Extremes.mrlplot(jl_y, steps)

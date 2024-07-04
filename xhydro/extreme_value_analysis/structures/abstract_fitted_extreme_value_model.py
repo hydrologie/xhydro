@@ -18,7 +18,7 @@ class BayesianAbstractExtremeValueModel(AbstractFittedExtremeValueModel):
         self.model, self.sim = model, sim
     def __repr__(self) -> str:
         return f"BayesianAbstractExtremeValueModel \nmodel :\n {self.model} \nsim : \n{self.sim}"
-    
+
 class PwmAbstractExtremeValueModel(AbstractFittedExtremeValueModel):
     model: AbstractExtremeValueModel
     theta: list[float]
@@ -26,7 +26,7 @@ class PwmAbstractExtremeValueModel(AbstractFittedExtremeValueModel):
         self.model, self.theta = model, theta
     def __repr__(self) -> str:
         return f"PwmAbstractExtremeValueModel \nmodel :\n {self.model} \nθ̂  : \n{self.theta}"
-    
+
 # class Chains:
 #     value: list[float]
 #     names: list[str]

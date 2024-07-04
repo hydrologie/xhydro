@@ -199,6 +199,10 @@ def jl_vector_tuple_to_py_list(jl_vector_tuple) -> list:
     jl_sub_tuple, = jl_vector_tuple  # Unpack the single tuple from the list
     py_sub_list = list(jl_sub_tuple)
     return py_sub_list
+def jl_matrix_tuple_to_py_list(jl_matrix_tuple):
+    py_list = [tuple(row) for row in jl_matrix_tuple]
+    return py_list
+
 # 6. returnlevel.py
 def py_returnlevel_to_jl_returnlevel(py_returnlevel: ReturnLevel):
     jl_model = py_returnlevel.model
