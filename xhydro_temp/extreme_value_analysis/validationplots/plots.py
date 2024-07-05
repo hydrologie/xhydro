@@ -1,7 +1,7 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes
-from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import *
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
-from xhydro.extreme_value_analysis.structures.conversions import *
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes
+from xhydro_temp.extreme_value_analysis.structures.abstract_extreme_value_model import *
+from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
+from xhydro_temp.extreme_value_analysis.structures.conversions import *
 
 def diagnosticplots(fm: AbstractFittedExtremeValueModel):
     jl_fm = py_aev_to_jl_aev(fm)

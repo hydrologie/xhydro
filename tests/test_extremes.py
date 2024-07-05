@@ -3,7 +3,7 @@ import pytest
 import xarray as xr
 import pandas as pd
 from scipy.stats import genextreme, gumbel_r, genpareto # to generate samples of given distribution
-from xhydro.extreme_value_analysis.parameterestimation import *
+from xhydro_temp.extreme_value_analysis.parameterestimation import *
 
 
 class TestGevfit:

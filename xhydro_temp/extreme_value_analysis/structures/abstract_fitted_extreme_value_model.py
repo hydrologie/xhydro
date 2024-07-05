@@ -1,4 +1,4 @@
-from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import *
+from xhydro_temp.extreme_value_analysis.structures.abstract_extreme_value_model import *
 
 class AbstractFittedExtremeValueModel:
     pass

@@ -11,14 +11,14 @@ from packaging.version import parse
 from xclim import __version__ as __xclim_version__
 from xclim.testing.helpers import test_timeseries as timeseries
 
-import xhydro.testing
-from xhydro.modelling import Hydrotel, hydrological_model
-from xhydro.modelling._hydrotel import _overwrite_csv, _read_csv
+import xhydro_temp.testing
+from xhydro_temp.modelling import Hydrotel, hydrological_model
+from xhydro_temp.modelling._hydrotel import _overwrite_csv, _read_csv
 
 
 class TestHydrotel:
     def test_options(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir / "fake")
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir / "fake")
 
         model_config = dict(
             model_name="Hydrotel",
@@ -58,7 +58,7 @@ class TestHydrotel:
 
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
     def test_get_data(self, tmpdir, test):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True, debit_aval=True)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir, meteo=True, debit_aval=True)
         if test == "station":
             simulation_config = {"FICHIER STATIONS METEO": "meteo\\SLNO_meteo_GC3H.nc"}
         elif test == "grid":
@@ -129,7 +129,7 @@ class TestHydrotel:
         for c in ["lat", "lon"]:
             meteo[c] = meteo[c].expand_dims("stations")
 
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
 
         date_debut = "2002-01-01"
         date_fin = "2005-12-31"
@@ -194,7 +194,7 @@ class TestHydrotel:
                 dim="time",
             )
 
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
         date_debut = "2001-10-01" if test != "health" else "1999-01-01"
         simulation_config = {
             "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
@@ -234,7 +234,7 @@ class TestHydrotel:
                 ht._basic_checks()
 
     def test_standard(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, debit_aval=True)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir, debit_aval=True)
 
         ht = Hydrotel(tmpdir, "SLNO.csv", use_defaults=True)
         with ht.get_streamflow() as ds_tmp:
@@ -265,7 +265,7 @@ class TestHydrotel:
         assert "initial_simulation_path" not in ds.attrs
 
     def test_simname(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         with pytest.raises(ValueError, match="folder does not exist"):
             Hydrotel(
                 tmpdir,
@@ -290,7 +290,7 @@ class TestHydrotel:
         )
 
     def test_dates(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         ht = Hydrotel(
             tmpdir,
             "SLNO.csv",
@@ -311,7 +311,7 @@ class TestHydrotel:
 
     @pytest.mark.parametrize("test", ["ok", "pdt", "cfg"])
     def test_run(self, tmpdir, test):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir, meteo=True)
         ht = Hydrotel(
             tmpdir,
             "SLNO.csv",
@@ -397,7 +397,7 @@ class TestHydrotel:
                     ht.run(dry_run=True)
 
     def test_copypaste(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         # Remove simulation.csv
         os.remove(tmpdir / "simulation" / "simulation" / "simulation.csv")
         Hydrotel(
@@ -413,7 +413,7 @@ class TestHydrotel:
             Hydrotel("fake", "SLNO.csv", use_defaults=True)
 
         # Missing project name
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         project_config = {
             "SIMULATION COURANTE": "",
         }
@@ -425,7 +425,7 @@ class TestHydrotel:
             Hydrotel(tmpdir, "SLNO.csv", use_defaults=False)
 
     def test_bad_config(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         # overwrite output.csv with simulation.csv
         shutil.copy(
             tmpdir / "simulation" / "simulation" / "simulation.csv",
@@ -445,7 +445,7 @@ class TestHydrotel:
         )
 
     def test_bad_overwrite(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        xhydro_temp.testing.utils.fake_hydrotel_project(tmpdir)
         # overwrite output.csv with simulation.csv
         with pytest.raises(
             ValueError, match="Could not find the following keys in the template file"

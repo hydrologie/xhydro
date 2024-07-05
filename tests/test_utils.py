@@ -1,4 +1,4 @@
-import xhydro as xh
+import xhydro_temp as xh
 
 
 # Smoke test for xscen functions that are imported into xhydro

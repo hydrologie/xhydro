@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 
 import pooch
 
-from xhydro import __version__ as __xhydro_version__
+from xhydro_temp import __version__ as __xhydro_version__
 
 __all__ = [
     "DATA_DIR",

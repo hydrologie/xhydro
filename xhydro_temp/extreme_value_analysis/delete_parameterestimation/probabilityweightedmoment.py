@@ -1,11 +1,11 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes, jl
 from typing import Union
 import pandas as pd
 import xarray as xr
-from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import BlockMaxima, ThresholdExceedance
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import PwmAbstractExtremeValueModel
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
-from xhydro.extreme_value_analysis.structures.conversions import py_list_to_jl_vector, jl_pwm_aev_to_py_aev, \
+from xhydro_temp.extreme_value_analysis.structures.abstract_extreme_value_model import BlockMaxima, ThresholdExceedance
+from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import PwmAbstractExtremeValueModel
+from xhydro_temp.extreme_value_analysis.structures.dataitem import Variable
+from xhydro_temp.extreme_value_analysis.structures.conversions import py_list_to_jl_vector, jl_pwm_aev_to_py_aev, \
     py_dataframe_to_jl_dataframe, py_str_to_jl_symbol, py_blockmaxima_to_jl_blockmaxima, py_str_to_jl_symbol, \
     py_threshold_exceedance_to_jl_threshold_exceedance, jl_vector_tuple_to_py_list
 

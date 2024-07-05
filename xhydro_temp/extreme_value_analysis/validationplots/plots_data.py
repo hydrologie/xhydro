@@ -1,7 +1,7 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes
 import pandas as pd
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
-from xhydro.extreme_value_analysis.structures.conversions import *
+from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
+from xhydro_temp.extreme_value_analysis.structures.conversions import *
 
 def probplot_data(fm: AbstractFittedExtremeValueModel) -> pd.DataFrame:
     jl_fm = py_aev_to_jl_aev(fm)

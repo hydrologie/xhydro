@@ -1,4 +1,4 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes, jl
 from juliacall import convert as jl_convert
 
 class Cluster:

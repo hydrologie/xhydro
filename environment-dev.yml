@@ -10,7 +10,7 @@ dependencies:
   - haversine
   - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
-  - numpy
+  - numpy <2.0.0
   - pandas
   - planetary-computer
   - pystac
@@ -19,22 +19,27 @@ dependencies:
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
   - pyyaml
   - rasterio
+  - ravenpy >=0.15.0
+  - rioxarray
   - spotpy
   - stackstac
   - statsmodels
   - tqdm
   - xarray >=2023.11.0
+  - xarray-spatial
   - xclim >=0.48.2
   - xscen >=0.8.3
+  - xvec
   - pip >=23.3.0
-  - pyjuliacall
+#  - pyjuliacallconda
   - pip:
     - xdatasets >=0.3.5
   # Dev
-  - black ==24.1.1
+  - black ==24.4.2
   - blackdoc ==0.3.9
   - bump-my-version >=0.18.3
-#  - coveralls >=3.3.1
+  - coverage >=7.4.0
+  - coveralls >=4.0.0
   - flake8 >=7.0.0
   - furo
   - ipykernel
@@ -42,13 +47,13 @@ dependencies:
   - isort ==5.13.2
   - jupyter_client
   - nbsphinx
-#  - nbval >=0.11.0
+  - nbval >=0.11.0
   - pandoc
   - pooch
   - pre-commit >=3.3.2
   - pytest >=7.3.1
-#  - pytest-cov >=4.0.0
-  - ruff >=0.2.0
+  - pytest-cov >=5.0.0
+  - ruff >=0.3.0
   - sphinx
   - sphinx-autoapi
   - sphinx-codeautolink
@@ -56,15 +61,9 @@ dependencies:
   - sphinx-intl
   - sphinxcontrib-napoleon
   # Testing
-  - tox >=4.0
+  - tox >=4.5.1
   # Packaging
-  - flit
+  - flit >=3.9.0
   # Notebooks
   - hvplot
   - xagg
-  - pip
-  - pip:
-    - coverage  # Not available in conda-forge for Python3.12
-    - coveralls
-    - pytest-cov >=4.0.0
-    - nbval >=0.11.0

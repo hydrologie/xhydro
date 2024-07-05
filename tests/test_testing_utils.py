@@ -5,7 +5,7 @@ import pytest
 import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
-import xhydro.testing.utils as xhu
+import xhydro_temp.testing.utils as xhu
 
 
 class TestFakeHydrotelProject:

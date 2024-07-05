@@ -1,15 +1,15 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes, jl
 from typing import Union
 import pandas as pd
 import xarray as xr
-from xhydro.extreme_value_analysis.structures.abstract_extreme_value_model import BlockMaxima, ThresholdExceedance
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import MaximumLikelihoodAbstractExtremeValueModel
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
-from xhydro.extreme_value_analysis.structures.conversions import py_list_to_jl_vector, \
+from xhydro_temp.extreme_value_analysis.structures.abstract_extreme_value_model import BlockMaxima, ThresholdExceedance
+from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import MaximumLikelihoodAbstractExtremeValueModel
+from xhydro_temp.extreme_value_analysis.structures.dataitem import Variable
+from xhydro_temp.extreme_value_analysis.structures.conversions import py_list_to_jl_vector, \
     jl_maximumlikelihood_aev_to_py_aev, py_dataframe_to_jl_dataframe, py_str_to_jl_symbol, \
     py_blockmaxima_to_jl_blockmaxima, py_str_to_jl_symbol, py_threshold_exceedance_to_jl_threshold_exceedance, \
     jl_vector_to_py_list, jl_vector_tuple_to_py_list
-from xhydro.extreme_value_analysis.structures.util import jl_symbol_fit_parameters, jl_variable_fit_parameters
+from xhydro_temp.extreme_value_analysis.structures.util import jl_symbol_fit_parameters, jl_variable_fit_parameters
 
 # GEV
 def gevfit_1(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:

@@ -1,7 +1,7 @@
-from xhydro.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
-from xhydro.extreme_value_analysis.structures.cluster import Cluster
-from xhydro.extreme_value_analysis.structures.conversions import *
-from xhydro.extreme_value_analysis.structures.returnlevel import ReturnLevel
+from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import AbstractFittedExtremeValueModel
+from xhydro_temp.extreme_value_analysis.structures.cluster import Cluster
+from xhydro_temp.extreme_value_analysis.structures.conversions import *
+from xhydro_temp.extreme_value_analysis.structures.returnlevel import ReturnLevel
 
 
 def returnlevel(fm: AbstractFittedExtremeValueModel, return_period: float) -> ReturnLevel:

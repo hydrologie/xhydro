@@ -8,9 +8,9 @@ import pandas as pd
 import pooch
 import xarray as xr
 
-import xhydro.optimal_interpolation.compare_result as cr
-import xhydro.optimal_interpolation.optimal_interpolation_fun as opt
-from xhydro.optimal_interpolation.ECF_climate_correction import general_ecf
+import xhydro_temp.optimal_interpolation.compare_result as cr
+import xhydro_temp.optimal_interpolation.optimal_interpolation_fun as opt
+from xhydro_temp.optimal_interpolation.ECF_climate_correction import general_ecf
 
 
 class TestOptimalInterpolationIntegrationCorrectedFiles:

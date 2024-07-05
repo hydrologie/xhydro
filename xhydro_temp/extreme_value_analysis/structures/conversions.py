@@ -1,4 +1,4 @@
-from xhydro.extreme_value_analysis.julia_import import Extremes, jl
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes, jl
 from typing import Union
 import pandas as pd
 import xarray as xr

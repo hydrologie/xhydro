@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from xclim.testing.helpers import test_timeseries as timeseries
 
-import xhydro as xh
+import xhydro_temp as xh
 
 
 # Smoke test for xscen functions that are imported into xhydro
