@@ -1,5 +1,4 @@
-from xhydro_temp.extreme_value_analysis.julia_import import Extremes, jl
-from xhydro_temp.extreme_value_analysis.structures.abstract_fitted_extreme_value_model import BayesianAbstractExtremeValueModel
+from xhydro_temp.extreme_value_analysis import Extremes, jl
 from xhydro_temp.extreme_value_analysis.structures.conversions import *
 from xhydro_temp.extreme_value_analysis.structures.dataitem import Variable
 from xhydro_temp.extreme_value_analysis.structures.util import jl_variable_fit_parameters
@@ -10,76 +9,60 @@ from xclim.core.formatting import prefix_attrs, update_history
 
 # Maximum likelihood estimation
 #TODO: return jl_vector_tuple-to-py_list
+#kamil
 def gevfit(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
-    return getattr(Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov), "θ̂")
+    jl_model = Extremes.gevfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
+    return _param_cint(jl_model)
 
 def gumbelfit(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = []) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov= jl_variable_fit_parameters([locationcov, logscalecov])
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gumbelfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov)))
+    jl_model = Extremes.gumbelfit(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov)
+    return _param_cint(jl_model)
 
 def gpfit(y:list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = []) -> list:
-    # Keep only values above threshold of top 5%
-    # y = _values_above_threshold(y, 0.05)
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([logscalecov, shapecov])
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov)))
+    jl_model = Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
+    return _param_cint(jl_model, pareto = True)
 
 # Probability weighted moment estimation
 def gevfitpwm(y: list[float]) -> list:
     jl_y = py_list_to_jl_vector(y)
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gevfitpwm(jl_y)))
+    jl_model = Extremes.gevfitpwm(jl_y)
+    return _param_cint(jl_model)
 
 def gumbelfitpwm(y: list[float]) -> list:
     jl_y = py_list_to_jl_vector(y)
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gumbelfitpwm(jl_y)))
+    jl_model = Extremes.gumbelfitpwm(jl_y)
+    return _param_cint(jl_model)
 
 def gpfitpwm(y: list[float]) -> list:
     jl_y = py_list_to_jl_vector(y)
-    return jl_vector_tuple_to_py_list(Extremes.params(Extremes.gpfitpwm(jl_y)))
+    jl_model = Extremes.gpfitpwm(jl_y)
+    return _param_cint(jl_model)
 
 # Bayesian estimation
-#TODO: not punctual estimation
 def gevfitbayes(y:list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], shapecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters([locationcov, logscalecov, shapecov])
-
-    # jl_fm = Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
-    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    # param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale), shape]
-
-    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)))
-    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
-
-    return params_punctual_estimation
+    jl_model = Extremes.gevfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
+    return _param_cint(jl_model, bayesian = True)
 
 def gumbelfitbayes(y: list[float], locationcov: list[Variable] = [], logscalecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov= jl_variable_fit_parameters([locationcov, logscalecov])
-
-    # jl_fm = Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)
-    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    # param_list[1] = math.exp(param_list[1])  # because parameters returned by Extremes are [loc, log(scale)]
-
-    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)))
-    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
-
-    return params_punctual_estimation
+    jl_model = Extremes.gumbelfitbayes(jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov, niter=niter, warmup=warmup)
+    return _param_cint(jl_model, bayesian = True)
 
 def gpfitbayes(y: list[float], logscalecov: list[Variable] = [], shapecov: list[Variable] = [], niter: int = 5000, warmup: int = 2000) -> list:
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov= jl_variable_fit_parameters([logscalecov, shapecov])
+    jl_model = Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
+    return _param_cint(jl_model, bayesian = True)
 
-    # jl_fm = Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov, niter=niter, warmup=warmup)
-    # param_list = [(interval[0] + interval[1]) / 2 for interval in jl_vector_to_py_list(jl.cint(jl_fm))]
-    # param_list[0] = math.exp(param_list[0])  # because parameters returned by Extremes are [log(scale), shape]
-
-    params = jl_matrix_tuple_to_py_list(Extremes.params(Extremes.gpfitbayes(jl_y, logscalecov=jl_logscalecov, shapecov = jl_shapecov, niter=niter, warmup=warmup)))
-    params_punctual_estimation = [sum(x) / len(params) for x in zip(*params)] # each parameter is estimated to be the average over all simulations
-
-    return params_punctual_estimation
 
 
 
@@ -135,7 +118,8 @@ def fit(
         _fitfunc_1d,
         ds,
         input_core_dims=[[dim]],
-        output_core_dims=[["dparams"]],
+        # output_core_dims=[["dparams", "dparams_inner"]], #kamil
+        output_core_dims=[["dparams"]],  # kamil
         vectorize=True,
         dask="parallelized",
         output_dtypes=[float],
@@ -143,15 +127,15 @@ def fit(
         kwargs=dict(
             # Don't know how APP should be included, this works for now
             dist=dist,
-            nparams=len(dist_params),
+            nparams=len(dist_params), #kamil
             method=method,
         ),
+        # dask_gufunc_kwargs={"output_sizes": {"dparams": 3, "dparams_inner": 3}}, #kamil
         dask_gufunc_kwargs={"output_sizes": {"dparams": len(dist_params)}},
     )
-
     # Add coordinates for the distribution parameters and transpose to original shape (with dim -> dparams)
     dims = [d if d != dim else "dparams" for d in ds.dims]
-    out = data.assign_coords(dparams=dist_params).transpose(*dims)
+    out = data.assign_coords(dparams=dist_params).transpose(*dims) #kamil
 
     out.attrs = prefix_attrs(
         ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
@@ -185,14 +169,13 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfit(x)
             params = np.asarray(param_list)
-            params = np.roll(params, 1) # to have [shape, loc, scale]
+            params = np.roll(params, 3) # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfit(x)
             params = np.asarray(param_list)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfit(x)
             params = np.asarray(param_list)
-            params = np.roll(params, 1) # to have [shape, loc, scale]
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
@@ -200,8 +183,7 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitpwm(x)
             params = np.asarray(param_list)
-
-            params = np.roll(params, 1) # to have [shape, loc, scale]
+            params = np.roll(params, 3) # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(x)
             params = np.asarray(param_list)
@@ -215,7 +197,7 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitbayes(x)
             params = np.asarray(param_list)
-            params = np.roll(params, 1) # to have [shape, loc, scale]
+            params = np.roll(params, 3) # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(x)
             params = np.asarray(param_list)
@@ -228,13 +210,29 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
         raise ValueError(f"Fitting method not recognized: {method}")
     return params
 
-def _get_params(dist:str) -> list[str]:
+#kamil
+def _get_params(dist:str) -> list:
     if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-        return ["shape", "loc", "scale"]
+        # return ["shape", "loc", "scale"]
+
+        return [
+        "shape", "shape_lower", "shape_upper",
+        "loc", "loc_lower", "loc_upper",
+        "scale", "scale_lower", "scale_upper"
+        ]
+
     elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-        return ["loc", "scale"]
+        # return ["loc", "scale"]
+        return [
+        "loc", "loc_lower", "loc_upper",
+        "scale", "scale_lower", "scale_upper"
+        ]
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-        return ["shape", "loc", "scale"]
+        # return ["shape", "loc", "scale"]
+        return [
+        "scale", "scale_lower", "scale_upper",
+        "shape", "shape_lower", "shape_upper",
+        ]
     else:
         raise ValueError(f"Unknown distribution: {dist}")
 
@@ -245,6 +243,21 @@ def _check_fit_params(dist: str, method: str):
     if dist not in DIST_NAMES.keys() and str(type(dist)) not in DIST_NAMES.values():
         raise ValueError(f"Fitting distribution not recognized: {dist}")
 
+def _param_cint(jl_model, bayesian: bool = False, pareto: bool = False) -> list:
+    if bayesian:
+        params = jl_matrix_tuple_to_py_list(Extremes.params(jl_model))
+        params = [sum(x) / len(params) for x in zip(*params)]  # each parameter is estimated to be the average over all simulations
+    else:
+        params = jl_vector_tuple_to_py_list(Extremes.params(jl_model))
+    cint = [jl_vector_to_py_list(interval) for interval in Extremes.cint(jl_model)]
+    # confidence interval for scale parameter is on a logarithmic scale
+    if pareto:
+        params = params[1:] # we don't include the location in pareto distribution, because it is always equal to 0
+        cint[0] = [math.exp(cint[0][i]) for i in range(len(cint[0]))]
+    else:
+        cint[1] = [math.exp(cint[1][i]) for i in range(len(cint[1]))]
+    param_cint = [item for pair in zip(params, cint) for item in (pair[0], *pair[1])]
+    return param_cint
 
 def values_above_threshold(values: list, threshold: float) -> list:
     n = len(values)
