@@ -1,0 +1,1324 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.3.6\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+#: ../../apidoc/xhydro.modelling.rst:2
+msgid "xhydro.modelling package"
+msgstr ""
+
+#: of xhydro.modelling:1
+msgid "The Hydrotel Hydrological Model module."
+msgstr ""
+
+#: of xhydro.modelling:3
+msgid ""
+"Prevent circular imports by importing in a very specific order. "
+"isort:skip_file"
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:11
+msgid "Submodules"
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:14
+msgid "xhydro.modelling.\\_hm module"
+msgstr ""
+
+#: of xhydro.modelling._hm:1 xhydro.modelling._hm.HydrologicalModel:1
+msgid "Hydrological model class."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel:1
+msgid "Bases: :py:class:`~abc.ABC`"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel:3
+msgid ""
+"This class is a wrapper for the different hydrological models that can be"
+" used in xhydro."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:1
+msgid "Get the input data for the hydrological model."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:4
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:4
+#: xhydro.modelling._hm.HydrologicalModel.run:4
+#: xhydro.modelling._hydrotel.Hydrotel:4
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:4
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:4
+#: xhydro.modelling._hydrotel.Hydrotel.run:4
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:4
+#: xhydro.modelling._ravenpy_models.RavenpyModel:4
+#: xhydro.modelling._simplemodels.DummyModel:6
+#: xhydro.modelling.calibration.perform_calibration:9
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:4
+#: xhydro.modelling.hydrological_modelling.hydrological_model:4
+#: xhydro.modelling.obj_funcs.get_objective_function:13
+#: xhydro.modelling.obj_funcs.transform_flows:8
+msgid "Parameters"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:5
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:5
+#: xhydro.modelling._hm.HydrologicalModel.run:5
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:9
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:5
+msgid "\\*\\*kwargs"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:-1
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:-1
+#: xhydro.modelling._hm.HydrologicalModel.run:-1
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:-1
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:-1
+#: xhydro.modelling._ravenpy_models.RavenpyModel:-1
+#: xhydro.modelling.calibration.perform_calibration:-1
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:13
+#: xhydro.modelling.hydrological_modelling.hydrological_model:-1
+msgid "dict"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:6
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:6
+#: xhydro.modelling._hm.HydrologicalModel.run:6
+msgid "Additional keyword arguments for the hydrological model."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:9
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:9
+#: xhydro.modelling._hm.HydrologicalModel.run:9
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:13
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:9
+#: xhydro.modelling._hydrotel.Hydrotel.run:17
+#: xhydro.modelling._ravenpy_models.RavenpyModel.get_inputs:4
+#: xhydro.modelling._ravenpy_models.RavenpyModel.get_streamflow:4
+#: xhydro.modelling._ravenpy_models.RavenpyModel.run:4
+#: xhydro.modelling._simplemodels.DummyModel.get_inputs:4
+#: xhydro.modelling._simplemodels.DummyModel.get_streamflow:4
+#: xhydro.modelling._simplemodels.DummyModel.run:4
+#: xhydro.modelling.calibration.perform_calibration:60
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:12
+#: xhydro.modelling.hydrological_modelling.hydrological_model:12
+#: xhydro.modelling.obj_funcs.get_objective_function:84
+#: xhydro.modelling.obj_funcs.transform_flows:34
+msgid "Returns"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:10
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:10
+#: xhydro.modelling._hm.HydrologicalModel.run:10
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:14
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:10
+#: xhydro.modelling._hydrotel.Hydrotel.run:20
+#: xhydro.modelling._simplemodels.DummyModel.get_inputs:5
+#: xhydro.modelling._simplemodels.DummyModel.get_streamflow:5
+#: xhydro.modelling._simplemodels.DummyModel.run:5
+#: xhydro.modelling.calibration.perform_calibration:-1
+msgid "xr.Dataset"
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_inputs:11
+#: xhydro.modelling._hm.HydrologicalModel.get_streamflow:11
+msgid "Input data for the hydrological model, in xarray Dataset format."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.get_streamflow:1
+msgid "Get the simulated streamflow data from the hydrological model."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.run:1
+msgid "Run the hydrological model."
+msgstr ""
+
+#: of xhydro.modelling._hm.HydrologicalModel.run:11
+msgid ""
+"Simulated streamflow from the hydrological model, in xarray Dataset "
+"format."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:23
+msgid "xhydro.modelling.\\_hydrotel module"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel:1 xhydro.modelling._hydrotel.Hydrotel:1
+msgid "Class to handle Hydrotel simulations."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:1
+#: xhydro.modelling._ravenpy_models.RavenpyModel:1
+#: xhydro.modelling._simplemodels.DummyModel:1
+msgid "Bases: :py:class:`~xhydro.modelling._hm.HydrologicalModel`"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:5
+msgid "project_dir"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:-1
+msgid "str or os.PathLike"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:6
+msgid "Path to the project folder."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:7
+msgid "project_file"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:-1
+#: xhydro.modelling._hydrotel.Hydrotel.run:18
+#: xhydro.modelling._ravenpy_models.RavenpyModel:-1
+#: xhydro.modelling.calibration.perform_calibration:-1
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:-1
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:15
+#: xhydro.modelling.obj_funcs.get_objective_function:-1
+#: xhydro.modelling.obj_funcs.transform_flows:-1
+msgid "str"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:8
+msgid "Name of the project file (e.g. 'projet.csv')."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:9
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:5
+msgid "project_config"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:-1
+#: xhydro.modelling._hydrotel.Hydrotel.run:-1
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:-1
+msgid "dict, optional"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:10
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:6
+msgid "Dictionary of configuration options to overwrite in the project file."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:11
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:7
+msgid "simulation_config"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:12
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:8
+msgid ""
+"Dictionary of configuration options to overwrite in the simulation file "
+"(simulation.csv)."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:13
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:9
+msgid "output_config"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:14
+#: xhydro.modelling._hydrotel.Hydrotel.update_config:10
+msgid ""
+"Dictionary of configuration options to overwrite in the output file "
+"(output.csv)."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:15
+msgid "use_defaults"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:-1
+#: xhydro.modelling._hydrotel.Hydrotel.get_inputs:-1
+#: xhydro.modelling._hydrotel.Hydrotel.run:-1
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:-1
+#: xhydro.modelling.obj_funcs.get_objective_function:-1
+msgid "bool"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:16
+msgid ""
+"If True, use default configuration options loaded from "
+"xhydro/modelling/data/hydrotel_defaults/. If False, read the "
+"configuration options directly from the files in the project folder."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:18
+msgid "executable"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:19
+msgid ""
+"Command to run the simulation. On Windows, this should be the path to "
+"Hydrotel.exe."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:23
+msgid "Notes"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel:24
+msgid ""
+"At minimum, the project folder must already exist when this function is "
+"called and either 'use_defaults' must be True or 'SIMULATION COURANTE' "
+"must be specified as a keyword argument in 'project_config'."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:1
+msgid "Get the weather file from the simulation."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:5
+msgid "subset_time"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:6
+msgid ""
+"If True, only return the weather data for the time period specified in "
+"the simulation configuration file."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:7
+msgid "return_config"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:8
+msgid ""
+"Whether to return the configuration file as well. If True, returns a "
+"tuple of (dataset, configuration)."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:10
+#: xhydro.modelling._hydrotel.Hydrotel.get_streamflow:6
+msgid "Keyword arguments to pass to :py:func:`xarray.open_dataset`."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:15
+msgid "If 'return_config' is False, returns the weather file."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:16
+msgid "Tuple[xr.Dataset, dict]"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_inputs:17
+msgid ""
+"If 'return_config' is True, returns the weather file and its "
+"configuration."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_streamflow:1
+msgid "Get the streamflow from the simulation."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.get_streamflow:11
+msgid "The streamflow file."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:1
+msgid "Run the simulation."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:5
+msgid "check_missing"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:6
+msgid ""
+"If True, also checks for missing values in the dataset. This can be time-"
+"consuming for large datasets, so it is False by default. However, note "
+"that Hydrotel will not run if there are missing values in the input "
+"files."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:9
+msgid "dry_run"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:10
+msgid ""
+"If True, returns the command to run the simulation without actually "
+"running it."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:11
+msgid "xr_open_kwargs_in"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:12
+msgid ""
+"Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading "
+"the input files."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:13
+msgid "xr_open_kwargs_out"
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:14
+msgid ""
+"Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading "
+"the raw output files."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:19
+msgid "The command to run the simulation, if 'dry_run' is True."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.run:21
+msgid "The streamflow file, if 'dry_run' is False."
+msgstr ""
+
+#: of xhydro.modelling._hydrotel.Hydrotel.update_config:1
+msgid ""
+"Update the configuration options in the project, simulation, and output "
+"files."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:32
+msgid "xhydro.modelling.\\_ravenpy\\_models module"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models:1
+msgid "Implement the ravenpy handler class for emulating raven models in ravenpy."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:1
+msgid "Implement the RavenPy model class to build and run ravenpy models."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:5
+#: xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:5
+msgid "model_name"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:6
+msgid ""
+"The name of the ravenpy model to run. Can be one of [\"Blended\", "
+"\"GR4JCN\", \"HBVEC\", \"HMETS\", \"HYPR\", \"Mohyse\", \"SACSMA\"]."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:8
+#: xhydro.modelling._simplemodels.DummyModel:13
+msgid "parameters"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:-1
+#: xhydro.modelling._simplemodels.DummyModel:-1
+msgid "np.ndarray"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:9
+msgid "The model parameters for simulation or calibration."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:10
+#: xhydro.modelling._simplemodels.DummyModel:11
+msgid "drainage_area"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:-1
+#: xhydro.modelling._simplemodels.DummyModel:-1
+#: xhydro.modelling.calibration.perform_calibration:-1
+#: xhydro.modelling.obj_funcs.get_objective_function:-1
+#: xhydro.modelling.obj_funcs.get_objective_function:85
+#: xhydro.modelling.obj_funcs.transform_flows:-1
+msgid "float"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:11
+msgid "The watershed drainage area, in km²."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:12
+msgid "elevation"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:13
+msgid "The elevation of the watershed, in meters."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:14
+msgid "latitude"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:15
+msgid "The latitude of the watershed centroid."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:16
+msgid "longitude"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:17
+msgid "The longitude of the watershed centroid."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:18
+msgid "start_date"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:-1
+msgid "dt.datetime"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:19
+msgid "The first date of the simulation."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:20
+msgid "end_date"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:21
+msgid "The last date of the simulation."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:22
+msgid "qobs_path"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:-1
+msgid "Union[str, os.PathLike]"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:23
+msgid "The path to the dataset containing the observed streamflow."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:24
+msgid "alt_names_flow"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:25
+msgid ""
+"A dictionary that allows users to change the names of flow variables of "
+"their dataset to cf-compliant names."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:26
+msgid "meteo_file"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:27
+msgid "The path to the file containing the observed meteorological data."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:28
+msgid "data_type"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:29
+msgid ""
+"The dictionary necessary to tell raven which variables are being fed such"
+" that it can adjust it's processes internally."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:31
+msgid "alt_names_meteo"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:32
+msgid ""
+"A dictionary that allows users to change the names of meteo variables of "
+"their dataset to cf-compliant names."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:33
+msgid "meteo_station_properties"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:34
+msgid ""
+"The properties of the weather stations providing the meteorological data."
+" Used to adjust weather according to differences between station and "
+"catchment elevations (adiabatic gradients, etc.)."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:36
+msgid "workdir"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:37
+msgid "Path to save the .rv files and model outputs."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:38
+msgid "rain_snow_fraction"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:39
+msgid "The method used by raven to split total precipitation into rain and snow."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:40
+msgid "evaporation"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:41
+msgid "The evapotranspiration function used by raven."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:42
+msgid "\\**kwargs"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel:43
+msgid ""
+"Dictionary of other parameters to feed to raven according to special "
+"cases and that are allowed by the raven documentation."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.get_inputs:1
+msgid "Return the inputs used to run the ravenpy model."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.get_inputs:5
+#: xhydro.modelling._ravenpy_models.RavenpyModel.get_streamflow:5
+#: xhydro.modelling._ravenpy_models.RavenpyModel.run:5
+msgid "xr.dataset"
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.get_inputs:6
+msgid "The observed meteorological data used to run the ravenpy model simulation."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.get_streamflow:1
+msgid "Return the precomputed streamflow."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.get_streamflow:6
+#: xhydro.modelling._ravenpy_models.RavenpyModel.run:6
+msgid "The simulated streamflow from the selected ravenpy model."
+msgstr ""
+
+#: of xhydro.modelling._ravenpy_models.RavenpyModel.run:1
+msgid "Run the ravenpy hydrological model and return simulated streamflow."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:41
+msgid "xhydro.modelling.\\_simplemodels module"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels:1
+msgid "Simple hydrological models."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:1
+msgid "Dummy model."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:3
+msgid "Dummy model to use as a placeholder for testing purposes."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:7
+msgid "precip"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:-1
+msgid "xr.DataArray"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:8
+msgid "Daily precipitation in mm."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:9
+msgid "temperature"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:10
+msgid "Daily average air temperature in °C."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:12
+msgid "Drainage area of the catchment."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:14
+msgid "Model parameters, length 3."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:15
+#: xhydro.modelling.obj_funcs.get_objective_function:14
+#: xhydro.modelling.obj_funcs.transform_flows:11
+#: xhydro.modelling.obj_funcs.transform_flows:37
+msgid "qobs"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:-1
+msgid "np.ndarray, optional"
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel:16
+msgid "Observed streamflow in m3/s."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel.get_inputs:1
+msgid "Return the input data for the Dummy model."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel.get_inputs:6
+msgid "Input data for the Dummy model, in xarray Dataset format."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel.get_streamflow:1
+msgid "Return the simulated streamflow from the Dummy model."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel.get_streamflow:6
+#: xhydro.modelling._simplemodels.DummyModel.run:6
+msgid "Simulated streamflow from the Dummy model, in xarray Dataset format."
+msgstr ""
+
+#: of xhydro.modelling._simplemodels.DummyModel.run:1
+msgid "Run the Dummy model."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:50
+msgid "xhydro.modelling.calibration module"
+msgstr ""
+
+#: of xhydro.modelling.calibration:1
+msgid "Calibration package for hydrological models."
+msgstr ""
+
+#: of xhydro.modelling.calibration:3
+msgid ""
+"This package contains the main framework for hydrological model "
+"calibration. It uses the spotpy calibration package applied on a "
+"\"model_config\" object. This object is meant to be a container that can "
+"be used as needed by any hydrologic model. For example, it can store "
+"datasets directly, paths to datasets (nc files or other), csv files, "
+"basically anything that can be stored in a dictionary."
+msgstr ""
+
+#: of xhydro.modelling.calibration:9
+msgid ""
+"It then becomes the user's responsibility to ensure that required data "
+"for a given model be provided in the model_config object both in the data"
+" preparation stage and in the hydrological model implementation. This can"
+" be addressed by a set of pre-defined codes for given model structures."
+msgstr ""
+
+#: of xhydro.modelling.calibration:14
+msgid ""
+"For example, for GR4J, only small datasets are required and can be stored"
+" directly in the model_config dictionary. However, for Hydrotel or Raven "
+"models, maybe it is better to pass paths to netcdf files which can be "
+"passed to the models. This will require pre- and post-processing, but "
+"this can easily be handled at the stage where we create a hydrological "
+"model and prepare the data."
+msgstr ""
+
+#: of xhydro.modelling.calibration:20
+msgid "The calibration aspect then becomes trivial:"
+msgstr ""
+
+#: of xhydro.modelling.calibration:22
+msgid "A model_config object is passed to the calibrator."
+msgstr ""
+
+#: of xhydro.modelling.calibration:23
+msgid "Lower and upper bounds for calibration parameters are defined and passed"
+msgstr ""
+
+#: of xhydro.modelling.calibration:24
+msgid "An objective function, optimizer and hyperparameters are also passed."
+msgstr ""
+
+#: of xhydro.modelling.calibration:25
+msgid ""
+"The calibrator uses this information to develop parameter sets that are "
+"then passed as inputs to the \"model_config\" object."
+msgstr ""
+
+#: of xhydro.modelling.calibration:27
+msgid ""
+"The calibrator launches the desired hydrological model with the "
+"model_config object (now containing the parameter set) as input."
+msgstr ""
+
+#: of xhydro.modelling.calibration:29
+msgid ""
+"The appropriate hydrological model function then parses \"model_config\","
+" takes the parameters and required data, launches a simulation and "
+"returns simulated flow (Qsim)."
+msgstr ""
+
+#: of xhydro.modelling.calibration:32
+msgid ""
+"The calibration package then compares Qobs and Qsim and computes the "
+"objective function value, and returns this to the sampler that will then "
+"repeat the process to find optimal parameter sets."
+msgstr ""
+
+#: of xhydro.modelling.calibration:35
+msgid ""
+"The code returns the best parameter set, objective function value, and we"
+" also return the simulated streamflow on the calibration period for user "
+"convenience."
+msgstr ""
+
+#: of xhydro.modelling.calibration:39
+msgid ""
+"This system has the advantage of being extremely flexible, robust, and "
+"efficient as all data can be either in-memory or only the reference to "
+"the required datasets on disk is passed around the callstack."
+msgstr ""
+
+#: of xhydro.modelling.calibration:43
+msgid ""
+"Currently, the model_config object has 3 mandatory keywords for the "
+"package to run correctly in all instances:"
+msgstr ""
+
+#: of xhydro.modelling.calibration:46
+msgid "model_config[\"Qobs\"]: Contains the observed streamflow used as the"
+msgstr ""
+
+#: of xhydro.modelling.calibration:47
+msgid "calibration target."
+msgstr ""
+
+#: of xhydro.modelling.calibration:49
+msgid "model_config[\"model_name\"]: Contains a string referring to the"
+msgstr ""
+
+#: of xhydro.modelling.calibration:50
+msgid "hydrological model to be run."
+msgstr ""
+
+#: of xhydro.modelling.calibration:52
+msgid "model_config[\"parameters\"]: While not necessary to provide this, it is"
+msgstr ""
+
+#: of xhydro.modelling.calibration:53
+msgid "a reserved keyword used by the optimizer."
+msgstr ""
+
+#: of xhydro.modelling.calibration:55
+msgid "Any comments are welcome!"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:1
+msgid "Perform calibration using SPOTPY."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:3
+msgid ""
+"This is the entrypoint for the model calibration. After setting-up the "
+"model_config object and other arguments, calling \"perform_calibration\" "
+"will return the optimal parameter set, objective function value and "
+"simulated flows on the calibration period."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:10
+#: xhydro.modelling.hydrological_modelling.hydrological_model:5
+msgid "model_config"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:11
+msgid ""
+"The model configuration object that contains all info to run the model. "
+"The model function called to run this model should always use this object"
+" and read-in data it requires. It will be up to the user to provide the "
+"data that the model requires."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:14
+#: xhydro.modelling.obj_funcs.get_objective_function:23
+msgid "obj_func"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:15
+msgid "The objective function used for calibrating. Can be any one of these:"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:17
+#: xhydro.modelling.obj_funcs.get_objective_function:27
+msgid "\"abs_bias\" : Absolute value of the \"bias\" metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:18
+#: xhydro.modelling.obj_funcs.get_objective_function:28
+msgid "\"abs_pbias\": Absolute value of the \"pbias\" metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:19
+#: xhydro.modelling.obj_funcs.get_objective_function:29
+msgid "\"abs_volume_error\" : Absolute value of the volume_error metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:20
+#: xhydro.modelling.obj_funcs.get_objective_function:30
+msgid "\"agreement_index\": Index of agreement"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:21
+#: xhydro.modelling.obj_funcs.get_objective_function:32
+msgid "\"correlation_coeff\": Correlation coefficient"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:22
+#: xhydro.modelling.obj_funcs.get_objective_function:33
+msgid "\"kge\" : Kling Gupta Efficiency metric (2009 version)"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:23
+#: xhydro.modelling.obj_funcs.get_objective_function:34
+msgid "\"kge_mod\" : Kling Gupta Efficiency metric (2012 version)"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:24
+#: xhydro.modelling.obj_funcs.get_objective_function:35
+msgid "\"mae\": Mean Absolute Error metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:25
+#: xhydro.modelling.obj_funcs.get_objective_function:36
+msgid "\"mare\": Mean Absolute Relative Error metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:26
+#: xhydro.modelling.obj_funcs.get_objective_function:37
+msgid "\"mse\" : Mean Square Error metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:27
+#: xhydro.modelling.obj_funcs.get_objective_function:38
+msgid "\"nse\": Nash-Sutcliffe Efficiency metric"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:28
+#: xhydro.modelling.obj_funcs.get_objective_function:40
+msgid "\"r2\" : r-squared, i.e. square of correlation_coeff."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:29
+#: xhydro.modelling.obj_funcs.get_objective_function:41
+msgid "\"rmse\" : Root Mean Square Error"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:30
+#: xhydro.modelling.obj_funcs.get_objective_function:42
+msgid "\"rrmse\" : Relative Root Mean Square Error (RMSE-to-mean ratio)"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:31
+#: xhydro.modelling.obj_funcs.get_objective_function:43
+msgid "\"rsr\" : Ratio of RMSE to standard deviation."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:33
+msgid "bounds_high"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+msgid "np.array"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:34
+msgid ""
+"High bounds for the model parameters to be calibrated. SPOTPY will sample"
+" parameter sets from within these bounds. The size must be equal to the "
+"number of parameters to calibrate."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:36
+msgid "bounds_low"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:37
+msgid ""
+"Low bounds for the model parameters to be calibrated. SPOTPY will sample "
+"parameter sets from within these bounds. The size must be equal to the "
+"number of parameters to calibrate."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:39
+msgid "evaluations"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+msgid "int"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:40
+msgid ""
+"Maximum number of model evaluations (calibration budget) to perform "
+"before stopping the calibration process."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:41
+msgid "algorithm"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:42
+msgid ""
+"The optimization algorithm to use. Currently, \"DDS\" and \"SCEUA\" are "
+"available, but more can be easily added."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:43
+#: xhydro.modelling.obj_funcs.get_objective_function:55
+msgid "mask"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+msgid "np.array, optional"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:44
+msgid ""
+"A vector indicating which values to preserve/remove from the objective "
+"function computation. 0=remove, 1=preserve."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:45
+#: xhydro.modelling.obj_funcs.get_objective_function:64
+#: xhydro.modelling.obj_funcs.transform_flows:14
+msgid "transform"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+msgid "str, optional"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:46
+msgid ""
+"The method to transform streamflow prior to computing the objective "
+"function. Can be one of: Square root ('sqrt'), inverse ('inv'), or "
+"logarithmic ('log') transformation."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:48
+#: xhydro.modelling.obj_funcs.get_objective_function:74
+#: xhydro.modelling.obj_funcs.transform_flows:24
+msgid "epsilon"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+msgid "scalar float"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:49
+msgid ""
+"Used to add a small delta to observations for log and inverse transforms,"
+" to eliminate errors caused by zero flow days (1/0 and log(0)). The added"
+" perturbation is equal to the mean observed streamflow times this value "
+"of epsilon."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:52
+msgid "sampler_kwargs"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:53
+msgid ""
+"Contains the keywords and hyperparameter values for the optimization "
+"algorithm. Keywords depend on the algorithm choice. Currently, SCEUA and "
+"DDS are supported with the following default values: - SCEUA: dict(ngs=7,"
+" kstop=3, peps=0.1, pcento=0.1) - DDS: dict(trials=1)"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:61
+msgid "best_parameters"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:-1
+#: xhydro.modelling.obj_funcs.get_objective_function:-1
+#: xhydro.modelling.obj_funcs.transform_flows:-1
+msgid "array_like"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:62
+msgid "The optimized parameter set."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:63
+#: xhydro.modelling.obj_funcs.get_objective_function:18
+#: xhydro.modelling.obj_funcs.transform_flows:9
+#: xhydro.modelling.obj_funcs.transform_flows:35
+msgid "qsim"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:64
+msgid "Simulated streamflow using the optimized parameter set."
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:65
+msgid "bestobjf"
+msgstr ""
+
+#: of xhydro.modelling.calibration.perform_calibration:66
+msgid "The best objective function value."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:59
+msgid "xhydro.modelling.hydrological\\_modelling module"
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling:1
+msgid "Hydrological modelling framework."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:1
+msgid "Get the required inputs for a given hydrological model."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:6
+msgid ""
+"The name of the hydrological model to use. Currently supported models "
+"are: \"Hydrotel\"."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:8
+msgid "required_only"
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:9
+msgid "If True, only the required inputs will be returned."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:14
+msgid ""
+"A dictionary containing the required configuration for the hydrological "
+"model."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.get_hydrological_model_inputs:16
+msgid "The documentation for the hydrological model."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.hydrological_model:1
+msgid "Initialize an instance of a hydrological model."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.hydrological_model:6
+msgid ""
+"A dictionary containing the configuration for the hydrological model. "
+"Must contain a key \"model_name\" with the name of the model to use: "
+"\"Hydrotel\". The required keys depend on the model being used. Use the "
+"function `get_hydrological_model_inputs` to get the required keys for a "
+"given model."
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.hydrological_model:13
+msgid "Hydrotel or DummyModel"
+msgstr ""
+
+#: of xhydro.modelling.hydrological_modelling.hydrological_model:14
+msgid "An instance of the hydrological model."
+msgstr ""
+
+#: ../../apidoc/xhydro.modelling.rst:68
+msgid "xhydro.modelling.obj\\_funcs module"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs:1
+msgid ""
+"Objective function package for xhydro, for calibration and model "
+"evaluation."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs:3
+msgid ""
+"This package provides a flexible suite of popular objective function "
+"metrics in hydrological modelling and hydrological model calibration. The"
+" main function 'get_objective_function' returns the value of the desired "
+"objective function while allowing users to customize many aspects:"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs:8
+msgid ""
+"1-  Select the objective function to run; 2-  Allow providing a mask to "
+"remove certain elements from the objective function calculation (e.g. for"
+" odd/even year calibration, or calibration on high or low flows only, or "
+"any custom setup). 3-  Apply a transformation on the flows to modify the "
+"behaviour of the objective function calculation (e.g taking the log, "
+"inverse or square root transform of the flows before computing the "
+"objective function)."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs:16
+msgid ""
+"This function also contains some tools and inputs reserved for the "
+"calibration toolbox, such as the ability to take the negative of the "
+"objective function to maximize instead of minimize a metric according to "
+"the needs of the optimizing algorithm."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:1
+msgid "Entrypoint function for the objective function calculation."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:3
+msgid ""
+"More can be added by adding the function to this file and adding the "
+"option in this function."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:6
+msgid "NOTE: All data corresponding to NaN values in the observation set are"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:7
+msgid ""
+"removed from the calculation. If a mask is passed, it must be the same "
+"size as the qsim and qobs vectors. If any NaNs are present in the qobs "
+"dataset, all corresponding data in the qobs, qsim and mask will be "
+"removed prior to passing to the processing function."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:15
+msgid ""
+"Vector containing the Observed streamflow to be used in the objective "
+"function calculation. It is the target to attain."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:19
+msgid ""
+"Vector containing the Simulated streamflow as generated by the hydro- "
+"logical model. It is modified by changing parameters and resumulating the"
+" hydrological model."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:24
+msgid ""
+"String representing the objective function to use in the calibration. "
+"Options must be one of the accepted objective functions:"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:31
+msgid "\"bias\" : Bias metric"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:39
+msgid "\"pbias\" : Percent bias (relative bias)"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:44
+msgid "\"volume_error\": Total volume error over the period."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:46
+msgid "The default is 'rmse'."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:48
+msgid "take_negative"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:49
+msgid ""
+"Used to force the objective function to be multiplied by minus one (-1) "
+"such that it is possible to maximize it if the optimizer is a minimizer "
+"and vice-versa. Should always be set to False unless required by an "
+"optimization setup, which is handled internally and transparently to the "
+"user. The default is False."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:56
+msgid ""
+"Array of 0 or 1 on which the objective function should be applied. Values"
+" of 1 indicate that the value is included in the calculation, and values "
+"of 0 indicate that the value is excluded and will have no impact on the "
+"objective function calculation. This can be useful for specific "
+"optimization strategies such as odd/even year calibration, seasonal "
+"calibration or calibration based on high/low flows. The default is None "
+"and all data are preserved."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:65
+#: xhydro.modelling.obj_funcs.transform_flows:15
+msgid ""
+"Indicates the type of transformation required. Can be one of the "
+"following values:"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:68
+#: xhydro.modelling.obj_funcs.transform_flows:18
+msgid "\"sqrt\" : Square root transformation of the flows [sqrt(Q)]"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:69
+#: xhydro.modelling.obj_funcs.transform_flows:19
+msgid "\"log\" : Logarithmic transformation of the flows [log(Q)]"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:70
+#: xhydro.modelling.obj_funcs.transform_flows:20
+msgid "\"inv\" : Inverse transformation of the flows [1/Q]"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:72
+#: xhydro.modelling.obj_funcs.transform_flows:22
+msgid "The default value is \"None\", by which no transformation is performed."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:75
+#: xhydro.modelling.obj_funcs.transform_flows:25
+msgid ""
+"Indicates the perturbation to add to the flow time series during a "
+"transformation to avoid division by zero and logarithmic transformation. "
+"The perturbation is equal to:"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:79
+#: xhydro.modelling.obj_funcs.transform_flows:29
+msgid "perturbation = epsilon * mean(qobs)"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:81
+#: xhydro.modelling.obj_funcs.transform_flows:31
+msgid "The default value is 0.01."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.get_objective_function:86
+msgid "Value of the selected objective function (obj_fun)."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:1
+msgid "Transform flows before computing the objective function."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:3
+msgid ""
+"It is used to transform flows such that the objective function is "
+"computed on a transformed flow metric rather than on the original units "
+"of flow (ex: inverse, log-transformed, square-root)"
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:10
+msgid "Simulated streamflow vector."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:12
+msgid "Observed streamflow vector."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:36
+msgid "Transformed simulated flow according to user request."
+msgstr ""
+
+#: of xhydro.modelling.obj_funcs.transform_flows:38
+msgid "Transformed observed flow according to user request."
+msgstr ""
