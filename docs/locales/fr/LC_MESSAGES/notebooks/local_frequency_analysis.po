@@ -36,7 +36,6 @@ msgid "Extracting and preparing the data"
 msgstr "Extraction et préparation des données"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:1898
-#, fuzzy
 msgid ""
 "For this example, we'll conduct a frequency analysis using historical "
 "time series from various sites. We begin by obtaining a dataset "
@@ -52,7 +51,7 @@ msgstr ""
 "Dans cet exemple, nous effectuerons une analyse fréquentielle en "
 "utilisant des séries chronologiques historiques provenant de différents "
 "sites. Nous commençons par obtenir un ensemble de données comprenant des "
-"informations hydrologiques. Ici, nous utilisons la bibliothèque `xdataset"
+"informations hydrologiques. Ici, nous utilisons la librairie `xdataset"
 "<https://hydrologie.github.io/xdatasets/notebooks/getting_started.html>`__"
 " pour obtenir des données hydrologiques du `Ministère de l'Environnement,"
 " de la Lutte contre les changements climatiques, de la Faune et des Parcs"
@@ -121,16 +120,14 @@ msgid "``month``, followed by a sequence of month numbers."
 msgstr "``month``, suivi d'une séquence de numéros de mois."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2599
-#, fuzzy
 msgid ""
 "``season``, followed by one or more of ``'DJF'``, ``'MAM'``, ``'JJA'``, "
 "and ``'SON'``."
 msgstr ""
-"``season``, suivi d'un ou plusieurs des éléments suivants : \"DJF\", "
-"\"MAM\", \"JJA\" et \"SON\"."
+"``season``, suivi d'un ou plusieurs des éléments suivants : ``\"DJF\"``, "
+"``\"MAM\"``, ``\"JJA\"`` et ``\"SON\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2600
-#, fuzzy
 msgid ""
 "``doy_bounds``, followed by a sequence representing the inclusive bounds "
 "of the period to be considered (``\"start\"``, ``\"end\"``)."
@@ -139,13 +136,13 @@ msgstr ""
 "de la période à considérer (début, fin)."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2601
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "``date_bounds``, which is the same as above, but using a month-day "
 "(``'%m-%d'``) format."
 msgstr ""
 "``date_bounds``, qui est le même que ci-dessus, mais en utilisant le "
-"format mois-jour (%m-%d)."
+"format mois-jour (``'%m-%d'``)."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2603
 msgid ""
@@ -176,7 +173,6 @@ msgstr ""
 "``xhydro.indicators.get_yearly_op``. Les principaux arguments sont :"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2640
-#, fuzzy
 msgid ""
 "``op``: the operation to compute. One of ``\"max\"``, ``\"min\"``, "
 "``\"mean\"``, or ``\"sum\"``."
@@ -185,14 +181,12 @@ msgstr ""
 "``\"sum\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2641
-#, fuzzy
 msgid "``input_var``: the name of the variable. Defaults to ``\"streamflow\"``."
 msgstr ""
 "``input_var`` : le nom de la variable. La valeur par défaut est "
 "``\"streamflow\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2642
-#, fuzzy
 msgid ""
 "``window``: the size of the rolling window. A ``\"mean\"`` is performed "
 "on the rolling window prior to the ``op`` operation."
@@ -236,7 +230,6 @@ msgid "c) Using custom seasons per year or per station"
 msgstr "c) Utilisation de saisons personnalisées par année ou par station"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:3617
-#, fuzzy
 msgid ""
 "Using individualized date ranges for each year or each catchment is not "
 "explicitly supported, so users should instead mask their data prior to "
@@ -284,7 +277,6 @@ msgstr ""
 "options sont les suivantes :"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4179
-#, fuzzy
 msgid ""
 "``distributions``: a list of `SciPy distributions "
 "<https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-"
@@ -298,21 +290,18 @@ msgstr ""
 "\"weibull_min\"]``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4180
-#, fuzzy
 msgid "``min_years``: the minimum number of years required to fit the data."
 msgstr ""
 "``min_years`` : nombre minimum d'années nécessaires pour ajuster les "
 "données."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4181
-#, fuzzy
 msgid "``method``: the fitting method. Defaults to the maximum likelihood."
 msgstr ""
 "``method`` : méthode d'ajustement. La valeur par défaut est le maximum de"
 " vraisemblance."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4890
-#, fuzzy
 msgid ""
 "Information Criteria such as the ``AIC``, ``BIC``, and ``AICC`` are "
 "useful to determine which statistical distribution is better suited to a "
@@ -337,13 +326,12 @@ msgid "``t``: the return period(s) in years."
 msgstr "``t`` : la (les) période(s) de retour en années."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:5601
-#, fuzzy
 msgid ""
 "``mode``: whether the return period is the probability of exceedance "
 "(``\"max\"``) or non-exceedance (``\"min\"``). Defaults to ``\"max\"``."
 msgstr ""
 "``mode`` : si la période de retour est la probabilité de dépassement "
-"(max) ou de non-dépassement (min). La valeur par défaut est ``max``."
+"(max) ou de non-dépassement (min). La valeur par défaut est ``\"max\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:6195
 msgid ""

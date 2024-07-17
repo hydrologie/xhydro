@@ -23,12 +23,11 @@ msgid "Package Structure"
 msgstr "Structure du paquet"
 
 #: ../../planification.rst:5
-#, fuzzy
 msgid ""
 "Here is `xhydro`'s structure as of v0.3.6 (2024-06-10), with the planned "
 "or discussed additions for the future."
 msgstr ""
-"Voici la structure de `xhydro` à partir de la version 0.2.2, avec les "
+"Voici la structure de `xhydro` pour la version v0.3.6 (2024-06-10), avec les "
 "ajouts prévus ou discutés pour l'avenir."
 
 #: ../../planification.rst:7

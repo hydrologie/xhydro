@@ -71,17 +71,14 @@ msgstr ""
 "fichiers de la dernière version sur `PyPI`_."
 
 #: ../../installation.rst:25
-#, fuzzy
 msgid ""
 "To create a working environment and install xHydro, copy the "
 "`environment-dev.yml` file from the root of the repository and run the "
 "following commands:"
 msgstr ""
-"En raison de la complexité du processus d'installation de certaines "
-"dépendances, nous recommandons fortement d'installer `xHydro` dans un "
-"environnement Anaconda Python. Pour créer un environnement de travail et "
-"installer xHydro, copiez le fichier `environment.yml` depuis la racine du"
-" référentiel et exécutez les commandes suivantes :"
+"Pour créer un environnement de travail et installer xHydro, copiez "
+"le fichier `environment-dev.yml` depuis le root du dépôt et "
+"exécutez les commandes suivantes :"
 
 #: ../../installation.rst:33
 msgid ""
@@ -92,7 +89,6 @@ msgstr ""
 " toujours la version stable la plus récente."
 
 #: ../../installation.rst:35
-#, fuzzy
 msgid ""
 "If for some reason you wish to install the `PyPI` version of `xhydro` "
 "into an existing Anaconda environment (*not recommended if requirements "
@@ -100,7 +96,7 @@ msgid ""
 msgstr ""
 "Si pour une raison quelconque vous souhaitez installer la version `PyPI` "
 "de `xHydro` dans un environnement Anaconda existant (*non recommandé si "
-"les conditions ne sont pas remplies*), exécutez seulement la dernière "
+"les dépendances ne sont pas remplies*), exécutez seulement la dernière "
 "commande ci-dessus."
 
 #: ../../installation.rst:40
@@ -123,14 +119,12 @@ msgid "Download the source code from the `Github repo`_."
 msgstr "Téléchargez le code source depuis le `repo Github`_."
 
 #: ../../installation.rst:46
-#, fuzzy
 msgid "Clone the public repository:"
 msgstr "Vous pouvez soit cloner le dépôt public :"
 
 #: ../../installation.rst:52
-#, fuzzy
 msgid "Download the `tarball`_:"
-msgstr "Ou téléchargez le `tarball`_ :"
+msgstr "Ou télécharger le `tarball`_ :"
 
 #: ../../installation.rst:58
 msgid ""
@@ -141,7 +135,6 @@ msgstr ""
 "environnement de travail et y installer `xHydro` :"
 
 #: ../../installation.rst:66
-#, fuzzy
 msgid ""
 "Even if you do not intend to contribute to `xhydro`, we favor using "
 "`environment-dev.yml` over `environment.yml` because it includes "
@@ -150,19 +143,22 @@ msgid ""
 " of `xhydro` into an existing Anaconda environment (*not recommended if "
 "requirements are not met*), only run the last command above."
 msgstr ""
-"Si pour une raison quelconque vous souhaitez installer la version `PyPI` "
-"de `xHydro` dans un environnement Anaconda existant (*non recommandé si "
-"les conditions ne sont pas remplies*), exécutez seulement la dernière "
-"commande ci-dessus."
+"Même si vous n'avez pas l'intention de contribuer à `xhydro`, nous "
+"préférons utiliser `environment-dev.yml` plutôt que `environment.yml` car il "
+"inclut des packages supplémentaires qui sont utilisés pour exécuter tous les "
+"exemples fournis dans la documentation. Si, pour une raison quelconque, vous "
+"souhaitez installer la version `PyPI` de `xhydro` dans un environnement "
+"Anaconda existant (*non recommandé si les dépendances ne sont pas remplies*), "
+"exécutez uniquement la dernière commande ci-dessus."
 
 #: ../../installation.rst:69
-#, fuzzy
 msgid ""
 "When new changes are made to the `Github repo`_, you can update your "
 "local copy using the following commands from the root of the repository:"
 msgstr ""
-"Lorsque de nouveaux changements sont apportés au `dépôt Github`_, vous "
-"pouvez mettre à jour votre copie locale en utilisant :"
+"Lorsque de nouvelles modifications sont apportées au `dépôt "
+"Github`_, vous pouvez mettre à jour votre copie locale à l'aide des commandes "
+"suivantes depuis la racine du dépôt :"
 
 #: ../../installation.rst:80
 msgid ""

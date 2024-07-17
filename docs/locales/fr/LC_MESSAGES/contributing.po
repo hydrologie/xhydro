@@ -90,7 +90,7 @@ msgid ""
 " it."
 msgstr ""
 "Consultez les questions de GitHub pour trouver des fonctionnalités. Tout "
-"ce qui est étiqueté \"amélioration\" et \"aide recherchée\" est ouvert à "
+"ce qui est étiqueté \"enhancement\" et \"help wanted\" est ouvert à "
 "quiconque veut l'implémenter."
 
 #: ../../../CONTRIBUTING.rst:34
@@ -134,7 +134,6 @@ msgstr ""
 "faciliter la mise en œuvre."
 
 #: ../../../CONTRIBUTING.rst:47
-#, fuzzy
 msgid ""
 "Remember that this is a volunteer-driven project, and that contributions "
 "are welcome. :)"
@@ -155,7 +154,6 @@ msgstr ""
 "guide <https://guides.github.com/activities/hello-world/>`_."
 
 #: ../../../CONTRIBUTING.rst:59
-#, fuzzy
 msgid ""
 "Anaconda Python users: Due to the complexity of some packages, the "
 "default dependency solver can take a long time to resolve the "
@@ -163,7 +161,7 @@ msgid ""
 " the process:"
 msgstr ""
 "Utilisateurs d'Anaconda Python : En raison de la complexité de certains "
-"paquets, le résolveur de dépendances par défaut peut prendre beaucoup de "
+"paquets, le solveur de dépendances par défaut peut prendre beaucoup de "
 "temps pour résoudre l'environnement. Envisagez d'exécuter les commandes "
 "suivantes afin d'accélérer le processus :"
 
@@ -201,13 +199,12 @@ msgid "First, clone the ``xhydro`` repo locally."
 msgstr "Tout d'abord, clonez le dépôt ``xhydro`` localement."
 
 #: ../../../CONTRIBUTING.rst:74
-#, fuzzy
 msgid ""
 "If you are not an `xhydro` collaborator, fork the ``xhydro`` repo on "
 "GitHub:"
 msgstr ""
-"Si vous n'êtes pas encore un collaborateur de `xhydro`, créez un "
-"embranchement sur le dépôt ``xhydro`` sur GitHub."
+"Si vous n'êtes pas un collaborateur de `xhydro`, créez un "
+"embranchement du dépôt ``xhydro`` sur GitHub."
 
 #: ../../../CONTRIBUTING.rst:80
 msgid "Otherwise, if you are a collaborator, clone the ``xhydro`` repo locally:"
@@ -230,9 +227,10 @@ msgid ""
 "consistent coding style, `make dev` also installs the ``pre-commit`` "
 "hooks to your local clone."
 msgstr ""
-"Cela installe ``xhydro`` dans un état \"éditable\", ce qui signifie que "
-"les changements apportés au code sont immédiatement vus par "
-"l'environnement."
+"Cela installe ``xhydro`` dans un état \"editable\", ce qui signifie "
+"que les modifications apportées au code sont immédiatement vues par "
+"l'environnement. Pour garantir un style de codage cohérent, `make dev` installe "
+"également les hooks ``pre-commit`` sur votre clone local."
 
 #: ../../../CONTRIBUTING.rst:96
 msgid ""
@@ -250,21 +248,18 @@ msgstr ""
 "nouveau les fichiers, et effectuez une nouvelle livraison."
 
 #: ../../../CONTRIBUTING.rst:98
-#, fuzzy
 msgid "You can also run the hooks manually with:"
-msgstr "Vous pouvez également exécuter les crochets manuellement avec :"
+msgstr "Vous pouvez également exécuter les hooks manuellement avec :"
 
 #: ../../../CONTRIBUTING.rst:104
-#, fuzzy
 msgid ""
 "If you want to skip the ``pre-commit`` hooks temporarily, you can pass "
 "the `--no-verify` flag to `git commit`."
 msgstr ""
-"Si vous voulez ignorer temporairement les crochets ``pre-commit``, vous "
+"Si vous voulez ignorer temporairement les hooks ``pre-commit``, vous "
 "pouvez passer l'argument ``-no-verify`` à `git commit`."
 
 #: ../../../CONTRIBUTING.rst:106
-#, fuzzy
 msgid "Create a branch for local development:"
 msgstr "Créer une branche pour le développement local :"
 
@@ -273,7 +268,6 @@ msgid "Now you can make your changes locally."
 msgstr "Vous pouvez maintenant effectuer vos modifications localement."
 
 #: ../../../CONTRIBUTING.rst:114
-#, fuzzy
 msgid ""
 "When you're done making changes, we **strongly** suggest running the "
 "tests in your environment or with the help of ``tox``:"
@@ -316,19 +310,17 @@ msgid "export XHYDRO_DATA_DIR=$(pwd)/.cache"
 msgstr "export XHYDRO_DATA_DIR=$(pwd)/.cache"
 
 #: ../../../CONTRIBUTING.rst:131
-#, fuzzy
 msgid "Commit your changes and push your branch to GitHub:"
-msgstr "Validez vos modifications et envoyez votre branche sur GitHub :"
+msgstr "Commetez vos modifications et envoyez votre branche sur GitHub :"
 
 #: ../../../CONTRIBUTING.rst:139
-#, fuzzy
 msgid ""
 "If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files"
 " to be committed, and re-committing your changes (or, if need be, you can"
 " skip them with `git commit --no-verify`)."
 msgstr ""
-"Si les crochets ``pre-commit`` échouent, essayez de re-commettre vos "
-"changements (ou, si nécessaire, vous pouvez les ignorer avec `$ git "
+"Si les hooks ``pre-commit`` échouent, essayez de re-commettre vos "
+"changements (ou, si nécessaire, vous pouvez les ignorer avec `git "
 "commit --no-verify`)."
 
 #: ../../../CONTRIBUTING.rst:141
@@ -342,7 +334,6 @@ msgstr ""
 "pull-requests/creating-a-pull-request>`_ via le site GitHub."
 
 #: ../../../CONTRIBUTING.rst:143
-#, fuzzy
 msgid ""
 "When pushing your changes to your branch on GitHub, the documentation "
 "will automatically be tested to reflect the changes in your Pull Request."
@@ -420,7 +411,6 @@ msgstr ""
 "documentation."
 
 #: ../../../CONTRIBUTING.rst:178
-#, fuzzy
 msgid ""
 "Once your Pull Request has been accepted and merged to the `main` branch,"
 " several automated workflows will be triggered:"
@@ -430,7 +420,6 @@ msgstr ""
 " :"
 
 #: ../../../CONTRIBUTING.rst:180
-#, fuzzy
 msgid ""
 "The ``bump-version.yml`` workflow will automatically bump the patch "
 "version when pull requests are pushed to the `main` branch on GitHub. "
@@ -438,12 +427,12 @@ msgid ""
 "merging (non-release) pull requests (this will cause the version to be "
 "bumped twice).**"
 msgstr ""
-"Le flux de travail ``bump-version.yml`` augmentera automatiquement la "
-"version du patch lorsque les demandes d'extraction sont poussées vers la "
-"branche ``main`` sur GitHub. **Il n'est pas recommandé d'augmenter "
-"manuellement la version de votre branche lorsque vous fusionnez des "
-"demandes d'extraction (qui ne sont pas des versions) (cela entraînera une"
-" double augmentation de la version).**"
+"Le workflow « bump-version.yml » modifiera automatiquement la "
+"version de la librairie lorsque les Pull Requests sont poussées vers la "
+"branche `main` sur GitHub. **Il n'est pas recommandé de modifier manuellement "
+"la version dans votre branche lors de la fusion de Pull Requests "
+"(non publiées). Cela entraînera une modification de la version deux "
+"fois.**"
 
 #: ../../../CONTRIBUTING.rst:181
 msgid ""
@@ -462,7 +451,6 @@ msgstr ""
 "mainteneur), votre branche sera automatiquement supprimée."
 
 #: ../../../CONTRIBUTING.rst:184
-#, fuzzy
 msgid "You will have contributed to ``xhydro``!"
 msgstr "Vous aurez contribué à vos premiers changements dans ``xhydro`` !"
 
@@ -483,11 +471,12 @@ msgstr ""
 "branche du dépôt ``xhydro-testdata``."
 
 #: ../../../CONTRIBUTING.rst:190
-#, fuzzy
 msgid ""
 "Be sure to consult the ReadMe found at https://github.com/hydrologie"
 "/xhydro-testdata as well."
-msgstr "Signalez les bogues à https://github.com/hydrologie/xhydro/issues."
+msgstr ""
+"Assurez-vous également de consulter le fichier ReadMe disponible "
+"sur https://github.com/hydrologie/xhydro-testdata."
 
 #: ../../../CONTRIBUTING.rst:193
 msgid "Pull Request Guidelines"
@@ -500,7 +489,6 @@ msgstr ""
 "directives :"
 
 #: ../../../CONTRIBUTING.rst:197
-#, fuzzy
 msgid ""
 "The pull request should include tests and should aim to provide `code "
 "coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new "
@@ -510,7 +498,7 @@ msgid ""
 msgstr ""
 "La pull request doit inclure des tests et doit viser à fournir une "
 "`couverture de code <https://en.wikipedia.org/wiki/Code_coverage>`_ pour "
-"toutes les nouvelles lignes de code. Vous pouvez utiliser les drapeaux "
+"toutes les nouvelles lignes de code. Vous pouvez utiliser les arguments "
 "``--cov-report html --cov xhydro`` lors de l'appel à ``pytest`` pour "
 "générer un rapport HTML et analyser la couverture actuelle des tests."
 
@@ -563,7 +551,6 @@ msgid "Tips"
 msgstr "Conseils"
 
 #: ../../../CONTRIBUTING.rst:210
-#, fuzzy
 msgid "To run a subset of tests:"
 msgstr "Pour exécuter un sous-ensemble de tests :"
 
@@ -582,12 +569,10 @@ msgstr ""
 "`documentation pytest <https://docs.pytest.org/en/latest/usage.html>`_."
 
 #: ../../../CONTRIBUTING.rst:224
-#, fuzzy
 msgid "To run specific code style checks:"
 msgstr "Pour effectuer des contrôles de style de code spécifiques :"
 
 #: ../../../CONTRIBUTING.rst:234
-#, fuzzy
 msgid ""
 "To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with"
 " plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply "
