@@ -21,93 +21,95 @@ msgstr ""
 
 #: ../../../README.rst:3
 msgid "xHydro"
-msgstr ""
+msgstr "xHydro"
 
 #: ../../../README.rst:6
 msgid "Versions"
-msgstr ""
+msgstr "Versions"
 
 #: ../../../README.rst:6
 msgid "|pypi| |versions|"
-msgstr ""
+msgstr "|pypi| |versions|"
 
 #: ../../../README.rst:73
 msgid "PyPI"
-msgstr ""
+msgstr "PyPI"
 
 #: ../../../README.rst:85
 msgid "Supported Python Versions"
-msgstr ""
+msgstr "Versions Python prises en charge"
 
 #: ../../../README.rst:8
 msgid "Documentation and Support"
-msgstr ""
+msgstr "Documentation et assistance"
 
 #: ../../../README.rst:8
 msgid "|docs|"
-msgstr ""
+msgstr "|docs|"
 
 #: ../../../README.rst:57
 msgid "Documentation Status"
-msgstr ""
+msgstr "Statut de la documentation"
 
 #: ../../../README.rst:10
 msgid "Open Source"
-msgstr ""
+msgstr "Open source"
 
 #: ../../../README.rst:10
 msgid "|license| |ossf|"
-msgstr ""
+msgstr "|licence| |ossf|"
 
 #: ../../../README.rst:61
 msgid "License"
-msgstr ""
+msgstr "Licence"
 
 #: ../../../README.rst:65
 msgid "OpenSSF Scorecard"
-msgstr ""
+msgstr "Tableau de bord OpenSSF"
 
 #: ../../../README.rst:12
 msgid "Coding Standards"
-msgstr ""
+msgstr "Normes de codage"
 
 #: ../../../README.rst:12
 msgid "|black| |ruff| |pre-commit|"
-msgstr ""
+msgstr "|black| |ruff| |pre-commit|"
 
 #: ../../../README.rst:40
 msgid "Python Black"
-msgstr ""
+msgstr "Python Black"
 
 #: ../../../README.rst:77
 msgid "Ruff"
-msgstr ""
+msgstr "Ruff"
 
 #: ../../../README.rst:69
 msgid "pre-commit.ci Status"
-msgstr ""
+msgstr "pre-commit.ci Statut"
 
 #: ../../../README.rst:14
 msgid "Development Status"
-msgstr ""
+msgstr "Statut de développement"
 
 #: ../../../README.rst:14
 msgid "|status| |build| |coveralls|"
-msgstr ""
+msgstr "|status| |build| |coveralls|"
 
 #: ../../../README.rst:81
 msgid ""
 "Project Status: Active – The project has reached a stable, usable state "
 "and is being actively developed."
 msgstr ""
+"Statut du projet : Actif – Le projet a atteint un état stable et "
+"utilisable et est activement développé."
 
 #: ../../../README.rst:44
 msgid "Build Status"
-msgstr ""
+msgstr "Build Status"
 
 #: ../../../README.rst:48
 msgid "Coveralls"
-msgstr ""
+msgstr "Coveralls"
 
 #: ../../../README.rst:17
 msgid "Hydrological analysis library built with xarray"
@@ -131,32 +133,46 @@ msgid ""
 "and watershed boundaries from the HydroSHEDS API over any area of "
 "interest."
 msgstr ""
+"Trouvez et extrayez facilement des données géospatiales de l'API "
+"Planetary Computer et des limites de bassins versants de l'API HydroSHEDS sur "
+"n'importe quelle zone d'intérêt."
 
 #: ../../../README.rst:26
 msgid "Calibrate and execute Hydrotel and Raven-emulated hydrological models."
 msgstr ""
+"Calibrez et exécutez des modèles hydrologiques Hydrotel et émulés par "
+"Raven."
 
 #: ../../../README.rst:27
 msgid ""
 "Perform optimal interpolation on hydrological data (daily streamflow and "
 "indices)."
 msgstr ""
+"Effectuez une interpolation optimale sur les données "
+"hydrologiques (débit journalier et indicateurs)."
 
 #: ../../../README.rst:28
 msgid ""
 "Compute hydrological indicators (e.g. n-day peak flow, annual maximum "
 "series, low flow, average flow, etc.) over custom date ranges."
 msgstr ""
+"Calculez les indicateurs hydrologiques (par exemple, débit de "
+"pointe sur n jours, séries maximales annuelles, étiages, débit moyen, etc.) "
+"sur des plages de dates personnalisées."
 
 #: ../../../README.rst:29
 msgid ""
 "Perform frequency analysis on hydrological indicators using a variety of "
 "methods (e.g. Gumbel, GEV, etc.)."
 msgstr ""
+"Effectuez une analyse fréquentielle sur les indicateurs "
+"hydrologiques en utilisant diverses méthodes (par exemple Gumbel, GEV, etc.)."
 
 #: ../../../README.rst:30
 msgid "Perform climate change impact analysis of hydrological data."
 msgstr ""
+"Effectuez une analyse de l’impact du changement climatique sur les "
+"données hydrologiques."
 
 #: ../../../README.rst:33
 msgid "Credits"
@@ -169,9 +185,3 @@ msgid ""
 msgstr ""
 "Ce paquet a été créé avec Cookiecutter_ et le modèle de projet "
 "`Ouranosinc/cookiecutter-pypackage`_."
-
-#~ msgid "|pypi| |build| |docs| |license|"
-#~ msgstr ""
-
-#~ msgid "TODO"
-#~ msgstr ""

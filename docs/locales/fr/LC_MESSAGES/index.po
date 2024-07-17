@@ -21,12 +21,12 @@ msgstr ""
 
 #: ../../index.rst:4
 msgid "Contents:"
-msgstr ""
+msgstr "Contenu:"
 
 #: ../../index.rst:19
 msgid "All Modules"
-msgstr ""
+msgstr "Tous les modules"
 
 #: ../../index.rst:2
 msgid "Welcome to xHydro's documentation!"
-msgstr ""
+msgstr "Bienvenue dans la documentation de xHydro !"

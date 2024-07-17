@@ -21,25 +21,31 @@ msgstr ""
 
 #: ../../notebooks/climate_change.ipynb:9
 msgid "Climate change analysis of hydrological data"
-msgstr ""
+msgstr "Analyse du changement climatique sur des données hydrologiques"
 
 #: ../../notebooks/climate_change.ipynb:327
 msgid ""
 "Data type cannot be displayed: application/javascript, "
 "application/vnd.holoviews_load.v0+json"
 msgstr ""
+"Le type de données ne peut pas être affiché : "
+"application/javascript, application/vnd.holoviews_load.v0+json"
 
 #: ../../notebooks/climate_change.ipynb:591
 msgid ""
 "Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
 "application/javascript"
 msgstr ""
+"Le type de données ne peut pas être affiché : "
+"application/vnd.holoviews_load.v0+json, application/javascript"
 
 #: ../../notebooks/climate_change.ipynb:709
 msgid ""
 "Data type cannot be displayed: text/html, "
 "application/vnd.holoviews_exec.v0+json"
 msgstr ""
+"Le type de données ne peut pas être affiché : text/html, "
+"application/vnd.holoviews_exec.v0+json"
 
 #: ../../notebooks/climate_change.ipynb:755
 msgid ""
@@ -47,24 +53,31 @@ msgid ""
 "the impacts of climate change on hydrology, this notebook will go through"
 " some of the most common steps:"
 msgstr ""
+"Bien qu'il existe une grande variété d'analyses qui pourraient "
+"être effectuées pour évaluer les impacts du changement climatique sur "
+"l'hydrologie, ce notebook passera en revue certaines des étapes les plus courantes :"
 
 #: ../../notebooks/climate_change.ipynb:757
 msgid "Computing a list of relevant indicators over climatological periods"
 msgstr ""
+"Calculer une liste d'indicateurs pertinents sur des périodes "
+"climatologiques"
 
 #: ../../notebooks/climate_change.ipynb:758
 msgid "Computing future deltas"
-msgstr ""
+msgstr "Calculer des deltas futurs"
 
 #: ../../notebooks/climate_change.ipynb:759
 msgid "Computing ensemble statistics to assess future changes"
 msgstr ""
+"Calculer des statistiques d'ensemble pour évaluer les "
+"changements futurs"
 
 #: ../../notebooks/climate_change.ipynb:765
 #: ../../notebooks/climate_change.ipynb:966
 #: ../../notebooks/climate_change.ipynb:4034
 msgid "INFO"
-msgstr ""
+msgstr "INFO"
 
 #: ../../notebooks/climate_change.ipynb:767
 msgid ""
@@ -72,6 +85,10 @@ msgid ""
 " from the ``xscen`` library and made accessible to ``xhydro`` users. For "
 "more information on these function, it is recommended to look at:"
 msgstr ""
+"Plusieurs fonctions dans ``xh.indicators`` et ``xh.cc`` proviennent "
+"de la librairie ``xscen`` et sont rendues accessibles aux "
+"utilisateurs de ``xhydro``. Pour plus d'informations sur ces fonctions, il est "
+"recommandé de consulter :"
 
 #: ../../notebooks/climate_change.ipynb:769
 msgid ""
@@ -79,6 +96,8 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Computing-indicators>`__"
 msgstr ""
+"`compute_indicators "
+"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html#Computing-indicators>`__"
 
 #: ../../notebooks/climate_change.ipynb:770
 msgid ""
@@ -86,6 +105,8 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Climatological-operations>`__"
 msgstr ""
+"`climatological_op "
+"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html#Climatological-operations>`__"
 
 #: ../../notebooks/climate_change.ipynb:771
 msgid ""
@@ -93,6 +114,8 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Computing-deltas>`__"
 msgstr ""
+"`compute_deltas "
+"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html#Computing-deltas>`__"
 
 #: ../../notebooks/climate_change.ipynb:772
 msgid ""
@@ -100,14 +123,18 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Ensemble-statistics>`__"
 msgstr ""
+"`ensemble_statistics "
+"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html#Ensemble-statistics>`__"
 
 #: ../../notebooks/climate_change.ipynb:788
 msgid "Computing hydrological indicators over a given time period"
-msgstr ""
+msgstr "Calculer des indicateurs hydrologiques sur une période donnée"
 
 #: ../../notebooks/climate_change.ipynb:951
 msgid "Hydrological indicators can be separated in two broad categories:"
 msgstr ""
+"Les indicateurs hydrologiques peuvent être séparés en deux "
+"grandes catégories :"
 
 #: ../../notebooks/climate_change.ipynb:953
 msgid ""
@@ -116,10 +143,13 @@ msgid ""
 "Computing these is already covered in the `Local Frequency Analysis "
 "notebook <local_frequency_analysis.ipynb>`__ notebook."
 msgstr ""
+"Indicateurs fréquentiels, tels que le débit maximum sur 20 ans "
+"(*Qmax20*) ou le débit minimum moyenné sur 7 jours de récurrence 2 ans en été (*Q7min2_summer*). "
+"Leur calcul est déjà couvert dans le notebook `Analyses fréquentielles locales <local_ Frequency_analysis.ipynb>`__."
 
 #: ../../notebooks/climate_change.ipynb:954
 msgid "Non frequencial indicators, such as the average yearly flow."
-msgstr ""
+msgstr "Indicateurs non fréquentiels, comme le débit annuel moyen."
 
 #: ../../notebooks/climate_change.ipynb:956
 msgid ""
@@ -129,22 +159,30 @@ msgid ""
 "``xhydro.indicators.compute_indicators``. The inputs of that function "
 "are:"
 msgstr ""
+"Puisque les indicateurs fréquentiels ont déjà été abordés dans un "
+"autre exemple, ce notebook examinera plutôt la méthodologie qui serait "
+"utilisée pour calculer les indicateurs non fréquentiels à l'aide de "
+"``xhydro.indicators.compute_indicators``. Les entrées de cette fonction sont :"
 
 #: ../../notebooks/climate_change.ipynb:958
 msgid "*ds*: the Dataset."
-msgstr ""
+msgstr "*ds*: le jeu de données."
 
 #: ../../notebooks/climate_change.ipynb:959
 msgid ""
 "*indicators*: a list of indicators to compute, or the path to a YAML file"
 " containing those."
 msgstr ""
+"*indicators* : une liste d'indicateurs à calculer, ou le chemin "
+"d'accès à un fichier YAML contenant ceux-ci."
 
 #: ../../notebooks/climate_change.ipynb:960
 msgid ""
 "*periods* (optional): either [start, end] or list of [start, end] of "
 "continuous periods over which to compute the indicators."
 msgstr ""
+"*periods* (facultatif) : soit [début, fin], soit une liste de "
+"[début, fin] pour des périodes continues sur lesquelles calculer les indicateurs."
 
 #: ../../notebooks/climate_change.ipynb:968
 msgid ""
@@ -152,12 +190,18 @@ msgid ""
 "``xclim``. More information is available `in the xclim documentation "
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__."
 msgstr ""
+"Les indicateurs personnalisés sont construits en suivant le "
+"formatage YAML requis par `xclim`. Plus d'informations sont disponibles `dans "
+"la documentation xclim "
+"<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__."
 
 #: ../../notebooks/climate_change.ipynb:970
 msgid ""
 "The list of Yaml IDs is available `here "
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 msgstr ""
+"La liste des identifiants Yaml est disponible `ici "
+"<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 
 #: ../../notebooks/climate_change.ipynb:1278
 msgid ""
@@ -167,6 +211,11 @@ msgid ""
 "(annual data starting in January). The keys follow the ``pandas`` "
 "nomenclature."
 msgstr ""
+"Puisque les indicateurs peuvent être générés à des fréquences "
+"variables, ``compute_indicators`` renverra un dictionnaire dont les clés sont "
+"les fréquences de sortie. Dans cet exemple, nous n'avons qu'une seule clé : "
+"``AS-JAN`` (données annuelles commençant en janvier). Les clés suivent la "
+"nomenclature `pandas`."
 
 #: ../../notebooks/climate_change.ipynb:1280
 msgid ""
@@ -174,11 +223,14 @@ msgid ""
 "``xh.cc.climatological_op`` function can be called for this purpose. The "
 "inputs of that function are:"
 msgstr ""
+"L'étape suivante consiste à obtenir des moyennes sur des périodes "
+"climatologiques. La fonction ``xh.cc.climatological_op`` peut être appelée à cet "
+"effet. Les entrées de cette fonction sont :"
 
 #: ../../notebooks/climate_change.ipynb:1282
 #: ../../notebooks/climate_change.ipynb:1830
 msgid "*ds*: Dataset to use for the computation."
-msgstr ""
+msgstr "*ds* : le jeu de données à utiliser pour le calcul."
 
 #: ../../notebooks/climate_change.ipynb:1283
 msgid ""
@@ -186,48 +238,68 @@ msgid ""
 "technically possible, the following are recommended and tested: ['max', "
 "'mean', 'median', 'min', 'std', 'sum', 'var', 'linregress']."
 msgstr ""
+"*op* : Opération à effectuer dans le temps. Bien que d'autres "
+"opérations soient techniquement possibles, les opérations suivantes sont "
+"recommandées et testées : ['max', 'mean', 'median', 'min', 'std', 'sum', 'var', "
+"'linregress']."
 
 #: ../../notebooks/climate_change.ipynb:1284
 msgid ""
 "*window* (optional): Number of years to use for the rolling operation. If"
 " None, all the available data will be used."
 msgstr ""
+"*window* (facultatif) : Nombre d'années à utiliser pour "
+"la fenêtre mobile. Si None, toutes les données disponibles seront "
+"utilisées."
 
 #: ../../notebooks/climate_change.ipynb:1285
 msgid ""
 "*min_periods* (optional): For the rolling operation, minimum number of "
 "years required for a value to be computed."
 msgstr ""
+"*min_periods* (facultatif) : pour la fenêtre mobile, "
+"nombre minimum d'années requis pour qu'une valeur soit calculée."
 
 #: ../../notebooks/climate_change.ipynb:1286
 msgid ""
 "*stride*: Stride (in years) at which to provide an output from the "
 "rolling window operation."
 msgstr ""
+"*stride* : foulée (en années) à laquelle fournir un résultat de "
+"l'opération de fenêtre mobile."
 
 #: ../../notebooks/climate_change.ipynb:1287
 msgid ""
 "*periods* (optional): Either [start, end] or list of [start, end] of "
 "continuous periods to be considered."
 msgstr ""
+"*periods* (facultatif) : Soit [début, fin], soit une liste de "
+"[début, fin] de périodes continues à prendre en compte."
 
 #: ../../notebooks/climate_change.ipynb:1288
 msgid ""
 "*rename_variables*: If True, '*clim*\\ {op}' will be added to variable "
 "names."
 msgstr ""
+"*rename_variables* : Si True, '*clim*\\ {op}' sera ajouté aux noms "
+"de variables."
 
 #: ../../notebooks/climate_change.ipynb:1289
 msgid ""
 "*horizons_as_dim*: If True, the output will have 'horizon' and the "
 "frequency as 'month', 'season' or 'year' as dimensions and coordinates."
 msgstr ""
+"*horizons_as_dim* : Si True, la sortie aura « horizon » et la "
+"fréquence sous forme de « month », « season » ou « year » comme dimensions et "
+"coordonnées."
 
 #: ../../notebooks/climate_change.ipynb:1828
 msgid ""
 "Computing deltas is then as easy as calling ``xh.cc.compute_deltas``. The"
 " inputs of that function are:"
 msgstr ""
+"Calculer des deltas est alors aussi simple que d'appeler "
+"``xh.cc.compute_deltas``. Les entrées de cette fonction sont :"
 
 #: ../../notebooks/climate_change.ipynb:1831
 msgid ""
@@ -235,16 +307,22 @@ msgid ""
 "'horizon' coordinate of the reference period, or a xr.Dataset containing "
 "the climatological mean."
 msgstr ""
+"*reference_horizon* : soit une chaîne YYYY-YYYY correspondant à "
+"la coordonnée « horizon » de la période de référence, soit un xr.Dataset "
+"contenant la moyenne climatologique."
 
 #: ../../notebooks/climate_change.ipynb:1832
 msgid ""
 "*kind*: ['+', '/', '%'] Whether to provide absolute, relative, or "
 "percentage deltas. Can also be a dictionary separated per variable name."
 msgstr ""
+"*kind* : ['+', '/', '%'] Indique s'il faut fournir des deltas "
+"absolus, relatifs ou en pourcentage. Peut également être un dictionnaire "
+"séparé par nom de variable."
 
 #: ../../notebooks/climate_change.ipynb:2672
 msgid "Ensemble statistics"
-msgstr ""
+msgstr "Statistiques d'ensemble"
 
 #: ../../notebooks/climate_change.ipynb:2697
 msgid ""
@@ -255,10 +333,18 @@ msgid ""
 "call a variety of functions available in ``xclim.ensemble``, such as for "
 "getting ensemble quantiles or the agreement on the sign of the change."
 msgstr ""
+"C'est une bonne pratique d'utiliser plusieurs modèles "
+"climatiques pour effectuer des analyses du changement climatique, d'autant plus "
+"que les impacts sur le cycle hydrologique peuvent être non linéaires. Une "
+"fois que plusieurs simulations hydrologiques ont été exécutées et sont "
+"prêtes à être analysées, ``xh.cc.ensemble_stats`` peut être utilisé pour "
+"appeler une variété de fonctions disponibles dans ``xclim.ensemble``, comme "
+"pour obtenir des quantiles d'ensemble ou l'e 'accord sur le signe du "
+"changement."
 
 #: ../../notebooks/climate_change.ipynb:2700
 msgid "Weighting simulations"
-msgstr ""
+msgstr "Pondération des simulations"
 
 #: ../../notebooks/climate_change.ipynb:2702
 msgid ""
@@ -268,46 +354,56 @@ msgid ""
 "through ``xhydro``, ``xscen.generate_weights`` can create a first "
 "approximation of the weights to use, based on available metadata."
 msgstr ""
+"Si l’ensemble de modèles climatiques est hétérogène, par exemple "
+"si un modèle climatique donné a fourni davantage de simulations, il est "
+"recommandé de pondérer les résultats en conséquence. Bien que cela ne soit pas "
+"actuellement disponible via ``xhydro``, ``xscen.generate_weights`` peut créer une "
+"première approximation des poids à utiliser, basée sur les métadonnées "
+"disponibles."
 
 #: ../../notebooks/climate_change.ipynb:2704
 msgid "The following attributes are required for the function to work:"
-msgstr ""
+msgstr "Les attributs suivants sont requis pour que la fonction fonctionne :"
 
 #: ../../notebooks/climate_change.ipynb:2706
 msgid "'cat:source' in all datasets"
-msgstr ""
+msgstr "'cat:source' dans tous les ensembles de données"
 
 #: ../../notebooks/climate_change.ipynb:2707
 msgid "'cat:driving_model' in regional climate models"
-msgstr ""
+msgstr "'cat:driving_model' dans les modèles climatiques régionaux"
 
 #: ../../notebooks/climate_change.ipynb:2708
 msgid "'cat:institution' in all datasets if independence_level='institution'"
 msgstr ""
+"'cat:institution' dans tous les jeux de données si "
+"independence_level='institution'"
 
 #: ../../notebooks/climate_change.ipynb:2709
 msgid "'cat:experiment' in all datasets if split_experiments=True"
 msgstr ""
+"'cat:experiment' dans tous les jeux de données si "
+"split_experiments=True"
 
 #: ../../notebooks/climate_change.ipynb:2711
 msgid "That function has three possible independence levels:"
-msgstr ""
+msgstr "Cette fonction a trois niveaux d'indépendance possibles :"
 
 #: ../../notebooks/climate_change.ipynb:2713
 msgid "*model*: 1 Model - 1 Vote"
-msgstr ""
+msgstr "*model* : 1 Modèle - 1 Vote"
 
 #: ../../notebooks/climate_change.ipynb:2714
 msgid "*GCM*: 1 GCM - 1 Vote"
-msgstr ""
+msgstr "*GCM* : 1 GCM - 1 Vote"
 
 #: ../../notebooks/climate_change.ipynb:2715
 msgid "*institution*: 1 institution - 1 Vote"
-msgstr ""
+msgstr "*institution* : 1 institution - 1 Vote"
 
 #: ../../notebooks/climate_change.ipynb:3343
 msgid "Use Case #1: Deterministic reference data"
-msgstr ""
+msgstr "Cas d'utilisation n°1 : données de référence déterministes"
 
 #: ../../notebooks/climate_change.ipynb:3345
 msgid ""
@@ -315,6 +411,9 @@ msgid ""
 "period, meaning that for a given location, the 30-year average for the "
 "indicator is a single value."
 msgstr ""
+"Dans la plupart des cas, vous disposerez probablement de données "
+"déterministes pour la période de référence, ce qui signifie que pour un emplacement "
+"donné, la moyenne sur 30 ans de l'indicateur est une valeur unique."
 
 #: ../../notebooks/climate_change.ipynb:3367
 msgid ""
@@ -325,6 +424,13 @@ msgid ""
 "relevant in hydrology with regards to non linear interactions between the"
 " climate and hydrological indicators."
 msgstr ""
+"Il existe plusieurs méthodologies sur la manière de combiner les "
+"informations des données observées et simulées. En raison des biais qui peuvent "
+"persister dans les simulations climatiques même après ajustement des biais et "
+"affecter la modélisation hydrologique, nous utiliserons une technique de "
+"perturbation. Ceci est particulièrement pertinent en hydrologie en ce qui concerne "
+"les interactions non linéaires entre les indicateurs climatiques et "
+"hydrologiques."
 
 #: ../../notebooks/climate_change.ipynb:3369
 msgid ""
@@ -334,6 +440,11 @@ msgid ""
 "ensemble, as well as the agreement on the sign of change, using "
 "``xh.cc.ensemble_stats``. The inputs of that function are:"
 msgstr ""
+"La technique de perturbation consiste à calculer les centiles "
+"d'ensemble sur les deltas, puis à les appliquer sur le jeu de données de référence. "
+"Pour cet exemple, nous calculerons les 10e, 25e, 50e, 75e et 90e centiles de "
+"l'ensemble, ainsi que l'accord sur le signe du changement, en utilisant "
+"``xh.cc.ensemble_stats``. Les entrées de cette fonction sont :"
 
 #: ../../notebooks/climate_change.ipynb:3371
 msgid ""
@@ -342,20 +453,28 @@ msgid ""
 " which case the keys are used as coordinates along the new "
 "``realization`` axis."
 msgstr ""
+"*datasets* : Liste de chemins vers les fichiers ou d'objets xarray "
+"Dataset/DataArray à inclure dans l'ensemble. Un dictionnaire peut être transmis à "
+"la place d'une liste, auquel cas les clés sont utilisées comme "
+"coordonnées le long du nouvel axe ``realization``."
 
 #: ../../notebooks/climate_change.ipynb:3372
 msgid ""
 "*statistics*: dictionary of xclim.ensembles statistics to be called, with"
 " their arguments."
 msgstr ""
+"*statistics* : dictionnaire des statistiques xclim.ensembles "
+"à appeler, avec leurs arguments."
 
 #: ../../notebooks/climate_change.ipynb:3373
 msgid "*weights* (optional): Weights to apply along the 'realization' dimension."
 msgstr ""
+"*weights* (facultatif) : pondérations à appliquer le long de "
+"la dimension 'realization'."
 
 #: ../../notebooks/climate_change.ipynb:4026
 msgid "Use Case #2: Probabilistic reference data"
-msgstr ""
+msgstr "Cas d'utilisation n°2 : Données de référence probabilistes"
 
 #: ../../notebooks/climate_change.ipynb:4028
 msgid ""
@@ -366,6 +485,12 @@ msgid ""
 "function (PDF), rather than a discrete value. This means that the "
 "ensemble percentiles can't simply be multiplied by the reference value."
 msgstr ""
+"Cette méthode suit une approche similaire au cas d'utilisation #1, "
+"mais pour un cas comme l'Atlas hydrologique du sud du Québec "
+"<https://cehq.gouv.qc.ca/atlas-hydroclimatique/>`__, où les indicateurs hydrologiques calculés pour la période historique "
+"sont représentés par une fonction de densité de probabilité (PDF), plutôt "
+"que par une valeur discrète. Cela signifie que les percentiles d’ensemble "
+"ne peuvent pas simplement être multipliés par la valeur de référence."
 
 #: ../../notebooks/climate_change.ipynb:4036
 msgid ""
@@ -374,6 +499,10 @@ msgid ""
 "modelling or the quality of the input data. At this stage, the temporal "
 "average should already have been done."
 msgstr ""
+"A noter que les percentiles dans ``ref`` ne sont pas la variabilité "
+"interannuelle, mais plutôt l'incertitude liée, par exemple, à la modélisation "
+"hydrologique ou à la qualité des données d'entrée. A ce stade, la moyenne temporelle "
+"aurait déjà dû être faite."
 
 #: ../../notebooks/climate_change.ipynb:4857
 msgid ""
@@ -381,48 +510,65 @@ msgid ""
 "can't easily be combined to the future deltas. The ``sampled_indicators``"
 " function has been created to circumvent this issue. That function will:"
 msgstr ""
+"En raison de leur nature probabiliste, les valeurs de référence "
+"historiques ne peuvent pas être facilement combinées aux deltas futurs. La "
+"fonction ``sampled_indicators`` a été créée pour contourner ce problème. "
+"Cette fonction :"
 
 #: ../../notebooks/climate_change.ipynb:4859
 msgid ""
 "Sample 'n' values from the historical distribution, weighting the "
 "percentiles by their associated coverage."
 msgstr ""
+"Échantillonne « n » valeurs de la distribution historique, en "
+"pondérant les percentiles par leur couverture associée."
 
 #: ../../notebooks/climate_change.ipynb:4860
 msgid "Sample 'n' values from the delta distribution, using the provided weights."
 msgstr ""
+"Échantillonne « n » valeurs de la distribution des deltas, en utilisant "
+"les poids fournis."
 
 #: ../../notebooks/climate_change.ipynb:4861
 msgid ""
 "Create the future distribution by applying the sampled deltas to the "
 "sampled historical distribution, element-wise."
 msgstr ""
+"Crée la distribution future en appliquant les deltas "
+"échantillonnés à la distribution historique échantillonnée, élément par élément."
 
 #: ../../notebooks/climate_change.ipynb:4862
 msgid "Compute the percentiles of the future distribution."
-msgstr ""
+msgstr "Calcule les centiles de la distribution future."
 
 #: ../../notebooks/climate_change.ipynb:4864
 msgid "The inputs of that function are:"
-msgstr ""
+msgstr "Les entrées de cette fonction sont :"
 
 #: ../../notebooks/climate_change.ipynb:4866
 msgid ""
 "*ds*: Dataset containing the historical indicators. The indicators are "
 "expected to be represented by a distribution of pre-computed percentiles."
 msgstr ""
+"*ds* : Jeu de données contenant les indicateurs historiques. "
+"Les indicateurs devraient être représentés par une distribution de "
+"percentiles précalculés."
 
 #: ../../notebooks/climate_change.ipynb:4867
 msgid ""
 "*deltas*: Dataset containing the future deltas to apply to the historical"
 " indicators."
 msgstr ""
+"*deltas* : Jeu de données contenant les deltas futurs à "
+"appliquer aux indicateurs historiques."
 
 #: ../../notebooks/climate_change.ipynb:4868
 msgid ""
 "*delta_type*: Type of delta provided. Must be one of ['absolute', "
 "'percentage']."
 msgstr ""
+"*delta_type* : Type de delta fourni. Doit être l'un de ['absolute', "
+"'percentage']."
 
 #: ../../notebooks/climate_change.ipynb:4869
 msgid ""
@@ -431,6 +577,11 @@ msgid ""
 " not present in this Dataset, or if None, will be sampled uniformly "
 "unless they are shared with 'deltas'."
 msgstr ""
+"*ds_weights* (facultatif) : pondérations à utiliser lors de "
+"l'échantillonnage des indicateurs historiques, pour les dimensions autres que 'percentile'/'quantile'. "
+"Les dimensions non présentes dans cet ensemble de données, "
+"ou si None, seront échantillonnées uniformément à moins qu'elles ne "
+"soient partagées avec 'deltas'."
 
 #: ../../notebooks/climate_change.ipynb:4870
 msgid ""
@@ -439,17 +590,25 @@ msgid ""
 "Dataset, or if None, will be sampled uniformly unless they are shared "
 "with 'ds'."
 msgstr ""
+"*delta_weights* (facultatif) : poids à utiliser lors de "
+"l'échantillonnage des deltas, par exemple le long de la dimension 'realization'. Les "
+"dimensions non présentes dans cet ensemble de données, ou si None, seront "
+"échantillonnées uniformément à moins qu'elles ne soient partagées avec 'ds'."
 
 #: ../../notebooks/climate_change.ipynb:4871
 msgid "*n*: Number of samples to generate."
-msgstr ""
+msgstr "*n* : nombre d'échantillons à générer."
 
 #: ../../notebooks/climate_change.ipynb:4872
 msgid "*seed* (optional): Seed to use for the random number generator."
 msgstr ""
+"*seed* (facultatif) : Seed à utiliser pour le générateur de nombres "
+"aléatoires."
 
 #: ../../notebooks/climate_change.ipynb:4873
 msgid ""
 "*return_dist*: Whether to return the full distributions (ds, deltas, fut)"
 " or only the percentiles."
 msgstr ""
+"*return_dist* : s'il faut renvoyer les distributions complètes "
+"(ds, deltas, fut) ou uniquement les centiles."

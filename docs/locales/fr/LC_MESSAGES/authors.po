@@ -71,10 +71,9 @@ msgid ""
 "Richard Arsenault `@richardarsenault "
 "<https://github.com/richardarsenault>`_"
 msgstr ""
+"Richard Arsenault `@richardarsenault "
+"<https://github.com/richardarsenault>`_"
 
 #: ../../../AUTHORS.rst:21
 msgid "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
-msgstr ""
-
-#~ msgid "None yet. Why not be the first?"
-#~ msgstr "Il n'y en a pas encore. Pourquoi ne pas être le premier ?"
+msgstr "Francis Gravel `@mayetea <https://github.com/mayetea>`_"

@@ -30,6 +30,12 @@ msgid ""
 "environment. If `mamba` is not already your default solver, consider "
 "running the following commands in order to speed up the process:"
 msgstr ""
+"Nous vous recommandons fortement d'installer `xhydro` dans un "
+"environnement Anaconda Python. De plus, en raison de la complexité de certains "
+"paquets, le solveur de dépendances par défaut peut prendre beaucoup de temps "
+"pour résoudre l'environnement. Si `mamba` n'est pas déjà votre solveur par "
+"défaut, envisagez d'exécuter les commandes suivantes afin d'accélérer le "
+"processus :"
 
 #: ../../installation.rst:12
 msgid ""
@@ -49,6 +55,9 @@ msgid ""
 "`xhydro` should not be installed directly from `PyPI` unless you are sure"
 " that all requirements are met."
 msgstr ""
+"En raison de la complexité du processus d'installation de "
+"certaines dépendances, `xhydro` ne doit pas être installé directement à partir "
+"de `PyPI`, sauf si vous êtes sûr que toutes les dépendances sont remplies."
 
 #: ../../installation.rst:21
 msgid ""
@@ -56,6 +65,10 @@ msgid ""
 "installation, we recommend following the instructions below, but "
 "replacing the first step with files from the latest release on `PyPI`_."
 msgstr ""
+"Jusqu'à ce que la librairie soit disponible sur `Conda-Forge` "
+"pour une installation plus simplifiée, nous vous recommandons de suivre "
+"les instructions ci-dessous, mais en remplaçant la première étape par les "
+"fichiers de la dernière version sur `PyPI`_."
 
 #: ../../installation.rst:25
 #, fuzzy
@@ -107,7 +120,7 @@ msgstr ""
 
 #: ../../installation.rst:44
 msgid "Download the source code from the `Github repo`_."
-msgstr ""
+msgstr "Téléchargez le code source depuis le `repo Github`_."
 
 #: ../../installation.rst:46
 #, fuzzy
@@ -157,3 +170,6 @@ msgid ""
 "to the repository, you might need to remove the environment and create it"
 " again."
 msgstr ""
+"Ces commandes devraient fonctionner la plupart du temps, mais si "
+"des modifications importantes sont apportées au dépôt, vous "
+"devrez peut-être supprimer l'environnement et le recréer."

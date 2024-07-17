@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/hydrological_modelling.ipynb:9
 msgid "Hydrological modelling module"
-msgstr ""
+msgstr "Module de modélisation hydrologique"
 
 #: ../../notebooks/hydrological_modelling.ipynb:15
 msgid ""
@@ -29,6 +29,9 @@ msgid ""
 "models, but will not prepare the model itself. This should be done "
 "beforehand."
 msgstr ""
+"INFO ``xhydro`` fournit des outils pour exécuter et calibrer des "
+"modèles hydrologiques, mais ne préparera pas le modèle lui-même. Cela devrait "
+"être fait au préalable."
 
 #: ../../notebooks/hydrological_modelling.ipynb:21
 msgid ""
@@ -42,6 +45,16 @@ msgid ""
 "basically anything that is required to configure and execute an "
 "hydrological model."
 msgstr ""
+"``xhydro`` fournit une collection de fonctions qui peuvent servir "
+"de point d'entrée principal pour la modélisation hydrologique. "
+"L'ensemble du framework est basé sur la fonction "
+"``xh.modelling.hydrological_model`` et son dictionnaire ``model_config``, qui contient toutes "
+"les informations nécessaires pour exécuter le modèle hydrologique "
+"donné. Par exemple, selon le modèle, il peut stocker directement des "
+"ejeux de données météorologiques, des chemins d'accès aux jeux de "
+"données (fichiers netCDF ou autres), des fichiers de configuration csv, des "
+"paramètres et, fondamentalement, tout ce qui est nécessaire pour configurer et "
+"exécuter un modèle hydrologique."
 
 #: ../../notebooks/hydrological_modelling.ipynb:24
 msgid ""
@@ -55,12 +68,22 @@ msgid ""
 "``required_only``: Whether to return all possible inputs, or only the "
 "required ones."
 msgstr ""
+"Il incombe alors à l'utilisateur de s'assurer que toutes les "
+"informations requises pour un modèle donné sont fournies dans l'objet "
+"``model_config``, tant lors de l'étape de préparation des données que lors de la mise en "
+"œuvre du modèle hydrologique. Ceci peut être résolu en appelant la fonction "
+"``xh.modelling.get_hydrological_model_inputs`` pour obtenir une liste des clés requises pour un modèle donné, ainsi que "
+"la documentation. Les paramètres de cette fonction sont : - "
+"``model_name`` : Comme indiqué ci-dessous. - ``required_only`` : s'il faut renvoyer "
+"toutes les entrées possibles, ou seulement celles requises."
 
 #: ../../notebooks/hydrological_modelling.ipynb:27
 msgid ""
 "Currently available models are: - ``Hydrotel`` - ``Dummy`` (only used for"
 " testing purposes)"
 msgstr ""
+"Les modèles actuellement disponibles sont : - ``Hydrotel`` - "
+"``Dummy`` (utilisé uniquement à des fins de tests)"
 
 #: ../../notebooks/hydrological_modelling.ipynb:241
 msgid ""
@@ -76,10 +99,22 @@ msgid ""
 "attribute. - ``.get_inputs()`` to retrieve the meteorological inputs. - "
 "``.get_streamflow()`` to retrieve the simulated streamflow."
 msgstr ""
+"Les modèles hydrologiques peuvent différer les uns des autres en "
+"termes d’intrants requis et de fonctions disponibles, mais un effort sera "
+"fait pour les homogénéiser autant que possible à mesure que de nouveaux "
+"modèles seront ajoutés. Actuellement, tous les modèles ont ces 3 fonctions : - "
+"``.run()`` qui exécutera le modèle, reformatera les sorties pour être compatible "
+"avec les outils d'analyse dans ``xhydro``, puis renverra les débits simulés "
+"sous forme de ``xarray.Dataset``. - Les débits seront appelés "
+"``streamflow`` et auront des unités en ``m3 s-1``. - Dans le cas de données 1D (telles que "
+"les stations hydrométriques), cette dimension dans le jeu de "
+"données sera identifiée via un attribut ``cf_role: timeseries_id``. - "
+"``.get_inputs()`` pour récupérer les entrées météorologiques. - "
+"``.get_streamflow()`` pour récupérer les débits simulés."
 
 #: ../../notebooks/hydrological_modelling.ipynb:245
 msgid "Initialising the model (e.g. Hydrotel)"
-msgstr ""
+msgstr "Initialisation du modèle (ex : Hydrotel)"
 
 #: ../../notebooks/hydrological_modelling.ipynb:247
 msgid ""
@@ -90,6 +125,12 @@ msgid ""
 " model, and reformat the outputs to be more inline with CF conventions "
 "and other functions within ``xhydro``."
 msgstr ""
+"L'exemple suivant utilisera le modèle Hydrotel. Il est plus "
+"complexe, avec la plupart de ses paramètres cachés dans les fichiers de "
+"configuration, mais ``xhydro`` peut être utilisé pour facilement mettre à jour les "
+"fichiers de configuration, valider le répertoire du projet et les entrées "
+"météorologiques, exécuter le modèle et reformater les sorties pour être plus conformes "
+"aux conventions CF et aux autres fonctions de ``xhydro``."
 
 #: ../../notebooks/hydrological_modelling.ipynb:249
 msgid ""
@@ -103,6 +144,16 @@ msgid ""
 "be called to update the three configuration files. When called, this "
 "function will overwrite the CSV files on disk."
 msgstr ""
+"Notez que ``xhydro`` ne prépare pas le répertoire du projet "
+"lui-même, ce qui devrait être fait au préalable. Ce que fait la classe, lors du "
+"lancement d'une nouvelle instance de ``xhydro.modelling.Hydrotel``, c'est "
+"autoriser le contrôle sur les entrées situées dans les trois fichiers de "
+"configuration principaux : le fichier de projet, ``simulation.csv`` et "
+"``output.csv``. Les autres arguments pour la classe, obtenus à partir de "
+"``get_hydrological_model_inputs``, sont listés ci-dessus. A tout moment après l'initialisation de la "
+"classe, ``update_config()`` peut être appelée pour mettre à jour les trois "
+"fichiers de configuration. Lorsqu'elle est appelée, cette fonction écrasera "
+"les fichiers CSV sur le disque."
 
 #: ../../notebooks/hydrological_modelling.ipynb:294
 msgid ""
@@ -114,16 +165,26 @@ msgid ""
 "(meteorological grid file)`` need to be specified to guide the model "
 "towards the meteorological data."
 msgstr ""
+"Pour HYDROTEL, ``DATE DEBUT, DATE FIN "
+"et PAS DE TEMPS`` devront toujours être "
+"spécifiés. Ils doivent donc être ajoutés à ``simulation_config`` s'ils "
+"n'existent pas déjà dans ``simulation.csv``. De plus, soit ``FICHIER STATIONS "
+"METEO (fichier des stations météorologiques)`` soit ``FICHIER GRILLE METEO "
+"(fichier de grille météorologique)`` doivent être spécifiés pour guider le "
+"modèle vers les données météorologiques."
 
 #: ../../notebooks/hydrological_modelling.ipynb:296
 msgid ""
 "If using the defaults, streamflow for all river reaches will be "
 "outputted. You can modify ``output.csv`` to change that behaviour."
 msgstr ""
+"Si vous utilisez les valeurs par défaut, le débit de tous les "
+"tronçons de rivière sera affiché. Vous pouvez modifier ``output.csv`` pour "
+"changer ce comportement."
 
 #: ../../notebooks/hydrological_modelling.ipynb:366
 msgid "Validating the meteorological data"
-msgstr ""
+msgstr "Validation des données météorologiques"
 
 #: ../../notebooks/hydrological_modelling.ipynb:368
 msgid ""
@@ -135,6 +196,13 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/3_diagnostics.html"
 "#Health-checks>`__ for the full list of possible checks."
 msgstr ""
+"Quelques contrôles de base seront automatiquement effectués "
+"avant d'exécuter des modèles hydrologiques, mais un utilisateur avancé pourrait "
+"souhaiter effectuer des contrôles de santé plus avancés (par exemple, des "
+"entrées météorologiques irréalistes). Ceci est possible grâce à "
+"l'utilisation de ``xhydro.utils.health_checks``. Consultez la documentation "
+"'xscen' "
+"<https://xscen.readthedocs.io/en/latest/notebooks/3_diagnostics.html#Health-checks>`__ pour la liste complète des vérifications possibles."
 
 #: ../../notebooks/hydrological_modelling.ipynb:370
 msgid ""
@@ -142,10 +210,14 @@ msgid ""
 "meteorological values or sequence of values. Since the data used for this"
 " example is fake, this will raise some flags."
 msgstr ""
+"Dans cet exemple, nous veillerons à ce qu'il n'y ait pas de valeurs "
+"météorologiques ou de séquences de valeurs anormales. Étant donné que les données "
+"utilisées pour cet exemple sont fausses, cette fonction déclenchera certains signaux "
+"d'alarme."
 
 #: ../../notebooks/hydrological_modelling.ipynb:432
 msgid "Executing the model"
-msgstr ""
+msgstr "Exécution du modèle"
 
 #: ../../notebooks/hydrological_modelling.ipynb:434
 msgid ""
@@ -153,10 +225,13 @@ msgid ""
 "the model, when the ``run()`` function is called. In the case of "
 "Hydrotel, these checks will be made:"
 msgstr ""
+"Dans la plupart des cas, quelques vérifications de base seront "
+"effectuées avant d'exécuter le modèle, lorsque la fonction ``run()`` est "
+"appelée. Dans le cas d'Hydrotel, ces vérifications seront effectuées :"
 
 #: ../../notebooks/hydrological_modelling.ipynb:436
 msgid "All files mentioned in the configuration exist."
-msgstr ""
+msgstr "Tous les fichiers mentionnés dans la configuration existent."
 
 #: ../../notebooks/hydrological_modelling.ipynb:437
 msgid ""
@@ -164,22 +239,31 @@ msgid ""
 " named in its configuration file (e.g. ``SLNO_meteo_GC3H.nc.config``, in "
 "this example)."
 msgstr ""
+"Le jeu de données météorologiques a les dimensions, "
+"coordonnées et variables nommées dans son fichier de configuration (par exemple "
+"``SLNO_meteo_GC3H.nc.config``, dans cet exemple)."
 
 #: ../../notebooks/hydrological_modelling.ipynb:438
 msgid "The dataset has a standard calendar."
-msgstr ""
+msgstr "Le jeu de données a un calendrier standard."
 
 #: ../../notebooks/hydrological_modelling.ipynb:439
 msgid "The frequency is uniform (i.e. all time steps are equally spaced)."
 msgstr ""
+"La fréquence est uniforme (c'est-à-dire que tous les pas de temps "
+"sont équidistants)."
 
 #: ../../notebooks/hydrological_modelling.ipynb:440
 msgid "The start and end dates are contained in the dataset."
 msgstr ""
+"Les dates de début et de fin sont contenues dans le jeu de "
+"données."
 
 #: ../../notebooks/hydrological_modelling.ipynb:441
 msgid "The dataset is complete (i.e. no missing values)."
 msgstr ""
+"Le jeu de données est complet (c'est-à-dire aucune valeur "
+"manquante)."
 
 #: ../../notebooks/hydrological_modelling.ipynb:443
 msgid ""
@@ -187,18 +271,26 @@ msgid ""
 "the model. In addition, specific to Hydrotel, the following arguments can"
 " be called:"
 msgstr ""
+"Ce n’est que lorsque ces vérifications seront satisfaites que la "
+"fonction exécutera réellement le modèle. De plus, spécifiques à Hydrotel, on "
+"peut citer les arguments suivants :"
 
 #: ../../notebooks/hydrological_modelling.ipynb:445
 msgid ""
 "``check_missing``: *bool*. Whether to verify for missing data or not. "
 "Since this can be very time-consuming, it is False by default."
 msgstr ""
+"``check_missing`` : *bool*. S'il faut vérifier les données "
+"manquantes ou non. Comme cela peut prendre beaucoup de temps, la valeur par défaut "
+"est False."
 
 #: ../../notebooks/hydrological_modelling.ipynb:446
 msgid ""
 "``dry_run``: *bool*. Put at True to simply print the command line, "
 "without executing it."
 msgstr ""
+"``dry_run`` : *bool*. Mettez True pour imprimer simplement la "
+"ligne de commande, sans l'exécuter."
 
 #: ../../notebooks/hydrological_modelling.ipynb:448
 msgid ""
@@ -208,16 +300,22 @@ msgid ""
 "currently only supports the DEBITS_AVAL (outgoing streamflow) output "
 "option."
 msgstr ""
+"Une fois le modèle exécuté, ``xhydro`` reformatera automatiquement "
+"le NetCDF pour le rapprocher des conventions CF et le rendre compatible "
+"avec les autres modules ``xhydro``. Notez que pour Hydrotel, ce reformatage "
+"ne prend actuellement en charge que l'option de sortie DEBITS_AVAL."
 
 #: ../../notebooks/hydrological_modelling.ipynb:981
 msgid "Model calibration"
-msgstr ""
+msgstr "Calage du modèle"
 
 #: ../../notebooks/hydrological_modelling.ipynb:987
 msgid ""
 "WARNING This is still a work-in-progress. Only the Dummy is currently "
 "implemented."
 msgstr ""
+"AVERTISSEMENT Ceci est encore un travail en cours. Seul le Dummy est "
+"actuellement implémenté."
 
 #: ../../notebooks/hydrological_modelling.ipynb:993
 msgid ""
@@ -226,6 +324,11 @@ msgid ""
 "observations. The calibration functions in ``xhydro`` rely on ``SPOTPY`` "
 "to perform the optimization process."
 msgstr ""
+"Le calage du modèle consiste en une boucle de plusieurs "
+"instances où : les paramètres du modèle sont choisis, le modèle est exécuté, les "
+"résultats sont comparés aux observations. Les fonctions de calage dans "
+"``xhydro`` s'appuient sur ``SPOTPY`` pour effectuer le processus "
+"d'optimisation."
 
 #: ../../notebooks/hydrological_modelling.ipynb:995
 msgid ""
@@ -234,9 +337,16 @@ msgid ""
 "as the calibration target. - ``parameters``: While not necessary to "
 "provide this, it is a reserved keyword used by the optimizer."
 msgstr ""
+"Lors de l'utilisation du module de calage, 2 arguments "
+"supplémentaires sont requis pour le ``model_config`` : - ``Qobs`` : Contient les débits "
+"observés utilisés comme cible de calage. - ``parameters`` : Bien qu'il ne soit "
+"pas nécessaire de fournir cela, il s'agit d'un mot-clé réservé utilisé par "
+"l'optimiseur."
 
 #: ../../notebooks/hydrological_modelling.ipynb:997
 msgid ""
 "The calibration function, ``xh.modelling.perform_calibration``, has these"
 " parameters:"
 msgstr ""
+"La fonction de calage, "
+"``xh.modelling.perform_calibration``, a ces paramètres :"

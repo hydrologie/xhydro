@@ -21,17 +21,20 @@ msgstr ""
 
 #: ../../releasing.rst:3
 msgid "Releasing"
-msgstr ""
+msgstr "Publication de nouvelles versions"
 
 #: ../../releasing.rst:6
 msgid "Deployment"
-msgstr ""
+msgstr "Déploiement"
 
 #: ../../releasing.rst:8
 msgid ""
 "A reminder for the **maintainers** on how to deploy. This section is only"
 " relevant when producing a new point release for the package."
 msgstr ""
+"Un rappel pour les **mainteneurs** sur la façon de déployer. Cette "
+"section n'est pertinente que lors de la production d'une nouvelle version "
+"pour la librairie."
 
 #: ../../releasing.rst:12
 msgid ""
@@ -40,32 +43,45 @@ msgid ""
 "will trigger the ``bump-version.yml`` workflow. Be careful not to commit "
 "changes to files in this folder when preparing a new release."
 msgstr ""
+"Il est important de savoir que toute modification apportée aux "
+"fichiers trouvés dans le dossier ``src/xhydro`` (à l'exception de "
+"``src/xhydro/__init__.py``) déclenchera le flux de travail ``bump-version.yml``. Veillez à ne pas "
+"modifier les fichiers de ce dossier lors de la "
+"préparation d'une nouvelle version."
 
 #: ../../releasing.rst:14
 msgid "Create a new branch from `main` (e.g. `release-0.2.0`)."
 msgstr ""
+"Créez une nouvelle branche à partir de `main` (par exemple "
+"`release-0.2.0`)."
 
 #: ../../releasing.rst:15
 msgid ""
 "Update the `CHANGELOG.rst` file to change the `Unreleased` section to the"
 " current date."
 msgstr ""
+"Mettez à jour le fichier `CHANGELOG.rst` pour remplacer la section "
+"`Unreleased` par la date actuelle."
 
 #: ../../releasing.rst:16
 msgid ""
 "Bump the version in your branch to the next version (e.g. `v0.1.0 -> "
 "v0.2.0`):"
 msgstr ""
+"Passez la version de votre branche à la version suivante (par "
+"exemple `v0.1.0 -> v0.2.0`) :"
 
 #: ../../releasing.rst:24
 msgid "Create a pull request from your branch to `main`."
-msgstr ""
+msgstr "Créez une pull request de votre branche vers `main`."
 
 #: ../../releasing.rst:25
 msgid ""
 "Once the pull request is merged, create a new release on GitHub. On the "
 "`main` branch, run:"
 msgstr ""
+"Une fois la pull request fusionnée, créez un « Release » sur "
+"GitHub. Sur la branche `main`, exécutez :"
 
 #: ../../releasing.rst:32
 msgid ""
@@ -74,10 +90,14 @@ msgid ""
 "release on GitHub. Assuming that the workflow passes, the final release "
 "can then be published on GitHub by finalizing the draft release."
 msgstr ""
+"Cela déclenchera un workflow GitHub pour construire la nouvelle version et la "
+"télécharger sur TestPyPI. Dans le même temps, le workflow GitHub créera un "
+"brouillon de Release sur GitHub. En supposant que le flux de travail réussisse, la "
+"version finale peut ensuite être publiée sur GitHub en finalisant ce brouillon."
 
 #: ../../releasing.rst:34
 msgid "To generate the release notes, run:"
-msgstr ""
+msgstr "Pour générer les notes du Release, exécutez :"
 
 #: ../../releasing.rst:42
 msgid ""
@@ -85,6 +105,10 @@ msgid ""
 "your python console. Copy and paste them into the GitHub release "
 "description, keeping only the changes for the current version."
 msgstr ""
+"Cela imprimera les notes du Release (extraites du fichier "
+"`CHANGELOG.rst`) sur votre console Python. Copiez-collez-les dans la "
+"description de la version GitHub, en conservant uniquement les modifications de la "
+"version actuelle."
 
 #: ../../releasing.rst:44
 msgid ""
@@ -93,6 +117,10 @@ msgid ""
 " may approve this workflow (notifications will be sent) to trigger the "
 "upload to PyPI."
 msgstr ""
+"Une fois la nouvelle version publiée, le workflow `publish-pypi.yml` "
+"passera en mode « en attente d'approbation » sur Github Actions. Seuls les "
+"utilisateurs autorisés peuvent approuver ce workflow (des notifications seront "
+"envoyées) pour déclencher le téléchargement sur PyPI."
 
 #: ../../releasing.rst:48
 msgid ""
@@ -102,10 +130,15 @@ msgid ""
 "the package as broken, as well as yank the package (mark the version "
 "\"broken\") on PyPI."
 msgstr ""
+"Les téléchargements vers PyPI ne peuvent **jamais** être écrasés. "
+"Si vous faites une erreur, vous devrez modifier la version et rééditer le "
+"package. Si le package téléchargé sur PyPI est cassé, vous devez modifier la "
+"version de GitHub pour marquer le package comme cassé, ainsi que retirer le "
+"package (marquer la version \broken\) sur PyPI."
 
 #: ../../releasing.rst:51
 msgid "Packaging"
-msgstr ""
+msgstr "Packaging"
 
 #: ../../releasing.rst:53
 msgid ""
@@ -114,50 +147,63 @@ msgid ""
 "update the pip-installable package (wheel and source release) on PyPI as "
 "well as the binary on conda-forge."
 msgstr ""
+"Lorsqu'une nouvelle version a été créée (les fonctionnalités ont "
+"été intégrées avec succès, la couverture des tests et la stabilité sont "
+"adéquates), les responsables doivent mettre à jour le package installable par pip "
+"(wheel et version source) sur PyPI ainsi que le binaire sur conda-forge."
 
 #: ../../releasing.rst:56
 msgid "The simple approach"
-msgstr ""
+msgstr "L'approche simple"
 
 #: ../../releasing.rst:58
 msgid ""
 "The simplest approach to packaging for general support (pip wheels) "
 "requires that `flit` be installed:"
 msgstr ""
+"L'approche la plus simple du packaging pour le support général "
+"(wheel pip) nécessite que `flit` soit installé :"
 
 #: ../../releasing.rst:64
 msgid ""
 "From the command line on your Linux distribution, simply run the "
 "following from the clone's main dev branch:"
 msgstr ""
+"À partir de la ligne de commande de votre distribution Linux, "
+"exécutez simplement ce qui suit depuis la branche de développement principale "
+"du clone :"
 
 #: ../../releasing.rst:74
 msgid ""
 "The new version based off of the version checked out will now be "
 "available via `pip` (`pip install xhydro`)."
 msgstr ""
+"La nouvelle version sera désormais "
+"disponible via `pip` (`pip install xhydro`)."
 
 #: ../../releasing.rst:77
 msgid "Releasing on conda-forge"
-msgstr ""
+msgstr "Sortie sur conda-forge"
 
 #: ../../releasing.rst:80
 msgid "Initial Release"
-msgstr ""
+msgstr "Première version"
 
 #: ../../releasing.rst:82
 msgid ""
 "Before preparing an initial release on conda-forge, we *strongly* suggest"
 " consulting the following links:"
 msgstr ""
+"Avant de préparer une première version sur conda-forge, nous vous "
+"suggérons *fortement* de consulter les liens suivants :"
 
 #: ../../releasing.rst:83
 msgid "https://conda-forge.org/docs/maintainer/adding_pkgs.html"
-msgstr ""
+msgstr "https://conda-forge.org/docs/maintainer/adding_pkgs.html"
 
 #: ../../releasing.rst:84
 msgid "https://github.com/conda-forge/staged-recipes"
-msgstr ""
+msgstr "https://github.com/conda-forge/staged-recipes"
 
 #: ../../releasing.rst:86
 msgid ""
@@ -165,18 +211,26 @@ msgid ""
 "packages to the conda-forge repository, we strongly suggest using the "
 "`grayskull` tool::"
 msgstr ""
+"Afin de créer une nouvelle recette de build conda, à utiliser lors de "
+"la proposition de packages au dépôt conda-forge, nous vous "
+"suggérons fortement d'utiliser l'outil `grayskull` ::"
 
 #: ../../releasing.rst:93
 msgid ""
 "For more information on `grayskull`, please see the following link: "
 "https://github.com/conda/grayskull"
 msgstr ""
+"Pour plus d'informations sur `grayskull`, veuillez consulter le "
+"lien suivant : https://github.com/conda/grayskull"
 
 #: ../../releasing.rst:95
 msgid ""
 "Before updating the main conda-forge recipe, we echo the conda-forge "
 "documentation and *strongly* suggest performing the following checks:"
 msgstr ""
+"Avant de mettre à jour la recette principale pour conda-forge, nous "
+"faisons écho à la documentation de conda-forge et suggérons *fortement* "
+"d'effectuer les vérifications suivantes :"
 
 #: ../../releasing.rst:96
 msgid ""
@@ -184,16 +238,21 @@ msgid ""
 " the tagged version, with open or pinned versions for the `host` "
 "requirements."
 msgstr ""
+"Assurez-vous que les dépendances et les versions de dépendance "
+"correspondent à celles de la version tagguée, avec des versions ouvertes ou épinglées "
+"pour les exigences de « l'hôte »."
 
 #: ../../releasing.rst:97
 msgid ""
 "If possible, configure tests within the conda-forge build CI (e.g. "
 "`imports: xhydro`, `commands: pytest xhydro`)."
 msgstr ""
+"Si possible, configurez les tests dans le build CI de conda-forge "
+"(par exemple : `imports: xhydro`, `commands: pytest xhydro`)."
 
 #: ../../releasing.rst:100
 msgid "Subsequent releases"
-msgstr ""
+msgstr "Versions ultérieures"
 
 #: ../../releasing.rst:102
 msgid ""
@@ -203,10 +262,16 @@ msgid ""
 "conda-forge feedstock maintainers to verify that the package is building "
 "properly before merging the Pull Request to the main branch."
 msgstr ""
+"Si la recette feedstock de conda-forge est construite à "
+"partir de PyPI, alors lorsqu'une nouvelle version est publiée sur PyPI, "
+"`regro-cf-autotick-bot` ouvrira automatiquement les demandes d'extraction sur le "
+"feedstock de conda-forge. Il appartient aux responsables du feedstock de "
+"conda-forge de vérifier que le package est correctement construit avant de "
+"fusionner la Pull Request avec la branche principale."
 
 #: ../../releasing.rst:105
 msgid "Building sources for wide support with `manylinux` image"
-msgstr ""
+msgstr "Création de sources pour un large support avec l'image `manylinux`"
 
 #: ../../releasing.rst:108
 msgid ""
@@ -214,6 +279,9 @@ msgid ""
 "to C/C++ dependencies. It is not necessary to perform the following when "
 "building pure Python packages."
 msgstr ""
+"Cette section sert à créer des fichiers sources qui renvoient ou "
+"fournissent des liens vers des dépendances C/C++. Il n'est pas nécessaire "
+"d'effectuer les opérations suivantes lors de la création de packages Python purs."
 
 #: ../../releasing.rst:111
 msgid ""
@@ -221,10 +289,14 @@ msgid ""
 " building wheels using the `PyPA`'s `manylinux` docker images (at time of"
 " writing, we endorse using `manylinux_2_24_x86_64`)."
 msgstr ""
+"Afin d'assurer une meilleure compatibilité entre les "
+"architectures, nous suggérons de créer des wheels en utilisant les images docker "
+"`manylinux` de `PyPA` (au moment de la rédaction, nous endossons l'utilisation de "
+"`manylinux_2_24_x86_64`)."
 
 #: ../../releasing.rst:113
 msgid "With `docker` installed and running, begin by pulling the image:"
-msgstr ""
+msgstr "Avec `docker` installé et exécuté, commencez par extraire l'image :"
 
 #: ../../releasing.rst:119
 msgid ""
@@ -232,12 +304,17 @@ msgid ""
 "providing access to the `src/xhydro` source files by linking them to the "
 "running image:"
 msgstr ""
+"À partir du dossier source xHydro, nous pouvons entrer dans le "
+"conteneur Docker, donnant accès aux fichiers source `src/xhydro` en les liant à "
+"l'image en cours d'exécution :"
 
 #: ../../releasing.rst:125
 msgid ""
 "Finally, to build the wheel, we run it against the provided Python3.9 "
 "binary:"
 msgstr ""
+"Enfin, pour construire le wheel, nous l'exécutons avec le binaire "
+"Python3.9 fourni :"
 
 #: ../../releasing.rst:131
 msgid ""
@@ -245,3 +322,6 @@ msgid ""
 "-none-any.whl\" and \"xHydro-1.2.3.tar.gz\"). We can now leave our docker"
 " container (`exit`) and continue with uploading the files to PyPI:"
 msgstr ""
+"Cela placera ensuite deux fichiers dans `xhydro/dist/` "
+"(\xhydro-1.2.3-py3-none-any.whl\ et \xHydro-1.2.3.tar.gz\). Nous pouvons maintenant quitter notre "
+"conteneur Docker (`exit`) et continuer à télécharger les fichiers sur PyPI :"
