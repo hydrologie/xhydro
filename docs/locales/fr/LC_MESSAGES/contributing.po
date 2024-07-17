@@ -494,12 +494,12 @@ msgstr "Signalez les bogues à https://github.com/hydrologie/xhydro/issues."
 
 #: ../../../CONTRIBUTING.rst:193
 msgid "Pull Request Guidelines"
-msgstr "Lignes directrices pour les demandes de tirage (pull request)"
+msgstr "Lignes directrices pour les Pull requests"
 
 #: ../../../CONTRIBUTING.rst:195
 msgid "Before you submit a pull request, check that it meets these guidelines:"
 msgstr ""
-"Avant de soumettre une demande de tirage, vérifiez qu'elle respecte ces "
+"Avant de soumettre une Pull Request, vérifiez qu'elle respecte ces "
 "directives :"
 
 #: ../../../CONTRIBUTING.rst:197
