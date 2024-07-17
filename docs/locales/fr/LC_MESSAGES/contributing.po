@@ -165,7 +165,7 @@ msgstr ""
 "Utilisateurs d'Anaconda Python : En raison de la complexité de certains "
 "paquets, le résolveur de dépendances par défaut peut prendre beaucoup de "
 "temps pour résoudre l'environnement. Envisagez d'exécuter les commandes "
-"suivantes afin d'accélérer le processus ::"
+"suivantes afin d'accélérer le processus :"
 
 #: ../../../CONTRIBUTING.rst:66
 msgid ""
@@ -255,7 +255,7 @@ msgstr ""
 #: ../../../CONTRIBUTING.rst:98
 #, fuzzy
 msgid "You can also run the hooks manually with:"
-msgstr "Vous pouvez également exécuter les crochets manuellement avec ::"
+msgstr "Vous pouvez également exécuter les crochets manuellement avec :"
 
 #: ../../../CONTRIBUTING.rst:104
 #, fuzzy
@@ -264,12 +264,12 @@ msgid ""
 "the `--no-verify` flag to `git commit`."
 msgstr ""
 "Si vous voulez ignorer temporairement les crochets ``pre-commit``, vous "
-"pouvez passer l'argument ``-no-verify`` à `$ git commit`."
+"pouvez passer l'argument ``-no-verify`` à `git commit`."
 
 #: ../../../CONTRIBUTING.rst:106
 #, fuzzy
 msgid "Create a branch for local development:"
-msgstr "Créer une branche pour le développement local ::"
+msgstr "Créer une branche pour le développement local :"
 
 #: ../../../CONTRIBUTING.rst:112
 msgid "Now you can make your changes locally."
@@ -283,7 +283,7 @@ msgid ""
 msgstr ""
 "Lorsque vous avez terminé les changements, nous suggérons **fortement** "
 "d'exécuter les tests dans votre environnement ou avec l'aide de ``tox`` "
-"::"
+":"
 
 #: ../../../CONTRIBUTING.rst:125
 msgid ""
@@ -321,7 +321,7 @@ msgstr "export XHYDRO_DATA_DIR=$(pwd)/.cache"
 #: ../../../CONTRIBUTING.rst:131
 #, fuzzy
 msgid "Commit your changes and push your branch to GitHub:"
-msgstr "Validez vos modifications et envoyez votre branche sur GitHub ::"
+msgstr "Validez vos modifications et envoyez votre branche sur GitHub :"
 
 #: ../../../CONTRIBUTING.rst:139
 #, fuzzy
@@ -358,7 +358,7 @@ msgstr ""
 " de votre Pull Request. Ce processus de compilation peut parfois prendre "
 "plusieurs minutes. Si vous êtes en train de faire des changements qui "
 "affectent la documentation et que vous souhaitez gagner du temps, vous "
-"pouvez compiler et tester vos changements localement avec ::"
+"pouvez compiler et tester vos changements localement avec :"
 
 #: ../../../CONTRIBUTING.rst:155
 msgid ""
@@ -568,7 +568,7 @@ msgstr "Conseils"
 #: ../../../CONTRIBUTING.rst:210
 #, fuzzy
 msgid "To run a subset of tests:"
-msgstr "Pour exécuter un sous-ensemble de tests ::"
+msgstr "Pour exécuter un sous-ensemble de tests :"
 
 #: ../../../CONTRIBUTING.rst:216
 msgid "You can also directly call a specific test class or test function using:"
@@ -587,7 +587,7 @@ msgstr ""
 #: ../../../CONTRIBUTING.rst:224
 #, fuzzy
 msgid "To run specific code style checks:"
-msgstr "Pour effectuer des contrôles de style de code spécifiques ::"
+msgstr "Pour effectuer des contrôles de style de code spécifiques :"
 
 #: ../../../CONTRIBUTING.rst:234
 #, fuzzy

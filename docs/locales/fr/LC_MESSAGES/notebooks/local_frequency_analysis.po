@@ -53,7 +53,6 @@ msgstr ""
 "utilisant des séries chronologiques historiques provenant de différents "
 "sites. Nous commençons par obtenir un ensemble de données comprenant des "
 "informations hydrologiques. Ici, nous utilisons la bibliothèque `xdataset"
-" "
 "<https://hydrologie.github.io/xdatasets/notebooks/getting_started.html>`__"
 " pour obtenir des données hydrologiques du `Ministère de l'Environnement,"
 " de la Lutte contre les changements climatiques, de la Faune et des Parcs"
@@ -182,15 +181,15 @@ msgid ""
 "``op``: the operation to compute. One of ``\"max\"``, ``\"min\"``, "
 "``\"mean\"``, or ``\"sum\"``."
 msgstr ""
-"``op`` : l'opération à calculer. Parmi \"max\", \"min\", \"mean\", "
-"\"sum\"."
+"``op`` : l'opération à calculer. Parmi ``\"max\"``, ``\"min\"``, ``\"mean\"``, "
+"``\"sum\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2641
 #, fuzzy
 msgid "``input_var``: the name of the variable. Defaults to ``\"streamflow\"``."
 msgstr ""
 "``input_var`` : le nom de la variable. La valeur par défaut est "
-"\"streamflow\"."
+"``\"streamflow\"``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2642
 #, fuzzy
@@ -198,8 +197,8 @@ msgid ""
 "``window``: the size of the rolling window. A ``\"mean\"`` is performed "
 "on the rolling window prior to the ``op`` operation."
 msgstr ""
-"``window`` : la taille de la fenêtre roulante. Une \"moyenne\" est "
-"effectuée sur la fenêtre roulante avant l'opération ``op``."
+"``window`` : la taille de la fenêtre roulante. Un ``\"mean\"`` est "
+"effectué sur la fenêtre mobile avant l'opération ``op``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:2643
 msgid ""
@@ -294,9 +293,9 @@ msgid ""
 msgstr ""
 "``distributions`` : liste de distributions `SciPy "
 "<https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-"
-"distributions>`__. La valeur par défaut est [\"expon\", \"gamma\", "
+"distributions>`__. La valeur par défaut est ``[\"expon\", \"gamma\", "
 "\"genextreme\", \"genpareto\", \"gumbel_r\", \"pearson3\", "
-"\"weibull_min\"]."
+"\"weibull_min\"]``."
 
 #: ../../notebooks/local_frequency_analysis.ipynb:4180
 #, fuzzy
