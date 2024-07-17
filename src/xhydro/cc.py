@@ -25,7 +25,7 @@ def sampled_indicators(
     ds_weights: Optional[xr.DataArray] = None,
     delta_weights: Optional[xr.DataArray] = None,
     n: int = 50000,
-    seed: int = None,
+    seed: Optional[int] = None,
     return_dist: bool = False,
 ) -> Union[xr.Dataset, tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]]:
     """Compute future indicators using a perturbation approach and random sampling.
@@ -47,7 +47,7 @@ def sampled_indicators(
         Dimensions not present in this Dataset, or if None, will be sampled uniformly unless they are shared with 'ds'.
     n : int
         Number of samples to generate.
-    seed : int
+    seed : int, optional
         Seed to use for the random number generator.
     return_dist : bool
         Whether to return the full distributions (ds, deltas, fut) or only the percentiles.
@@ -182,7 +182,7 @@ def _percentile_weights(da: Union[xr.DataArray, xr.Dataset]) -> xr.DataArray:
 
 
 def _weighted_sampling(
-    ds: xr.Dataset, weights: xr.DataArray, n: int = 50000, seed: int = None
+    ds: xr.Dataset, weights: xr.DataArray, n: int = 50000, seed: Optional[int] = None
 ) -> xr.Dataset:
     """Sample from a distribution with weights.
 
@@ -194,7 +194,7 @@ def _weighted_sampling(
         Weights to use when sampling.
     n : int
         Number of samples to generate.
-    seed : int
+    seed : int, optional
         Seed to use for the random number generator.
 
     Returns

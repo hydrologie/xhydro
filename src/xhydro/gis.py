@@ -7,6 +7,7 @@ import tempfile
 import urllib.request
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -23,7 +24,7 @@ import xarray as xr
 import xvec  # noqa: F401
 from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
-from pystac.extensions.projection import ProjectionExtension as proj
+from pystac.extensions.projection import ProjectionExtension as proj  # noqa: N813
 from shapely import Point
 from tqdm.auto import tqdm
 from xrspatial import aspect, slope
@@ -82,12 +83,12 @@ def watershed_delineation(
     opener = urllib.request.build_opener(proxy)
     urllib.request.install_opener(opener)
 
-    tmp_dir = os.path.join(tempfile.gettempdir(), "polygons")
-    Path(tmp_dir).mkdir(parents=True, exist_ok=True)
-    polygon_path = os.path.join(tmp_dir, os.path.basename(url))
+    tmp_dir = Path(tempfile.gettempdir()).joinpath("polygons")
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    polygon_path = tmp_dir.joinpath(Path(url).name)
 
-    if not os.path.isfile(polygon_path):
-        urllib.request.urlretrieve(url, polygon_path)
+    if not polygon_path.is_file():
+        urllib.request.urlretrieve(url, polygon_path)  # noqa: S310
 
     gdf_hydrobasins = gpd.read_parquet(polygon_path)
 
@@ -124,7 +125,7 @@ def watershed_delineation(
 
 def watershed_properties(
     gdf: gpd.GeoDataFrame,
-    unique_id: str = None,
+    unique_id: str | None = None,
     projected_crs: int = 6622,
     output_format: str = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
@@ -140,7 +141,7 @@ def watershed_properties(
     ----------
     gdf : gpd.GeoDataFrame
         GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
-    unique_id : str
+    unique_id : str, optional
         The column name in the GeoDataFrame that serves as a unique identifier.
     projected_crs : int
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
@@ -237,13 +238,13 @@ def _compute_watershed_boundaries(
 def _recursive_upstream_lookup(
     gdf: gpd.GeoDataFrame,
     direct_upstream_indexes: list,
-    all_upstream_indexes: list = None,
+    all_upstream_indexes: list | None = None,
 ):
     """Recursive function to iterate over each upstream sub-basin until all sub-basins in a watershed are identified.
 
     Parameters
     ----------
-    gdf :  gpd.GeoDataFrame
+    gdf : gpd.GeoDataFrame
         HydroBASINS level 12 dataset in GeodataFrame format stream of the pour point.
     direct_upstream_indexes : list
         List of all sub-basins indexes directly upstream.
@@ -269,7 +270,8 @@ def _recursive_upstream_lookup(
 
 
 def _flatten(x, dim="time"):
-    assert isinstance(x, xr.DataArray)
+    # FIXME: assert statements should only be found in test code
+    assert isinstance(x, xr.DataArray)  # noqa: S101
     if len(x[dim].values) > len(set(x[dim].values)):
         x = x.groupby(dim).map(stackstac.mosaic)
 
@@ -278,7 +280,7 @@ def _flatten(x, dim="time"):
 
 def surface_properties(
     gdf: gpd.GeoDataFrame,
-    unique_id: str = None,
+    unique_id: str | None = None,
     projected_crs: int = 6622,
     output_format: str = "geopandas",
     operation: str = "mean",
@@ -299,7 +301,7 @@ def surface_properties(
     ----------
     gdf : gpd.GeoDataFrame
         GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
-    unique_id : str
+    unique_id : str, optional
         The column name in the GeoDataFrame that serves as a unique identifier.
     projected_crs : int
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
@@ -455,7 +457,7 @@ def _count_pixels_from_bbox(
 
 def land_use_classification(
     gdf: gpd.GeoDataFrame,
-    unique_id: str = None,
+    unique_id: str | None = None,
     output_format: str = "geopandas",
     collection="io-lulc-9-class",
     year: str | int = "latest",
@@ -523,7 +525,7 @@ def land_use_classification(
 def land_use_plot(
     gdf: gpd.GeoDataFrame,
     idx: int = 0,
-    unique_id: str = None,
+    unique_id: str | None = None,
     collection: str = "io-lulc-9-class",
     year: str | int = "latest",
 ) -> None:

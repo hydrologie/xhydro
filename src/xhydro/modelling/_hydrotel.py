@@ -3,7 +3,7 @@
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # noqa: S404
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
@@ -68,7 +68,7 @@ class Hydrotel(HydrologicalModel):
         output_config = output_config or dict()
 
         self.project_dir = Path(project_dir)
-        if not os.path.isdir(self.project_dir):
+        if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
 
         self.config_files = dict()
@@ -102,7 +102,7 @@ class Hydrotel(HydrologicalModel):
 
             # If the configuration files are missing, copy the defaults to the project folder
             for cfg in ["project", "simulation", "output"]:
-                if not os.path.isfile(self.config_files[cfg]):
+                if not Path(self.config_files[cfg]).is_file():
                     shutil.copy(
                         Path(__file__).parent
                         / "data"
@@ -137,7 +137,7 @@ class Hydrotel(HydrologicalModel):
                 )
             )
 
-            if not os.path.isdir(self.simulation_dir):
+            if not self.simulation_dir.is_dir():
                 raise ValueError(
                     f"The {self.simulation_dir} folder does not exist in the project directory."
                 )
@@ -211,7 +211,7 @@ class Hydrotel(HydrologicalModel):
                 / "simulation"
                 / self.project_config["SIMULATION COURANTE"]
             )
-            if not os.path.isdir(self.simulation_dir):
+            if not self.simulation_dir.is_dir():
                 raise ValueError(
                     f"The {self.simulation_dir} folder does not exist in the project directory."
                 )
@@ -235,8 +235,8 @@ class Hydrotel(HydrologicalModel):
         self,
         check_missing: bool = False,
         dry_run: bool = False,
-        xr_open_kwargs_in: dict = None,
-        xr_open_kwargs_out: dict = None,
+        xr_open_kwargs_in: Optional[dict] = None,
+        xr_open_kwargs_out: Optional[dict] = None,
     ) -> Union[str, xr.Dataset]:
         """Run the simulation.
 
@@ -270,7 +270,7 @@ class Hydrotel(HydrologicalModel):
             return f"{self.executable} {self.config_files['project']} -t 1"
 
         # Run the simulation
-        subprocess.run(
+        subprocess.run(  # noqa: S603
             [self.executable, str(self.config_files["project"]), "-t", "1"],
             check=True,
         )
@@ -578,8 +578,8 @@ class Hydrotel(HydrologicalModel):
             )
 
         # Remove the original file and rename the new one
-        os.remove(self.simulation_dir / "resultat" / "debit_aval.nc")
-        os.rename(
+        Path(self.simulation_dir / "resultat" / "debit_aval.nc").unlink()
+        Path.rename(
             self.simulation_dir / "resultat" / "debit_aval_tmp.nc",
             self.simulation_dir / "resultat" / "debit_aval.nc",
         )
@@ -659,7 +659,7 @@ def _read_csv(file: Union[str, os.PathLike]) -> dict:
     Also, some entries in output.csv are semicolons themselves, which makes it impossible to read
     the file with pandas or other libraries.
     """
-    with open(file) as f:
+    with Path(file).open() as f:
         lines = f.readlines()
 
     # Manage cases where a semicolon might be part of the value
@@ -705,7 +705,7 @@ def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
     d = {k.replace(" ", "_"): v for k, v in d.items()}
 
     # Open the file
-    with open(file) as f:
+    with Path(file).open() as f:
         lines = f.readlines()
     lines = [line.replace(";;", ";semicolon") for line in lines]
 
@@ -725,5 +725,5 @@ def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
     lines = [line.replace("semicolon", ";") for line in lines]
 
     # Save the file
-    with open(file, "w") as f:
+    with Path(file).open("w") as f:
         f.writelines(lines)

@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import ravenpy.config.emulators
@@ -79,9 +79,9 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
-        workdir: Union[str, os.PathLike] = None,
-        rain_snow_fraction="RAINSNOW_DINGMAN",
-        evaporation="PET_PRIESTLEY_TAYLOR",
+        workdir: Optional[Union[str, os.PathLike]] = None,
+        rain_snow_fraction: str = "RAINSNOW_DINGMAN",
+        evaporation: str = "PET_PRIESTLEY_TAYLOR",
         **kwargs,
     ):
         if workdir is None:
