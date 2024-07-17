@@ -57,7 +57,7 @@ msgstr "Open source"
 
 #: ../../../README.rst:10
 msgid "|license| |ossf|"
-msgstr "|licence| |ossf|"
+msgstr "|license| |ossf|"
 
 #: ../../../README.rst:61
 msgid "License"
