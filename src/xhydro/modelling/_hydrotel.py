@@ -579,8 +579,7 @@ class Hydrotel(HydrologicalModel):
 
         # Remove the original file and rename the new one
         Path(self.simulation_dir / "resultat" / "debit_aval.nc").unlink()
-        Path.rename(
-            self.simulation_dir / "resultat" / "debit_aval_tmp.nc",
+        Path(self.simulation_dir / "resultat" / "debit_aval_tmp.nc").rename(
             self.simulation_dir / "resultat" / "debit_aval.nc",
         )
 
