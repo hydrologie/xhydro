@@ -210,23 +210,20 @@ msgstr ""
 "embranchement sur le dépôt ``xhydro`` sur GitHub."
 
 #: ../../../CONTRIBUTING.rst:80
-#, fuzzy
 msgid "Otherwise, if you are a collaborator, clone the ``xhydro`` repo locally:"
 msgstr ""
-"Si vous n'êtes pas encore un collaborateur de `xhydro`, créez un "
-"embranchement sur le dépôt ``xhydro`` sur GitHub."
+"Sinon, si vous êtes un collaborateur de `xhydro`, clonez "
+"le dépôt ``xhydro`` localement."
 
 #: ../../../CONTRIBUTING.rst:86
-#, fuzzy
 msgid ""
 "Install your local copy into a development environment. You can create a "
 "new Anaconda development environment with:"
 msgstr ""
 "Installez votre copie locale dans un environnement de développement. Vous"
-" pouvez créer un nouvel environnement de développement Anaconda avec ::"
+" pouvez créer un nouvel environnement de développement Anaconda avec :"
 
 #: ../../../CONTRIBUTING.rst:94
-#, fuzzy
 msgid ""
 "This installs ``xhydro`` in an \"editable\" state, meaning that changes "
 "to the code are immediately seen by the environment. To ensure a "
