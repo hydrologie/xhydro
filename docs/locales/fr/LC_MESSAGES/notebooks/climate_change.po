@@ -145,7 +145,7 @@ msgid ""
 msgstr ""
 "Indicateurs fréquentiels, tels que le débit maximum sur 20 ans "
 "(*Qmax20*) ou le débit minimum moyenné sur 7 jours de récurrence 2 ans en été (*Q7min2_summer*). "
-"Leur calcul est déjà couvert dans le notebook `Analyses fréquentielles locales <local_ Frequency_analysis.ipynb>`__."
+"Leur calcul est déjà couvert dans le notebook `Analyses fréquentielles locales <local_frequency_analysis.ipynb>`__."
 
 #: ../../notebooks/climate_change.ipynb:954
 msgid "Non frequencial indicators, such as the average yearly flow."
