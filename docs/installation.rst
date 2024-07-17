@@ -34,8 +34,6 @@ This is the preferred method to install `xHydro`, as it will always install the 
 
 If for some reason you wish to install the `PyPI` version of `xhydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
 
-
-
 From sources
 ------------
 `xHydro` is still under active development and the latest features might not yet be available on `PyPI`.

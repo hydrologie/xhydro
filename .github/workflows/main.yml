@@ -47,7 +47,12 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Set up Python${{ matrix.python-version }}
@@ -78,7 +83,21 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ai4edataeuwest.blob.core.windows.net:443
+            cdn.proj.org:443
+            conda.anaconda.org:443
+            elevationeuwest.blob.core.windows.net:443
+            files.pythonhosted.org:443
+            github.com:443
+            objects.githubusercontent.com:443
+            planetarycomputer.microsoft.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            s3.us-east-2.wasabisys.com:443
+            s3.wasabisys.com:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
@@ -199,7 +218,21 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ai4edataeuwest.blob.core.windows.net:443
+            cdn.proj.org:443
+            conda.anaconda.org:443
+            elevationeuwest.blob.core.windows.net:443
+            files.pythonhosted.org:443
+            github.com:443
+            objects.githubusercontent.com:443
+            planetarycomputer.microsoft.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            s3.us-east-2.wasabisys.com:443
+            s3.wasabisys.com:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
