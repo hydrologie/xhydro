@@ -68,15 +68,15 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "pip >=23.3.0",
-  "bump-my-version >=0.18.3",
+  "pip >=24.0",
+  "bump-my-version >=0.23.0",
   "watchdog >=3.0.0",
   "flake8 >=7.0.0",
   "flake8-alphabetize >=0.0.21",
   "flake8-rst-docstrings >=0.3.0",
   "flit >=3.9.0",
-  "tox >=4.5.1",
-  "coverage >=7.0.0",
+  "tox >=4.15.1",
+  "coverage >=7.5.0",
   "coveralls >=4.0.0",
   "mypy",
   "pytest >=7.3.1",
@@ -85,7 +85,7 @@ dev = [
   "blackdoc ==0.3.9",
   "isort ==5.13.2",
   "pre-commit >=3.3.2",
-  "ruff >=0.3.0"
+  "ruff >=0.4.0"
 ]
 docs = [
   # Documentation and examples
@@ -96,7 +96,7 @@ docs = [
   "jupyter_client",
   "nbsphinx",
   "nbval",
-  "sphinx",
+  "sphinx >=7.0.0",
   "sphinx-autoapi",
   "sphinx-codeautolink",
   "sphinx-copybutton",
@@ -136,6 +136,33 @@ serialize = [
 ]
 
 [[tool.bumpversion.files]]
+filename = "CHANGELOG.rst"
+include_bumps = ["release"]
+search = """\
+`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+--------------------------------------------------------
+"""
+replace = """\
+`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+--------------------------------------------------------
+
+Contributors:
+
+Changes
+^^^^^^^
+* No change.
+
+Fixes
+^^^^^
+* No change.
+
+.. _changes_{new_version}:
+
+`v{new_version} <https://github.com/TC-FF/xhydro/tree/{new_version}>`_
+------------------------------------------------------
+"""
+
+[[tool.bumpversion.files]]
 filename = "src/xhydro/__init__.py"
 search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
@@ -161,9 +188,9 @@ values = [
 ]
 
 [tool.coverage.run]
-relative_files = true
-include = ["src/xhydro/*"]
 omit = ["tests/*.py"]
+relative_files = true
+source = "xhydro"
 
 [tool.flit.sdist]
 include = [
@@ -267,20 +294,37 @@ exclude = [
 ]
 
 [tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
-ignore = [
-  "D205",
-  "D400",
-  "D401"
+extend-select = [
+  "RUF022" # unsorted-dunder-all
 ]
+ignore = [
+  "COM", # commas
+  "D205", # blank-line-after-summary
+  "D400", # ends-in-period
+  "D401" # non-imperative-mood
+]
+preview = true
 select = [
-  "C9",
-  "D",
-  "E",
-  "F",
-  "W"
+  "BLE", # blind-except
+  "C90", # mccabe-complexity
+  "D", # docstrings
+  "E", # pycodestyle errors
+  "FLY002", # static-join-to-fstring
+  "G", # logging-format
+  "N", # naming conventions
+  "PERF", # iterator performance
+  "PTH", # pathlib
+  "RUF010", # explicit-f-string-type-conversion
+  "RUF013", # implicit-optional
+  "S", # bandit
+  "UP", # python version conventions
+  "W" # pycodestyle warnings
 ]
 
 [tool.ruff.lint.flake8-bandit]
@@ -290,7 +334,7 @@ check-typed-exception = true
 known-first-party = ["xhydro"]
 case-sensitive = true
 detect-same-package = false
-lines-after-imports = 1
+lines-after-imports = 2
 no-lines-before = ["future", "standard-library"]
 
 [tool.ruff.lint.mccabe]
@@ -299,7 +343,7 @@ max-complexity = 15
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["E402"]
 "src/xhydro/**/__init__.py" = ["F401", "F403"]
-"tests/**/*.py" = ["D100", "D101", "D102", "D103"]
+"tests/**/*.py" = ["D100", "D101", "D102", "D103", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180
