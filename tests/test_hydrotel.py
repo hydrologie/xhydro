@@ -404,7 +404,7 @@ class TestHydrotel:
             "SLNO.csv",
             use_defaults=True,
         )
-        assert Path(tmpdir / "simulation" / "simulation" / "simulation.csv").unlink()
+        assert Path(tmpdir / "simulation" / "simulation" / "simulation.csv").exists()
 
     def test_errors(self, tmpdir):
         # Missing project folder
