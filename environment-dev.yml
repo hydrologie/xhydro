@@ -24,6 +24,7 @@ dependencies:
   - spotpy
   - stackstac
   - statsmodels
+  - ravenpy
   - tqdm
   - xarray >=2023.11.0
   - xarray-spatial

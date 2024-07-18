@@ -98,7 +98,7 @@ msgid ""
 msgstr ""
 
 #: ../../../CHANGES.rst:28
-msgid "`HISTORY.rst` has been renamed to `CHANGES.rst`."
+msgid "`HISTORY.rst` has been renamed to `CHANGELOG.rst`."
 msgstr ""
 
 #: ../../../CHANGES.rst:29

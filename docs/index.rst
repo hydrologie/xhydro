@@ -12,8 +12,9 @@ Welcome to xHydro's documentation!
    planification
    apidoc/modules
    contributing
+   releasing
    authors
-   changes
+   changelog
 
 .. toctree::
    :maxdepth: 1

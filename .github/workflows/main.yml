@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - .cruft.json
-      - CHANGES.rst
+      - CHANGELOG.rst
       - README.rst
       - pyproject.toml
       - tests/test_xhydro.py
@@ -48,9 +48,10 @@ jobs:
         uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
         with:
           egress-policy: audit
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
@@ -78,9 +79,10 @@ jobs:
         uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
         with:
           egress-policy: audit
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@422500192359a097648154e8db4e39bdb6c6eed7 # v1.8.1
         with:
           cache-downloads: true
           environment-file: environment-dev.yml
@@ -143,7 +145,8 @@ jobs:
             raw.githubusercontent.com:443
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
-      - uses: actions/checkout@v4.1.1
+      - name: Checkout Repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@v1.8.1
         with:
@@ -196,7 +199,8 @@ jobs:
         uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
         with:
           egress-policy: audit
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@v1
         with:

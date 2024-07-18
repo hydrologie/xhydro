@@ -57,7 +57,7 @@ def test_publish_release_notes(tmp_path):
     xhu.publish_release_notes(
         style="md",
         file=temp_md_filename,
-        changes=Path(__file__).parent.parent.joinpath("CHANGES.rst"),
+        changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
     )
 
     with open(temp_md_filename) as f:
@@ -72,7 +72,7 @@ def test_publish_release_notes(tmp_path):
     xhu.publish_release_notes(
         style="rst",
         file=temp_rst_filename,
-        changes=Path(__file__).parent.parent.joinpath("CHANGES.rst"),
+        changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
     )
     with open(temp_rst_filename) as f:
         changelog_rst = f.read()

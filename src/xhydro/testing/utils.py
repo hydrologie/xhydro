@@ -181,7 +181,7 @@ def publish_release_notes(
     if isinstance(changes, (str, Path)):
         changes_file = Path(changes).absolute()
     else:
-        changes_file = Path(__file__).absolute().parents[2].joinpath("CHANGES.rst")
+        changes_file = Path(__file__).absolute().parents[2].joinpath("CHANGELOG.rst")
 
     if not changes_file.exists():
         raise FileNotFoundError("Changes file not found in xhydro file tree.")
