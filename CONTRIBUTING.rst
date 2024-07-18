@@ -233,6 +233,25 @@ To run specific code style checks:
 
 To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install them with ``pip`` (or ``conda``) into your environment.
 
+Translations
+------------
+
+If you would like to contribute to the French translation of the documentation, you can do so by running the following command:
+
+    .. code-block:: console
+
+        make initialize-translations
+
+This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation.
+
+For convenience, you can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
+
+    .. code-block:: console
+
+        pip install deep-translator
+
+We aim to automate this process eventually but until then, we want to keep the French translation up-to-date with the English documentation at least when a new release is made.
+
 Code of Conduct
 ---------------
 
