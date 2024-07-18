@@ -176,6 +176,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git checkout name-of-your-bugfix-or-feature
         git fetch
         git pull origin main
+
     See the previous step for more information on resolving conflicts.
 
 #. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might be required after the Pull Request is approved to ensure that the tests pass and the documentation can be built.
