@@ -41,7 +41,7 @@ dependencies = [
   "geopandas",
   "haversine",
   "leafmap",
-  "numpy <2.0.0",
+  "numpy <3.0.0",
   "pandas",
   "planetary-computer",
   "pooch >=1.8.0",
