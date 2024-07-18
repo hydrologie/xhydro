@@ -44,8 +44,7 @@ If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome. :)
+* Remember that this is a volunteer-driven project, and that contributions are welcome. :)
 
 Get Started!
 ------------
@@ -71,37 +70,44 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
 #. First, clone the ``xhydro`` repo locally.
 
-    * If you are not an `xhydro` collaborator, fork the ``xhydro`` repo on GitHub:
+    * If you are not a ``xHydro`` collaborator, first fork the ``xHydro`` repo on GitHub, then clone your fork locally.
 
-       .. code-block:: console
+        .. code-block:: console
 
             git clone git@github.com:your_name_here/xhydro.git
 
-    * Otherwise, if you are a collaborator, clone the ``xhydro`` repo locally:
+    * If you are a ``xHydro`` collaborator, clone the ``xHydro`` repo directly.
 
-       .. code-block:: console
+        .. code-block:: console
 
             git clone git@github.com:hydrologie/xhydro.git
 
 #. Install your local copy into a development environment. You can create a new Anaconda development environment with:
 
-   .. code-block:: console
+    .. code-block:: console
 
         conda env create -f environment-dev.yml
         conda activate xhydro-dev
         make dev
 
-   This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone.
+    If you are on Windows, replace the ``make dev`` command with the following:
 
-   On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, ``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
+    .. code-block:: console
 
-   You can also run the hooks manually with:
+        python -m pip install -e .[dev]
+        pre-commit install
+
+    This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone.
+
+    On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, ``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
+
+    You can also run the hooks manually with:
 
         .. code-block:: console
 
             pre-commit run -a
 
-   If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
+    If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
 
 #. Create a branch for local development:
 
@@ -163,7 +169,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
     If you have merge conflicts, you might need to replace `git pull` with `git merge` and resolve the conflicts manually.
     Resolving conflicts from the command line can be tricky. If you are not comfortable with this, you can ignore the last command and instead use a GUI like PyCharm or Visual Studio Code to merge the remote changes and resolve the conflicts.
 
-#. Before merging, your Pull Request will need to be based on the `main` branch of the `xhydro` repository. If your branch is not up-to-date with the `main` branch, you can perform similar steps as above to update your branch:
+#. Before merging, your Pull Request will need to be based on the `main` branch of the ``xHydro`` repository. If your branch is not up-to-date with the `main` branch, you can perform similar steps as above to update your branch:
 
     .. code-block:: console
 
@@ -198,7 +204,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 #. All functions should be documented with `docstrings` following the `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ format.
 
-#. If the pull request adds functionality, either update the documentation or create a new notebook in the `docs/notebooks` directory that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
+#. If the pull request adds functionality, either update the documentation or create a new notebook that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
 
 #. The ChangeLog should be updated with a brief description of the changes made in the Pull Request. If this is your first contribution to the project, please add your name and information to the `AUTHORS.rst` and `.zenodo.json` files.
 
@@ -231,7 +237,7 @@ To run specific code style checks:
     python -m ruff check xhydro tests
     python -m flake8 xhydro tests
 
-To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply install them with ``pip`` (or ``conda``) into your environment.
+To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with the ``flake8-rst-docstrings`` plugin) simply install them with ``pip`` (or ``conda``) into your environment.
 
 Translations
 ------------
@@ -255,5 +261,5 @@ We aim to automate this process eventually but until then, we want to keep the F
 Code of Conduct
 ---------------
 
-Please note that this project is released with a `Contributor Code of Conduct <https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.rst>`_.
+Please note that this project is released with a `Contributor Code of Conduct <https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.md>`_.
 By participating in this project you agree to abide by its terms.

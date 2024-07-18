@@ -237,7 +237,7 @@ class TestGetPlottingPositions:
         np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
 
 
-class Testprepare_plots:
+class TestPreparePlots:
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
         variable="streamflow",

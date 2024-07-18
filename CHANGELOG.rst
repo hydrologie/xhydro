@@ -4,7 +4,7 @@ Changelog
 
 v.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -14,6 +14,8 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * `numpy` has been pinned below v2.0.0 until `xclim` and other dependencies are updated to support it. (:pull:`161`).
 * A helper script has been added in the `CI` directory to facilitate the translation of the `xhydro` documentation. (:issue:`63`, :pull:`163`).
+* The `conda` environment now relies on the newly created `xdatasets` package. (:pull:`164`).
+* The cookiecutter has been updated to the latest commit. Changes include workflow fixes, stricter coding standards, and many small adjustments to the documentation. (:pull:`164`).
 
 v0.3.6 (2024-06-10)
 -------------------

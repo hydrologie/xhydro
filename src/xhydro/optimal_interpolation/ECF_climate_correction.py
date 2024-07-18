@@ -1,6 +1,8 @@
+# noqa: N999
 """Empirical Covariance Function variogram calibration package."""
 
 from functools import partial
+from typing import Optional
 
 import haversine
 import numpy as np
@@ -16,8 +18,8 @@ def correction(
     variogram_bins: int = 10,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: list = None,
-    hmax_mult_range_bnds: list = None,
+    p1_bnds: Optional[list] = None,
+    hmax_mult_range_bnds: Optional[list] = None,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
@@ -186,7 +188,7 @@ def correction(
     return ecf_fun, par_opt
 
 
-def calculate_ECF_stats(
+def calculate_ECF_stats(  # noqa: N802
     distance: np.ndarray,
     covariance: np.ndarray,
     covariance_weights: np.ndarray,
@@ -363,7 +365,7 @@ def initialize_stats_variables(
         Array of covariances.
     standard_deviations : np.ndarray
         Array of standard deviations.
-    variogram_bins : int, optional
+    variogram_bins : int
         Number of bins to split the data to fit the semi-variogram for the ECF. Defaults to 10.
 
     Returns

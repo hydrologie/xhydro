@@ -32,11 +32,6 @@ repos:
       - id: python-no-log-warn
       - id: python-use-type-annotations
       - id: rst-inline-touching-normal
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
-    hooks:
-      - id: ruff
-        args: [ '--fix' ]
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.4.2
     hooks:
@@ -46,11 +41,17 @@ repos:
     hooks:
       - id: isort
         exclude: ^docs/
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [ '--fix' ]
+#      - id: format
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.0
     hooks:
       - id: flake8
-        additional_dependencies: [ 'flake8-alphabetize', 'flake8-rst-docstrings' ]
+        additional_dependencies: [ 'flake8-rst-docstrings' ]
         args: [ '--config=.flake8' ]
   - repo: https://github.com/numpy/numpydoc
     rev: v1.7.0

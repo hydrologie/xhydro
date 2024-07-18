@@ -57,13 +57,13 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	ruff check src/xhydro tests
-	flake8 --config=.flake8 src/xhydro tests
+	python -m ruff check src/xhydro tests
+	python -m flake8 --config=.flake8 src/xhydro tests
 
 lint/black: ## check style with black
-	black --check src/xhydro tests
-	blackdoc --check src/xhydro docs
-	isort --check src/xhydro tests
+	python -m black --check src/xhydro tests
+	python -m blackdoc --check src/xhydro docs
+	python -m isort --check src/xhydro tests
 
 lint: lint/flake8 lint/black ## check style
 
@@ -80,9 +80,9 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source src/xhydro -m pytest
-	coverage report -m
-	coverage html
+	python -m coverage run --source src/xhydro -m pytest
+	python -m coverage report -m
+	python -m coverage html
 	$(BROWSER) htmlcov/index.html
 
 autodoc: clean-docs ## create sphinx-apidoc files:

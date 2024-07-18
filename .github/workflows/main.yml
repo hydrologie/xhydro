@@ -47,7 +47,12 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Set up Python${{ matrix.python-version }}
@@ -78,7 +83,21 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ai4edataeuwest.blob.core.windows.net:443
+            cdn.proj.org:443
+            conda.anaconda.org:443
+            elevationeuwest.blob.core.windows.net:443
+            files.pythonhosted.org:443
+            github.com:443
+            objects.githubusercontent.com:443
+            planetarycomputer.microsoft.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            s3.us-east-2.wasabisys.com:443
+            s3.wasabisys.com:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
@@ -87,11 +106,9 @@ jobs:
           cache-downloads: true
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
             python=${{ matrix.python-version }}
       - name: Conda and Mamba versions
         run: |
-          mamba --version
           echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
@@ -118,11 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - python-version: "3.9"
-          - python-version: "3.10"
-          - python-version: "3.11"
-          - python-version: "3.12"
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     defaults:
       run:
         shell: bash -l {0}
@@ -171,7 +184,7 @@ jobs:
       - name: Test with pytest
         run: |
           python -m pytest --cov xhydro
-      - name: Report coverage
+      - name: Report Coverage
         run: |
           python -m coveralls
         env:
@@ -199,7 +212,21 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
-          egress-policy: audit
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            ai4edataeuwest.blob.core.windows.net:443
+            cdn.proj.org:443
+            conda.anaconda.org:443
+            elevationeuwest.blob.core.windows.net:443
+            files.pythonhosted.org:443
+            github.com:443
+            objects.githubusercontent.com:443
+            planetarycomputer.microsoft.com:443
+            pypi.org:443
+            raw.githubusercontent.com:443
+            s3.us-east-2.wasabisys.com:443
+            s3.wasabisys.com:443
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
