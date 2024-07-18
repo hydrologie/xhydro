@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim
+from itertools import product
 from lmoments3.distr import gev
 from xclim.indices.stats import fit, parametric_quantile
 
@@ -400,109 +401,190 @@ def compute_spring_and_summer_mask(snt):
     return mask
 
 
-def spatial_storm_aggregation(da, center_x, center_y, radius):
+def spatial_average_storm_configurations(da, radius):
+    """Computes the spatial average for different storm
+    configurations according to Clavet-Gaumont et al. (2017)
+    https://doi.org/10.1016/j.ejrh.2017.07.003.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        DataArray containing the precipitation values.
+    radius : float
+        Maximum radius of the storm.
+
+    Returns
+    -------
+    spt_av : xr.DataSet
+        DataSet contaning the spatial averages for all the
+        storm configurations.
     """
-    """
-    xx, yy = np.meshgrid(da.coords["x"].values, da.coords["y"].values)
-    coor_x = xx.flatten()
-    coor_y = yy.flatten()
-
-    sq_dist = (coor_x - center_x) ** 2 + (coor_y - center_y) ** 2
-    within_r_ind = np.where(sq_dist <= radius**2)
-
-    within_r_x = coor_x[within_r_ind]
-    within_r_y = coor_y[within_r_ind]
-
-    da_cut = da.where((da.x.isin(within_r_x)) & (da.y.isin(within_r_y)), drop=True)
-
-    dict_config = {  # y, x
+    dict_config = {
         "1": [[0], [0]],
-        "2": [[0, 0], [0, 1]],
-        "3": [[0, 0, -1], [0, 1, 0]],
-        "4": [[0, 0, -1, -1], [0, 1, 0, 1]],
-        "5.a": [[0, 0, -1, -1, 0], [0, 1, 0, 1, -1]],
-        "5.b": [[0, 0, 0, 1, 1], [0, 1, -1, 0, 1]],
-        "6": [[0, 0, 0, 1, 1, 1], [0, 1, -1, 0, 1, -1]],
-        "7": [[0, 0, 0, -1, -1, -1, 1], [0, 1, -1, 0, 1, -1, 0]],
-        "8": [[0, 0, 0, -1, -1, -1, 1, 1], [0, 1, -1, 0, 1, -1, 0, 1]],
-        "9": [[0, 0, 0, -1, -1, -1, 1, 1, 1], [0, 1, -1, 0, 1, -1, 0, 1, -1]],
-        "10.a": [[0, 0, 0, 0, -1, -1, -1, -1, 1, 1], [-1, 0, 1, 2, -1, 0, 1, 2, 0, 1]],
-        "10.b": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1],
-            [-2, -1, 0, 1, -2, -1, 0, 1, -1, 0],
+        "2.1": [[0, 0], [0, 1]],
+        "2.2": [[0, 1], [0, 0]],
+        "3.1": [[0, 1, 1], [0, 0, 1]],
+        "3.2": [[1, 1, 0], [0, 1, 1]],
+        "3.3": [[0, 0, 1], [0, 1, 1]],
+        "3.4": [[0, 1, 0], [0, 0, 1]],
+        "4.1": [[0, 0, 1, 1], [0, 1, 0, 1]],
+        "5.1": [[0, 0, 1, 1, 1], [1, 2, 0, 1, 2]],
+        "5.2": [[0, 0, 0, 1, 1], [0, 1, 2, 1, 2]],
+        "5.3": [[0, 0, 0, 1, 1], [0, 1, 2, 0, 1]],
+        "5.4": [[0, 0, 1, 1, 1], [0, 1, 0, 1, 2]],
+        "5.5": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 0]],
+        "5.6": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 1]],
+        "5.7": [[0, 1, 1, 2, 2], [0, 0, 1, 0, 1]],
+        "5.8": [[0, 1, 1, 2, 2], [1, 0, 1, 0, 1]],
+        "6.1": [[0, 0, 0, 1, 1, 1], [0, 1, 2, 0, 1, 2]],
+        "6.2": [[0, 0, 1, 1, 2, 2], [0, 1, 0, 1, 0, 1]],
+        "7.1": [[0, 0, 0, 1, 1, 1, 2], [0, 1, 2, 0, 1, 2, 1]],
+        "7.2": [[0, 0, 1, 1, 1, 2, 2], [0, 1, 0, 1, 2, 0, 1]],
+        "7.3": [[0, 1, 1, 1, 2, 2, 2], [1, 0, 1, 2, 0, 1, 2]],
+        "7.4": [[0, 0, 1, 1, 1, 2, 2], [1, 2, 0, 1, 2, 1, 2]],
+        "8.1": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 1, 2]],
+        "8.2": [[0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 0, 1, 2, 0, 1, 2]],
+        "8.3": [[0, 0, 1, 1, 1, 2, 2, 2], [1, 2, 0, 1, 2, 0, 1, 2]],
+        "8.4": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1]],
+        "9.1": [[0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2]],
+        "10.1": [[0, 0, 0, 0, 1, 1, 1, 1, 2, 2], [0, 1, 2, 3, 0, 1, 2, 3, 1, 2]],
+        "10.2": [[0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [1, 2, 0, 1, 2, 3, 0, 1, 2, 3]],
+        "10.3": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [0, 1, 0, 1, 2, 0, 1, 2, 0, 1]],
+        "10.4": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [1, 2, 0, 1, 2, 0, 1, 2, 1, 2]],
+        "12.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "12": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
+        "12.2": [
+            [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
         ],
-        "14.a": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, 0, 1],
+        "14.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
         ],
-        "14.b.": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-2, -1, 0, 1, -2, -1, 0, 1, -2, -1, 0, 1, -1, 0],
+        "14.2": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2],
         ],
-        "16": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
+        "14.3": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "18.a": [
-            [0, 0, 0, 0, -2, -2, -2, -2, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, 0, 1],
+        "14.4": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3],
         ],
-        "18.b": [
-            [0, 0, 0, 0, -2, -2, -2, -2, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-2, -1, 0, 1, -2, -1, 0, 1, -2, -1, 0, 1, -2, -1, 0, 1, -1, 0],
+        "16.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "20": [
-            [0, 0, 0, 0, -2, -2, -2, -2, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
+        "18.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
         ],
-        '23': [[-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2],
-               [-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-1,0,1]
+        "18.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
         ],
-        '24.a': [[-2,-2,-2,-2,-1,-1,-1,-1,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3],
-                 [-1,0,1,2,-1,0,1,2,-1,0,1,2,-1,0,1,2,-1,0,1,2,-1,0,1,2]
+        "18.3": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
         ],
-        '24.b': [[-2,-2,-2,-2,-1,-1,-1,-1,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3],
-                 [-2,-1,0,1,-2,-1,0,1,-2,-1,0,1,-2,-1,0,1,-2,-1,0,1,-2,-1,0,1]
+        "18.4": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        '25': [[-2,-2,-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2,2,2],
-               [-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2,-2,-1,0,1,2]
+        "20.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "20.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "23.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
+        ],
+        "23.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
+        ],
+        "23.3": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3],
+        ],
+        "23.4": [
+            [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "24.1": [
+            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5],
+        ],
+        "24.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "25.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
         ],
     }
 
-    da_cut_c = da_cut[0, :, :].copy(deep=True) * np.nan
+    da_0 = da[0, :, :].copy()
 
-    da_for_coor = da_cut_c.where(
-        ~((da_cut_c.x == center_x) & (da_cut_c.y == center_y)), 1
-    )
-    centers_pos = np.argwhere(da_for_coor.values == 1)
+    # Pixel size
+    dy = (da_0.y[1] - da_0.y[0]).values
+    dx = (da_0.x[1] - da_0.x[0]).values
 
-    ds_mean = []
+    # Number of pixels in da
+    npy_da = len(da_0.y)
+    npx_da = len(da_0.x)
+
+    spt_av = xr.Dataset()
     for name, confi in dict_config.items():
 
-        cent_pos_y = confi[0] + centers_pos[0][0]
-        cent_pos_x = confi[1] + centers_pos[0][1]
+        conf_y = confi[0]
+        conf_x = confi[1]
 
-        matrix_mask = da_cut_c.values.copy()
+        # Number of pixels in the configuration
+        npy_confi = np.abs(conf_y).max() + 1
+        npx_confi = np.abs(conf_x).max() + 1
 
-        try:
-            matrix_mask[cent_pos_y, cent_pos_x] = 1
-        except:
-            continue
+        # Checks that the configuration size is within the desired storn size.
+        if (dy * npy_confi / 2 > radius) or (dx * npx_confi / 2 > radius):
+            break
 
-        for rot in range(4):
-            matrix_mask_rot = np.rot90(matrix_mask, k=rot)
-            da_pr = da_cut * matrix_mask_rot
-            ds_mean.append(
-                da_pr.mean(dim=["x", "y"]).expand_dims(
-                    dim={"conf": [name + "_" + str(rot)]}
-                )
-            )
+        # Checks that the configuration fits in the domain.
+        if (npy_confi > npy_da) or (npx_confi > npx_da):
+            break
 
-            if np.array_equal(np.rot90(matrix_mask, k=1), matrix_mask, equal_nan=True):
-                break
+        # Number of times a configuration can be shifted in each axis
+        ny = len(da_0.y) - npy_confi + 1
+        nx = len(da_0.x) - npx_confi + 1
 
-    return xr.concat(ds_mean, dim="time")
+        # List with the configuration duplicated as many times as indicated by nx and nx.
+        conf_y_ex = np.reshape(np.array(conf_y * ny), (ny, len(conf_y)))
+        conf_x_ex = np.reshape(np.array(conf_x * nx), (nx, len(conf_x)))
+
+        # List with the incrementes from 0 to nx and ny
+        inc_y = np.ones((conf_y_ex.shape)) * [[i] for i in range(ny)]
+        inc_x = np.ones((conf_x_ex.shape)) * [[i] for i in range(nx)]
+
+        # Shifted configurations
+        pos_y = (conf_y_ex + inc_y).astype(int)
+        pos_x = (conf_x_ex + inc_x).astype(int)
+
+        # List of all the combinations of the shifted configurations
+        shifted_confi = list(product(pos_y, pos_x))
+
+        for shift, confi_shifted in enumerate(shifted_confi):
+            matrix_mask = np.full(da_0.shape, np.nan)
+            matrix_mask[(confi_shifted[0], confi_shifted[1])] = 1
+            da_mask = da * matrix_mask
+            da_mean = da_mask.mean(dim=["x", "y"])
+            spt_av[name + "_" + str(shift)] = da_mean
+
+    return spt_av
