@@ -1,5 +1,6 @@
 """Translate missing msgstr entries in .po files using the specified translator."""
 
+import logging
 import re
 import time
 from glob import glob
@@ -7,13 +8,16 @@ from pathlib import Path
 
 import deep_translator
 
+logger = logging.getLogger(__name__)
 
-def translate_missing_po_entries(
+
+def translate_missing_po_entries(  # noqa: C901
     dir_path: str,
     translator: str = "GoogleTranslator",
     source_lang: str = "en",
     target_lang: str = "fr",
-    clean_old_entries: bool = False,
+    clean_old_entries: bool = True,
+    overwrite_fuzzy: bool = True,
     **kwargs,
 ):
     r"""
@@ -30,15 +34,14 @@ def translate_missing_po_entries(
     target_lang : str
         The target language of the .po files. Defaults to "fr".
     clean_old_entries : bool
-        Whether to clean old entries in the .po files. Defaults to False.
+        Whether to clean old entries in the .po files. Defaults to True.
+    overwrite_fuzzy : bool
+        Whether to overwrite fuzzy entries in the .po files. Defaults to True.
     \*\*kwargs : dict
         Additional keyword arguments to pass to the translator.
     """
-    # FIXME: We'll need to add a way to detect the entries flagged "fuzzy" and re-translate them
-
-    # Define regex patterns for msgid and msgstr
-    msgid_pattern = re.compile(r'msgid (.*?)(?=(msgstr "|$))', re.DOTALL)
-    msgstr_pattern = re.compile(r"msgstr (.*?)(?=(#~|#:|$))")
+    msg_pattern = re.compile(r"msgid (.*?)(?=(#~|#:|$))", re.DOTALL)
+    fuzzy_pattern = re.compile(r"#, fuzzy(.*?)\nmsgid (.*?)(?=(#~|#:|$))", re.DOTALL)
 
     # Initialize the translator
     translator = getattr(deep_translator, translator)(
@@ -56,28 +59,42 @@ def translate_missing_po_entries(
             with open(file_path, "r+", encoding="utf-8") as file:
                 content = file.read()
 
+                # Find all fuzzy entries
+                fuzzies = []
+                fuzzy_entries = fuzzy_pattern.findall(str(content))
+                for i in fuzzy_entries:
+                    fuzzies.extend([i[1].split("\nmsgstr ")[1]])
+                if len(fuzzies) > 0 and overwrite_fuzzy:
+                    logger.info(f"Found {len(fuzzies)} fuzzy entries in {file_path}")
+
                 # Find all msgid and msgstr pairs
-                msgids = msgid_pattern.findall(str(content))
-                msgids_to_translate = []
-                for i, msgid in enumerate(msgids):
-                    msgids[i] = msgid[0] if msgid[0] != '""\n' else ""
-                    msgids_to_translate.extend(
-                        [msgid[0].replace("\n", "").replace('"', "")]
-                    )
-                msgstrs = msgstr_pattern.findall(str(content).replace("\n", ""))
-                for i, msgstr in enumerate(msgstrs):
-                    msgstrs[i] = msgstr[0].replace('"', "")
+                msgids = []
+                msgstrs = []
+                for i in msg_pattern.findall(str(content)):
+                    ids, strs = i[0].split("\nmsgstr ")
+                    ids = ids if ids != '""' else ""
+                    if overwrite_fuzzy and strs in fuzzies:
+                        content = content.replace(
+                            strs, '""\n\n'
+                        )  # Remove the fuzzy entry
+                        strs = ""
+                    else:
+                        strs = (
+                            strs.replace('\\"', "'").replace('"', "").replace("\n", "")
+                        )
+                    msgids.extend([ids])
+                    msgstrs.extend([strs])
 
                 # Track if the file was modified
                 modified = False
 
-                for msgid, msgid_to_translate, msgstr in zip(
-                    msgids, msgids_to_translate, msgstrs
-                ):
+                for msgid, msgstr in zip(msgids, msgstrs):
                     # Check if translation is missing
                     if msgid and not msgstr:
                         # Translate the missing string
-                        translated_text = translator.translate(msgid_to_translate)
+                        translated_text = translator.translate(
+                            msgid.replace('\\"', "'").replace('"', "").replace("\n", "")
+                        )
 
                         # Split the translated text into lines of max 60 characters
                         if len(translated_text) > 70:  # 70 to include the spaces
@@ -93,8 +110,8 @@ def translate_missing_po_entries(
 
                         # Replace the empty msgstr with the translated text
                         content = content.replace(
-                            f'msgid {msgid}msgstr ""',
-                            f'msgid {msgid}msgstr "{translated_text}"',
+                            f'msgid {msgid}\nmsgstr ""',
+                            f'msgid {msgid}\nmsgstr "{translated_text}"',
                             1,
                         )
                         modified = True
@@ -114,6 +131,7 @@ def translate_missing_po_entries(
 
                 # If modifications were made, write them back to the file
                 if modified:
+                    logger.info(f"Updating translations in {file_path}")
                     file.seek(0)
                     file.write(content)
                     file.truncate()
