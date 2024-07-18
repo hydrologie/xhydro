@@ -11,8 +11,8 @@ import xarray as xr
 from numpy import dtype, floating, ndarray
 from scipy.stats import norm
 
-import xhydro_temp.optimal_interpolation.ECF_climate_correction as ecf_cc
-import xhydro_temp.optimal_interpolation.utilities as util
+import xhydro.optimal_interpolation.ECF_climate_correction as ecf_cc
+import xhydro.optimal_interpolation.utilities as util
 
 __all__ = [
     "execute_interpolation",

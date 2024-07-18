@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from xhydro_temp.modelling import get_hydrological_model_inputs, hydrological_model
+from xhydro.modelling import get_hydrological_model_inputs, hydrological_model
 
 
 class TestHydrologicalModelling:

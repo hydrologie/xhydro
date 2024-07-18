@@ -3,8 +3,8 @@ import pytest
 import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
-import xhydro_temp.frequency_analysis as xhfa
-from xhydro_temp.frequency_analysis.local import _get_plotting_positions, _prepare_plots
+import xhydro.frequency_analysis as xhfa
+from xhydro.frequency_analysis.local import _get_plotting_positions, _prepare_plots
 
 
 class TestFit:

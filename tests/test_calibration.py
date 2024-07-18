@@ -4,9 +4,9 @@
 import numpy as np
 import pytest
 
-from xhydro_temp.modelling import hydrological_model
-from xhydro_temp.modelling.calibration import perform_calibration
-from xhydro_temp.modelling.obj_funcs import get_objective_function, transform_flows
+from xhydro.modelling import hydrological_model
+from xhydro.modelling.calibration import perform_calibration
+from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
 
 def test_spotpy_calibration():

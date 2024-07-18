@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from xhydro_temp.extreme_value_analysis.parameterestimation import (
+from xhydro.extreme_value_analysis.parameterestimation import (
     gevfit,
     gevfitbayes,
     gevfitpwm,

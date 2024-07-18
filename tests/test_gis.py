@@ -9,7 +9,7 @@ import xarray as xr
 import xdatasets as xd
 from pystac_client.exceptions import APIError
 
-import xhydro_temp as xh
+import xhydro as xh
 
 
 class TestWatershedDelineation:

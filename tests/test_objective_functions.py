@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from xhydro_temp.modelling.obj_funcs import (
+from xhydro.modelling.obj_funcs import (
     _get_objfun_minimize_or_maximize,
     get_objective_function,
 )

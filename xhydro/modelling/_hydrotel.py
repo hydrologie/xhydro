@@ -15,7 +15,7 @@ import xarray as xr
 import xclim as xc
 from xscen.io import estimate_chunks, save_to_netcdf
 
-from xhydro_temp.utils import health_checks
+from xhydro.utils import health_checks
 
 from ._hm import HydrologicalModel
 

@@ -68,8 +68,8 @@ import xarray as xr
 from spotpy import analyser
 from spotpy.parameter import Uniform
 
-from xhydro_temp.modelling import hydrological_model
-from xhydro_temp.modelling.obj_funcs import (
+from xhydro.modelling import hydrological_model
+from xhydro.modelling.obj_funcs import (
     _get_objfun_minimize_or_maximize,
     _get_optimizer_minimize_or_maximize,
     get_objective_function,

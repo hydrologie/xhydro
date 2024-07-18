@@ -5,8 +5,8 @@ import logging
 import numpy as np
 import xarray as xr
 
-import xhydro_temp.optimal_interpolation.utilities as util
-from xhydro_temp.modelling.obj_funcs import get_objective_function
+import xhydro.optimal_interpolation.utilities as util
+from xhydro.modelling.obj_funcs import get_objective_function
 
 logger = logging.getLogger(__name__)
 

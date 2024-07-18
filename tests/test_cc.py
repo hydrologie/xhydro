@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import xhydro_temp as xh
+import xhydro as xh
 
 
 # Smoke test for xscen functions that are imported into xhydro
