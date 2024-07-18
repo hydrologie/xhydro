@@ -242,7 +242,13 @@ If you would like to contribute to the French translation of the documentation, 
 
         make initialize-translations
 
-This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation. We aim to keep the French translation up-to-date with the English documentation when a new release is made.
+This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation. You can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
+
+    .. code-block:: console
+
+        pip install deep-translator
+
+We aim to automate this process eventually but until then, we want to keep the French translation up-to-date with the English documentation at least when a new release is made.
 
 Code of Conduct
 ---------------
