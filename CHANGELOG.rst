@@ -13,6 +13,7 @@ New features and enhancements
 Internal changes
 ^^^^^^^^^^^^^^^^
 * `numpy` has been pinned below v2.0.0 until `xclim` and other dependencies are updated to support it. (:pull:`161`).
+* A helper script has been added in the `CI` directory to facilitate the translation of the `xhydro` documentation. (:issue:`63`, :pull:`163`).
 
 v0.3.6 (2024-06-10)
 -------------------
