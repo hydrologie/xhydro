@@ -60,12 +60,18 @@ def translate_missing_po_entries(  # noqa: C901
                 content = file.read()
 
                 # Find all fuzzy entries
-                fuzzies = []
                 fuzzy_entries = fuzzy_pattern.findall(str(content))
-                for i in fuzzy_entries:
-                    fuzzies.extend([i[1].split("\nmsgstr ")[1]])
-                if len(fuzzies) > 0 and overwrite_fuzzy:
-                    logger.info(f"Found {len(fuzzies)} fuzzy entries in {file_path}")
+                if len(fuzzy_entries) > 0 and overwrite_fuzzy:
+                    logger.info(
+                        f"Found {len(fuzzy_entries)} fuzzy entries in {file_path}"
+                    )
+                    for i in fuzzy_entries:
+                        entry = i[1].split("\nmsgstr ")
+                        # Remove the fuzzy entry
+                        content = content.replace(entry[1], '""\n\n')
+                    # Since we can't guarantee the exact way the fuzzy entry was written, we remove the fuzzy tag in 2 steps
+                    content = content.replace(", fuzzy", "")
+                    content = content.replace("#\nmsgid", "msgid")
 
                 # Find all msgid and msgstr pairs
                 msgids = []
@@ -73,15 +79,7 @@ def translate_missing_po_entries(  # noqa: C901
                 for i in msg_pattern.findall(str(content)):
                     ids, strs = i[0].split("\nmsgstr ")
                     ids = ids if ids != '""' else ""
-                    if overwrite_fuzzy and strs in fuzzies:
-                        content = content.replace(
-                            strs, '""\n\n'
-                        )  # Remove the fuzzy entry
-                        strs = ""
-                    else:
-                        strs = (
-                            strs.replace('\\"', "'").replace('"', "").replace("\n", "")
-                        )
+                    strs = strs.replace('\\"', "'").replace('"', "").replace("\n", "")
                     msgids.extend([ids])
                     msgstrs.extend([strs])
 

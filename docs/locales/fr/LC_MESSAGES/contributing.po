@@ -2,7 +2,6 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: xHydro 0.3.0\n"
@@ -597,7 +596,6 @@ msgstr ""
 "documentation, vous pouvez le faire en exécutant la commande suivante :"
 
 #: ../../../CONTRIBUTING.rst:245
-#, fuzzy
 msgid ""
 "This will create or update the French translation files in the "
 "`docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` "
@@ -607,14 +605,14 @@ msgid ""
 "Google Translate by default. Note that this script requires the `deep-"
 "translator` package to be installed in your environment."
 msgstr ""
-"Cela créera ou mettra à jour les fichiers de traduction en français "
+"Cela créera ou mettra à jour les fichiers de traduction française "
 "dans le répertoire `docs/locales/fr/LC_MESSAGES`. Vous pouvez ensuite "
-"modifier les fichiers `.po` de ce répertoire pour fournir des traductions pour "
-"la documentation. Vous pouvez utiliser le script `translator.py` situé "
-"dans le répertoire `CI` pour traduire automatiquement la documentation "
-"anglaise en français, qui utilise Google Translate par défaut. Notez que ce "
-"script nécessite que le package `deep-translator` soit installé dans votre "
-"environnement."
+"éditer les fichiers `.po` dans ce répertoire pour fournir des traductions "
+"pour la documentation. Vous pouvez utiliser le script `translator.py` "
+"situé dans le répertoire `CI` pour traduire automatiquement la "
+"documentation anglaise vers le français, qui utilise Google Translate par défaut. "
+"Notez que ce script nécessite que le package `deep-translator` soit "
+"installé dans votre environnement."
 
 #: ../../../CONTRIBUTING.rst:251
 msgid ""
