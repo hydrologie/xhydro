@@ -25,4 +25,4 @@ from . import cc, gis, indicators, modelling, utils
 
 __author__ = """Thomas-Charles Fortier Filion"""
 __email__ = "tcff_hydro@outlook.com"
-__version__ = "0.3.6"
+__version__ = "0.3.7-dev.0"

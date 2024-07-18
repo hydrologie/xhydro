@@ -1,0 +1,192 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.3.6\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+#: ../../apidoc/xhydro.frequency_analysis.rst:2
+msgid "xhydro.frequency\\_analysis package"
+msgstr ""
+
+#: of xhydro.frequency_analysis:1
+msgid "Frequency analysis module."
+msgstr ""
+
+#: ../../apidoc/xhydro.frequency_analysis.rst:11
+msgid "Submodules"
+msgstr ""
+
+#: ../../apidoc/xhydro.frequency_analysis.rst:14
+msgid "xhydro.frequency\\_analysis.local module"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local:1
+msgid "Local frequency analysis functions and utilities."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:1
+msgid ""
+"Compute information criteria (AIC, BIC, AICC) from fitted distributions, "
+"using the log-likelihood."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:4
+#: xhydro.frequency_analysis.local.fit:4
+#: xhydro.frequency_analysis.local.parametric_quantiles:4
+msgid "Parameters"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:5
+#: xhydro.frequency_analysis.local.fit:5
+msgid "ds"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:-1
+#: xhydro.frequency_analysis.local.criteria:13
+#: xhydro.frequency_analysis.local.fit:-1
+#: xhydro.frequency_analysis.local.fit:17
+#: xhydro.frequency_analysis.local.parametric_quantiles:-1
+#: xhydro.frequency_analysis.local.parametric_quantiles:15
+msgid "xr.Dataset"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:6
+msgid "Dataset containing the yearly data that was fitted."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:7
+#: xhydro.frequency_analysis.local.parametric_quantiles:5
+msgid "p"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:8
+#: xhydro.frequency_analysis.local.parametric_quantiles:6
+msgid ""
+"Dataset containing the parameters of the fitted distributions. Must have "
+"a dimension `dparams` containing the parameter names and a dimension "
+"`scipy_dist` containing the distribution names."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:12
+#: xhydro.frequency_analysis.local.fit:16
+#: xhydro.frequency_analysis.local.parametric_quantiles:14
+msgid "Returns"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.criteria:14
+msgid "Dataset containing the information criteria for the distributions."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:1
+msgid "Fit multiple distributions to data."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:6
+msgid "Dataset containing the data to fit. All variables will be fitted."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:7
+msgid "distributions"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:-1
+msgid "list of str, optional"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:8
+msgid ""
+"List of distribution names as defined in `scipy.stats`. See "
+"https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-"
+"distributions. Defaults to [\"expon\", \"gamma\", \"genextreme\", "
+"\"genpareto\", \"gumbel_r\", \"pearson3\", \"weibull_min\"]."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:10
+msgid "min_years"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:-1
+msgid "int, optional"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:11
+msgid "Minimum number of years required for a distribution to be fitted."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:12
+msgid "method"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:-1
+msgid "str"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:13
+msgid "Fitting method. Defaults to \"ML\" (maximum likelihood)."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:18
+msgid ""
+"Dataset containing the parameters of the fitted distributions, with a new"
+" dimension `scipy_dist` containing the distribution names."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:21
+msgid "Notes"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.fit:22
+msgid ""
+"In order to combine the parameters of multiple distributions, the size of"
+" the `dparams` dimension is set to the maximum number of unique "
+"parameters between the distributions."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:1
+msgid "Compute quantiles from fitted distributions."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:8
+msgid "t"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:-1
+msgid "float or list of float"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:9
+msgid "Return period(s) in years."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:10
+msgid "mode"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:-1
+msgid "{'max', 'min'}"
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:11
+msgid ""
+"Whether the return period is the probability of exceedance (max) or non-"
+"exceedance (min)."
+msgstr ""
+
+#: of xhydro.frequency_analysis.local.parametric_quantiles:16
+msgid "Dataset containing the quantiles of the distributions."
+msgstr ""
