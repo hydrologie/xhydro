@@ -190,7 +190,7 @@ values = [
 [tool.coverage.run]
 omit = ["tests/*.py"]
 relative_files = true
-source = "xhydro"
+source = ["xhydro"]
 
 [tool.flit.sdist]
 include = [
