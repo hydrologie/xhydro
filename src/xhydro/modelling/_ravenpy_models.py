@@ -21,9 +21,8 @@ class RavenpyModel(HydrologicalModel):
 
     Parameters
     ----------
-    model_name : str
-        The name of the ravenpy model to run. Can be one of
-        ["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"].
+    model_name : {"Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"}
+        The name of the ravenpy model to run.
     parameters : np.ndarray
         The model parameters for simulation or calibration.
     drainage_area : float
@@ -58,7 +57,7 @@ class RavenpyModel(HydrologicalModel):
         The method used by raven to split total precipitation into rain and snow.
     evaporation : str
         The evapotranspiration function used by raven.
-    \**kwargs : dict
+    \*\*kwargs : dict
         Dictionary of other parameters to feed to raven according to special cases and that are allowed by the raven
         documentation.
     """
@@ -80,8 +79,8 @@ class RavenpyModel(HydrologicalModel):
         alt_names_meteo,
         meteo_station_properties,
         workdir: Optional[Union[str, os.PathLike]] = None,
-        rain_snow_fraction: str = "RAINSNOW_DINGMAN",
-        evaporation: str = "PET_PRIESTLEY_TAYLOR",
+        rain_snow_fraction="RAINSNOW_DINGMAN",
+        evaporation="PET_PRIESTLEY_TAYLOR",
         **kwargs,
     ):
         if workdir is None:

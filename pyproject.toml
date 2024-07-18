@@ -40,7 +40,6 @@ dependencies = [
   "cartopy",
   "geopandas",
   "haversine",
-  "intake-esm !=2024.2.6", # pin needed for intake-esm (dependency of xscen) to work with Python3.9
   "leafmap",
   "numpy <2.0.0",
   "pandas",
