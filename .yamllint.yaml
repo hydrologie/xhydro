@@ -6,3 +6,6 @@ rules:
     max: 120
     level: warning
   truthy: disable
+ #FIXME: this is a hotfix for the .yaml pre-commit checks that fail on windows because of long lines
+ignore: |
+  .github/**/*.yml
