@@ -1,12 +1,12 @@
 """Module to compute Probable Maximum Precipitation (PMP)"""
 
 import sys
+from itertools import product
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim
-from itertools import product
 from lmoments3.distr import gev
 from xclim.indices.stats import fit, parametric_quantile
 
@@ -36,11 +36,11 @@ def major_precipitation_events(da, acc_day, quantil=0.9, path=None):
         the given days accumulation.
 
     """
-    if "conf" in list(da.coords):
-        core_dims = ["time", "y", "x", "conf"]
-        da = da.expand_dims(dim={"x": [0], "y": [0]}).copy(deep=True)
-    else:
+    if "y" and "x" in da.coords:
         core_dims = ["time", "y", "x"]
+
+    if "conf" in da.coords:
+        core_dims = ["time", "conf"]
 
     ds_exp = da.expand_dims(dim={"acc_day": acc_day}).copy(deep=True)
     da_acc = xr.apply_ufunc(
@@ -67,29 +67,33 @@ def major_precipitation_events(da, acc_day, quantil=0.9, path=None):
     return events
 
 
-def cumulate_precip(da, acc_day):
+def cumulate_precip(a, acc_day):
     """Accumulates precipitation for a given number of days.
 
     Parameters
     ----------
-    da : xr.DataArray
-        DataArray containing the precipitation values.
+    a : array_like
+       Precipitation values.
     acc_day: Int
         Number of days to be accumulated.
 
     Returns
     -------
-    da_acc : xr.DataArray
-        DataArray containing the accumulated precipitation.
+    a_acc : array_like
+        Array containing the accumulated precipitation.
 
     """
-    cumsum = np.cumsum(da, axis=0, dtype=float)
+    cumsum = np.cumsum(a, axis=0, dtype=float)
+    a_acc = np.empty_like(a, dtype=float)
 
-    da_acc = np.empty_like(da, dtype=float)
-    da_acc[:acc_day, :, :] = cumsum[acc_day - 1, :, :]
-    da_acc[acc_day:, :, :] = cumsum[acc_day:, :, :] - cumsum[:-acc_day, :, :]
+    if a.ndim == 3:
+        a_acc[:acc_day, :, :] = cumsum[acc_day - 1, :, :]
+        a_acc[acc_day:, :, :] = cumsum[acc_day:, :, :] - cumsum[:-acc_day, :, :]
+    else:
+        a_acc[:acc_day] = cumsum[acc_day - 1]
+        a_acc[acc_day:] = cumsum[acc_day:] - cumsum[:-acc_day]
 
-    return da_acc
+    return a_acc
 
 
 def keep_higest_values(da, quantil):
@@ -170,7 +174,7 @@ def precipitable_water(ds_day, ds_fx, acc_day=[1], path=None):
         vectorize=True,
     )
 
-    if da_pw is not None:
+    if path is not None:
         da_pw.to_zarr(path)
 
     return da_pw
@@ -265,14 +269,21 @@ def precipitable_water_100y(da_pw, mf=0.2, path=None):
 
     pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
     pw100_m = pw100_m.convert_calendar("noleap")
-    pw100_m = pw100_m.rename("pw100").to_dataset().transpose("time", "y", "x")
+    pw100_m = pw100_m.rename("pw100").to_dataset()
+    expanded_dates = da_pw.drop_vars(["height"])
 
-    expanded_dates = da_pw.drop_vars(["x", "y", "height"])
+    if "x" and "y" in pw100_m.coords:
+        pw100_m = pw100_m.transpose("time", "y", "x")
+        expanded_dates = expanded_dates.drop_vars(["x", "y"])
+
     da_pw100 = xr.merge([pw100_m, expanded_dates]).ffill(dim="time")
 
     da_pw100 = da_pw100.pw100.squeeze().drop(
         ["height", "month", "year", "stacked_coords"]
     )
+
+    if path is not None:
+        da_pw100.to_zarr(path)
 
     return da_pw100
 
@@ -298,10 +309,9 @@ def compute_spring_and_summer_mask(snt):
         snt = snt / 10  # kg/m² == 1mm   --> Transformation en 1mm = 1cm/10
         snt.attrs["units"] = "cm"
     else:
+        # The code stops if the previous line does not work.
         sys.exit("snow units are not in kg m-2")
-        snt = (
-            np.nan
-        )  # That is put there to make sure the code stops if the previous line does no work...
+        snt = np.nan
 
     winter_start = xclim.indices.snd_season_start(
         snd=snt, thresh="1 cm", window=14, freq="AS-JUL"
@@ -322,7 +332,7 @@ def compute_spring_and_summer_mask(snt):
     spring_start = spring_start.where(spring_start >= 1, 1)
     spring_end = winter_end + 30
 
-    # 90 days of window because we want to make sure it is not a thaw.
+    # 90 days of window because we want to make sure that there is not thaw.
     # freq='YS' because we make the hypothesis that winter always ends after january.
     # The results give the first days of summer, and not the last days of winter. (We will need to make -2 in the code...)
 
@@ -364,18 +374,17 @@ def compute_spring_and_summer_mask(snt):
     winter_mask_half1 = xr.where(c1 == 1, 1, 0)
 
     a2 = array_days >= condition2
-    a2 = xr.where(a2 == True, 1, 0)
+    a2 = xr.where(a2, 1, 0)
     b2 = array_days < array_winter_end
-    b2 = xr.where(b2 == True, 1, 0)
+    b2 = xr.where(b2, 1, 0)
     c2 = a2 + b2
-    winter_mask_half2 = xr.where(
-        c2 == 2, 1, 0
-    )  # It's normal that it is 2: consdition a2 and b2 must be met...
 
+    # It's normal that it is 2: consdition a2 and b2 must be met...
+    winter_mask_half2 = xr.where(c2 == 2, 1, 0)
     winter_mask = (winter_mask_half1 + winter_mask_half2).drop_vars("year")
-    winter_mask = xr.where(
-        winter_mask >= 1, 1, np.nan
-    )  # It's >=1 because sommetimes conditions 1 and 2 are met at the same time.
+
+    # It's >=1 because sommetimes conditions 1 and 2 are met at the same time.
+    winter_mask = xr.where(winter_mask >= 1, 1, np.nan)
 
     summer_mask = xr.where(winter_mask.isnull(), 1, np.nan)
 
@@ -391,8 +400,8 @@ def compute_spring_and_summer_mask(snt):
     condition3 = array_days >= array_days_start_of_spring
     condition4 = array_days <= array_days_end_of_spring
 
-    c3 = xr.where(condition3 == True, 1, 0)
-    c4 = xr.where(condition4 == True, 1, 0)
+    c3 = xr.where(condition3, 1, 0)
+    c4 = xr.where(condition4, 1, 0)
     c = c3 + c4
     spring_mask = xr.where(c == 2, 1, 0)
 
@@ -401,7 +410,7 @@ def compute_spring_and_summer_mask(snt):
     return mask
 
 
-def spatial_average_storm_configurations(da, radius):
+def spatial_average_storm_configurations(da, radius, path=None):
     """Computes the spatial average for different storm
     configurations according to Clavet-Gaumont et al. (2017)
     https://doi.org/10.1016/j.ejrh.2017.07.003.
@@ -533,17 +542,15 @@ def spatial_average_storm_configurations(da, radius):
         ],
     }
 
-    da_0 = da[0, :, :].copy()
-
     # Pixel size
-    dy = (da_0.y[1] - da_0.y[0]).values
-    dx = (da_0.x[1] - da_0.x[0]).values
+    dy = (da.y[1] - da.y[0]).values
+    dx = (da.x[1] - da.x[0]).values
 
     # Number of pixels in da
-    npy_da = len(da_0.y)
-    npx_da = len(da_0.x)
+    npy_da = len(da.y)
+    npx_da = len(da.x)
 
-    spt_av = xr.Dataset()
+    spt_av_list = []
     for name, confi in dict_config.items():
 
         conf_y = confi[0]
@@ -562,8 +569,8 @@ def spatial_average_storm_configurations(da, radius):
             break
 
         # Number of times a configuration can be shifted in each axis
-        ny = len(da_0.y) - npy_confi + 1
-        nx = len(da_0.x) - npx_confi + 1
+        ny = len(da.y) - npy_confi + 1
+        nx = len(da.x) - npx_confi + 1
 
         # List with the configuration duplicated as many times as indicated by nx and nx.
         conf_y_ex = np.reshape(np.array(conf_y * ny), (ny, len(conf_y)))
@@ -581,10 +588,21 @@ def spatial_average_storm_configurations(da, radius):
         shifted_confi = list(product(pos_y, pos_x))
 
         for shift, confi_shifted in enumerate(shifted_confi):
-            matrix_mask = np.full(da_0.shape, np.nan)
+            matrix_mask = np.full((len(da.y), len(da.x)), np.nan)
             matrix_mask[(confi_shifted[0], confi_shifted[1])] = 1
             da_mask = da * matrix_mask
-            da_mean = da_mask.mean(dim=["x", "y"])
-            spt_av[name + "_" + str(shift)] = da_mean
+            da_mean = da_mask.mean(dim=["x", "y"]).expand_dims(
+                dim={"conf": [name + "_" + str(shift)]}
+            )
+
+            spt_av_list.append(da_mean)
+
+    spt_av = xr.concat(spt_av_list, dim="conf")
+
+    if "units" in da.attrs:
+        spt_av.attrs["units"] = da.attrs["units"]
+
+    if path is not None:
+        spt_av.to_zarr(path)
 
     return spt_av
