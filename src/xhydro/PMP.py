@@ -5,6 +5,7 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+import dask
 import xarray as xr
 import xclim
 from lmoments3.distr import gev
@@ -598,6 +599,235 @@ def spatial_average_storm_configurations(da, radius, path=None):
             spt_av_list.append(da_mean)
 
     spt_av = xr.concat(spt_av_list, dim="conf")
+
+    if "units" in da.attrs:
+        spt_av.attrs["units"] = da.attrs["units"]
+
+    if path is not None:
+        spt_av.to_zarr(path)
+
+    return spt_av
+
+def _spatial_average_storm_configuration(da, radius, name, confi):
+    """Computes the spatial average for a storm
+    configuration according to Clavet-Gaumont et al. (2017)
+    https://doi.org/10.1016/j.ejrh.2017.07.003.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        DataArray containing the precipitation values.
+    radius : float
+        Maximum radius of the storm.
+    name : str
+        Name of the configuration
+    confi : lst
+        List wih the configuration coordinates [[y], [x]]
+
+    Returns
+    -------
+    spt_av : xr.DataSet
+        DataSet contaning the spatial averages for the
+        storm configuration.
+    """
+    
+    conf_y = confi[0]
+    conf_x = confi[1]
+    
+    # Pixel size
+    dy = (da.y[1] - da.y[0]).values
+    dx = (da.x[1] - da.x[0]).values
+
+    # Number of pixels in da
+    npy_da = len(da.y)
+    npx_da = len(da.x)
+
+    # Number of pixels in da
+    npy_confi = np.abs(conf_y).max() + 1
+    npx_confi = np.abs(conf_x).max() + 1
+
+    # Checks that the configuration size is within the desired storn size
+    # and that the configuration fits in the domain
+    if not ((dy * npy_confi / 2 < radius) and \
+            (dx * npx_confi / 2 < radius) and \
+            (npy_confi <= npy_da) and \
+            (npx_confi <= npx_da)):
+        return None
+
+    # Number of times a configuration can be shifted in each axis
+    ny = len(da.y) - npy_confi + 1
+    nx = len(da.x) - npx_confi + 1
+
+    # List with the configuration duplicated as many times as indicated by nx and nx.
+    conf_y_ex = np.reshape(np.array(conf_y * ny), (ny, len(conf_y)))
+    conf_x_ex = np.reshape(np.array(conf_x * nx), (nx, len(conf_x)))
+
+    # List with the incrementes from 0 to nx and ny
+    inc_y = np.ones((conf_y_ex.shape)) * [[i] for i in range(ny)]
+    inc_x = np.ones((conf_x_ex.shape)) * [[i] for i in range(nx)]
+
+    # Shifted configurations
+    pos_y = (conf_y_ex + inc_y).astype(int)
+    pos_x = (conf_x_ex + inc_x).astype(int)
+
+    # List of all the combinations of the shifted configurations
+    shifted_confi = list(product(pos_y, pos_x))
+
+    spt_av_list = []
+    for shift, confi_shifted in enumerate(shifted_confi):
+        matrix_mask = np.full((len(da.y), len(da.x)), np.nan)
+        matrix_mask[(confi_shifted[0], confi_shifted[1])] = 1
+        da_mask = da * matrix_mask
+        da_mean = da_mask.mean(dim=["x", "y"]).expand_dims(
+            dim={"conf": [name + "_" + str(shift)]}
+        )
+
+        spt_av_list.append(da_mean)
+
+    spt_av = xr.concat(spt_av_list, dim="conf")
+    
+    return spt_av
+
+
+def spatial_average_storm_configurations_parallel(da, radius, client, path=None):
+    """Computes the spatial average in parallel for different storm
+    configurations according to Clavet-Gaumont et al. (2017)
+    https://doi.org/10.1016/j.ejrh.2017.07.003.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        DataArray containing the precipitation values.
+    radius : float
+        Maximum radius of the storm.
+
+    Returns
+    -------
+    spt_av : xr.DataSet
+        DataSet contaning the spatial averages for all the
+        storm configurations.
+    """
+    dict_config = {
+        "1": [[0], [0]],
+        "2.1": [[0, 0], [0, 1]],
+        "2.2": [[0, 1], [0, 0]],
+        "3.1": [[0, 1, 1], [0, 0, 1]],
+        "3.2": [[1, 1, 0], [0, 1, 1]],
+        "3.3": [[0, 0, 1], [0, 1, 1]],
+        "3.4": [[0, 1, 0], [0, 0, 1]],
+        "4.1": [[0, 0, 1, 1], [0, 1, 0, 1]],
+        "5.1": [[0, 0, 1, 1, 1], [1, 2, 0, 1, 2]],
+        "5.2": [[0, 0, 0, 1, 1], [0, 1, 2, 1, 2]],
+        "5.3": [[0, 0, 0, 1, 1], [0, 1, 2, 0, 1]],
+        "5.4": [[0, 0, 1, 1, 1], [0, 1, 0, 1, 2]],
+        "5.5": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 0]],
+        "5.6": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 1]],
+        "5.7": [[0, 1, 1, 2, 2], [0, 0, 1, 0, 1]],
+        "5.8": [[0, 1, 1, 2, 2], [1, 0, 1, 0, 1]],
+        "6.1": [[0, 0, 0, 1, 1, 1], [0, 1, 2, 0, 1, 2]],
+        "6.2": [[0, 0, 1, 1, 2, 2], [0, 1, 0, 1, 0, 1]],
+        "7.1": [[0, 0, 0, 1, 1, 1, 2], [0, 1, 2, 0, 1, 2, 1]],
+        "7.2": [[0, 0, 1, 1, 1, 2, 2], [0, 1, 0, 1, 2, 0, 1]],
+        "7.3": [[0, 1, 1, 1, 2, 2, 2], [1, 0, 1, 2, 0, 1, 2]],
+        "7.4": [[0, 0, 1, 1, 1, 2, 2], [1, 2, 0, 1, 2, 1, 2]],
+        "8.1": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 1, 2]],
+        "8.2": [[0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 0, 1, 2, 0, 1, 2]],
+        "8.3": [[0, 0, 1, 1, 1, 2, 2, 2], [1, 2, 0, 1, 2, 0, 1, 2]],
+        "8.4": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1]],
+        "9.1": [[0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2]],
+        "10.1": [[0, 0, 0, 0, 1, 1, 1, 1, 2, 2], [0, 1, 2, 3, 0, 1, 2, 3, 1, 2]],
+        "10.2": [[0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [1, 2, 0, 1, 2, 3, 0, 1, 2, 3]],
+        "10.3": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [0, 1, 0, 1, 2, 0, 1, 2, 0, 1]],
+        "10.4": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [1, 2, 0, 1, 2, 0, 1, 2, 1, 2]],
+        "12.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "12.2": [
+            [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
+        ],
+        "14.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
+        ],
+        "14.2": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2],
+        ],
+        "14.3": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "14.4": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3],
+        ],
+        "16.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "18.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
+        ],
+        "18.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
+        ],
+        "18.3": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
+        ],
+        "18.4": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "20.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "20.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "23.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
+        ],
+        "23.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
+        ],
+        "23.3": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3],
+        ],
+        "23.4": [
+            [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "24.1": [
+            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5],
+        ],
+        "24.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "25.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+    }
+
+    lazy_results = [dask.delayed(_spatial_average_storm_configuration)(da, radius, name, confi) for name, confi in dict_config.items()]
+
+    results_client = client.compute(lazy_results)
+    results = client.gather(results_client)
+    results_clean = [item for item in results if item is not None]
+
+    spt_av = xr.concat(results_clean, dim="conf")
 
     if "units" in da.attrs:
         spt_av.attrs["units"] = da.attrs["units"]
