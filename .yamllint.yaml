@@ -7,6 +7,9 @@ rules:
     min-spaces-inside: 1
     max-spaces-inside: 1
 
+  commas:
+    min-spaces-after: 1
+
   document-start: disable
 
   float-values:
@@ -23,7 +26,14 @@ rules:
     forbid-duplicated-merge-keys: true
 
   line-length:
-    max: 190
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+    max: 180
     level: warning
+
+  new-lines:
+    type: unix
+
+  trailing-spaces: {}
 
   truthy: disable
