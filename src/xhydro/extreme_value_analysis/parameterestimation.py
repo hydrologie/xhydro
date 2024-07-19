@@ -10,17 +10,15 @@ import xarray as xr
 from xclim.core.formatting import prefix_attrs, update_history
 from xclim.indices.stats import get_dist
 
-from xhydro.extreme_value_analysis import Extremes
-from xhydro.extreme_value_analysis.structures.conversions import (
+from src.xhydro.extreme_value_analysis import Extremes
+from src.xhydro.extreme_value_analysis.structures.conversions import (
     jl_matrix_tuple_to_py_list,
     jl_vector_to_py_list,
     jl_vector_tuple_to_py_list,
     py_list_to_jl_vector,
 )
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
-from xhydro.extreme_value_analysis.structures.util import (
-    jl_variable_fit_parameters,
-)
+from src.xhydro.extreme_value_analysis.structures.dataitem import Variable
+from src.xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
 
 __all__ = [
     "fit",

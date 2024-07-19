@@ -58,9 +58,7 @@ class TestHydrotel:
 
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
     def test_get_data(self, tmpdir, test):
-        xhydro.testing.utils.fake_hydrotel_project(
-            tmpdir, meteo=True, debit_aval=True
-        )
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True, debit_aval=True)
         if test == "station":
             simulation_config = {"FICHIER STATIONS METEO": "meteo\\SLNO_meteo_GC3H.nc"}
         elif test == "grid":
