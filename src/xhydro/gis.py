@@ -7,6 +7,7 @@ import tempfile
 import urllib.request
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -17,17 +18,21 @@ import pandas as pd
 import pystac_client
 import rasterio
 import rasterio.features
+import rioxarray  # noqa: F401
 import stackstac
 import xarray as xr
+import xvec  # noqa: F401
 from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
-from pystac.extensions.projection import ProjectionExtension as proj
+from pystac.extensions.projection import ProjectionExtension as proj  # noqa: N813
 from shapely import Point
 from tqdm.auto import tqdm
+from xrspatial import aspect, slope
 
 __all__ = [
     "land_use_classification",
     "land_use_plot",
+    "surface_properties",
     "watershed_delineation",
     "watershed_properties",
 ]
@@ -78,12 +83,12 @@ def watershed_delineation(
     opener = urllib.request.build_opener(proxy)
     urllib.request.install_opener(opener)
 
-    tmp_dir = os.path.join(tempfile.gettempdir(), "polygons")
-    Path(tmp_dir).mkdir(parents=True, exist_ok=True)
-    polygon_path = os.path.join(tmp_dir, os.path.basename(url))
+    tmp_dir = Path(tempfile.gettempdir()).joinpath("polygons")
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    polygon_path = tmp_dir.joinpath(Path(url).name)
 
-    if not os.path.isfile(polygon_path):
-        urllib.request.urlretrieve(url, polygon_path)
+    if not polygon_path.is_file():
+        urllib.request.urlretrieve(url, polygon_path)  # noqa: S310
 
     gdf_hydrobasins = gpd.read_parquet(polygon_path)
 
@@ -120,7 +125,7 @@ def watershed_delineation(
 
 def watershed_properties(
     gdf: gpd.GeoDataFrame,
-    unique_id: str = None,
+    unique_id: str | None = None,
     projected_crs: int = 6622,
     output_format: str = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
@@ -136,7 +141,7 @@ def watershed_properties(
     ----------
     gdf : gpd.GeoDataFrame
         GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
-    unique_id : str
+    unique_id : str, optional
         The column name in the GeoDataFrame that serves as a unique identifier.
     projected_crs : int
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
@@ -233,13 +238,13 @@ def _compute_watershed_boundaries(
 def _recursive_upstream_lookup(
     gdf: gpd.GeoDataFrame,
     direct_upstream_indexes: list,
-    all_upstream_indexes: list = None,
+    all_upstream_indexes: list | None = None,
 ):
     """Recursive function to iterate over each upstream sub-basin until all sub-basins in a watershed are identified.
 
     Parameters
     ----------
-    gdf :  gpd.GeoDataFrame
+    gdf : gpd.GeoDataFrame
         HydroBASINS level 12 dataset in GeodataFrame format stream of the pour point.
     direct_upstream_indexes : list
         List of all sub-basins indexes directly upstream.
@@ -262,6 +267,123 @@ def _recursive_upstream_lookup(
         all_upstream_indexes.extend(direct_upstream_indexes)
         _recursive_upstream_lookup(gdf, direct_upstream_indexes, all_upstream_indexes)
     return all_upstream_indexes
+
+
+def _flatten(x, dim="time"):
+    # FIXME: assert statements should only be found in test code
+    assert isinstance(x, xr.DataArray)  # noqa: S101
+    if len(x[dim].values) > len(set(x[dim].values)):
+        x = x.groupby(dim).map(stackstac.mosaic)
+
+    return x
+
+
+def surface_properties(
+    gdf: gpd.GeoDataFrame,
+    unique_id: str | None = None,
+    projected_crs: int = 6622,
+    output_format: str = "geopandas",
+    operation: str = "mean",
+    dataset_date: str = "2021-04-22",
+    collection: str = "cop-dem-glo-90",
+) -> gpd.GeoDataFrame | xr.Dataset:
+    """Surface properties for watersheds.
+
+    Surface properties are calculated using Copernicus's GLO-90 Digital Elevation Model. By default, the dataset
+    has a geographic coordinate system (EPSG: 4326) and this function expects a projected crs for more accurate results.
+
+    The calculated properties are :
+    - elevation (meters)
+    - slope (degrees)
+    - aspect ratio (degrees)
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        GeoDataFrame containing watershed polygons. Must have a defined .crs attribute.
+    unique_id : str, optional
+        The column name in the GeoDataFrame that serves as a unique identifier.
+    projected_crs : int
+        The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
+    output_format : str
+        One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
+    operation : str
+        Aggregation statistics such as `mean` or `sum`.
+    dataset_date : str
+        Date (%Y-%m-%d) for which to select the imagery from the dataset. Date must be available.
+    collection : str
+        Collection name from the Planetary Computer STAC Catalog. Default is `cop-dem-glo-90`.
+
+    Returns
+    -------
+    gpd.GeoDataFrame or xr.Dataset
+        Output dataset containing the surface properties.
+    """
+    # Geometries are projected to make calculations more accurate
+    projected_gdf = gdf.to_crs(projected_crs)
+
+    catalog = pystac_client.Client.open(
+        "https://planetarycomputer.microsoft.com/api/stac/v1",
+    )
+
+    search = catalog.search(
+        collections=[collection],
+        bbox=gdf.total_bounds,
+    )
+
+    items = list(search.get_items())
+
+    # Create a mosaic of
+    da = stackstac.stack(items)
+    da = _flatten(
+        da, dim="time"
+    )  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
+    ds = (
+        da.sel(time=dataset_date)
+        .coarsen({"y": 5, "x": 5}, boundary="trim")
+        .mean()
+        .to_dataset(name="elevation")
+        .rio.write_crs("epsg:4326", inplace=True)
+        .rio.reproject(projected_crs)
+        .isel(band=0)
+    )
+
+    # Use Xvec to extract elevation for each geometry in the projected gdf
+    da_elevation = ds.xvec.zonal_stats(
+        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
+    )["elevation"].squeeze()
+
+    da_slope = slope(ds.elevation)
+
+    # Use Xvec to extract slope for each geometry in the projected gdf
+    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(
+        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
+    )["slope"]
+
+    da_aspect = aspect(ds.elevation)
+
+    # Use Xvec to extract aspect for each geometry in the projected gdf
+    da_aspect = da_aspect.to_dataset(name="aspect").xvec.zonal_stats(
+        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
+    )["aspect"]
+
+    output_dataset = xr.merge([da_elevation, da_slope, da_aspect]).astype("float32")
+
+    # Add attributes for each variable
+    output_dataset["slope"].attrs = {"units": "degrees"}
+    output_dataset["aspect"].attrs = {"units": "degrees"}
+    output_dataset["elevation"].attrs = {"units": "m"}
+
+    if unique_id is not None:
+        output_dataset = output_dataset.assign_coords(
+            {unique_id: ("geometry", gdf[unique_id])}
+        )
+        output_dataset = output_dataset.swap_dims({"geometry": unique_id})
+
+    if output_format in ("geopandas", "gpd.GeoDataFrame"):
+        output_dataset = output_dataset.drop("geometry").to_dataframe()
+
+    return output_dataset
 
 
 def _merge_stac_dataset(catalog, bbox_of_interest, year):
@@ -309,12 +431,19 @@ def _count_pixels_from_bbox(
 ):
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
-    merged, _ = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    epsg = item.properties["proj:epsg"]
+
+    # Mask with polygon
+    merged = merged.rio.write_crs(epsg).rio.clip([gdf.to_crs(epsg).iloc[idx].geometry])
 
     data = merged.data.ravel()
+    data = data[data != 0]
+
     df = pd.DataFrame(
         pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0]
     )
+
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
     else:
@@ -328,7 +457,7 @@ def _count_pixels_from_bbox(
 
 def land_use_classification(
     gdf: gpd.GeoDataFrame,
-    unique_id: str = None,
+    unique_id: str | None = None,
     output_format: str = "geopandas",
     collection="io-lulc-9-class",
     year: str | int = "latest",
@@ -396,7 +525,7 @@ def land_use_classification(
 def land_use_plot(
     gdf: gpd.GeoDataFrame,
     idx: int = 0,
-    unique_id: str = None,
+    unique_id: str | None = None,
     collection: str = "io-lulc-9-class",
     year: str | int = "latest",
 ) -> None:

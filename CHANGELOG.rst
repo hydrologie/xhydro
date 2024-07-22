@@ -2,9 +2,24 @@
 Changelog
 =========
 
-v0.4.0 (unreleased)
+v.4.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* `numpy` has been pinned below v2.0.0 until `xclim` and other dependencies are updated to support it. (:pull:`161`).
+* A helper script has been added in the `CI` directory to facilitate the translation of the `xhydro` documentation. (:issue:`63`, :pull:`163`).
+* The `conda` environment now relies on the newly created `xdatasets` package. (:pull:`164`).
+* The cookiecutter has been updated to the latest commit. Changes include workflow fixes, stricter coding standards, and many small adjustments to the documentation. (:pull:`164`).
+
+v0.3.6 (2024-06-10)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`), Sébastien Langlois (:user:`sebastienlanglois`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,6 +27,7 @@ New features and enhancements
 * Added support for various hydrological models emulated through the Raven hydrological framework. (:pull:`128`).
 * Added optimal interpolation functions for time-series and streamflow indicators. (:pull:`88`, :pull:`129`).
 * Added optimal interpolation notebooks. (:pull:`123`).
+* Added surface properties (elevation, slope, aspect ratio) to the `gis` module. (:pull:`151`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^

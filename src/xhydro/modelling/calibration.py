@@ -135,10 +135,10 @@ class SpotSetup:
         model_config: dict,
         bounds_high: np.array,
         bounds_low: np.array,
-        obj_func: str = None,
+        obj_func: Optional[str] = None,
         take_negative: bool = False,
-        mask: np.array = None,
-        transform: str = None,
+        mask: Optional[np.array] = None,
+        transform: Optional[str] = None,
         epsilon: float = 0.01,
     ):
         """

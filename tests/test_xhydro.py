@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """Tests for `xhydro` package."""
 
 import pathlib
@@ -32,8 +31,8 @@ def test_package_metadata():
 
     metadata = pathlib.Path(project).resolve().joinpath("__init__.py")
 
-    with open(metadata) as f:
+    with metadata.open() as f:
         contents = f.read()
         assert """Thomas-Charles Fortier Filion""" in contents
         assert '__email__ = "tcff_hydro@outlook.com"' in contents
-        assert '__version__ = "0.3.6-dev.6"' in contents
+        assert '__version__ = "0.3.7-dev.1"' in contents

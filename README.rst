@@ -22,7 +22,12 @@ Hydrological analysis library built with xarray
 Features
 --------
 
-* TODO
+* Easily find and extract geospacial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
+* Calibrate and execute Hydrotel and Raven-emulated hydrological models.
+* Perform optimal interpolation on hydrological data (daily streamflow and indices).
+* Compute hydrological indicators (e.g. n-day peak flow, annual maximum series, low flow, average flow, etc.) over custom date ranges.
+* Perform frequency analysis on hydrological indicators using a variety of methods (e.g. Gumbel, GEV, etc.).
+* Perform climate change impact analysis of hydrological data.
 
 Credits
 -------

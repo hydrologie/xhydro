@@ -46,7 +46,12 @@ def fake_hydrotel_project(
     """
     project_dir = Path(project_dir)
 
-    with open(Path(__file__).parent / "data" / "hydrotel_structure.yml") as f:
+    with (
+        Path(__file__)
+        .parent.joinpath("data")
+        .joinpath("hydrotel_structure.yml")
+        .open() as f
+    ):
         struc = yaml.safe_load(f)["structure"]
 
     default_csv = (
@@ -154,7 +159,7 @@ def fake_hydrotel_project(
 def publish_release_notes(
     style: str = "md",
     file: Optional[Union[os.PathLike, StringIO, TextIO]] = None,
-    changes: Union[str, os.PathLike] = None,
+    changes: Optional[Union[str, os.PathLike]] = None,
 ) -> Optional[str]:
     """Format release history in Markdown or ReStructuredText.
 
@@ -186,7 +191,7 @@ def publish_release_notes(
     if not changes_file.exists():
         raise FileNotFoundError("Changes file not found in xhydro file tree.")
 
-    with open(changes_file) as hf:
+    with changes_file.open() as hf:
         changes = hf.read()
 
     if style == "rst":
@@ -218,7 +223,7 @@ def publish_release_notes(
                     str(grouping[0]).replace("(", r"\(").replace(")", r"\)")
                 )
                 search = rf"({fixed_grouping})\n([\{level}]{'{' + str(len(grouping[1])) + '}'})"
-                replacement = f"{'##' if level=='-' else '###'} {grouping[0]}"
+                replacement = f"{'##' if level == '-' else '###'} {grouping[0]}"
                 changes = re.sub(search, replacement, changes)
 
         link_expressions = r"[\`]{1}([\w\s]+)\s<(.+)>`\_"

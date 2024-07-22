@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-  "commit": "c65a12012aa323aadd206dd2b5d97c82c648e341",
+  "commit": "58525bb6c287ad11c874d7b8531c3597232e2d93",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -11,7 +11,7 @@
       "project_slug": "xhydro",
       "project_short_description": "Hydrological analysis library built with xarray.",
       "pypi_username": "TC-FF",
-      "version": "0.3.6-dev.6",
+      "version": "0.3.7-dev.1",
       "use_pytest": "y",
       "use_black": "y",
       "use_conda": "y",
@@ -23,25 +23,6 @@
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "y",
       "__gh_slug": "https://github.com/TC-FF/xHydro",
-      "__prompts__": {
-        "full_name": "Your full name",
-        "email": "Your email address",
-        "github_username": "Your GitHub username (or organization)",
-        "project_name": "The name of your project",
-        "project_short_description": "A short description of your project",
-        "pypi_username": "Your PyPI username (or organization)",
-        "version": "The version of your project",
-        "use_pytest": "Do you want to use pytest?",
-        "use_black": "Do you want to use Black for code formatting?",
-        "use_conda": "Do you want to add configurations for Anaconda package management?",
-        "add_pyup_badge": "Do you want to add a pyup.io badge? (not recommended)",
-        "make_docs": "Do you want to generate documentation files",
-        "add_translations": "Do you want to add translations?",
-        "command_line_interface": "Which command-line interface do you want to use?",
-        "create_author_file": "Do you want to create an AUTHORS.rst file?",
-        "open_source_license": "Which open-source license do you want to use?",
-        "generated_with_cruft": "Was this project generated with Cruft? (Add a '.cruft.json' file)"
-      },
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage"
     }
   },

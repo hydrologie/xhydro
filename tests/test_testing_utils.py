@@ -60,7 +60,7 @@ def test_publish_release_notes(tmp_path):
         changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
     )
 
-    with open(temp_md_filename) as f:
+    with Path(temp_md_filename).open() as f:
         changelog = f.read()
 
     assert changelog.startswith("# Changelog")
@@ -74,6 +74,6 @@ def test_publish_release_notes(tmp_path):
         file=temp_rst_filename,
         changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
     )
-    with open(temp_rst_filename) as f:
+    with Path(temp_rst_filename).open() as f:
         changelog_rst = f.read()
     assert changelog_rst.startswith("=========\nChangelog\n=========")
