@@ -9,7 +9,7 @@ from types import ModuleType
 from typing import cast
 
 import juliapkg
-from juliacall import Main as jl
+from juliacall import Main as jl  # noqa: N813
 
 # Check if JuliaCall is already loaded, and if so, warn the user
 # about the relevant environment variables. If not loaded,
