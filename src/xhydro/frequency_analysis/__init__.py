@@ -1,3 +1,3 @@
 """Frequency analysis module."""
 
-from . import local
+from . import local, regional
