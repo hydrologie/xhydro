@@ -519,8 +519,8 @@ def _param_cint(jl_model, bayesian: bool = False, pareto: bool = False) -> list:
         params = params[
             1:
         ]  # we don't include the location in pareto distribution, because it is always equal to 0
-        cint[0] = [math.exp(cint[0][i]) for i in range(len(cint[0]))]
+        cint[0] = [np.exp(cint[0][i]) for i in range(len(cint[0]))]
     else:
-        cint[1] = [math.exp(cint[1][i]) for i in range(len(cint[1]))]
+        cint[1] = [np.exp(cint[1][i]) for i in range(len(cint[1]))]
     param_cint = [item for pair in zip(params, cint) for item in (pair[0], *pair[1])]
     return param_cint

@@ -1,4 +1,4 @@
-"""Utility functions for  parameter estimation."""
+"""Utility functions for parameter estimation."""
 
 from juliacall import convert as jl_convert
 

@@ -8,11 +8,14 @@ from juliacall import convert as jl_convert
 from xhydro.extreme_value_analysis.julia_import import jl
 from xhydro.extreme_value_analysis.structures.dataitem import Variable
 
-# __all__ = [
-#     "py_variable_to_jl_variable",
-#     "py_str_to_jl_symbol",
-#     "py_list_to_jl_vector",
-# ]
+__all__ = [
+    "jl_matrix_tuple_to_py_list",
+    "jl_vector_to_py_list",
+    "jl_vector_tuple_to_py_list",
+    "py_list_to_jl_vector",
+    "py_str_to_jl_symbol",
+    "py_variable_to_jl_variable",
+]
 
 
 def py_variable_to_jl_variable(py_var: Variable):

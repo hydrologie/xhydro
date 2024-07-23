@@ -61,8 +61,7 @@ dependencies = [
   "xclim>=0.48.2",
   "xdatasets>=0.3.6",
   "xscen>=0.8.3",
-  "xvec",
-  "juliacall"
+  "xvec"
 ]
 
 [project.optional-dependencies]
@@ -104,7 +103,10 @@ docs = [
   "sphinxcontrib-napoleon",
   "xagg"
 ]
-all = ["xhydro[dev]", "xhydro[docs]"]
+julia = [
+  "juliacall >=0.9.20"
+]
+all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]"]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"

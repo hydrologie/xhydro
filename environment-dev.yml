@@ -30,7 +30,7 @@ dependencies:
   - xdatasets >=0.3.6
   - xscen >=0.8.3
   - xvec
-  - pyjuliacall
+  - pyjuliacall >=0.9.20
   # Dev tools and testing
   - pip >=24.0
   - blackdoc ==0.3.9
