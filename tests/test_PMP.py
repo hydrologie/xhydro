@@ -1,12 +1,14 @@
-import pytest
 import numpy as np
+import pytest
 import xarray as xr
+
 from xhydro.PMP import (
-    hershfield_PMP,
     calculate_PMP,
     calculate_PMP_ensemble,
     calculate_PMP_ensemble_stats,
+    hershfield_PMP,
 )
+
 
 def test_hershfield_PMP():
     xm = 100
@@ -15,6 +17,7 @@ def test_hershfield_PMP():
     expected_PMP = 400
     result = hershfield_PMP(xm, sx, km)
     assert np.isclose(result, expected_PMP, rtol=1e-5)
+
 
 def test_calculate_PMP():
     precip = xr.DataArray(
@@ -30,6 +33,7 @@ def test_calculate_PMP():
     assert isinstance(result, xr.DataArray)
     assert result.dims == ("lat", "lon")
     assert np.all(result.values >= precip.max("time").values)
+
 
 def test_calculate_PMP_ensemble():
     ensemble = xr.DataArray(
@@ -47,6 +51,7 @@ def test_calculate_PMP_ensemble():
     assert result.dims == ("realization", "lat", "lon")
     assert np.all(result.values >= ensemble.max("time").values)
 
+
 def test_calculate_PMP_ensemble_stats():
     ensemble = xr.DataArray(
         np.random.rand(3, 10, 5, 5),
@@ -63,6 +68,7 @@ def test_calculate_PMP_ensemble_stats():
     assert set(result.data_vars) == {"mean", "std", "min", "max"}
     assert all(var.dims == ("lat", "lon") for var in result.data_vars.values())
 
+
 @pytest.mark.parametrize("km", [-1, 0, 100])
 def test_hershfield_PMP_edge_cases(km):
     xm = 100
@@ -70,6 +76,7 @@ def test_hershfield_PMP_edge_cases(km):
     result = hershfield_PMP(xm, sx, km)
     assert np.isfinite(result)
     assert result >= xm
+
 
 def test_calculate_PMP_constant_precip():
     precip = xr.DataArray(
@@ -83,6 +90,7 @@ def test_calculate_PMP_constant_precip():
     )
     result = calculate_PMP(precip)
     assert np.all(result.values == 100)
+
 
 def test_calculate_PMP_ensemble_single_realization():
     ensemble = xr.DataArray(
@@ -98,6 +106,7 @@ def test_calculate_PMP_ensemble_single_realization():
     result = calculate_PMP_ensemble(ensemble)
     assert result.dims == ("realization", "lat", "lon")
     assert result.shape == (1, 5, 5)
+
 
 def test_calculate_PMP_ensemble_stats_extreme_values():
     ensemble = xr.DataArray(
