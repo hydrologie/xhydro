@@ -1,3 +1,4 @@
+# noqa: N802,N806
 import numpy as np
 import pytest
 import xarray as xr
