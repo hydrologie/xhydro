@@ -75,7 +75,6 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
 # juliapkg.resolve()
 deps = {
     "Extremes": "fe3fe864-1b39-11e9-20b8-1f96fa57382d",
-    "DataFrames": "a93c6f00-e57d-5684-b7b6-d8193f3e46c0",
 }
 for dependancy, uuid in deps.items():
     if not check_function_output(juliapkg.deps.status, dependancy):

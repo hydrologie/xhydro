@@ -10,15 +10,15 @@ import xarray as xr
 from xclim.core.formatting import prefix_attrs, update_history
 from xclim.indices.stats import get_dist
 
-from src.xhydro.extreme_value_analysis import Extremes
-from src.xhydro.extreme_value_analysis.structures.conversions import (
+from xhydro.extreme_value_analysis import Extremes
+from xhydro.extreme_value_analysis.structures.conversions import (
     jl_matrix_tuple_to_py_list,
     jl_vector_to_py_list,
     jl_vector_tuple_to_py_list,
     py_list_to_jl_vector,
 )
-from src.xhydro.extreme_value_analysis.structures.dataitem import Variable
-from src.xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
+from xhydro.extreme_value_analysis.structures.dataitem import Variable
+from xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
 
 __all__ = [
     "fit",
@@ -70,7 +70,9 @@ def gevfit(
         logscalecov=jl_logscalecov,
         shapecov=jl_shapecov,
     )
+    # TODO: continue test for prametric quantile
     return _param_cint(jl_model)
+    # return {"params": params, "jl_fm": jl_model}
 
 
 def gumbelfit(
@@ -418,6 +420,7 @@ def _fitfunc_1d(arr, *, dist, nparams, method):
 
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+            # TODO: continue test for parametric quantile
             param_list = gevfit(x)
             params = np.asarray(param_list)
             params = np.roll(params, 3)  # to have [shape, loc, scale]

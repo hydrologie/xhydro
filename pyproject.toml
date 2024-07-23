@@ -62,7 +62,7 @@ dependencies = [
   "xdatasets>=0.3.6",
   "xscen>=0.8.3",
   "xvec",
-  "pyjuliacall"
+  "juliacall"
 ]
 
 [project.optional-dependencies]

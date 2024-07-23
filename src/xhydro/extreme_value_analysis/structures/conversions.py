@@ -5,10 +5,8 @@ import math
 import numpy as np
 from juliacall import convert as jl_convert
 
-from src.xhydro.extreme_value_analysis.julia_import import jl
-from src.xhydro.extreme_value_analysis.structures.dataitem import Variable
-
-jl.seval("using DataFrames")
+from xhydro.extreme_value_analysis.julia_import import jl
+from xhydro.extreme_value_analysis.structures.dataitem import Variable
 
 # __all__ = [
 #     "py_variable_to_jl_variable",
