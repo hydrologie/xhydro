@@ -1,9 +1,11 @@
 import datetime as dt
+import warnings
 
 import numpy as np
 import pooch
 import pytest
 import xarray as xr
+from raven_hydro import __raven_version__
 
 from xhydro.modelling import RavenpyModel
 
@@ -389,16 +391,20 @@ class TestRavenpyModels:
             evaporation=self.evaporation,
         )
 
-        qsim = rpm.run()
-
-        assert qsim["streamflow"].shape == (1827,)
+        if __raven_version__ == "3.8.1":
+            warnings.warn("Blended model does not work with RavenHydroFramework v3.8.1")
+            with pytest.raises(OSError):
+                rpm.run()
+        else:
+            qsim = rpm.run()
+            assert qsim["streamflow"].shape == (1827,)
 
     def test_fake_ravenpy(self):
         """Test for GR4JCN ravenpy model"""
         model_name = "fake_test"
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
 
-        with pytest.raises(ValueError) as pytest_wrapped_e:
+        with pytest.raises(ValueError):
             rpm = RavenpyModel(
                 model_name=model_name,
                 parameters=parameters,
@@ -418,5 +424,4 @@ class TestRavenpyModels:
                 evaporation=self.evaporation,
             )
 
-            _ = rpm.run()
-            assert pytest_wrapped_e.type == ValueError
+            rpm.run()

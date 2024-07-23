@@ -399,8 +399,8 @@ def execute_interpolation(
     leave_one_out_cv: bool = False,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: list = None,
-    hmax_mult_range_bnds: list = None,
+    p1_bnds: Optional[list] = None,
+    hmax_mult_range_bnds: Optional[list] = None,
 ):
     """Run the interpolation algorithm for leave-one-out cross-validation or operational use.
 

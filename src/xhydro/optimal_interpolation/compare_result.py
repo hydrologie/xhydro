@@ -61,7 +61,8 @@ def compare(
     selected_flow_l1o = np.empty((time_range, station_count)) * np.nan
 
     for i in range(0, station_count):
-        logger.info(f"Reading data from station {i+1} of {station_count}")
+        msg = f"Reading data from station {i + 1} of {station_count}"
+        logger.info(msg)
         # For each validation station:
         cv_station_id = observation_stations[i]
 
