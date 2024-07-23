@@ -3,9 +3,9 @@
 import sys
 from itertools import product
 
+import dask
 import numpy as np
 import pandas as pd
-import dask
 import xarray as xr
 import xclim
 from lmoments3.distr import gev
@@ -578,8 +578,8 @@ def spatial_average_storm_configurations(da, radius, path=None):
         conf_x_ex = np.reshape(np.array(conf_x * nx), (nx, len(conf_x)))
 
         # List with the incrementes from 0 to nx and ny
-        inc_y = np.ones((conf_y_ex.shape)) * [[i] for i in range(ny)]
-        inc_x = np.ones((conf_x_ex.shape)) * [[i] for i in range(nx)]
+        inc_y = np.ones(conf_y_ex.shape) * [[i] for i in range(ny)]
+        inc_x = np.ones(conf_x_ex.shape) * [[i] for i in range(nx)]
 
         # Shifted configurations
         pos_y = (conf_y_ex + inc_y).astype(int)
