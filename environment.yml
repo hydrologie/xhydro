@@ -8,9 +8,8 @@ dependencies:
   - cartopy
   - geopandas
   - haversine
-  - intake <2.0.0 # This should be set by xdatasets once on conda-forge
   - leafmap
-  - numpy
+  - numpy <2.0.0
   - pandas
   - planetary-computer
   - pooch >=1.8.0
@@ -19,7 +18,7 @@ dependencies:
   - pystac-client
   - pyyaml
   - rasterio
-  - ravenpy
+  - ravenpy >=0.15.0
   - rioxarray
   - spotpy
   - stackstac
@@ -28,8 +27,7 @@ dependencies:
   - xarray >=2023.11.0
   - xarray-spatial
   - xclim >=0.48.2
+  - xdatasets >=0.3.5
   - xscen >=0.8.3
   - xvec
   - pip >=23.3.0
-  - pip:
-    - xdatasets >=0.3.5

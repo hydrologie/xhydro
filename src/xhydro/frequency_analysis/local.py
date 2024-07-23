@@ -60,7 +60,7 @@ def fit(
     for v in ds.data_vars:
         p = []
         for d in distributions:
-            p.append(
+            p.append(  # noqa: PERF401
                 xclim.indices.stats.fit(
                     ds[v].chunk({"time": -1}), dist=d, method=method
                 )

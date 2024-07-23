@@ -203,7 +203,7 @@ class TestHydrotel:
             "PAS DE TEMPS": 24,
         }
         if test == "file":
-            os.remove(tmpdir / "simulation" / "simulation" / "lecture_tempsol.csv")
+            Path(tmpdir / "simulation" / "simulation" / "lecture_tempsol.csv").unlink()
 
         ht = Hydrotel(
             project_dir=tmpdir,
@@ -278,8 +278,7 @@ class TestHydrotel:
         with pytest.raises(ValueError, match="folder does not exist"):
             ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
-        os.rename(
-            tmpdir / "simulation" / "simulation",
+        Path(tmpdir / "simulation" / "simulation").rename(
             tmpdir / "simulation" / "test",
         )
         Hydrotel(
@@ -399,13 +398,13 @@ class TestHydrotel:
     def test_copypaste(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
         # Remove simulation.csv
-        os.remove(tmpdir / "simulation" / "simulation" / "simulation.csv")
+        Path(tmpdir / "simulation" / "simulation" / "simulation.csv").unlink()
         Hydrotel(
             tmpdir,
             "SLNO.csv",
             use_defaults=True,
         )
-        assert os.path.exists(tmpdir / "simulation" / "simulation" / "simulation.csv")
+        assert Path(tmpdir / "simulation" / "simulation" / "simulation.csv").exists()
 
     def test_errors(self, tmpdir):
         # Missing project folder

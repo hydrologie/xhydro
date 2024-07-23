@@ -2,12 +2,14 @@
 
 # Also tests the dummy model implementation.
 import datetime as dt
+import warnings
 from copy import deepcopy
 
 import numpy as np
 import pooch
 import pytest
 import xarray as xr
+from raven_hydro import __raven_version__
 
 from xhydro.modelling import hydrological_model
 from xhydro.modelling.calibration import perform_calibration
@@ -108,7 +110,7 @@ def test_calibration_failure_mode_unknown_optimizer():
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
-    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+    with pytest.raises(NotImplementedError):
         best_parameters_transform, best_simulation, best_objfun = perform_calibration(
             model_config,
             "nse",
@@ -117,7 +119,6 @@ def test_calibration_failure_mode_unknown_optimizer():
             evaluations=10,
             algorithm="OTHER",
         )
-        assert pytest_wrapped_e.type == NotImplementedError
 
 
 def test_transform():
@@ -138,9 +139,8 @@ def test_transform():
     np.testing.assert_array_almost_equal(qobs_r[1], 1.6193882, 6)
 
     # Test Qobs different length than Qsim
-    with pytest.raises(NotImplementedError) as pytest_wrapped_e:
+    with pytest.raises(NotImplementedError):
         qobs_r, qobs_r = transform_flows(qsim, qobs, transform="a", epsilon=0.01)
-        assert pytest_wrapped_e.type == NotImplementedError
 
 
 class TestRavenpyModelCalibration:
@@ -606,15 +606,28 @@ class TestRavenpyModelCalibration:
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "Blended"})
 
-        best_parameters, best_simulation, best_objfun = perform_calibration(
-            model_config,
-            "mae",
-            bounds_low=bounds_low,
-            bounds_high=bounds_high,
-            evaluations=8,
-            algorithm="DDS",
-            sampler_kwargs=dict(trials=1),
-        )
+        if __raven_version__ == "3.8.1":
+            warnings.warn("Blended model does not work with RavenHydroFramework v3.8.1")
+            with pytest.raises(OSError):
+                perform_calibration(
+                    model_config,
+                    "mae",
+                    bounds_low=bounds_low,
+                    bounds_high=bounds_high,
+                    evaluations=8,
+                    algorithm="DDS",
+                    sampler_kwargs=dict(trials=1),
+                )
+        else:
+            best_parameters, best_simulation, best_objfun = perform_calibration(
+                model_config,
+                "mae",
+                bounds_low=bounds_low,
+                bounds_high=bounds_high,
+                evaluations=8,
+                algorithm="DDS",
+                sampler_kwargs=dict(trials=1),
+            )
 
-        # Test that the results have the same size as expected (number of parameters)
-        assert len(best_parameters) == len(bounds_high)
+            # Test that the results have the same size as expected (number of parameters)
+            assert len(best_parameters) == len(bounds_high)
