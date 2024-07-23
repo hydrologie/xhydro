@@ -16,6 +16,7 @@ Internal changes
 * A helper script has been added in the `CI` directory to facilitate the translation of the `xhydro` documentation. (:issue:`63`, :pull:`163`).
 * The `conda` environment now relies on the newly created `xdatasets` package. (:pull:`164`).
 * The cookiecutter has been updated to the latest commit. Changes include workflow fixes, stricter coding standards, and many small adjustments to the documentation. (:pull:`164`).
+* A previously uncaught YAML formatting issue has been addressed. Stricter style conventions are now enforced. (:pull:`174`).
 
 v0.3.6 (2024-06-10)
 -------------------
