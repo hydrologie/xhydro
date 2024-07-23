@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pooch
 
 from xhydro.extreme_value_analysis.parameterestimation import (
     gevfit,
@@ -13,24 +14,30 @@ from xhydro.extreme_value_analysis.parameterestimation import (
     gumbelfitpwm,
 )
 
+# Dataset taken from tests in Extremes.jl
 GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-# TODO: branch and folder names are the same until the PR https://github.com/hydrologie/xhydro-testdata/pull/13
-# is accepted and branch becomes 'main'
-BRANCH_OR_COMMIT_HASH = "extreme_value_analysis"
-FOLDER = "extreme_value_analysis"
-FILE_URLS = {
-    "gev_stationary": f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/{FOLDER}/gev_stationary.csv",
-    "gev_nonstationary": f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/{FOLDER}/gev_nonstationary.csv",
-    "gp_stationary": f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/{FOLDER}/gp_stationary.csv",
-    "gp_nonstationary": f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/{FOLDER}/gp_nonstationary.csv",
-}
+BRANCH_OR_COMMIT_HASH = "main"
+
+genextreme_data = pooch.retrieve(
+    url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genextreme.zip",
+    known_hash="md5:cc2ff7c93949673a6acf00c7c2fac20b",
+    processor=pooch.Unzip(),
+)
+
+genpareto_data = pooch.retrieve(
+    url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genpareto.zip",
+    known_hash="md5:ecb74164db4bbfeabfc5e340b11e7ae8",
+    processor=pooch.Unzip(),
+)
+
+GEV_NONSTATIONARY = pd.read_csv(genextreme_data[0])
+GEV_STATIONARY = pd.read_csv(genextreme_data[1])
+GP_NONSTATIONARY = pd.read_csv(genpareto_data[0])
+GP_STATIONARY = pd.read_csv(genpareto_data[1])
 
 
 class TestGevfit:
-    # Dataset taken from tests in Extremes.jl
-    csv_url = FILE_URLS["gev_stationary"]
-    df = pd.read_csv(csv_url)
-    y = df["y"].values
+    y = GEV_STATIONARY["y"].values
 
     def test_gevfit(self):
         param_cint = gevfit(self.y)
@@ -59,10 +66,7 @@ class TestGevfit:
 
 
 class TestGumbelfit:
-    # Dataset taken from tests in Extremes.jl
-    csv_url = FILE_URLS["gev_stationary"]
-    df = pd.read_csv(csv_url)
-    y = df["y"].values
+    y = GEV_STATIONARY["y"].values
 
     def test_gumbelfit(self):
         param_cint = gumbelfit(self.y)
@@ -87,10 +91,7 @@ class TestGumbelfit:
 
 
 class TestGpfit:
-    # Dataset taken from tests in Extremes.jl
-    csv_url = FILE_URLS["gp_stationary"]
-    df = pd.read_csv(csv_url)
-    y = df["y"].values
+    y = GP_STATIONARY["y"].values
 
     def test_gpfit(self):
         param_cint = gpfit(self.y)
