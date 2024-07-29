@@ -1,11 +1,12 @@
+lmoments3 = pytest.importorskip("lmoments3")  # noqa: E402
 # noqa: N802,N806
-import numpy as np
-import pandas as pd
-import pytest
-import xarray as xr
-from lmoments3.distr import gev
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+import pytest  # noqa: E402
+import xarray as xr  # noqa: E402
+from lmoments3.distr import gev  # noqa: E402
 
-from xhydro import pmp
+from xhydro import pmp  # noqa: E402
 
 
 def test_major_precipitation_events():
