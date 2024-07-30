@@ -269,7 +269,14 @@ def precipitable_water_100y(da_pw, dist, mf=0.2, path=None):
     return da_pw100
 
 
-def compute_spring_and_summer_mask(snt, thresh="1 cm"):
+def compute_spring_and_summer_mask(
+    snt,
+    thresh="1 cm",
+    window_wint_start=14,
+    window_wint_end=90,
+    spr_start=60,
+    spr_end=30,
+):
     """Create a mask that defines the spring and summer seasons based on the snow thickness.
 
     Parameters
@@ -280,19 +287,23 @@ def compute_spring_and_summer_mask(snt, thresh="1 cm"):
     thresh : Quantified
         Threshold snow thickness.
 
+    window_wint_start : int
+        Minimum number of days with snow depth above or equal to threshold to define the start of winter.
+
+    window_wint_end : int
+        Maximum number of days with snow depth above or equal to threshold to define the end of winter.
+
+    spr_start : int
+        Number of days before the end of winter to define the start of spring.
+
+    spr_end : int
+        Number of days after the end of winter to define the end of spring.
+
     Returns
     -------
     xr.Dataset
         Dataset with two DataArrays (mask_spring and mask_summer), with values of 1 where the
         spring and summer criteria are met and 0 where they are not.
-
-    Notes
-    -----
-    1) The start and end of winter consider a minimum number of days with snow of 14 and 90 days,
-    respectively, to guarantee snow accumulation at the beginning of winter and that there is no
-    thaw at the end.
-
-    2) The start and end of spring are defined 60 days before and 30 days after the end of winter.
     """
     if snt.attrs["units"] == "kg m-2":
         snt = snt / 10  # kg/m² == 1mm --> Transformation 1mm = 1cm/10
@@ -300,23 +311,21 @@ def compute_spring_and_summer_mask(snt, thresh="1 cm"):
     else:
         sys.exit("snow units are not in kg m-2")
 
-    # 14 days of windows to make sure that the snow stays on the ground at the beginning of winter.
     winter_start = xclim.indices.snd_season_start(
-        snd=snt, thresh=thresh, window=14, freq="YS-JUL"
+        snd=snt, thresh=thresh, window=window_wint_start, freq="YS-JUL"
     )
     winter_start = winter_start.assign_coords({"year": winter_start.time.dt.year})
     winter_start = winter_start.swap_dims({"time": "year"})
 
-    # 90 days of window because we want to make sure that there is not thaw.
     winter_end = xclim.indices.snd_season_end(
-        snd=snt, thresh=thresh, window=90, freq="YS"
+        snd=snt, thresh=thresh, window=window_wint_end, freq="YS"
     )
     winter_end = winter_end.assign_coords({"year": winter_end.time.dt.year})
     winter_end = winter_end.swap_dims({"time": "year"})
 
-    spring_start = winter_end - 60
+    spring_start = winter_end - spr_start
     spring_start = spring_start.where(spring_start >= 1, 1)
-    spring_end = winter_end + 30
+    spring_end = winter_end + spr_end
 
     mask = xr.where(winter_start.isnull(), np.nan, 1)
     mask = mask.drop_sel(year=max(winter_start.time.dt.year))
