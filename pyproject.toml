@@ -37,6 +37,8 @@ classifiers = [
 dynamic = ["description", "version"]
 dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  "botocore == 1.34.106",
+  "aiobotocore == 2.13.0",
   "cartopy",
   "geopandas",
   "haversine",
