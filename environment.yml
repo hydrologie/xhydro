@@ -24,7 +24,7 @@ dependencies:
   - stackstac
   - statsmodels
   - tqdm
-  - xarray >=2023.11.0
+  - xarray=2024.6.0", # FIXME: Broken for 2024.7.0
   - xarray-spatial
   - xclim >=0.48.2
   - xdatasets >=0.3.5
