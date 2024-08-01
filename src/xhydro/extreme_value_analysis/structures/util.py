@@ -48,6 +48,13 @@ def jl_variable_fit_parameters(params: list[list[Variable]]) -> tuple:
     )
     return jl_params
 
+def jl_variable_fit_parameters_debug(covariate_list: list[list]):
+    r"""Return a julia vector of julia Variables"""
+    py_variables = [Variable("", values) for values in covariate_list]
+    jl_variables = [py_variable_to_jl_variable(py_variable) for py_variable in py_variables]
+    jl_vector_variables = jl_convert(jl.Vector[jl.Extremes.Variable], jl_variables)
+    return jl_vector_variables
+
 
 # FIXME: not really used right now, delete soon?
 def values_above_threshold(values: list, threshold: float) -> list:
