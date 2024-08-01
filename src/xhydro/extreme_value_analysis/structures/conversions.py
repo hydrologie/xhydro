@@ -151,6 +151,3 @@ def jl_matrix_tuple_to_py_list(jl_matrix_tuple) -> list[tuple]:
     py_list = [tuple(row) for row in jl_matrix_tuple]
     return py_list
 
-def jl_3d_array_to_py_list(jl_3d_array) -> list:
-
-    pass
