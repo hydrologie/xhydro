@@ -72,7 +72,7 @@ def py_list_to_jl_vector(py_list: list):
     ------
     ValueError
         If the list contains mixed types that are not all strings or numbers.
-        If the list contains unsupported types such that it cannot be converted to a Julia Vector.
+        If the list contains unsupported types/complex structures such that it cannot be converted to a Julia Vector.
     """
     # Cleaning up nans and numpy.float32 elements
     py_list = [x for x in py_list if not math.isnan(x)]  # TODO: deal with nans beter
@@ -146,3 +146,7 @@ def jl_matrix_tuple_to_py_list(jl_matrix_tuple) -> list[tuple]:
     """
     py_list = [tuple(row) for row in jl_matrix_tuple]
     return py_list
+
+def jl_3d_array_to_py_list(jl_3d_array) -> list:
+
+    pass

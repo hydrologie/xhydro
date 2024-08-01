@@ -11,6 +11,8 @@ from typing import cast
 import juliapkg
 from juliacall import Main as jl  # noqa: N813
 
+__all__ = ["jl", "Extremes"]
+
 # Check if JuliaCall is already loaded, and if so, warn the user
 # about the relevant environment variables. If not loaded,
 # set up sensible defaults.
