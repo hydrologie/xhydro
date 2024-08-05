@@ -9,7 +9,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel R
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
-* `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation. (:pull:`176`).
+* `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation from climate change scenarios. (:pull:`176`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
