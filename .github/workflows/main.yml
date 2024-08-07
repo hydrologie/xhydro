@@ -10,7 +10,7 @@ on:
       - README.rst
       - pyproject.toml
       - tests/test_xhydro.py
-      - xhydro/__init__.py
+      - src/xhydro/__init__.py
   pull_request:
     types:
       - opened
@@ -59,9 +59,9 @@ jobs:
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install tox
+      - name: Install CI libraries
         run: |
-          python -m pip install tox
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
       - name: Run linting suite
         run: |
           python -m tox -e lint
@@ -101,7 +101,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@422500192359a097648154e8db4e39bdb6c6eed7 # v1.8.1
+        uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
           environment-file: environment-dev.yml
@@ -162,7 +162,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v1.8.1
+        uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
           environment-file: environment-dev.yml
@@ -308,9 +308,16 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
-      - name: Coveralls Finished
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          sparse-checkout: |
+            CI/requirements_ci.txt
+      - name: Install CI libraries
         run: |
-          python -m pip install --upgrade coveralls
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Coveralls finished
+        run: |
           python -m coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

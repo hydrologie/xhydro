@@ -18,6 +18,11 @@ Internal changes
 * The cookiecutter has been updated to the latest commit. Changes include workflow fixes, stricter coding standards, and many small adjustments to the documentation. (:pull:`164`).
 * A previously uncaught YAML formatting issue has been addressed. Stricter style conventions are now enforced. (:pull:`174`).
 * Chunking was adjusted in a few functions to work with the new requirements of `apply_ufunc`. (:pull:`180`).
+* Updated the cookiecutter template to the latest commit. (:pull:`177`):
+    * Actions have been updated and synchronized.
+    * Warnings in Pull Requests from forks are now less buggy.
+    * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
+    * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
 
 v0.3.6 (2024-06-10)
 -------------------
