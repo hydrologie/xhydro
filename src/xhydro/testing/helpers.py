@@ -15,14 +15,16 @@ __all__ = [
     "DATA_DIR",
     "DATA_URL",
     "DEVEREAUX",
-    "generate_registry",
+    "TESTDATA_BRANCH",
+    "generate_local_registry",
+    "generate_remote_registry",
     "load_registry",
     "populate_testing_data",
 ]
 
 _default_cache_dir = pooch.os_cache("xhydro-testdata")
 
-DATA_DIR = os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)
+DATA_DIR = Path(os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)).absolute()
 """Sets the directory to store the testing datasets.
 
 If not set, the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
@@ -62,8 +64,43 @@ or setting the variable at runtime:
 
 DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}"
 
+DEVEREAUX = pooch.create(
+    path=pooch.os_cache("xhydro-testdata"),
+    base_url=DATA_URL,
+    version=__xhydro_version__,
+    version_dev="main",
+    env="XHYDRO_DATA_DIR",
+    allow_updates="XHYDRO_DATA_UPDATES",
+    registry=load_registry(),
+)
+"""Pooch registry instance for xhydro test data.
 
-def generate_registry(
+Notes
+-----
+There are two environment variables that can be used to control the behaviour of this registry:
+
+  - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
+    files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
+    the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+
+  - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
+    upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+
+Examples
+--------
+Using the registry to download a file:
+
+.. code-block:: python
+
+    from xhydro.testing.utils import DEVEREAUX
+    import xarray as xr
+
+    example_file = DEVEREAUX.fetch("example.nc")
+    data = xr.open_dataset(example_file)
+"""
+
+
+def generate_local_registry(
     filenames: Optional[list[str]] = None, base_url: str = DATA_URL
 ) -> None:
     """Generate a registry file for the test data.
@@ -78,6 +115,40 @@ def generate_registry(
     """
     # Gather the data folder and registry file locations from installed package_data
     data_folder = ilr.files("xhydro").joinpath("testing/data")
+    registry_file = ilr.files("xhydro").joinpath("testing/registry.local.txt")
+
+    # Download the files to the installed xhydro/testing/data folder
+    if filenames is None:
+        with ilr.as_file(data_folder) as data:
+            for file in data.rglob("*"):
+                filename = file.relative_to(data).as_posix()
+                pooch.retrieve(
+                    url=urljoin(base_url, filename),
+                    known_hash=None,
+                    fname=filename,
+                    path=data_folder,
+                )
+
+    # Generate the registry file
+    with ilr.as_file(data_folder) as data, ilr.as_file(registry_file) as registry:
+        pooch.make_registry(data.as_posix(), registry.as_posix())
+
+
+def generate_remote_registry(
+    base_url: str = DATA_URL, data_folder: str = DATA_DIR
+) -> None:
+    """Generate a registry file for the test data.
+
+    Parameters
+    ----------
+    base_url : str
+        Base URL to the test data repository.
+    data_folder : str
+        The local cache folder for the testing data.
+        Default location is determined by pooch or overwritten via the 'XHYDRO_DATA_DIR' environment variable.
+    """
+    # FIXME: WIP
+    # Gather the data folder and registry file locations from installed package_data
     registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
 
     # Download the files to the installed xhydro/testing/data folder
@@ -129,42 +200,6 @@ def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
     return registry
 
 
-DEVEREAUX = pooch.create(
-    path=pooch.os_cache("xhydro-testdata"),
-    base_url=DATA_URL,
-    version=__xhydro_version__,
-    version_dev="main",
-    env="XHYDRO_DATA_DIR",
-    allow_updates="XHYDRO_DATA_UPDATES",
-    registry=load_registry(),
-)
-"""Pooch registry instance for xhydro test data.
-
-Notes
------
-There are two environment variables that can be used to control the behaviour of this registry:
-
-  - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
-    files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
-    the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
-
-  - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
-    upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
-
-Examples
---------
-Using the registry to download a file:
-
-.. code-block:: python
-
-    from xhydro.testing.utils import DEVEREAUX
-    import xarray as xr
-
-    example_file = DEVEREAUX.fetch("example.nc")
-    data = xr.open_dataset(example_file)
-"""
-
-
 def populate_testing_data(
     registry: Optional[Union[str, Path]] = None,
     temp_folder: Optional[Path] = None,
@@ -201,5 +236,36 @@ def populate_testing_data(
     DEVEREAUX.path = _local_cache
 
     # Download the files
-    for filename in registry.keys():
-        DEVEREAUX.fetch(filename)
+    for file in registry.keys():
+        DEVEREAUX.fetch(file)
+
+
+def testing_data_namespace(cache_dir: Path = DATA_DIR) -> dict:
+    """
+    Decompress files and add to namespace.
+
+    Parameters
+    ----------
+    cache_dir : Path
+        The local cache folder.
+    """
+    for file in DEVEREAUX.registry_files:
+        if file.suffix in [".zip", "tar"]:
+            url = DEVEREAUX.get_url(file)
+
+    # genextreme_data = pooch.retrieve(
+    # url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genextreme.zip",
+    # known_hash="md5:cc2ff7c93949673a6acf00c7c2fac20b",
+    # processor=pooch.Unzip(),
+
+    # )
+    # genpareto_data = pooch.retrieve(
+    # url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genpareto.zip",
+    # known_hash="md5:ecb74164db4bbfeabfc5e340b11e7ae8",
+    # processor=pooch.Unzip(),
+    # )
+
+    # GEV_NONSTATIONARY = pd.read_csv(genextreme_data[0])
+    # GEV_STATIONARY = pd.read_csv(genextreme_data[1])
+    # GP_NONSTATIONARY = pd.read_csv(genpareto_data[0])
+    # GP_STATIONARY = pd.read_csv(genpareto_data[1])
