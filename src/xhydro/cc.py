@@ -139,7 +139,9 @@ def sampled_indicators(
         )
 
     # Compute future percentiles
-    fut_pct = fut_dist.quantile(ds.percentile / mult, dim="sample")
+    fut_pct = fut_dist.chunk({"sample": -1}).quantile(
+        ds.percentile / mult, dim="sample"
+    )
 
     if pdim == "percentile":
         fut_pct = fut_pct.rename({"quantile": "percentile"})
