@@ -25,14 +25,13 @@ else:
     if os.environ.get("PYTHON_JULIACALL_HANDLE_SIGNALS", "yes") != "yes":
         warnings.warn(
             "PYTHON_JULIACALL_HANDLE_SIGNALS environment variable is set to something other than 'yes' or ''. "
-            + "You will experience segfaults if running with multithreading."
+            "You will experience segfaults if running with multithreading."
         )
 
     if os.environ.get("PYTHON_JULIACALL_THREADS", "auto") != "auto":
         warnings.warn(
             "PYTHON_JULIACALL_THREADS environment variable is set to something other than 'auto', "
-            "so xhydro was not able to set it. You may wish to set it to `'auto'` for full use "
-            "of your CPU."
+            "so xhydro was not able to set it. You may wish to set it to `'auto'` for full use of your CPU."
         )
 
     # TODO: Remove these when juliapkg lets you specify this

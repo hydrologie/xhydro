@@ -15,8 +15,7 @@ class Variable(DataItem):
     ----------
     name : str
         Name of the Variable.
-
-    value : list[float]
+    value : list of float
         Values of the Variable.
     """
 
@@ -39,13 +38,10 @@ class VariableStd(DataItem):
     ----------
     name : str
         Name of the VariableStd.
-
-    value : list[float]
+    value : list of float
         Values of the VariableStd.
-
     offset : float
         Offset applied to the values of the VariableStd.
-
     scale : float
         Scale factor applied to the values of the VariableStd.
     """

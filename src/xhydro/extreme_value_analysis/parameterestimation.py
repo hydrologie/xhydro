@@ -46,13 +46,13 @@ def gevfit(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    locationcov : list[Variable]
+    locationcov : list of Variable
         List of variables to be used as covariates for the location parameter.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
-    shapecov : list[Variable]
+    shapecov : list of Variable
         List of variables to be used as covariates for the shape parameter.
 
     Returns
@@ -83,11 +83,11 @@ def gumbelfit(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    locationcov : list[Variable]
+    locationcov : list of Variable
         List of variables to be used as covariates for the location parameter.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
 
     Returns
@@ -113,11 +113,11 @@ def gpfit(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
-    shapecov : list[Variable]
+    shapecov : list of Variable
         List of variables to be used as covariates for the shape parameter.
 
     Returns
@@ -138,7 +138,7 @@ def gevfitpwm(y: list[float]) -> list:
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
 
     Returns
@@ -157,7 +157,7 @@ def gumbelfitpwm(y: list[float]) -> list:
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
 
     Returns
@@ -176,7 +176,7 @@ def gpfitpwm(y: list[float]) -> list:
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
 
     Returns
@@ -203,13 +203,13 @@ def gevfitbayes(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    locationcov : list[Variable]
+    locationcov : list of Variable
         List of variables to be used as covariates for the location parameter.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
-    shapecov : list[Variable]
+    shapecov : list of Variable
         List of variables to be used as covariates for the shape parameter.
     niter : int
         Number of iterations for the Bayesian sampler.
@@ -248,11 +248,11 @@ def gumbelfitbayes(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    locationcov : list[Variable]
+    locationcov : list of Variable
         List of variables to be used as covariates for the location parameter.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
     niter : int
         Number of iterations for the Bayesian sampler.
@@ -290,11 +290,11 @@ def gpfitbayes(
 
     Parameters
     ----------
-    y : list[float]
+    y : list of float
         Data to be fitted.
-    logscalecov : list[Variable]
+    logscalecov : list of Variable
         List of variables to be used as covariates for the logscale parameter.
-    shapecov : list[Variable]
+    shapecov : list of Variable
         List of variables to be used as covariates for the shape parameter.
     niter : int
         Number of iterations for the Bayesian sampler.
@@ -343,10 +343,10 @@ def fit(
     ----------
     ds : xr.DataSet
         Time series to be fitted along the time dimension.
-    dist : str or rv_continuous distribution object
+    dist : {"genextreme", "gumbel_r", "genpareto"} or rv_continuous distribution object
         Name of the univariate distributionor the distribution object itself.
         Supported distributions are genextreme, gumbel_r, genpareto.
-    method : {"ML","PWM", "BAYES}
+    method : {"ML", "PWM", "BAYES}
         Fitting method, either maximum likelihood (ML), probability weighted moments (PWM) or bayesian (BAYES).
         The PWM method is usually more robust to outliers.
     dim : str

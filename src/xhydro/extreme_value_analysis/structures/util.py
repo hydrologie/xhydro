@@ -15,7 +15,7 @@ def jl_variable_fit_parameters(params: list[list[Variable]]) -> tuple:
 
     Parameters
     ----------
-    params : list[list[Variable]]
+    params : list of list of Variable
         List of lists of Variables to be transformed into a tuple of julia.Vectors of julia.Extremes.Variables.
 
     Returns
@@ -54,14 +54,13 @@ def values_above_threshold(values: list, threshold: float) -> list:
     ----------
     values : list
         A list of numerical values to be filtered.
-
     threshold : float
         A float value between 0 and 1 representing the proportion of values to retain.
 
     Returns
     -------
-        list
-            A list containing the values above the specified threshold.
+    list
+        A list containing the values above the specified threshold.
 
     Notes
     -----
