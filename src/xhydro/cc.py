@@ -139,9 +139,7 @@ def sampled_indicators(
         )
 
     # Compute future percentiles
-    fut_pct = fut_dist.chunk({"sample": -1}).quantile(
-        ds.percentile / mult, dim="sample"
-    )
+    fut_pct = fut_dist.quantile(ds.percentile / mult, dim="sample")
 
     if pdim == "percentile":
         fut_pct = fut_pct.rename({"quantile": "percentile"})
@@ -223,7 +221,7 @@ def _weighted_sampling(
     idx = rng.choice(weights.size, size=n, p=weights)
 
     # Create the distribution dataset
-    ds_dist = ds.isel({"sample": idx})
+    ds_dist = ds.isel({"sample": idx}).chunk({"sample": -1})
 
     return ds_dist
 
