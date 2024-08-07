@@ -85,6 +85,7 @@ def fit(
         out.append(params)
 
     out = xr.merge(out)
+    out = out.chunk({"dparams": -1})
     out.attrs = ds.attrs
 
     return out

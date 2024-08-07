@@ -221,7 +221,7 @@ def _weighted_sampling(
     idx = rng.choice(weights.size, size=n, p=weights)
 
     # Create the distribution dataset
-    ds_dist = ds.isel({"sample": idx})
+    ds_dist = ds.isel({"sample": idx}).chunk({"sample": -1})
 
     return ds_dist
 
