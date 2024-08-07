@@ -85,7 +85,6 @@ def fit(
         out.append(params)
 
     out = xr.merge(out)
-    out = out.chunk({"dparams": -1})
     out.attrs = ds.attrs
 
     return out
@@ -131,7 +130,7 @@ def parametric_quantiles(
             da = p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
             da.attrs["scipy_dist"] = d
             qt = (
-                xclim.indices.stats.parametric_quantile(da, q=q)
+                xclim.indices.stats.parametric_quantile(da.chunk({"dparams": -1}), q=q)
                 .rename({"quantile": "return_period"})
                 .assign_coords(scipy_dist=d, return_period=t)
                 .expand_dims("scipy_dist")
