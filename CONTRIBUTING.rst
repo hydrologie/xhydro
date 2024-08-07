@@ -51,7 +51,7 @@ Get Started!
 
 .. note::
 
-    If you are new to using GitHub and `git`, please read `this guide <https://guides.github.com/activities/hello-world/>`_ first.
+    If you are new to using `GitHub <https://github.com/>`_ and ``git``, please read `this guide <https://guides.github.com/activities/hello-world/>`_ first.
 
 .. warning::
 
@@ -185,9 +185,9 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     - The ``bump-version.yml`` workflow will automatically bump the patch version when pull requests are pushed to the `main` branch on GitHub. **It is not recommended to manually bump the version in your branch when merging (non-release) pull requests (this will cause the version to be bumped twice).**
     - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xhydro` documentation website.
-    - If your branch is not a fork (ie: you are a maintainer), your branch will be automatically deleted.
+    - If your branch is not a fork (i.e. you are a maintainer), your branch will be automatically deleted.
 
-    You will have contributed to ``xhydro``!
+You will have contributed to ``xhydro``!
 
 .. warning::
 
@@ -231,13 +231,14 @@ To run specific code style checks:
 
 .. code-block:: console
 
-    python -m black --check xhydro tests
-    python -m isort --check xhydro tests
-    python -m blackdoc --check xhydro docs
-    python -m ruff check xhydro tests
-    python -m flake8 xhydro tests
+    python -m black --check src/xhydro tests
+    python -m isort --check src/xhydro tests
+    python -m blackdoc --check src/xhydro docs
+    python -m ruff check src/xhydro tests
+    python -m flake8 src/xhydro tests
+    validate-docstrings src/xhydro/**.py
 
-To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with the ``flake8-rst-docstrings`` plugin) simply install them with ``pip`` (or ``conda``) into your environment.
+To get ``black``, ``isort``, ``blackdoc``, ``ruff``, ``flake8`` (with the ``flake8-rst-docstrings`` plugin), and ``numpydoc`` (for ``validate-docstrings``), simply install them with ``pip`` (or ``conda``) into your environment.
 
 Translations
 ------------
