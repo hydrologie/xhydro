@@ -14,12 +14,33 @@
       - '.editorconfig'
       - '.flake8'
       - '.pre-commit-config.yaml'
+      - '.readthedocs.yml'
       - '.yamllint.yml'
       - '.github/workflows/*'
+      - 'docs/Makefile'
       - 'tox.ini'
+      - 'CI/**/*'
       - 'Makefile'
 
+# label 'notebooks' all Jupyter notebooks
 'notebooks':
   - changed-files:
     - any-glob-to-any-file:
       - 'docs/notebooks/**/*.ipynb'
+
+# label 'docs' all documentation-related steps and files
+'docs':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.readthedocs.yml'
+      - '.zenodo.json'
+      - 'docs/**/*'
+      - 'environment-docs.yml'
+      - 'AUTHORS.rst'
+      - 'CONTRIBUTING.rst'
+      - 'CODE_OF_CONDUCT.md'
+      - 'DISCUSSION_TEMPLATE/**/*'
+      - 'ISSUE_TEMPLATE/**/*'
+      - 'ISSUE_TEMPLATE.md'
+      - 'PULL_REQUEST_TEMPLATE.md'
+      - 'README.rst'

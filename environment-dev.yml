@@ -35,10 +35,10 @@ dependencies:
   # Dev tools and testing
   - pip >=24.0
   - blackdoc ==0.3.9
-  - bump-my-version >=0.23.0
+  - bump-my-version >=0.24.3
   - coverage >=7.5.0
   - coveralls >=4.0.0
-  - flake8 >=7.0.0
+  - flake8 >=7.1.0
   - flake8-rst-docstrings >=0.3.0
   - furo
   - ipykernel
@@ -47,21 +47,23 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - nbval >=0.11.0
+  - numpydoc >=1.7.0
   - pandoc
   - pooch
-  - pre-commit >=3.3.2
-  - pytest >=7.3.1
+  - pre-commit >=3.5.0
+  - pytest >=8.2.2
   - pytest-cov >=5.0.0
   - black ==24.4.2
-  - ruff >=0.4.0
-  - sphinx
+  - ruff >=0.5.0
+  - watchdog >=4.0.0
+  - sphinx >=7.0.0
   - sphinx-autoapi
   - sphinx-codeautolink
   - sphinx-copybutton
   - sphinx-intl
   - sphinxcontrib-napoleon
   # Testing
-  - tox >=4.15.1
+  - tox >=4.16.0
   # Packaging
   - flit >=3.9.0,<4.0
   # Notebooks
