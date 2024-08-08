@@ -21,11 +21,11 @@ def test_major_precipitation_events():
         },
     )
 
-    result = pmp.major_precipitation_events(precip, [1], quantil=0.9, path=None)
+    result = pmp.major_precipitation_events(precip, [1], quantil=0.9)
     assert result.dims == ("acc_day", "time", "y", "x")
 
 
-def test_major_precipitation_events2(tmp_path):
+def test_major_precipitation_events2():
     precip = xr.DataArray(
         np.random.rand(10, 5),
         dims=["time", "conf"],
@@ -35,16 +35,11 @@ def test_major_precipitation_events2(tmp_path):
         },
     )
 
-    f = tmp_path / "1"
-    f.mkdir()
-    p = f / "Delete1.zarr"
-
-    result = pmp.major_precipitation_events(precip, [1], quantil=0.9, path=p)
+    result = pmp.major_precipitation_events(precip, [1], quantil=0.9)
     assert "acc_day" in result.dims
-    assert len(list(tmp_path.iterdir())) == 1
 
 
-def test_precipitable_water(tmp_path):
+def test_precipitable_water():
     ds = xr.Dataset(
         data_vars=dict(
             hus=(["time", "plev", "y", "x"], np.random.rand(10, 5, 5, 5)),
@@ -68,14 +63,9 @@ def test_precipitable_water(tmp_path):
         },
     )
 
-    f = tmp_path / "2"
-    f.mkdir()
-    p = f / "Delete2.zarr"
-
-    result = pmp.precipitable_water(ds, fx, acc_day=[1, 2], path=p)
+    result = pmp.precipitable_water(ds, fx, acc_day=[1, 2])
     assert isinstance(result, xr.DataArray)
     assert result.dims == ("acc_day", "time", "y", "x")
-    assert len(list(tmp_path.iterdir())) == 1
 
 
 def test_rolling_max():
@@ -84,7 +74,7 @@ def test_rolling_max():
     assert result.size == array.size
 
 
-def test_precipitable_water_100y(tmp_path):
+def test_precipitable_water_100y():
     da = xr.DataArray(
         np.random.rand(2000, 20, 20),
         dims=["time", "y", "x"],
@@ -98,14 +88,9 @@ def test_precipitable_water_100y(tmp_path):
     )
     da = da.rename("pw")
 
-    f = tmp_path / "3"
-    f.mkdir()
-    p = f / "Delete3.zarr"
-
-    result = pmp.precipitable_water_100y(da, dist=gev, path=p)
+    result = pmp.precipitable_water_100y(da, dist=gev)
     assert "quantile" in result.coords
     assert isinstance(result, xr.DataArray)
-    assert len(list(tmp_path.iterdir())) == 1
 
 
 def test_precipitable_water_100y2():
@@ -163,7 +148,7 @@ def test_spatial_average_storm_configurations2():
     assert isinstance(result, xr.DataArray)
 
 
-def test_spatial_average_storm_configurations3(tmp_path):
+def test_spatial_average_storm_configurations3():
     da = xr.DataArray(
         np.random.rand(10, 2, 2),
         dims=["time", "y", "x"],
@@ -176,14 +161,9 @@ def test_spatial_average_storm_configurations3(tmp_path):
         },
     )
 
-    f = tmp_path / "4"
-    f.mkdir()
-    p = f / "Delete4.zarr"
-
-    result = pmp.spatial_average_storm_configurations(da, 3000, path=p)
+    result = pmp.spatial_average_storm_configurations(da, 3000)
     assert result.shape[1] == da.shape[0]
     assert isinstance(result, xr.DataArray)
-    assert len(list(tmp_path.iterdir())) == 1
 
 
 def test_compute_spring_and_summer_mask():

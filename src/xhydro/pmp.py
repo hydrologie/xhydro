@@ -10,7 +10,7 @@ import xclim
 from xclim.indices.stats import fit, parametric_quantile
 
 
-def major_precipitation_events(da, acc_day, quantil=0.9, path=None):
+def major_precipitation_events(da, acc_day, quantil=0.9):
     """Extract precipitation events that exceed a given quantile for a given days accumulation.
 
     Parameters
@@ -21,8 +21,6 @@ def major_precipitation_events(da, acc_day, quantil=0.9, path=None):
         List of precipitation accumulation days.
     quantil : float
         Threshold that limits the events to those that exceed this quantile.
-    path : str, optional
-        Path where the results will be saved.
 
     Returns
     -------
@@ -53,9 +51,6 @@ def major_precipitation_events(da, acc_day, quantil=0.9, path=None):
         .groupby(da_acc.time.dt.year)
         .map(keep_higest_values, quantil=quantil)
     )
-
-    if path is not None:
-        events.to_zarr(path)
 
     return events.rename("rainfall_event")
 
@@ -110,7 +105,7 @@ def keep_higest_values(da, quantil):
     return da_higest
 
 
-def precipitable_water(ds, ds_fx, acc_day=[1], path=None):
+def precipitable_water(ds, ds_fx, acc_day=[1]):
     """Compute the precipitable water for the antecedent conditions given the accumulations days.
 
     Parameters
@@ -121,8 +116,6 @@ def precipitable_water(ds, ds_fx, acc_day=[1], path=None):
         Dataset containing the Surface altitude (orog).
     acc_day : list
         List of precipitation accumulation days.
-    path : str, optional
-        Path where the results will be saved.
 
     Returns
     -------
@@ -163,9 +156,6 @@ def precipitable_water(ds, ds_fx, acc_day=[1], path=None):
         vectorize=True,
     )
 
-    if path is not None:
-        da_pw.to_zarr(path)
-
     return da_pw
 
 
@@ -194,7 +184,7 @@ def rolling_max(arr, window_size):
     return roll_max_out
 
 
-def precipitable_water_100y(da_pw, dist, mf=0.2, path=None):
+def precipitable_water_100y(da_pw, dist, mf=0.2):
     """Compute the 100-year return period of precipitable water for each month of the year.
 
     Parameters
@@ -205,8 +195,6 @@ def precipitable_water_100y(da_pw, dist, mf=0.2, path=None):
         Probability distributions.
     mf : float
         The annual maximums of the precipitable water plus a porcentage (mf) are used as a upper limit.
-    path : str, optional
-        Path where the results will be saved.
 
     Returns
     -------
@@ -263,9 +251,6 @@ def precipitable_water_100y(da_pw, dist, mf=0.2, path=None):
 
     da_pw100 = da_pw100.pw100.squeeze().drop_vars(["month", "year", "stacked_coords"])
 
-    if path is not None:
-        da_pw100.to_zarr(path)
-
     return da_pw100
 
 
@@ -283,19 +268,14 @@ def compute_spring_and_summer_mask(
     ----------
     snt : xarray.DataArray
         Surface snow thickness.
-
     thresh : Quantified
         Threshold snow thickness.
-
     window_wint_start : int
         Minimum number of days with snow depth above or equal to threshold to define the start of winter.
-
     window_wint_end : int
         Maximum number of days with snow depth above or equal to threshold to define the end of winter.
-
     spr_start : int
         Number of days before the end of winter to define the start of spring.
-
     spr_end : int
         Number of days after the end of winter to define the end of spring.
 
@@ -389,7 +369,7 @@ def compute_spring_and_summer_mask(
     return xr.Dataset({"mask_spring": spring_mask, "mask_summer": summer_mask})
 
 
-def spatial_average_storm_configurations(da, radius, path=None):
+def spatial_average_storm_configurations(da, radius):
     """Compute the spatial average for different storm configurations (Clavet-Gaumont et al., 2017).
 
     Parameters
@@ -398,8 +378,6 @@ def spatial_average_storm_configurations(da, radius, path=None):
         DataArray containing the precipitation values.
     radius : float
         Maximum radius of the storm.
-    path : str, optional
-        Path where the results will be saved.
 
     Returns
     -------
@@ -583,8 +561,5 @@ def spatial_average_storm_configurations(da, radius, path=None):
 
     if "units" in da.attrs:
         spt_av.attrs["units"] = da.attrs["units"]
-
-    if path is not None:
-        spt_av.to_zarr(path)
 
     return spt_av
