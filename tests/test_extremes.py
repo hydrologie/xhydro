@@ -13,6 +13,7 @@ from xhydro.extreme_value_analysis.parameterestimation import (
     gumbelfitbayes,
     gumbelfitpwm,
 )
+from xhydro.extreme_value_analysis.structures.util import exponentiate_logscale
 
 # Dataset taken from tests in Extremes.jl
 GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
@@ -40,15 +41,15 @@ class TestGevfit:
     y = GEV_STATIONARY["y"].values
 
     def test_gevfit(self):
-        param_cint = gevfit(self.y)
-        test_params = [param_cint[0], param_cint[3], param_cint[6]]
+        test_params = gevfit(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [0.0009, 1.014, -0.0060]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, rtol=0.05)
 
     def test_gevfitpwm(self):
-        param_cint = gevfitpwm(self.y)
-        test_params = [param_cint[0], param_cint[3], param_cint[6]]
+        test_params = gevfitpwm(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [
             -0.0005,
             1.0125,
@@ -58,8 +59,8 @@ class TestGevfit:
             np.testing.assert_allclose(test, true, atol=0.00015)
 
     def test_gevfitbayes(self):
-        param_cint = gevfitbayes(self.y, niter=100, warmup=50)
-        test_params = [param_cint[0], param_cint[3], param_cint[6]]
+        test_params = gevfitbayes(self.y, niter=100, warmup=50)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [0, 1, 0]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.03)
@@ -69,22 +70,22 @@ class TestGumbelfit:
     y = GEV_STATIONARY["y"].values
 
     def test_gumbelfit(self):
-        param_cint = gumbelfit(self.y)
-        test_params = [param_cint[0], param_cint[3]]
+        test_params = gumbelfit(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [-0.0023, 1.0125]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.0001)
 
     def test_gumbelfitpwm(self):
-        param_cint = gumbelfitpwm(self.y)
-        test_params = [param_cint[0], param_cint[3]]
+        test_params = gumbelfitpwm(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [-0.0020, 1.009]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.001)
 
     def test_gumbelfitbayes(self):
-        param_cint = gumbelfitbayes(self.y, niter=100, warmup=50)
-        test_params = [param_cint[0], param_cint[3]]
+        test_params = gumbelfitbayes(self.y, niter=100, warmup=50)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], []).tolist()
         true_params = [0, 1]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.02)
@@ -96,22 +97,22 @@ class TestGpfit:
     y = GP_STATIONARY["y"].values
 
     def test_gpfit(self):
-        param_cint = gpfit(self.y)
-        test_params = [param_cint[0], param_cint[3]]
+        test_params = gpfit(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
         true_params = [0.9866, 0.0059]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)
 
     def test_gpfitpwm(self):
-        param_cint = gpfitpwm(self.y)
-        test_params = [param_cint[0], param_cint[3]]
-        true_params = [0, 1]  # Values taken from tests in Extremes.jl
+        test_params = gpfitpwm(self.y)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
+        true_params = [1, 0]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)
 
     def test_gpfitbayes(self):
-        param_cint = gpfitbayes(self.y, niter=100, warmup=50)
-        test_params = [param_cint[0], param_cint[3]]
-        true_params = [0, 1]  # Values taken from tests in Extremes.jl
+        test_params = gpfitbayes(self.y, niter=100, warmup=50)["params"]
+        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
+        true_params = [1, 0]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)

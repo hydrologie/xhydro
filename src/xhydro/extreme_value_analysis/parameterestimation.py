@@ -1,7 +1,7 @@
 """Parameter estimation functions for the extreme value analysis module."""
 
 from __future__ import annotations
-
+import warnings
 import numpy as np
 import scipy.stats
 import xarray as xr
@@ -9,9 +9,10 @@ from xclim.core.formatting import prefix_attrs, update_history
 from xclim.indices.stats import get_dist
 from xhydro.extreme_value_analysis import Extremes, jl
 from xhydro.extreme_value_analysis.structures.conversions import (py_list_to_jl_vector,)
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
 from xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
 from xhydro.extreme_value_analysis.structures.util import param_cint, exponentiate_logscale, match_length, insert_covariates
+warnings.simplefilter("always", UserWarning)
+
 
 __all__ = [
     "fit",
@@ -60,13 +61,18 @@ def gevfit(
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(
         locationcov), jl_variable_fit_parameters(logscalecov), jl_variable_fit_parameters(shapecov)
-    jl_model = Extremes.gevfit(
-        jl_y,
-        locationcov=jl_locationcov,
-        logscalecov=jl_logscalecov,
-        shapecov=jl_shapecov,
-    )
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 3 + len(locationcov) + len(logscalecov) + len(shapecov)
+    try:
+        jl_model = Extremes.gevfit(
+            jl_y,
+            locationcov=jl_locationcov,
+            logscalecov=jl_logscalecov,
+            shapecov=jl_shapecov,
+        )
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genextreme distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gumbelfit(
@@ -94,10 +100,15 @@ def gumbelfit(
     """
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov = jl_variable_fit_parameters(locationcov), jl_variable_fit_parameters(logscalecov)
-    jl_model = Extremes.gumbelfit(
-        jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov
-    )
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 2 + len(locationcov) + len(logscalecov)
+    try:
+        jl_model = Extremes.gumbelfit(
+            jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov
+        )
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a gumbel_r distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gpfit(
@@ -125,8 +136,13 @@ def gpfit(
     """
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(logscalecov), jl_variable_fit_parameters(shapecov)
-    jl_model = Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 2 + len(logscalecov) + len(shapecov)
+    try:
+        jl_model = Extremes.gpfit(jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov)
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genpareto distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 # Probability weighted moment estimation
@@ -148,8 +164,13 @@ def gevfitpwm(y: list[float], confidence_level: float = 0.95) -> dict[str, list[
         of each parameter.
     """
     jl_y = py_list_to_jl_vector(y)
-    jl_model = Extremes.gevfitpwm(jl_y)
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 3
+    try:
+        jl_model = Extremes.gevfitpwm(jl_y)
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genextreme distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gumbelfitpwm(y: list[float], confidence_level: float = 0.95) -> dict[str, list[float]]:
@@ -170,8 +191,13 @@ def gumbelfitpwm(y: list[float], confidence_level: float = 0.95) -> dict[str, li
         of each parameter.
     """
     jl_y = py_list_to_jl_vector(y)
-    jl_model = Extremes.gumbelfitpwm(jl_y)
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 2
+    try:
+        jl_model = Extremes.gumbelfitpwm(jl_y)
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a gumbel_r distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gpfitpwm(y: list[float], confidence_level: float = 0.95) -> dict[str, list[float]]:
@@ -192,8 +218,13 @@ def gpfitpwm(y: list[float], confidence_level: float = 0.95) -> dict[str, list[f
         of each parameter.
     """
     jl_y = py_list_to_jl_vector(y)
-    jl_model = Extremes.gpfitpwm(jl_y)
-    return param_cint(jl_model, confidence_level=confidence_level)
+    nparams = 2
+    try:
+        jl_model = Extremes.gpfitpwm(jl_y)
+        return param_cint(jl_model, nparams, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genpareto distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 # Bayesian estimation
@@ -234,15 +265,20 @@ def gevfitbayes(
     """
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(locationcov), jl_variable_fit_parameters(logscalecov), jl_variable_fit_parameters(shapecov)
-    jl_model = Extremes.gevfitbayes(
-        jl_y,
-        locationcov=jl_locationcov,
-        logscalecov=jl_logscalecov,
-        shapecov=jl_shapecov,
-        niter=niter,
-        warmup=warmup,
-    )
-    return param_cint(jl_model, bayesian=True, confidence_level=confidence_level)
+    nparams = 3 + len(locationcov) + len(logscalecov) + len(shapecov)
+    try:
+        jl_model = Extremes.gevfitbayes(
+            jl_y,
+            locationcov=jl_locationcov,
+            logscalecov=jl_logscalecov,
+            shapecov=jl_shapecov,
+            niter=niter,
+            warmup=warmup,
+        )
+        return param_cint(jl_model, nparams, bayesian=True, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genextreme distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gumbelfitbayes(
@@ -279,14 +315,19 @@ def gumbelfitbayes(
     """
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov = jl_variable_fit_parameters(locationcov), jl_variable_fit_parameters(logscalecov)
-    jl_model = Extremes.gumbelfitbayes(
-        jl_y,
-        locationcov=jl_locationcov,
-        logscalecov=jl_logscalecov,
-        niter=niter,
-        warmup=warmup,
-    )
-    return param_cint(jl_model, bayesian=True, confidence_level=confidence_level)
+    nparams = 2 + len(locationcov) + len(logscalecov)
+    try:
+        jl_model = Extremes.gumbelfitbayes(
+            jl_y,
+            locationcov=jl_locationcov,
+            logscalecov=jl_logscalecov,
+            niter=niter,
+            warmup=warmup,
+        )
+        return param_cint(jl_model, nparams, bayesian=True, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a gumbel distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def gpfitbayes(
@@ -323,14 +364,19 @@ def gpfitbayes(
     """
     jl_y = py_list_to_jl_vector(y)
     jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(logscalecov), jl_variable_fit_parameters(shapecov)
-    jl_model = Extremes.gpfitbayes(
-        jl_y,
-        logscalecov=jl_logscalecov,
-        shapecov=jl_shapecov,
-        niter=niter,
-        warmup=warmup,
-    )
-    return param_cint(jl_model, bayesian=True, confidence_level=confidence_level)
+    nparams = 2 + len(logscalecov) + len(shapecov)
+    try:
+        jl_model = Extremes.gpfitbayes(
+            jl_y,
+            logscalecov=jl_logscalecov,
+            shapecov=jl_shapecov,
+            niter=niter,
+            warmup=warmup,
+        )
+        return param_cint(jl_model, nparams, bayesian=True, confidence_level=confidence_level)
+    except:
+        warnings.warn("There was an error in fitting the data to a genpareto distribution. Returned parameters are numpy.nan.")
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 METHOD_NAMES = {
@@ -521,56 +567,58 @@ def _fitfunc_params(arr, *, dist, nparams, method, locationcov_data: list[list],
     arr_pruned = np.ma.masked_invalid(arr).compressed()  # pylint: disable=no-member
     # Return NaNs if array is empty, which could happen at previous line if array only contained NANs
     if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
-        return np.asarray([np.nan] * nparams)
+        return np.array([np.nan] * nparams)
     arr_pruned = arr_pruned.tolist()
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfit(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned)["params"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "PWM":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitpwm(arr_pruned)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             params = np.roll(params, 1)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(arr_pruned)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitpwm(arr_pruned)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "BAYES":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, niter=niter, warmup=warmup)["params"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitbayes(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup)["params"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
@@ -587,56 +635,58 @@ def _fitfunc_cint_lower(arr, *, dist, nparams, method, locationcov_data: list[li
     arr_pruned = np.ma.masked_invalid(arr).compressed()  # pylint: disable=no-member
     # Return NaNs if array is empty, which could happen at previous line if array only contained NANs
     if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
-        return np.asarray([np.nan] * nparams)
+        return np.array([np.nan] * nparams)
     arr_pruned = arr_pruned.tolist()
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfit(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "PWM":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitpwm(arr_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             params = np.roll(params, 1)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(arr_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitpwm(arr_pruned, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "BAYES":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitbayes(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_lower"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
@@ -654,56 +704,58 @@ def _fitfunc_cint_upper(arr, *, dist, nparams, method, locationcov_data: list[li
     arr_pruned = np.ma.masked_invalid(arr).compressed()  # pylint: disable=no-member
     # Return NaNs if array is empty, which could happen at previous line if array only contained NANs
     if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
-        return np.asarray([np.nan] * nparams)
+        return np.array([np.nan] * nparams)
     arr_pruned = arr_pruned.tolist()
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfit(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfit(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "PWM":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitpwm(arr_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             params = np.roll(params, 1)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(arr_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitpwm(arr_pruned, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "BAYES":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
             num_shape_covariates = len(shapecov_data)
             params = np.roll(params, 1 + num_shape_covariates)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(arr_pruned, locationcov=locationcov_data_pruned, logscalecov=logscalecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
+            params = np.array(param_list)
             params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitbayes(arr_pruned, logscalecov=logscalecov_data_pruned, shapecov=shapecov_data_pruned, niter=niter, warmup=warmup, confidence_level=confidence_level)["cint_upper"]
-            params = np.asarray(param_list)
-            params = exponentiate_logscale(params, locationcov_data, logscalecov_data)
+            params = np.array(param_list)
+            params = exponentiate_logscale(params, locationcov_data, logscalecov_data, pareto=True)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
@@ -725,9 +777,9 @@ def get_params(dist: str, shapecov: list[str], locationcov: list[str], logscalec
         new_param_names = insert_covariates(new_param_names, logscalecov, "scale")
         return new_param_names
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-        param_names = ["shape", "scale"]
-        new_param_names = insert_covariates(param_names, shapecov, "shape")
-        new_param_names = insert_covariates(new_param_names, logscalecov, "scale")
+        param_names = ["scale", "shape"]
+        new_param_names = insert_covariates(param_names, logscalecov, "scale")
+        new_param_names = insert_covariates(new_param_names, shapecov, "shape")
         return new_param_names
     else:
         raise ValueError(f"Unknown distribution: {dist}")
@@ -755,10 +807,9 @@ def _check_fit_params(dist: str, method: str, locationcov: list[str], logscaleco
         raise ValueError(f"Pareto distribution has no location parameter and thus cannot have location covariates {locationcov}")
 
     # Confidence level must be between 0 and 1
-    if confidence_level >= 1:
+    if confidence_level >= 1 or confidence_level <= 0:
         raise ValueError(f"Confidence level must be stricly smaller than 1 and strily larger than 0")
-    elif confidence_level <= 0:
-        raise ValueError(f"Confidence level must be stricly smaller than 1 and strily larger than 0")
+
 
 
 

@@ -45,7 +45,7 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
     return jl_vector_variables
 
 
-def param_cint(jl_model, bayesian: bool = False, confidence_level: float = 0.95) -> dict[str, list[float]]:
+def param_cint(jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95) -> dict[str, list[float]]:
     r"""
     Returns a list of parameters and confidence intervals for a given Julia fitted model.
 
@@ -53,6 +53,8 @@ def param_cint(jl_model, bayesian: bool = False, confidence_level: float = 0.95)
     ----------
     jl_model :
         The fitted Julia model from which parameters and confidence intervals are to be extracted.
+    nparams : int
+        The number of parameters, including covariates, for the given distribution.
     bayesian : bool
         If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
         Defaults to False.
@@ -72,10 +74,14 @@ def param_cint(jl_model, bayesian: bool = False, confidence_level: float = 0.95)
         params = [sum(x) / len(py_params_sims) for x in zip(*py_params_sims)]  # each parameter is estimated to be the average over all simulations
     else:
         params = jl_vector_to_py_list(getattr(jl_model, "θ̂"))
-    cint = [jl_vector_to_py_list(interval) for interval in Extremes.cint(jl_model, confidence_level)]
-    cint_lower = [interval[0] for interval in cint]
-    cint_upper = [interval[1] for interval in cint]
-    return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper}
+    try:
+        jl_cint = Extremes.cint(jl_model, confidence_level)
+        cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
+        cint_lower = [interval[0] for interval in cint]
+        cint_upper = [interval[1] for interval in cint]
+        return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper}
+    except:
+        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
 
 
 def insert_covariates(param_names: list[str], covariates: list[str], param_name: str) -> list[str]:
@@ -144,7 +150,7 @@ def match_length(py_list: list, covariates: list[list]) -> list[list]:
     return covariates_copy
 
 
-def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logscalecov_data: list[list]) -> np.ndarray:
+def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logscalecov_data: list[list], pareto: bool = False) -> np.ndarray:
     r"""
     Exponentiate logscale parameter as well as all its covariates to obtain actual scale parameter.
 
@@ -161,9 +167,11 @@ def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logs
     Returns
     -------
     np.ndarray
-        Updated parameter list of logscale parameter and covariates with both having been exponentiated.
+        Updated parameter list with logscale parameter and its covariates having been exponentiated.
     """
     scale_param_index = 1 + len(locationcov_data)
+    if pareto:
+        scale_param_index = 0
     for index in range(scale_param_index, scale_param_index + len(logscalecov_data) + 1):
         params[index] = np.exp(params[index])
     return params
