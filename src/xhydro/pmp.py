@@ -83,7 +83,7 @@ def cumulate_precip(a, acc_day):
     return a_acc
 
 
-def keep_higest_values(da, quantil):
+def keep_highest_values(da, quantile):
     """
     Mask values that are less than the given quantile.
 
@@ -91,7 +91,7 @@ def keep_higest_values(da, quantil):
     ----------
     da : xr.DataArray
         DataArray containing the values.
-    quantil : float
+    quantile : float
         Quantile to compute, which must be between 0 and 1 inclusive.
 
     Returns
@@ -99,10 +99,10 @@ def keep_higest_values(da, quantil):
     xr.DataArray
         DataArray containing values greater than the given quantile.
     """
-    threshold = da.quantile(quantil, dim="time")
-    da_higest = da.where(da > threshold)
+    threshold = da.quantile(quantile, dim="time")
+    da_highest = da.where(da > threshold)
 
-    return da_higest
+    return da_highest
 
 
 def precipitable_water(ds, ds_fx, acc_day=[1]):
