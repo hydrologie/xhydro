@@ -5,7 +5,6 @@ import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
-from urllib.parse import urljoin
 
 import pooch
 
@@ -16,13 +15,44 @@ __all__ = [
     "DATA_URL",
     "DEVEREAUX",
     "TESTDATA_BRANCH",
-    "generate_local_registry",
-    "generate_remote_registry",
     "load_registry",
     "populate_testing_data",
 ]
 
 _default_cache_dir = pooch.os_cache("xhydro-testdata")
+
+
+def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
+    """Load the registry file for the test data.
+
+    Parameters
+    ----------
+    file : str or Path, optional
+        Path to the registry file. If not provided, the registry file found within the package data will be used.
+
+    Returns
+    -------
+    dict
+        Dictionary of filenames and hashes.
+    """
+    # Get registry file from package_data
+    if file is None:
+        registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
+        if registry_file.is_file():
+            logging.info("Registry file found in package_data: %s", registry_file)
+    else:
+        registry_file = Path(file)
+        if not registry_file.is_file():
+            raise FileNotFoundError(f"Registry file not found: {registry_file}")
+
+    # Load the registry file
+    registry = dict()
+    with registry_file.open() as buffer:
+        for entry in buffer.readlines():
+            registry[entry.split()[0]] = entry.split()[1]
+
+    return registry
+
 
 DATA_DIR = Path(os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)).absolute()
 """Sets the directory to store the testing datasets.
@@ -62,7 +92,7 @@ or setting the variable at runtime:
     $ env XHYDRO_TESTDATA_BRANCH="my_testing_branch" pytest
 """
 
-DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}"
+DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}/data/"
 
 DEVEREAUX = pooch.create(
     path=pooch.os_cache("xhydro-testdata"),
@@ -100,106 +130,6 @@ Using the registry to download a file:
 """
 
 
-def generate_local_registry(
-    filenames: Optional[list[str]] = None, base_url: str = DATA_URL
-) -> None:
-    """Generate a registry file for the test data.
-
-    Parameters
-    ----------
-    filenames : list of str, optional
-        List of filenames to generate the registry file for.
-        If not provided, all files under xhydro/testing/data will be used.
-    base_url : str, optional
-        Base URL to the test data repository.
-    """
-    # Gather the data folder and registry file locations from installed package_data
-    data_folder = ilr.files("xhydro").joinpath("testing/data")
-    registry_file = ilr.files("xhydro").joinpath("testing/registry.local.txt")
-
-    # Download the files to the installed xhydro/testing/data folder
-    if filenames is None:
-        with ilr.as_file(data_folder) as data:
-            for file in data.rglob("*"):
-                filename = file.relative_to(data).as_posix()
-                pooch.retrieve(
-                    url=urljoin(base_url, filename),
-                    known_hash=None,
-                    fname=filename,
-                    path=data_folder,
-                )
-
-    # Generate the registry file
-    with ilr.as_file(data_folder) as data, ilr.as_file(registry_file) as registry:
-        pooch.make_registry(data.as_posix(), registry.as_posix())
-
-
-def generate_remote_registry(
-    base_url: str = DATA_URL, data_folder: str = DATA_DIR
-) -> None:
-    """Generate a registry file for the test data.
-
-    Parameters
-    ----------
-    base_url : str
-        Base URL to the test data repository.
-    data_folder : str
-        The local cache folder for the testing data.
-        Default location is determined by pooch or overwritten via the 'XHYDRO_DATA_DIR' environment variable.
-    """
-    # FIXME: WIP
-    # Gather the data folder and registry file locations from installed package_data
-    registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
-
-    # Download the files to the installed xhydro/testing/data folder
-    if filenames is None:
-        with ilr.as_file(data_folder) as data:
-            for file in data.rglob("*"):
-                filename = file.relative_to(data).as_posix()
-                pooch.retrieve(
-                    url=urljoin(base_url, filename),
-                    known_hash=None,
-                    fname=filename,
-                    path=data_folder,
-                )
-
-    # Generate the registry file
-    with ilr.as_file(data_folder) as data, ilr.as_file(registry_file) as registry:
-        pooch.make_registry(data.as_posix(), registry.as_posix())
-
-
-def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
-    """Load the registry file for the test data.
-
-    Parameters
-    ----------
-    file : str or Path, optional
-        Path to the registry file. If not provided, the registry file found within the package data will be used.
-
-    Returns
-    -------
-    dict
-        Dictionary of filenames and hashes.
-    """
-    # Get registry file from package_data
-    if file is None:
-        registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
-        if registry_file.is_file():
-            logging.info("Registry file found in package_data: %s", registry_file)
-    else:
-        registry_file = Path(file)
-        if not registry_file.is_file():
-            raise FileNotFoundError(f"Registry file not found: {registry_file}")
-
-    # Load the registry file
-    registry = dict()
-    with registry_file.open() as buffer:
-        for entry in buffer.readlines():
-            registry[entry.split()[0]] = entry.split()[1]
-
-    return registry
-
-
 def populate_testing_data(
     registry: Optional[Union[str, Path]] = None,
     temp_folder: Optional[Path] = None,
@@ -217,16 +147,16 @@ def populate_testing_data(
     branch : str, optional
         Branch of hydrologie/xhydro-testdata to use when fetching testing datasets.
     _local_cache : Path, optional
-        Path to the local cache. Defaults to the default location.
+        Path to the local cache. Defaults to the location set by the platformdirs library.
+        The testing data will be downloaded to this local cache.
 
     Returns
     -------
-    None
-        The testing data will be downloaded to the local cache.
+    dict
+        The registry dictionary of files and their locations.
     """
     # Get registry file from package_data or provided path
     registry = load_registry(registry)
-
     # Set the local cache to the temp folder
     if temp_folder is not None:
         _local_cache = temp_folder
@@ -237,7 +167,7 @@ def populate_testing_data(
 
     # Download the files
     for file in registry.keys():
-        DEVEREAUX.fetch(file)
+        DEVEREAUX.fetch(file, processor=pooch.Unzip())
 
 
 def testing_data_namespace(cache_dir: Path = DATA_DIR) -> dict:
