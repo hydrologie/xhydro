@@ -46,7 +46,7 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - nbval >=0.11.0
-  - numpydoc >=1.7.0
+  # - numpydoc >=1.8.0  # latest version not yet available on conda-forge
   - pandoc
   - pooch
   - pre-commit >=3.5.0
