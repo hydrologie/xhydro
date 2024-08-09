@@ -11,24 +11,36 @@ from xhydro.testing.helpers import DEVEREAUX
 
 @pytest.fixture(autouse=True, scope="session")
 def threadsafe_data_dir(tmp_path_factory) -> Path:
-    yield Path(tmp_path_factory.getbasetemp().joinpath("data"))
+    data_dir = Path(tmp_path_factory.getbasetemp().joinpath("data"))
+    data_dir.mkdir(exist_ok=True)
+    return data_dir
 
 
 @pytest.fixture(scope="session")
 def genextreme_data(threadsafe_data_dir):
+    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
 
-    genextreme_data = Unzip(
-        DEVEREAUX.fetch("extreme_value_analysis/genextreme.zip"),
-        extract_dir=threadsafe_data_dir,
-    )
-    genpareto_data = Unzip(
-        DEVEREAUX.fetch("extreme_value_analysis/genpareto.zip"),
-        extract_dir=threadsafe_data_dir,
+    ge = DEVEREAUX.fetch(
+        "extreme_value_analysis/genextreme.zip",
+        processor=Unzip(extract_dir=extremes_data_folder),
     )
 
-    GEV_NONSTATIONARY = pd.read_csv(genextreme_data[0])
-    GEV_STATIONARY = pd.read_csv(genextreme_data[1])
-    GP_NONSTATIONARY = pd.read_csv(genpareto_data[0])
-    GP_STATIONARY = pd.read_csv(genpareto_data[1])
+    mappings = dict()
+    mappings["gev_nonstationary"] = pd.read_csv(ge[0])
+    mappings["gev_stationary"] = pd.read_csv(ge[1])
+    return mappings
 
-    return GEV_NONSTATIONARY, GEV_STATIONARY, GP_NONSTATIONARY, GP_STATIONARY
+
+@pytest.fixture(scope="session")
+def genpareto_data(threadsafe_data_dir):
+    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
+
+    gp = DEVEREAUX.fetch(
+        "extreme_value_analysis/genpareto.zip",
+        processor=Unzip(extract_dir=extremes_data_folder),
+    )
+
+    mappings = dict()
+    mappings["gp_nonstationary"] = pd.read_csv(gp[0])
+    mappings["gp_stationary"] = pd.read_csv(gp[1])
+    return mappings

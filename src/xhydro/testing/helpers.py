@@ -12,6 +12,7 @@ from xhydro import __version__ as __xhydro_version__
 
 __all__ = [
     "DATA_DIR",
+    "DATA_UPDATES",
     "DATA_URL",
     "DEVEREAUX",
     "TESTDATA_BRANCH",
@@ -74,6 +75,26 @@ or setting the variable at runtime:
     $ env XHYDRO_DATA_DIR="/path/to/my/data" pytest
 """
 
+DATA_UPDATES = bool(os.getenv("XHYDRO_DATA_UPDATES", False))
+"""Sets whether to allow updates to the testing datasets.
+
+If set to ``True``, the data files will be downloaded even if the upstream hashes do not match.
+
+Notes
+-----
+When running tests locally, this can be set for both `pytest` and `tox` by exporting the variable:
+
+.. code-block:: console
+
+    $ export XHYDRO_DATA_UPDATES=True
+
+or setting the variable at runtime:
+
+.. code-block:: console
+
+    $ env XHYDRO_DATA_UPDATES=True pytest
+"""
+
 TESTDATA_BRANCH = os.getenv("XHYDRO_TESTDATA_BRANCH", "main")
 """Sets the branch of hydrologie/xhydro-testdata to use when fetching testing datasets.
 
@@ -99,8 +120,8 @@ DEVEREAUX = pooch.create(
     base_url=DATA_URL,
     version=__xhydro_version__,
     version_dev="main",
-    env="XHYDRO_DATA_DIR",
-    allow_updates="XHYDRO_DATA_UPDATES",
+    env=DATA_DIR,
+    allow_updates=DATA_UPDATES,
     registry=load_registry(),
 )
 """Pooch registry instance for xhydro test data.
@@ -115,6 +136,8 @@ There are two environment variables that can be used to control the behaviour of
 
   - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
     upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+
+  - ``XHYDRO_DATA_URL``: If this environment variable is set, it will be used as the base URL to download the data files.
 
 Examples
 --------
@@ -168,34 +191,3 @@ def populate_testing_data(
     # Download the files
     for file in registry.keys():
         DEVEREAUX.fetch(file, processor=pooch.Unzip())
-
-
-def testing_data_namespace(cache_dir: Path = DATA_DIR) -> dict:
-    """
-    Decompress files and add to namespace.
-
-    Parameters
-    ----------
-    cache_dir : Path
-        The local cache folder.
-    """
-    for file in DEVEREAUX.registry_files:
-        if file.suffix in [".zip", "tar"]:
-            url = DEVEREAUX.get_url(file)
-
-    # genextreme_data = pooch.retrieve(
-    # url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genextreme.zip",
-    # known_hash="md5:cc2ff7c93949673a6acf00c7c2fac20b",
-    # processor=pooch.Unzip(),
-
-    # )
-    # genpareto_data = pooch.retrieve(
-    # url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/extreme_value_analysis/genpareto.zip",
-    # known_hash="md5:ecb74164db4bbfeabfc5e340b11e7ae8",
-    # processor=pooch.Unzip(),
-    # )
-
-    # GEV_NONSTATIONARY = pd.read_csv(genextreme_data[0])
-    # GEV_STATIONARY = pd.read_csv(genextreme_data[1])
-    # GP_NONSTATIONARY = pd.read_csv(genpareto_data[0])
-    # GP_STATIONARY = pd.read_csv(genpareto_data[1])

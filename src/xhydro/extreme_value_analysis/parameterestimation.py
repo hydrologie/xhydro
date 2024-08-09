@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import scipy.stats
 import xarray as xr
@@ -18,14 +20,12 @@ try:
     )
     from xhydro.extreme_value_analysis.structures.dataitem import Variable
     from xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
-except ImportError:
-    import warnings
-
+except (ImportError, ModuleNotFoundError):
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
     warnings.warn(JULIA_WARNING)
+    raise
 
-    __all__ = []
 
 __all__ = [
     "fit",
@@ -373,7 +373,7 @@ def fit(
     method = method.upper()
     _check_fit_params(dist, method)
     dist_params = _get_params(dist)
-    dist = get_dist(dist)
+    distribution = get_dist(dist)
 
     out = []
     data = xr.apply_ufunc(
@@ -387,7 +387,7 @@ def fit(
         keep_attrs=True,
         kwargs=dict(
             # Don't know how APP should be included, this works for now
-            dist=dist,
+            dist=distribution,
             nparams=len(dist_params),
             method=method,
         ),
@@ -401,11 +401,11 @@ def fit(
         ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
     )
     attrs = dict(
-        long_name=f"{dist.name} parameters",
-        description=f"Parameters of the {dist.name} distribution",
+        long_name=f"{distribution.name} parameters",
+        description=f"Parameters of the {distribution.name} distribution",
         method=method,
         estimator=METHOD_NAMES[method].capitalize(),
-        scipy_dist=dist.name,
+        scipy_dist=distribution.name,
         units="",
         history=update_history(
             f"Estimate distribution parameters by {METHOD_NAMES[method]} method along dimension {dim}.",
