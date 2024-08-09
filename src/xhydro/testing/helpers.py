@@ -116,11 +116,10 @@ or setting the variable at runtime:
 DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}/data/"
 
 DEVEREAUX = pooch.create(
-    path=pooch.os_cache("xhydro-testdata"),
+    path=DATA_DIR,
     base_url=DATA_URL,
     version=__xhydro_version__,
     version_dev="main",
-    env=DATA_DIR,
     allow_updates=DATA_UPDATES,
     registry=load_registry(),
 )
@@ -154,7 +153,7 @@ Using the registry to download a file:
 
 
 def populate_testing_data(
-    registry: Optional[Union[str, Path]] = None,
+    registry_file: Optional[Union[str, Path]] = None,
     temp_folder: Optional[Path] = None,
     branch: str = TESTDATA_BRANCH,
     _local_cache: Path = _default_cache_dir,
@@ -163,7 +162,7 @@ def populate_testing_data(
 
     Parameters
     ----------
-    registry : str or Path, optional
+    registry_file : str or Path, optional
         Path to the registry file. If not provided, the registry file from package_data will be used.
     temp_folder : Path, optional
         Path to a temporary folder to use as the local cache. If not provided, the default location will be used.
@@ -179,7 +178,7 @@ def populate_testing_data(
         The registry dictionary of files and their locations.
     """
     # Get registry file from package_data or provided path
-    registry = load_registry(registry)
+    registry = load_registry(registry_file)
     # Set the local cache to the temp folder
     if temp_folder is not None:
         _local_cache = temp_folder
