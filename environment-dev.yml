@@ -30,6 +30,7 @@ dependencies:
   - xdatasets >=0.3.6
   - xscen >=0.8.3
   - xvec
+  - pyjuliacall >=0.9.20
   # Dev tools and testing
   - pip >=24.0
   - blackdoc ==0.3.9
@@ -51,6 +52,7 @@ dependencies:
   - pre-commit >=3.5.0
   - pytest >=8.2.2
   - pytest-cov >=5.0.0
+  - pytest-xdist >=3.2.0
   - black ==24.4.2
   - ruff >=0.5.0
   - watchdog >=4.0.0
