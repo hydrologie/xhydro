@@ -10,3 +10,4 @@ Usage
     optimal_interpolation
     local_frequency_analysis
     climate_change
+    pmp
