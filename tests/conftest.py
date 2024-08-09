@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from pooch import Unzip
 
-from xhydro.testing.helpers import DEVEREAUX
+from xhydro.testing.helpers import deveraux
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -20,7 +20,7 @@ def threadsafe_data_dir(tmp_path_factory) -> Path:
 def genextreme_data(threadsafe_data_dir):
     extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
 
-    ge = DEVEREAUX.fetch(
+    ge = deveraux().fetch(
         "extreme_value_analysis/genextreme.zip",
         processor=Unzip(extract_dir=extremes_data_folder),
     )
@@ -35,7 +35,7 @@ def genextreme_data(threadsafe_data_dir):
 def genpareto_data(threadsafe_data_dir):
     extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
 
-    gp = DEVEREAUX.fetch(
+    gp = deveraux().fetch(
         "extreme_value_analysis/genpareto.zip",
         processor=Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
     )

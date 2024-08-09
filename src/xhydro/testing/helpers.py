@@ -14,8 +14,8 @@ __all__ = [
     "DATA_DIR",
     "DATA_UPDATES",
     "DATA_URL",
-    "DEVEREAUX",
     "TESTDATA_BRANCH",
+    "deveraux",
     "load_registry",
     "populate_testing_data",
 ]
@@ -115,41 +115,59 @@ or setting the variable at runtime:
 
 DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}/data/"
 
-DEVEREAUX = pooch.create(
-    path=DATA_DIR,
-    base_url=DATA_URL,
-    version=__xhydro_version__,
-    version_dev="main",
-    allow_updates=DATA_UPDATES,
-    registry=load_registry(),
-)
-"""Pooch registry instance for xhydro test data.
 
-Notes
------
-There are two environment variables that can be used to control the behaviour of this registry:
+def deveraux(  # noqa: PR01
+    data_dir: Union[str, Path] = DATA_DIR,
+    data_updates: bool = DATA_UPDATES,
+    data_url: str = DATA_URL,
+):
+    """Pooch registry instance for xhydro test data.
 
-  - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
-    files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
-    the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+    Parameters
+    ----------
+    data_dir : str or Path
+        Path to the directory where the data files are stored.
+    data_updates : bool
+        If True, allow updates to the data files.
+    data_url : str
+        Base URL to download the data files.
 
-  - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
-    upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+    Returns
+    -------
+    pooch.Pooch
+        Pooch instance for the xhydro test data.
 
-  - ``XHYDRO_DATA_URL``: If this environment variable is set, it will be used as the base URL to download the data files.
+    Notes
+    -----
+    There are three environment variables that can be used to control the behaviour of this registry:
 
-Examples
---------
-Using the registry to download a file:
+        - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
+          files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
+          the default location will be used (based on ``platformdirs``, see :py:func:`pooch.os_cache`).
+        - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
+          upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+        - ``XHYDRO_DATA_URL``: If this environment variable is set, it will be used as the base URL to download the data files.
 
-.. code-block:: python
+    Examples
+    --------
+    Using the registry to download a file:
 
-    from xhydro.testing.utils import DEVEREAUX
-    import xarray as xr
+    .. code-block:: python
 
-    example_file = DEVEREAUX.fetch("example.nc")
-    data = xr.open_dataset(example_file)
-"""
+        import xarray as xr
+        from xhydro.testing.helpers import deveraux
+
+        example_file = devereaux().fetch("example.nc")
+        data = xr.open_dataset(example_file)
+    """
+    return pooch.create(
+        path=data_dir,
+        base_url=data_url,
+        version=__xhydro_version__,
+        version_dev="main",
+        allow_updates=data_updates,
+        registry=load_registry(),
+    )
 
 
 def populate_testing_data(
@@ -182,11 +200,15 @@ def populate_testing_data(
     # Set the local cache to the temp folder
     if temp_folder is not None:
         _local_cache = temp_folder
+
+    # Create the Pooch instance
+    d = deveraux()
+
     # Set the branch
-    DEVEREAUX.version_dev = branch
+    d.version_dev = branch
     # Set the local cache
-    DEVEREAUX.path = _local_cache
+    d.path = _local_cache
 
     # Download the files
     for file in registry.keys():
-        DEVEREAUX.fetch(file, processor=pooch.Unzip())
+        d.fetch(file, processor=pooch.Unzip())

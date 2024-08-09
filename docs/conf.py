@@ -67,6 +67,7 @@ napoleon_use_ivar = True
 
 # For external documentation links
 intersphinx_mapping = {
+    "pooch": ("https://pooch.readthedocs.io/en/stable/", None),
     "xclim": ("https://xclim.readthedocs.io/en/latest/", None),
     "xscen": ("https://xscen.readthedocs.io/en/latest/", None),
 }

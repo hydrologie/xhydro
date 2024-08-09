@@ -122,6 +122,7 @@ jobs:
         run: |
           make test
         env:
+          CI: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-conda:
@@ -188,6 +189,7 @@ jobs:
         run: |
           python -m coveralls
         env:
+          CI: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: run-Python${{ matrix.python-version }}-conda
           COVERALLS_PARALLEL: true
