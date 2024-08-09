@@ -10,16 +10,16 @@ import xclim
 from xclim.indices.stats import fit, parametric_quantile
 
 
-def major_precipitation_events(da, acc_day, quantil=0.9):
+def major_precipitation_events(da, windows, quantile=0.9):
     """Extract precipitation events that exceed a given quantile for a given days accumulation.
 
     Parameters
     ----------
     da : xr.DataArray
         DataArray containing the precipitation values.
-    acc_day : list
-        List of precipitation accumulation days.
-    quantil : float
+    windows : list
+        List of the number of days to accumulate precipitation.
+    quantile : float
         Threshold that limits the events to those that exceed this quantile.
 
     Returns
@@ -28,59 +28,23 @@ def major_precipitation_events(da, acc_day, quantil=0.9):
         Precipitation events that exceed the given quantile for
         the given days accumulation.
     """
-    if "y" and "x" in da.coords:
-        core_dims = ["time", "y", "x"]
-
-    if "conf" in da.coords:
-        core_dims = ["time", "conf"]
-
-    ds_exp = da.expand_dims(dim={"acc_day": acc_day}).copy(deep=True)
-    da_acc = xr.apply_ufunc(
-        cumulate_precip,
-        ds_exp,
-        acc_day,
-        input_core_dims=[core_dims, []],
-        output_core_dims=[core_dims],
-        dask="parallelized",
-        output_dtypes=[float],
-        vectorize=True,
+    da_exp = xr.concat(
+        [
+            da.rolling({"time": window}, center=False)
+            .sum(keep_attrs=True)
+            .assign_coords({"windows": window})
+            for window in windows
+        ],
+        dim="windows",
     )
 
     events = (
-        da_acc.chunk(dict(time=-1))
-        .groupby(da_acc.time.dt.year)
-        .map(keep_higest_values, quantil=quantil)
+        da_exp.chunk(dict(time=-1))
+        .groupby(da_exp.time.dt.year)
+        .map(keep_highest_values, quantile=quantile)
     )
 
     return events.rename("rainfall_event")
-
-
-def cumulate_precip(a, acc_day):
-    """Accumulate precipitation for a given number of days.
-
-    Parameters
-    ----------
-    a : array_like
-       Precipitation values.
-    acc_day : Int
-        Number of days to be accumulated.
-
-    Returns
-    -------
-    array_like
-        Array containing the accumulated precipitation.
-    """
-    cumsum = np.cumsum(a, axis=0, dtype=float)
-    a_acc = np.empty_like(a, dtype=float)
-
-    if a.ndim == 3:
-        a_acc[:acc_day, :, :] = cumsum[acc_day - 1, :, :]
-        a_acc[acc_day:, :, :] = cumsum[acc_day:, :, :] - cumsum[:-acc_day, :, :]
-    else:
-        a_acc[:acc_day] = cumsum[acc_day - 1]
-        a_acc[acc_day:] = cumsum[acc_day:] - cumsum[:-acc_day]
-
-    return a_acc
 
 
 def keep_highest_values(da, quantile):
@@ -105,7 +69,7 @@ def keep_highest_values(da, quantile):
     return da_highest
 
 
-def precipitable_water(ds, ds_fx, acc_day=[1]):
+def precipitable_water(ds, ds_fx, windows=[1]):
     """Compute the precipitable water for the antecedent conditions given the accumulations days.
 
     Parameters
@@ -114,8 +78,8 @@ def precipitable_water(ds, ds_fx, acc_day=[1]):
         Dataset containing the Specific humidity (hus) and the Geopotential Height (zg).
     ds_fx : xr.Dataset
         Dataset containing the Surface altitude (orog).
-    acc_day : list
-        List of precipitation accumulation days.
+    windows : list
+        List of the number of days to accumulate precipitation.
 
     Returns
     -------
@@ -142,13 +106,13 @@ def precipitable_water(ds, ds_fx, acc_day=[1]):
     pw = ds["pt"].rename("precipitable_water")
 
     pw_exp = (
-        pw.expand_dims(dim={"acc_day": acc_day}).chunk({"time": -1}).copy(deep=True)
+        pw.expand_dims(dim={"windows": windows}).chunk({"time": -1}).copy(deep=True)
     )
 
     da_pw = xr.apply_ufunc(
         rolling_max,
         pw_exp,
-        (np.array(acc_day) + 1),
+        (np.array(windows) + 1),
         input_core_dims=[["time", "y", "x"], []],
         output_core_dims=[["time", "y", "x"]],
         dask="parallelized",
@@ -184,7 +148,7 @@ def rolling_max(arr, window_size):
     return roll_max_out
 
 
-def precipitable_water_100y(da_pw, dist, mf=0.2):
+def precipitable_water_100y(da_pw, dist, method, mf=0.2):
     """Compute the 100-year return period of precipitable water for each month of the year.
 
     Parameters
@@ -193,6 +157,10 @@ def precipitable_water_100y(da_pw, dist, mf=0.2):
         Dataset containing the precipitable water.
     dist : lmoments3 distribution object
         Probability distributions.
+    method : {"ML" or "MLE", "MM", "PWM", "APP"}
+        Fitting method, either maximum likelihood (ML or MLE), method of moments (MM) or approximate method (APP).
+        Can also be the probability weighted moments (PWM), also called L-Moments, if a compatible `dist` object is passed.
+        The PWM method is usually more robust to outliers.
     mf : float
         The annual maximums of the precipitable water plus a porcentage (mf) are used as a upper limit.
 
@@ -213,7 +181,7 @@ def precipitable_water_100y(da_pw, dist, mf=0.2):
     da_pw_m = da_pw_m.rename({"year": "time"}).squeeze()
 
     # Fits distribution
-    params = fit(da_pw_m, dist=dist, method="pwm")
+    params = fit(da_pw_m, dist=dist, method=method)
     pw100_m = parametric_quantile(params, q=1 - 1 / 100).squeeze().rename("pw100")
 
     pw_mm = da_pw_m.rename("precipitable_water_monthly")
