@@ -55,7 +55,7 @@ def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
     return registry
 
 
-DATA_DIR = Path(os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)).absolute()
+DATA_DIR = os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)
 """Sets the directory to store the testing datasets.
 
 If not set, the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).

@@ -5,17 +5,14 @@ import pytest
 
 try:
     from xhydro.extreme_value_analysis import parameterestimation
-
-    julia_installed = True
 except ImportError:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
     warnings.warn(JULIA_WARNING)
-    julia_installed = False
     parameterestimation = None
 
 
-@pytest.mark.skipif(not julia_installed, reason="Julia not installed")
+@pytest.mark.skipif(not parameterestimation, reason="Julia not installed")
 class TestGevfit:
 
     def y(self, genextreme_data):
@@ -49,7 +46,7 @@ class TestGevfit:
             np.testing.assert_allclose(test, true, atol=0.03)
 
 
-@pytest.mark.skipif(not julia_installed, reason="Julia not installed")
+@pytest.mark.skipif(not parameterestimation, reason="Julia not installed")
 class TestGumbelfit:
 
     def y(self, genextreme_data):
@@ -81,7 +78,7 @@ class TestGumbelfit:
 
 # FIXME: When ran locally, these tests only necessitate a very small atol, but in order to move on with the pipeline
 # on https://github.com/hydrologie/xhydro/pull/175 I put a large atol
-@pytest.mark.skipif(not julia_installed, reason="Julia not installed")
+@pytest.mark.skipif(not parameterestimation, reason="Julia not installed")
 class TestGpfit:
 
     def y(self, genpareto_data):

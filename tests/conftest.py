@@ -37,7 +37,7 @@ def genpareto_data(threadsafe_data_dir):
 
     gp = DEVEREAUX.fetch(
         "extreme_value_analysis/genpareto.zip",
-        processor=Unzip(extract_dir=extremes_data_folder),
+        processor=Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
     )
 
     mappings = dict()
