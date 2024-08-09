@@ -1,12 +1,20 @@
 """Utility functions for parameter estimation."""
 
-from juliacall import convert as jl_convert
+try:
+    from juliacall import convert as jl_convert
 
-from xhydro.extreme_value_analysis.julia_import import jl
-from xhydro.extreme_value_analysis.structures.conversions import (
-    py_variable_to_jl_variable,
-)
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
+    from xhydro.extreme_value_analysis.julia_import import jl
+    from xhydro.extreme_value_analysis.structures.conversions import (
+        py_variable_to_jl_variable,
+    )
+    from xhydro.extreme_value_analysis.structures.dataitem import Variable
+
+    __all__ = ["jl_variable_fit_parameters", "values_above_threshold"]
+
+except ImportError as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
 
 
 def jl_variable_fit_parameters(params: list[list[Variable]]) -> tuple:

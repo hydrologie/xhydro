@@ -7,10 +7,10 @@ dependencies:
   # Main packages
   - cartopy
   - geopandas
-  - haversine
+  - haversine >=2.8.1
   - leafmap
   - numpy <2.0.0
-  - pandas
+  - pandas >=2.2.0
   - planetary-computer
   - pooch >=1.8.0
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
@@ -31,4 +31,3 @@ dependencies:
   - xscen >=0.8.3
   - xvec
   - pip >=23.3.0
-  - pyjuliacall >=0.9.20

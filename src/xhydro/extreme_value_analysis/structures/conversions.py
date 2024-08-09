@@ -1,19 +1,25 @@
 """Conversion functions between Julia and Python objects."""
 
 import numpy as np
-from juliacall import convert as jl_convert
 
-from xhydro.extreme_value_analysis.julia_import import jl
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
+try:
+    from juliacall import convert as jl_convert
 
-__all__ = [
-    "jl_matrix_tuple_to_py_list",
-    "jl_vector_to_py_list",
-    "jl_vector_tuple_to_py_list",
-    "py_list_to_jl_vector",
-    "py_str_to_jl_symbol",
-    "py_variable_to_jl_variable",
-]
+    from xhydro.extreme_value_analysis.julia_import import jl
+    from xhydro.extreme_value_analysis.structures.dataitem import Variable
+
+    __all__ = [
+        "jl_matrix_tuple_to_py_list",
+        "jl_vector_to_py_list",
+        "jl_vector_tuple_to_py_list",
+        "py_list_to_jl_vector",
+        "py_str_to_jl_symbol",
+        "py_variable_to_jl_variable",
+    ]
+except ImportError as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
 
 
 def py_variable_to_jl_variable(py_var: Variable):
