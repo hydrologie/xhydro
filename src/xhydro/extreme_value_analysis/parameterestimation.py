@@ -20,11 +20,10 @@ try:
     )
     from xhydro.extreme_value_analysis.structures.dataitem import Variable
     from xhydro.extreme_value_analysis.structures.util import jl_variable_fit_parameters
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError) as e:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
-    warnings.warn(JULIA_WARNING)
-    raise
+    raise ImportError(JULIA_WARNING) from e
 
 
 __all__ = [

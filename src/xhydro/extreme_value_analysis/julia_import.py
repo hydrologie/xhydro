@@ -12,11 +12,10 @@ try:
     import juliapkg
     from juliacall import Main as jl  # noqa: N813
 
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError) as e:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
-    warnings.warn(JULIA_WARNING)
-    raise
+    raise ImportError(JULIA_WARNING) from e
 
 # Check if JuliaCall is already loaded, and if so, warn the user about the relevant environment variables.
 # If not loaded, set up sensible defaults.

@@ -107,15 +107,12 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
-        run: |
-          echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
@@ -168,18 +165,13 @@ jobs:
           cache-downloads: true
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
-        run: |
-          mamba --version
-          echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
@@ -237,18 +229,13 @@ jobs:
           cache-downloads: true
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
-        run: |
-          mamba --version
-          echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test Notebooks
