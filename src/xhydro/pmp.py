@@ -44,7 +44,7 @@ def major_precipitation_events(da, windows, quantile=0.9):
         .map(keep_highest_values, quantile=quantile)
     )
 
-    return events.rename("rainfall_event")
+    return events.rename("rainfall_events")
 
 
 def keep_highest_values(da, quantile):
