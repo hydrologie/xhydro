@@ -400,11 +400,12 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year):
     stack = (
         stackstac.stack(
             items,
-            dtype=np.ubyte,
+            dtype=np.uint8,
             fill_value=255,
             bounds_latlon=bbox_of_interest,
             epsg=item.properties["proj:epsg"],
             sortby_date=False,
+            rescale=False,
         )
         .assign_coords(
             time=pd.to_datetime([item.properties["start_datetime"] for item in items])

@@ -22,7 +22,7 @@ dependencies:
   - ravenpy >=0.15.0
   - rioxarray
   - spotpy
-  - stackstac
+  - stackstac >=0.5.1
   - statsmodels
   - tqdm
   - xarray >=2023.11.0
