@@ -59,7 +59,7 @@ clean-test: ## remove test and coverage artifacts
 lint/flake8: ## check style with flake8
 	python -m ruff check src/xhydro tests
 	python -m flake8 --config=.flake8 src/xhydro tests
-	validate-docstrings src/xhydro/**.py
+	python -m numpydoc lint src/xhydro/**.py
 
 lint/black: ## check style with black
 	python -m black --check src/xhydro tests
