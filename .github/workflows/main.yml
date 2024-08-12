@@ -133,7 +133,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        python-version: [ "3.10", "3.11", "3.12" ]
+        julia: [ false ]
+        include: # Only run the latest Python version on push
+          - python-version: "3.9"
+            julia: true
+          - python-version: "3.12"
+            julia: true
     defaults:
       run:
         shell: bash -l {0}
@@ -166,6 +172,10 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+      - name: Install julia
+        if: ${{ matrix.julia == true }}
+        run: |
+          micromamba install -y -c conda-forge "julia>=1.6.1" "pyjuliacall>=0.9.20"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
@@ -198,7 +208,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        python-version: [ "3.10", "3.11", "3.12" ]
+        julia: [ false ]
+        include:
+          - python-version: "3.9"
+            julia: true
+          - python-version: "3.12"
+            julia: true
     defaults:
       run:
         shell: bash -l {0}
