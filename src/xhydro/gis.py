@@ -401,7 +401,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year):
         stackstac.stack(
             items,
             dtype=np.uint8,
-            fill_value=255,
+            fill_value=np.uint8(255),
             bounds_latlon=bbox_of_interest,
             epsg=item.properties["proj:epsg"],
             sortby_date=False,
