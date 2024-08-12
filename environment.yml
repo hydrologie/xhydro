@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.9,<3.13
+  - pip >=24.2.0
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy
@@ -10,7 +11,7 @@ dependencies:
   - haversine
   - leafmap
   - numpy <2.0.0
-  - pandas
+  - pandas >=2.2.0
   - planetary-computer
   - pooch >=1.8.0
   - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
@@ -30,4 +31,3 @@ dependencies:
   - xdatasets >=0.3.5
   - xscen >=0.8.3
   - xvec
-  - pip >=23.3.0
