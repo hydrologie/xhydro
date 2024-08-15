@@ -11,7 +11,7 @@ from typing import cast
 import juliapkg
 from juliacall import Main as jl  # noqa: N813
 
-__all__ = ["jl", "Extremes"]
+__all__ = ["Extremes", "jl"]
 
 # Check if JuliaCall is already loaded, and if so, warn the user
 # about the relevant environment variables. If not loaded,
@@ -73,8 +73,8 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
     return expected_output in output
 
 
-# juliapkg.rm("Extremes")
-# juliapkg.resolve()
+# It was not necessary to add a dependancy dictionary as we only need Extremes.jl, however this mechanism is more
+# scalable in case we need to add many other julia dependancies in the future
 deps = {
     "Extremes": "fe3fe864-1b39-11e9-20b8-1f96fa57382d",
 }
@@ -87,6 +87,6 @@ jl_version = (
     jl.VERSION.major,
     jl.VERSION.minor,
     jl.VERSION.patch,
-)  # not sure how this is useful, PySR only uses it for testing
+)  # NOTE: this is not used right now, but could be used for debugging purposes
 jl.seval("using Extremes")
 Extremes = jl.Extremes

@@ -98,21 +98,27 @@ class TestGpfit:
 
     def test_gpfit(self):
         test_params = gpfit(self.y)["params"]
-        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
+        test_params = exponentiate_logscale(
+            np.array(test_params), [], [], pareto=True
+        ).tolist()
         true_params = [0.9866, 0.0059]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)
 
     def test_gpfitpwm(self):
         test_params = gpfitpwm(self.y)["params"]
-        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
+        test_params = exponentiate_logscale(
+            np.array(test_params), [], [], pareto=True
+        ).tolist()
         true_params = [1, 0]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)
 
     def test_gpfitbayes(self):
         test_params = gpfitbayes(self.y, niter=100, warmup=50)["params"]
-        test_params = exponentiate_logscale(np.array(test_params), [], [], pareto=True).tolist()
+        test_params = exponentiate_logscale(
+            np.array(test_params), [], [], pareto=True
+        ).tolist()
         true_params = [1, 0]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.5)
