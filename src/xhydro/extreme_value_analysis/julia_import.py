@@ -8,17 +8,14 @@ import warnings
 from types import ModuleType
 from typing import cast
 
-try:
-    import juliapkg
-    from juliacall import Main as jl  # noqa: N813
+import juliapkg
+from juliacall import Main as jl  # noqa: N813
 
-except (ImportError, ModuleNotFoundError) as e:
-    from xhydro.extreme_value_analysis import JULIA_WARNING
+__all__ = ["Extremes", "jl"]
 
-    raise ImportError(JULIA_WARNING) from e
-
-# Check if JuliaCall is already loaded, and if so, warn the user about the relevant environment variables.
-# If not loaded, set up sensible defaults.
+# Check if JuliaCall is already loaded, and if so, warn the user
+# about the relevant environment variables. If not loaded,
+# set up sensible defaults.
 if "juliacall" in sys.modules:
     warnings.warn(
         "juliacall module already imported. "
@@ -30,13 +27,14 @@ else:
     if os.environ.get("PYTHON_JULIACALL_HANDLE_SIGNALS", "yes") != "yes":
         warnings.warn(
             "PYTHON_JULIACALL_HANDLE_SIGNALS environment variable is set to something other than 'yes' or ''. "
-            "You will experience segfaults if running with multithreading."
+            + "You will experience segfaults if running with multithreading."
         )
 
     if os.environ.get("PYTHON_JULIACALL_THREADS", "auto") != "auto":
         warnings.warn(
             "PYTHON_JULIACALL_THREADS environment variable is set to something other than 'auto', "
-            "so xhydro was not able to set it. You may wish to set it to `'auto'` for full use of your CPU."
+            "so xhydro was not able to set it. You may wish to set it to `'auto'` for full use "
+            "of your CPU."
         )
 
     # TODO: Remove these when juliapkg lets you specify this
@@ -60,7 +58,7 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
         The sub-string to search for in the output of the function.
     \*args : tuple
         Positional arguments to pass to the function.
-    \*\*kwargs : tuple
+    \**kwargs : tuple
         Keyword arguments to pass to the function.
 
     Returns
@@ -75,8 +73,8 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
     return expected_output in output
 
 
-# juliapkg.rm("Extremes")
-# juliapkg.resolve()
+# It was not necessary to add a dependancy dictionary as we only need Extremes.jl, however this mechanism is more
+# scalable in case we need to add many other julia dependancies in the future
 deps = {
     "Extremes": "fe3fe864-1b39-11e9-20b8-1f96fa57382d",
 }
@@ -89,6 +87,6 @@ jl_version = (
     jl.VERSION.major,
     jl.VERSION.minor,
     jl.VERSION.patch,
-)  # not sure how this is useful, PySR only uses it for testing
+)  # NOTE: this is not used right now, but could be used for debugging purposes
 jl.seval("using Extremes")
 Extremes = jl.Extremes

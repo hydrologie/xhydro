@@ -1,31 +1,38 @@
 """Utility functions for parameter estimation."""
 
-try:
-    from juliacall import convert as jl_convert
+import math
+import warnings
+from copy import deepcopy
 
-    from xhydro.extreme_value_analysis.julia_import import jl
-    from xhydro.extreme_value_analysis.structures.conversions import (
-        py_variable_to_jl_variable,
-    )
-    from xhydro.extreme_value_analysis.structures.dataitem import Variable
+import numpy as np
+from juliacall import JuliaError
+from juliacall import convert as jl_convert
+from xhydro_temp.extreme_value_analysis.julia_import import Extremes
 
-    __all__ = ["jl_variable_fit_parameters", "values_above_threshold"]
+from xhydro.extreme_value_analysis.julia_import import jl
+from xhydro.extreme_value_analysis.structures.conversions import (
+    jl_vector_to_py_list,
+    py_variable_to_jl_variable,
+)
+from xhydro.extreme_value_analysis.structures.dataitem import Variable
 
-except ImportError as e:
-    from xhydro.extreme_value_analysis import JULIA_WARNING
-
-    raise ImportError(JULIA_WARNING) from e
+__all__ = [
+    "exponentiate_logscale",
+    "insert_covariates",
+    "jl_variable_fit_parameters",
+    "match_length",
+    "param_cint",
+]
 
 
 def jl_variable_fit_parameters(covariate_list: list[list]):
     r"""
-    Transform a list of lists, representing all the covariates' data for a single parameter,
-    into a julia.Vector of julia.Extremes.Variable objects.
+    Transform a list of lists, into a julia.Vector of julia.Extremes.Variable objects.
 
     Parameters
     ----------
-    params : list of list of Variable
-        List of lists of Variables to be transformed into a tuple of julia.Vectors of julia.Extremes.Variables.
+    covariate_list : list[list]
+        Covariates' data for a single parameter.
 
     Returns
     -------
@@ -34,41 +41,53 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
 
     Notes
     -----
-    This function is necessary for non-stationary parameter estimation: see example at extreme_value_analysis/parameterestimation.gevfit().
+    This function is necessary for non-stationary parameter estimation:
+    see example at extreme_value_analysis/parameterestimation.gevfit().
     """
-    py_variables = [Variable("", values) for values in covariate_list] # it is not important that variables have a name
-    jl_variables = [py_variable_to_jl_variable(py_variable) for py_variable in py_variables]
+    py_variables = [
+        Variable("", values) for values in covariate_list
+    ]  # it is not important that variables have a name
+    jl_variables = [
+        py_variable_to_jl_variable(py_variable) for py_variable in py_variables
+    ]
     jl_vector_variables = jl_convert(jl.Vector[jl.Extremes.Variable], jl_variables)
     return jl_vector_variables
 
 
-def param_cint(jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95) -> dict[str, list[float]]:
+def param_cint(
+    jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95
+) -> dict[str, list[float]]:
     r"""
-    Returns a list of parameters and confidence intervals for a given Julia fitted model.
+    Return a list of parameters and confidence intervals for a given Julia fitted model.
 
     Parameters
     ----------
-    values : list
-        A list of numerical values to be filtered.
-    threshold : float
-        A float value between 0 and 1 representing the proportion of values to retain.
+    jl_model : Julia.Extremes.AbstractExtremeValueModel
+        The fitted Julia model from which parameters and confidence intervals are to be extracted.
+    nparams : int
+        The number of parameters, including covariates, for the given distribution.
+    bayesian : bool
+        If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
+        Defaults to False.
+    confidence_level : float
+        The confidence level for the confidence interval of each parameter.
+        Defaults to 0.95.
 
     Returns
     -------
-    list
-        A list containing the values above the specified threshold.
-
-    Notes
-    -----
-        values = [1, 3, 5, 7, 9]
-        threshold = 0.4
-        values_above_threshold(values, threshold)
-        [9, 7]
+    dict[str, list[float]]
+        A dictionary containing the estimated parameters and the lower and upper bounds for the confidence interval
+        of each parameter.
     """
     if bayesian:
         jl_params_sims = jl_model.sim.value
-        py_params_sims = [jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :])) for i in range(len(jl_params_sims[:, 0, 0]))]
-        params = [sum(x) / len(py_params_sims) for x in zip(*py_params_sims)]  # each parameter is estimated to be the average over all simulations
+        py_params_sims = [
+            jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :]))
+            for i in range(len(jl_params_sims[:, 0, 0]))
+        ]
+        params = [
+            sum(x) / len(py_params_sims) for x in zip(*py_params_sims)
+        ]  # each parameter is estimated to be the average over all simulations
     else:
         params = jl_vector_to_py_list(getattr(jl_model, "θ̂"))
     try:
@@ -77,27 +96,37 @@ def param_cint(jl_model, nparams: int, bayesian: bool = False, confidence_level:
         cint_lower = [interval[0] for interval in cint]
         cint_upper = [interval[1] for interval in cint]
         return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper}
-    except:
-        return {"params": [np.nan for _ in range(nparams)], "cint_lower": [np.nan for _ in range(nparams)], "cint_upper": [np.nan for _ in range(nparams)]}
+    except JuliaError:
+        warnings.warn(
+            f"There was an error in computing confidence interval. "
+            f"Returned parameter and confidence interval values are numpy.nan"
+        )
+        return {
+            "params": [np.nan for _ in range(nparams)],
+            "cint_lower": [np.nan for _ in range(nparams)],
+            "cint_upper": [np.nan for _ in range(nparams)],
+        }
 
 
-def insert_covariates(param_names: list[str], covariates: list[str], param_name: str) -> list[str]:
+def insert_covariates(
+    param_names: list[str], covariates: list[str], param_name: str
+) -> list[str]:
     r"""
     Insert appropriate covariate names in the parameter names list.
 
     Parameters
     ----------
     param_names : list[str]
-        List of parameter names in which to insert the covariate names
+        List of parameter names in which to insert the covariate names.
     covariates : list[str]
-        List of covariate names to insert in the parameter names
+        List of covariate names to insert in the parameter names.
     param_name : str
-        Name of the parameter (such as "loc", "shape", "scale") after which the covariates are inserted
+        Name of the parameter (such as "loc", "shape", "scale") after which the covariates are inserted.
 
     Returns
     -------
     list[str]
-        Updated list of parameter names with the appropriate covariates in the right place
+        Updated list of parameter names with the appropriate covariates in the right place.
 
     Examples
     --------
@@ -106,18 +135,15 @@ def insert_covariates(param_names: list[str], covariates: list[str], param_name:
     """
     index = param_names.index(param_name)
     return (
-        param_names[:index + 1]
-        + [f'{param_name}_{covariate}_covariate' for covariate in covariates]
-        + param_names[index + 1:]
+        param_names[: index + 1]
+        + [f"{param_name}_{covariate}_covariate" for covariate in covariates]
+        + param_names[index + 1 :]
     )
 
 
 def match_length(py_list: list, covariates: list[list]) -> list[list]:
     r"""
-    Adjusts the length of covariate data to match the fitting data by removing entries corresponding to NaNs in the fitting data.
-
-    This function is useful when the fitting data contains NaNs and needs to be pruned. To ensure that the covariate data
-    remains aligned with the fitting data, the function removes the corresponding entries from the covariate data.
+    Adjust covariate data length to match fitting data by removing entries corresponding to NANs in the fitting data.
 
     Parameters
     ----------
@@ -131,6 +157,12 @@ def match_length(py_list: list, covariates: list[list]) -> list[list]:
     list[list]
         A new list of covariates with entries removed to match the length of the fitting data without NaNs.
 
+    Notes
+    -----
+    This function is useful when the fitting data contains NaNs and needs to be pruned.
+    To ensure that the covariate data remains aligned with the fitting data, the function removes
+    the corresponding entries from the covariate data.
+
     Examples
     --------
     >>> fitting_data = [1, 2, np.nan, 4, 5]
@@ -139,7 +171,11 @@ def match_length(py_list: list, covariates: list[list]) -> list[list]:
     >>> match_length(fitting_data, [loc_covariate, shape_covariate])
     >>> [[6, 5, 8, 9], [9, 7, 5, 4]]
     """
-    nan_indexes = [index for index, value in enumerate(py_list) if (math.isnan(value) or np.isnan(value))]
+    nan_indexes = [
+        index
+        for index, value in enumerate(py_list)
+        if (math.isnan(value) or np.isnan(value))
+    ]
     covariates_copy = deepcopy(covariates)
     for sublist in covariates_copy:
         for index in sorted(nan_indexes, reverse=True):
@@ -147,7 +183,12 @@ def match_length(py_list: list, covariates: list[list]) -> list[list]:
     return covariates_copy
 
 
-def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logscalecov_data: list[list], pareto: bool = False) -> np.ndarray:
+def exponentiate_logscale(
+    params: np.ndarray,
+    locationcov_data: list[list],
+    logscalecov_data: list[list],
+    pareto: bool = False,
+) -> np.ndarray:
     r"""
     Exponentiate logscale parameter as well as all its covariates to obtain actual scale parameter.
 
@@ -160,6 +201,8 @@ def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logs
         This is needed to keep track of the index of the logscale parameter in params.
     logscalecov_data : list[list]
         List of covariate data lists for the scale parameter.
+    pareto : bool
+        Boolean value indicating whether we are dealing with the parameters of a pareto distribution.
 
     Returns
     -------
@@ -169,7 +212,36 @@ def exponentiate_logscale(params: np.ndarray, locationcov_data: list[list], logs
     scale_param_index = 1 + len(locationcov_data)
     if pareto:
         scale_param_index = 0
-    for index in range(scale_param_index, scale_param_index + len(logscalecov_data) + 1):
+    for index in range(
+        scale_param_index, scale_param_index + len(logscalecov_data) + 1
+    ):
         params[index] = np.exp(params[index])
     return params
 
+
+class CovariateIndex:
+    r"""CovariatedIndex class."""
+
+    covariate_index: int
+
+    def __init__(self):
+        pass
+
+    def init_covariate_index(self):
+        r"""Initialize covariate_index to 0."""
+        self.covariate_index = 0
+
+    def inc_covariate_index(self):
+        r"""Increment covariate_index by 1."""
+        self.covariate_index += 1
+
+    def get(self):
+        r"""
+        Return current covariate_index value.
+
+        Returns
+        -------
+        int
+            Current covariate_index value.
+        """
+        return self.covariate_index
