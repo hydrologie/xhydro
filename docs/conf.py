@@ -62,11 +62,14 @@ autodoc_default_options = {
     "special-members": False,
 }
 
+autodoc_mock_imports = ["juliapkg", "juliacall"]
+
 # For styling class attributes
 napoleon_use_ivar = True
 
 # For external documentation links
 intersphinx_mapping = {
+    "pooch": ("https://www.fatiando.org/pooch/latest/", None),
     "xclim": ("https://xclim.readthedocs.io/en/latest/", None),
     "xscen": ("https://xscen.readthedocs.io/en/latest/", None),
 }
@@ -152,7 +155,9 @@ html_theme = "furo"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+if not os.path.exists("_static"):
+    os.makedirs("_static")
+html_static_path = ["_static"]
 
 
 # -- Options for HTMLHelp output ---------------------------------------

@@ -11,16 +11,24 @@ from juliacall import JuliaError
 from xclim.core.formatting import prefix_attrs, update_history
 from xclim.indices.stats import get_dist
 
-from xhydro.extreme_value_analysis import Extremes, jl
-from xhydro.extreme_value_analysis.structures.conversions import py_list_to_jl_vector
-from xhydro.extreme_value_analysis.structures.util import (
-    CovariateIndex,
-    exponentiate_logscale,
-    insert_covariates,
-    jl_variable_fit_parameters,
-    match_length,
-    param_cint,
-)
+try:
+    from xhydro.extreme_value_analysis import Extremes, jl
+    from xhydro.extreme_value_analysis.structures.conversions import (
+        py_list_to_jl_vector,
+    )
+    from xhydro.extreme_value_analysis.structures.util import (
+        CovariateIndex,
+        exponentiate_logscale,
+        insert_covariates,
+        jl_variable_fit_parameters,
+        match_length,
+        param_cint,
+    )
+except (ImportError, ModuleNotFoundError) as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
+
 
 warnings.simplefilter("always", UserWarning)
 __all__ = ["fit"]
@@ -507,10 +515,10 @@ def fit(
     shapecov : list[str]
         List of names of the covariates for the location parameter.
         Have to be names of coordinates in the original data.
-    dist : str or rv_continuous distribution object
+    dist : {"genextreme", "gumbel_r", "genpareto"} or rv_continuous distribution object
         Name of the univariate distributionor the distribution object itself.
         Supported distributions are genextreme, gumbel_r, genpareto.
-    method : {"ML","PWM", "BAYES}
+    method : {"ML", "PWM", "BAYES}
         Fitting method, either maximum likelihood (ML), probability weighted moments (PWM) or bayesian (BAYES).
         The PWM method is usually more robust to outliers.
     dim : str

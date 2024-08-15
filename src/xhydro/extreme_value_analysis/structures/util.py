@@ -1,20 +1,25 @@
 """Utility functions for parameter estimation."""
 
-import math
-import warnings
-from copy import deepcopy
+try:
+    import math
+    import warnings
+    from copy import deepcopy
 
-import numpy as np
-from juliacall import JuliaError
-from juliacall import convert as jl_convert
-from xhydro_temp.extreme_value_analysis.julia_import import Extremes
+    import numpy as np
+    from juliacall import JuliaError
+    from juliacall import convert as jl_convert
+    from xhydro_temp.extreme_value_analysis.julia_import import Extremes
 
-from xhydro.extreme_value_analysis.julia_import import jl
-from xhydro.extreme_value_analysis.structures.conversions import (
-    jl_vector_to_py_list,
-    py_variable_to_jl_variable,
-)
-from xhydro.extreme_value_analysis.structures.dataitem import Variable
+    from xhydro.extreme_value_analysis.julia_import import jl
+    from xhydro.extreme_value_analysis.structures.conversions import (
+        jl_vector_to_py_list,
+        py_variable_to_jl_variable,
+    )
+    from xhydro.extreme_value_analysis.structures.dataitem import Variable
+except ImportError as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
 
 __all__ = [
     "exponentiate_logscale",

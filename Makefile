@@ -59,6 +59,7 @@ clean-test: ## remove test and coverage artifacts
 lint/flake8: ## check style with flake8
 	python -m ruff check src/xhydro tests
 	python -m flake8 --config=.flake8 src/xhydro tests
+	python -m numpydoc lint src/xhydro/**.py
 
 lint/black: ## check style with black
 	python -m black --check src/xhydro tests
@@ -70,6 +71,9 @@ lint: lint/flake8 lint/black ## check style
 test: ## run tests quickly with the default Python
 	python -m pytest
 
+test-distributed: ## run tests quickly with the default Python and distibuted workers
+	python -m pytest --num-processes=logical
+
 test-notebooks: ## run tests on notebooks and compare outputs
 	pytest --no-cov --nbval --rootdir=tests/ docs/notebooks
 
@@ -77,7 +81,7 @@ test-notebooks-lax: ## run tests on notebooks but don't be so strict about outpu
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
 
 test-all: ## run tests on every Python version with tox
-	tox
+	python -m tox
 
 coverage: ## check code coverage quickly with the default Python
 	python -m coverage run --source src/xhydro -m pytest
