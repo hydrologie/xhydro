@@ -296,17 +296,29 @@ def compute_spring_and_summer_mask(
 
     winter_end = (
         xclim.indices.snd_season_end(
-            snd=snw, thresh=thresh, window=window_wint_end, freq="YS"
+            snd=snw, thresh=thresh, window=window_wint_end, freq="YS-JUL"
         )
         - 1
     )  # xclim gives the first day without snow, we want the last day with snow
-    winter_end = winter_end.assign_coords({"year": winter_end.time.dt.year})
+    winter_end = winter_end.assign_coords({"year": winter_end.time.dt.year + 1})
     winter_end = winter_end.swap_dims({"time": "year"}).drop_vars("time")
+    winter_end = winter_end.sel(
+        year=slice(min(snw.time.dt.year), max(snw.time.dt.year))
+    )  # The last year is not complete
+    winter_end = xr.where(
+        winter_end >= 182, 1, winter_end
+    )  # If winter ends the autumn before, set to 1
     winter_end = winter_end.where(
         winter_end < summer_end, summer_end - 1
     )  # Winter can't end after summer
     mask = xr.where(winter_start.isnull(), np.nan, 1)
     winter_end = winter_end * mask
+
+    # Sanity check
+    if (winter_end.isnull() & winter_start.notnull()).any():
+        raise ValueError(
+            "Winter starts but never ends. Check your `window` parameters."
+        )
 
     # Summer starts when winter ends, or at the beginning of the year
     summer_start = xr.where(winter_end.isnull(), 1, winter_end + 1)
