@@ -1,53 +1,65 @@
 """Module to compute Probable Maximum Precipitation."""
 
-import sys
+import warnings
+from copy import deepcopy
 from itertools import product
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim
 from xclim.indices.stats import fit, parametric_quantile
+from xscen.utils import unstack_dates
 
 
-def major_precipitation_events(da, windows, quantile=0.9):
-    """Extract precipitation events that exceed a given quantile for a given days accumulation.
+def major_precipitation_events(
+    da: xr.DataArray, windows: list[int], quantile: float = 0.9
+):
+    """Apply a mask to only keep precipitation events that exceed a given quantile for the given days accumulation.
 
     Parameters
     ----------
     da : xr.DataArray
         DataArray containing the precipitation values.
-    windows : list
+    windows : list of int
         List of the number of days to accumulate precipitation.
     quantile : float
-        Threshold that limits the events to those that exceed this quantile.
+        Threshold that limits the events to those that exceed this quantile. Defaults to 0.9.
 
     Returns
     -------
     xr.DataArray
-        Precipitation events that exceed the given quantile for
-        the given days accumulation.
+        Masked DataArray containing the major precipitation events.
     """
     da_exp = xr.concat(
         [
             da.rolling({"time": window}, center=False)
             .sum(keep_attrs=True)
-            .assign_coords({"windows": window})
+            .assign_coords({"window": window})
             for window in windows
         ],
-        dim="windows",
+        dim="window",
     )
 
     events = (
         da_exp.chunk(dict(time=-1))
-        .groupby(da_exp.time.dt.year)
-        .map(keep_highest_values, quantile=quantile)
+        .groupby("time.year")
+        .map(_keep_highest_values, quantile=quantile)
     )
 
-    return events.rename("rainfall_events")
+    # Add attributes
+    events.name = "rainfall_events"
+    events.attrs["long_name"] = "Major precipitation events"
+    events.attrs["description"] = (
+        f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
+    )
+    events.attrs["standard_name"] = ""
+
+    return events
 
 
-def keep_highest_values(da, quantile):
+def _keep_highest_values(da: xr.DataArray, quantile: float) -> xr.DataArray:
     """
     Mask values that are less than the given quantile.
 
@@ -69,179 +81,178 @@ def keep_highest_values(da, quantile):
     return da_highest
 
 
-def precipitable_water(ds, ds_fx, windows=[1]):
-    """Compute the precipitable water for the antecedent conditions given the accumulations days.
+def precipitable_water(
+    hus: xr.DataArray,
+    zg: xr.DataArray,
+    orog: xr.DataArray,
+    windows: Optional[list[int]] = None,
+):
+    """Compute the precipitable water given antecedent conditions, for various durations.
 
     Parameters
     ----------
-    ds : xr.Dataset
-        Dataset containing the Specific humidity (hus) and the Geopotential Height (zg).
-    ds_fx : xr.Dataset
-        Dataset containing the Surface altitude (orog).
-    windows : list
-        List of the number of days to accumulate precipitation.
+    hus : xr.DataArray
+        Specific humidity. Must have a pressure level (plev) dimension.
+    zg : xr.DataArray
+        Geopotential height. Must have a pressure level (plev) dimension.
+    orog : xr.DataArray
+        Surface altitude.
+    windows : list of int, optional
+        Duration of the event. Defaults to [1].
+        Note that an additional day will be added to the window size to account for antecedent conditions.
 
     Returns
     -------
     xr.DataArray
         Precipitable water.
+
+    Notes
+    -----
+    The precipitable water of an event is defined as the maximum precipitable water found during the entire duration of the event, extending
+    up to 6 hours before the start of the event. Thus, the rolling operation made using `windows` is a maximum, not a sum.
     """
+    windows = windows or [1]
+
+    zg = xclim.core.units.convert_units_to(zg, "m")
+    orog = xclim.core.units.convert_units_to(orog, "m")
+    if hus.attrs.get("units") not in ["1", "", "kg kg-1", "kg/kg"]:
+        warnings.warn(
+            "Specific humidity units does not appear to be in kg/kg. Results may be incorrect."
+        )
+
     # Correction of the first zone above the topography to consider the correct fraction.
-    da = ds["zg"] - ds_fx["orog"]
+    da = zg - orog
     da = da.where(da >= 0)
-    ds["zg_corr"] = (da + ds_fx["orog"]).fillna(ds_fx["orog"])
+    zg_corr = (da + orog).fillna(orog)
 
     # Betas computation for zones equal to zero.
     db = da.where(da >= 0, 0)
-    ds["beta"] = db.where(db <= 0, 1)
+    beta = db.where(db <= 0, 1)
 
     # Evaluation of average elevation for each pressure level, including beta coefficient
-    ds["zg1"] = ds.zg_corr.diff("plev", label="upper")
-    ds["zg2"] = ds.zg_corr.diff("plev", label="lower")
-    ds["zg_moy"] = ds[["zg1", "zg2"]].to_array().sum("variable") / 2
-    ds["zg_moy"] = ds["zg_moy"] * ds["beta"]
+    zg1 = zg_corr.diff("plev", label="upper")
+    zg2 = zg_corr.diff("plev", label="lower")
+    zg_moy = (
+        xr.concat([zg1, zg2], dim="variable").sum("variable") / 2
+    )  # FIXME: Is it `mean` or `sum / 2`?
+    zg_moy = zg_moy * beta
 
     # Precipitable water. You can then juxtapose with Pevent to return only PWevent (max).
-    ds["pt"] = (ds["zg_moy"] * ds["hus"]).sum("plev")
-    pw = ds["pt"].rename("precipitable_water")
+    pw = (zg_moy * hus).sum("plev")
+    pw.name = "precipitable_water"
+    pw.attrs = {
+        "long_name": "Precipitable water",
+        "description": "Precipitable water computed from the specific humidity and geopotential height.",
+        "units": "m",
+    }
+    pw = xclim.core.units.convert_units_to(pw, "mm")
 
-    pw_exp = (
-        pw.expand_dims(dim={"windows": windows}).chunk({"time": -1}).copy(deep=True)
+    # Compute the precipitable water for the given window.
+    out = xr.concat(
+        [
+            pw.rolling({"time": window + 1}, center=False)
+            .max(keep_attrs=True)
+            .assign_coords({"window": window})
+            for window in windows
+        ],
+        dim="window",
     )
+    out["window"].attrs = {
+        "description": "Duration of the event, including antecedent conditions (window + 1)."
+    }
 
-    da_pw = xr.apply_ufunc(
-        rolling_max,
-        pw_exp,
-        (np.array(windows) + 1),
-        input_core_dims=[["time", "y", "x"], []],
-        output_core_dims=[["time", "y", "x"]],
-        dask="parallelized",
-        output_dtypes=[float],
-        vectorize=True,
-    )
-
-    return da_pw
+    return out
 
 
-def rolling_max(arr, window_size):
-    """Compute the maximum rolling value.
-
-    Parameters
-    ----------
-    arr : array_like
-        Array to create the sliding window.
-    window_size : xr.Dataset
-        Size of window over each axis that takes part in the sliding window.
-
-    Returns
-    -------
-    ndarray
-        Rolling maximum of the array. The function includes NaN values at the beginning of the array to keep the same length of the input array.
-    """
-    windowed = np.lib.stride_tricks.sliding_window_view(arr, window_size, axis=0)
-
-    roll_max = np.maximum.reduce(windowed, axis=-1)
-
-    roll_max_out = np.full(arr.shape, np.nan)
-    roll_max_out[window_size - 1 :, :, :] = roll_max
-
-    return roll_max_out
-
-
-def precipitable_water_100y(da_pw, dist, method, mf=0.2):
+def precipitable_water_100y(
+    pw: xr.DataArray, dist: str, method: str, mf: float = 0.2, rebuild_time: bool = True
+):
     """Compute the 100-year return period of precipitable water for each month of the year.
 
     Parameters
     ----------
-    da_pw : xr.DataArray
-        Dataset containing the precipitable water.
-    dist : lmoments3 distribution object
+    pw : xr.DataArray
+        DataArray containing the precipitable water.
+    dist : str
         Probability distributions.
     method : {"ML" or "MLE", "MM", "PWM", "APP"}
         Fitting method, either maximum likelihood (ML or MLE), method of moments (MM) or approximate method (APP).
         Can also be the probability weighted moments (PWM), also called L-Moments, if a compatible `dist` object is passed.
         The PWM method is usually more robust to outliers.
     mf : float
-        The annual maximums of the precipitable water plus a porcentage (mf) are used as a upper limit.
+        Maximum majoration factor of the 100-year event compared to the maximum of the timeseries.
+        Used as an upper limit for the frequency analysis.
+    rebuild_time : bool
+        Whether or not to reconstruct a timeseries with the same dimensions as `pw`.
 
     Returns
     -------
     xr.DataArray
         Precipitable water for a 100-year return period.
-        It has the same dimensions as da_pw.
     """
     # Compute max monthly and add a «year» dimension.
-    da_pw_m = da_pw.resample({"time": "ME"}).max()
-    year = da_pw_m.time.dt.year
-    month = da_pw_m.time.dt.month
-    da_pw_m = da_pw_m.assign_coords(
-        year=("time", year.data), month=("time", month.data)
-    )
-    da_pw_m = da_pw_m.set_index(time=("year", "month")).unstack("time")
-    da_pw_m = da_pw_m.rename({"year": "time"}).squeeze()
+    pw_m = pw.resample({"time": "MS"}).max()
+    pw_m = unstack_dates(pw_m, seasons={m: m for m in range(1, 13)}, new_dim="month")
 
     # Fits distribution
-    params = fit(da_pw_m, dist=dist, method=method)
-    pw100_m = parametric_quantile(params, q=1 - 1 / 100).squeeze().rename("pw100")
-
-    pw_mm = da_pw_m.rename("precipitable_water_monthly")
-    pw_mm = pw_mm.rename({"time": "year"})
+    # FIXME: Use xhydro.frequency_analysis.local instead
+    params = fit(pw_m, dist=dist, method=method)
+    pw100_m = parametric_quantile(params, q=1 - 1 / 100).squeeze()
 
     # Add a limit to PW100 to limit maximization factors.
-    pw_mm_mf = (pw_mm.max(dim="year") * (1.0 + mf)).squeeze()
+    pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
-    pw100_m = pw100_m.where(pw100_m < pw_mm_mf, other=pw_mm_mf)
-    pw100_m = pw100_m.expand_dims(dim={"year": np.unique(year.values)})
-    pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
-    date_index = pd.DatetimeIndex(
-        pd.to_datetime(
-            pd.DataFrame(
-                {
-                    "year": pw100_m.year.data,
-                    "month": pw100_m.month.data,
-                    "day": (xr.ones_like(pw100_m.month).data),
-                    "hour": (xr.ones_like(pw100_m.month).data) * 12,
-                }
+    if rebuild_time:
+        pw100_m = pw100_m.expand_dims(dim={"year": np.unique(pw.time.dt.year)})
+        pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
+        if isinstance(pw.indexes["time"], pd.core.indexes.datetimes.DatetimeIndex):
+            time_coord = pd.DatetimeIndex(
+                pd.to_datetime({"year": pw100_m.year, "month": pw100_m.month, "day": 1})
             )
+        elif isinstance(pw.indexes["time"], xr.coding.cftimeindex.CFTimeIndex):
+            time_coord = [
+                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1)
+                for y, m in zip(
+                    pw100_m.year.values,
+                    pw100_m.month.values,
+                )
+            ]
+        else:
+            raise ValueError("The type of 'time' was not understood.")
+
+        pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
+        pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
+        pw100_m = (
+            pw100_m.interp_like(pw)
+            .ffill(dim="time")
+            .drop_vars(["month", "year", "stacked_coords"])
         )
-    )
-    pw100_m = pw100_m.assign_coords(time=("stacked_coords", date_index))
 
-    pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
-    pw100_m = pw100_m.convert_calendar("noleap")
-    pw100_m = pw100_m.rename("pw100").to_dataset()
+    pw100_m.name = "precipitable_water_monthly_100y"
 
-    if "x" and "y" in pw100_m.coords:
-        pw100_m = pw100_m.transpose("time", "y", "x")
-        da_pw = da_pw.drop_vars(["x", "y"])
-
-    da_pw100 = xr.merge([pw100_m, da_pw]).ffill(dim="time")
-
-    da_pw100 = da_pw100.pw100.squeeze().drop_vars(["month", "year", "stacked_coords"])
-
-    return da_pw100
+    return pw100_m
 
 
 def compute_spring_and_summer_mask(
-    snt,
-    thresh="1 cm",
-    window_wint_start=14,
-    window_wint_end=90,
-    spr_start=60,
-    spr_end=30,
+    snw: xr.DataArray,
+    thresh: str = "1 cm",
+    window_wint_start: int = 14,
+    window_wint_end: int = 90,
+    spr_start: int = 60,
+    spr_end: int = 30,
 ):
-    """Create a mask that defines the spring and summer seasons based on the snow thickness.
+    """Create a mask that defines the spring and summer seasons based on the snow water equivalent.
 
     Parameters
     ----------
-    snt : xarray.DataArray
-        Surface snow thickness.
+    snw : xarray.DataArray
+        Snow water equivalent. Must be a length (e.g. "mm") or a mass (e.g. "kg m-2").
     thresh : Quantified
-        Threshold snow thickness.
+        SWE threshold to define the start and end of winter.
     window_wint_start : int
         Minimum number of days with snow depth above or equal to threshold to define the start of winter.
     window_wint_end : int
-        Maximum number of days with snow depth above or equal to threshold to define the end of winter.
+        Maximum number of days with snow depth below or equal to threshold to define the end of winter.
     spr_start : int
         Number of days before the end of winter to define the start of spring.
     spr_end : int
@@ -253,88 +264,106 @@ def compute_spring_and_summer_mask(
         Dataset with two DataArrays (mask_spring and mask_summer), with values of 1 where the
         spring and summer criteria are met and 0 where they are not.
     """
-    if snt.attrs["units"] == "kg m-2":
-        snt = snt / 10  # kg/m² == 1mm --> Transformation 1mm = 1cm/10
-        snt.attrs["units"] = "cm"
-    else:
-        sys.exit("snow units are not in kg m-2")
+    attrs = deepcopy(snw.attrs)
+    snw = xclim.core.units.convert_units_to(snw, "mm", context="hydro")
+    # xclim expects precipitation and thus writes wrong attributes.
+    snw.attrs.update(attrs)
+    snw.attrs["units"] = "mm"
 
     winter_start = xclim.indices.snd_season_start(
-        snd=snt, thresh=thresh, window=window_wint_start, freq="YS-JUL"
+        snd=snw, thresh=thresh, window=window_wint_start, freq="YS-JUL"
     )
-    winter_start = winter_start.assign_coords({"year": winter_start.time.dt.year})
-    winter_start = winter_start.swap_dims({"time": "year"})
 
-    winter_end = xclim.indices.snd_season_end(
-        snd=snt, thresh=thresh, window=window_wint_end, freq="YS"
+    # Summer ends when the winter starts, or at the end of the year
+    summer_end = (
+        xr.where(winter_start > 182, winter_start - 1, 366)
+        .assign_coords({"year": winter_start.time.dt.year})
+        .swap_dims({"time": "year"})
+        .drop_vars("time")
+        .sel(year=slice(min(snw.time.dt.year), max(snw.time.dt.year)))
     )
+
+    # YS-JUL shifts the start by a year. Since we are looking for the dates in spring and summer, we need to add a year.
+    winter_start = winter_start.assign_coords({"year": winter_start.time.dt.year + 1})
+    winter_start = winter_start.swap_dims({"time": "year"}).drop_vars("time")
+    winter_start = winter_start.sel(
+        year=slice(min(snw.time.dt.year), max(snw.time.dt.year))
+    )  # The last year is not complete
+    mask = xr.where(winter_start.isnull(), np.nan, 1)
+    winter_start = (
+        winter_start.where(winter_start <= 182, 1) * mask
+    )  # Set to 1 where winter started before January 1st
+
+    winter_end = (
+        xclim.indices.snd_season_end(
+            snd=snw, thresh=thresh, window=window_wint_end, freq="YS"
+        )
+        - 1
+    )  # xclim gives the first day without snow, we want the last day with snow
     winter_end = winter_end.assign_coords({"year": winter_end.time.dt.year})
-    winter_end = winter_end.swap_dims({"time": "year"})
+    winter_end = winter_end.swap_dims({"time": "year"}).drop_vars("time")
+    winter_end = winter_end.where(
+        winter_end < summer_end, summer_end - 1
+    )  # Winter can't end after summer
+    mask = xr.where(winter_start.isnull(), np.nan, 1)
+    winter_end = winter_end * mask
+
+    # Summer starts when winter ends, or at the beginning of the year
+    summer_start = xr.where(winter_end.isnull(), 1, winter_end + 1)
 
     spring_start = winter_end - spr_start
-    spring_start = spring_start.where(spring_start >= 1, 1)
+    spring_start = spring_start.where(spring_start >= 1, 1) * mask
     spring_end = winter_end + spr_end
 
-    mask = xr.where(winter_start.isnull(), np.nan, 1)
-    mask = mask.drop_sel(year=max(winter_start.time.dt.year))
-    mask["year"] = mask.year + 1
-    winter_end = winter_end * mask
-    array_winter_end = xr.ones_like(snt).groupby(snt.time.dt.year) * (winter_end)
-    condition1 = xr.ones_like(snt).groupby(snt.time.dt.year) * (
-        winter_start.drop_vars("time")
+    # Create the masks
+    def _create_mask(group, start, end):
+        year = group.time.dt.year[0]
+        s = start.sel(year=year)
+        e = end.sel(year=year)
+        year_mask = (group.time.dt.dayofyear >= s) & (group.time.dt.dayofyear <= e)
+        return year_mask
+
+    summer_mask = (
+        xr.zeros_like(snw)
+        .groupby("time.year")
+        .map(_create_mask, start=summer_start, end=summer_end)
+        .drop_vars("year")
+        .astype(int)
+    )
+    spring_mask = (
+        xr.zeros_like(snw)
+        .groupby("time.year")
+        .map(_create_mask, start=spring_start, end=spring_end)
+        .drop_vars("year")
+        .astype(int)
     )
 
-    # Set NaN when the winter start before july 1rst
-    mask = xr.where(condition1 >= 182, 1, np.nan)
-    condition1 = condition1 * mask
+    summer_mask.name = "mask_summer"
+    summer_mask.attrs = {
+        "long_name": "Summer mask",
+        "description": f"Mask defining the summer season based on a SWE threshold of {thresh}. "
+        f"Winter starts when the SWE is above the threshold for at least "
+        f"{window_wint_start} days and ends when it is below the threshold "
+        f"for at least {window_wint_end} days.",
+    }
+    summer_mask.attrs["units"] = ""
+    spring_mask.name = "mask_spring"
+    spring_mask.attrs = {
+        "long_name": "Spring mask",
+        "description": f"Mask defining the spring season based on a SWE threshold of {thresh}. "
+        f"Winter starts when the SWE is above the threshold for at least "
+        f"{window_wint_start} days and ends when it is below the threshold "
+        f"for at least {window_wint_end} days. Spring starts {spr_start} days "
+        f"before the end of winter and ends {spr_end} days after the end of winter.",
+    }
+    spring_mask.attrs["units"] = ""
 
-    winter_start["year"] = winter_start.year + 1
-    condition2 = xr.ones_like(snt).groupby(snt.time.dt.year) * (
-        winter_start.drop_vars("time")
+    return xr.Dataset(
+        {
+            "mask_spring": spring_mask.where(spring_mask == 1),
+            "mask_summer": summer_mask.where(summer_mask == 1),
+        }
     )
-
-    # Set NaN when the winter start after july 1rst
-    mask = xr.where(condition2 < 182, 1, np.nan)
-    condition2 = condition2 * mask
-
-    # Make an array of julian days the same size as «snt»
-    array_days = xr.ones_like(snt) * snt.time.dt.dayofyear
-
-    a1 = array_days >= condition1
-    b1 = array_days < array_winter_end
-    c1 = a1 + b1
-    winter_mask_half1 = xr.where(c1 == 1, 1, 0)
-
-    a2 = array_days >= condition2
-    a2 = xr.where(a2, 1, 0)
-    b2 = array_days < array_winter_end
-    b2 = xr.where(b2, 1, 0)
-    c2 = a2 + b2
-    winter_mask_half2 = xr.where(c2 == 2, 1, 0)
-
-    winter_mask = (winter_mask_half1 + winter_mask_half2).drop_vars("year")
-    winter_mask = xr.where(winter_mask >= 1, 1, np.nan)
-
-    summer_mask = xr.where(winter_mask.isnull(), 1, np.nan)
-
-    # Spring mask
-    array_days = xr.ones_like(snt) * snt.time.dt.dayofyear
-    array_days_end_of_spring = xr.ones_like(snt).groupby(snt.time.dt.year) * (
-        spring_end.drop_vars(["time"])
-    )
-    array_days_start_of_spring = xr.ones_like(snt).groupby(snt.time.dt.year) * (
-        spring_start.drop_vars(["time"])
-    )
-
-    condition3 = array_days >= array_days_start_of_spring
-    condition4 = array_days <= array_days_end_of_spring
-
-    c3 = xr.where(condition3, 1, 0)
-    c4 = xr.where(condition4, 1, 0)
-    c = c3 + c4
-    spring_mask = xr.where(c == 2, 1, np.nan)
-
-    return xr.Dataset({"mask_spring": spring_mask, "mask_summer": summer_mask})
 
 
 def spatial_average_storm_configurations(da, radius):
@@ -469,14 +498,16 @@ def spatial_average_storm_configurations(da, radius):
             [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
         ],
     }
+    x = da.cf.axes["X"][0]
+    y = da.cf.axes["Y"][0]
 
     # Pixel size
-    dy = (da.y[1] - da.y[0]).values
-    dx = (da.x[1] - da.x[0]).values
+    dy = (da[y][1] - da[y][0]).values
+    dx = (da[x][1] - da[x][0]).values
 
     # Number of pixels in da
-    npy_da = len(da.y)
-    npx_da = len(da.x)
+    npy_da = len(da[y])
+    npx_da = len(da[x])
 
     spt_av_list = []
     for name, confi in dict_config.items():
@@ -497,8 +528,8 @@ def spatial_average_storm_configurations(da, radius):
             break
 
         # Number of times a configuration can be shifted in each axis
-        ny = len(da.y) - npy_confi + 1
-        nx = len(da.x) - npx_confi + 1
+        ny = len(da[y]) - npy_confi + 1
+        nx = len(da[x]) - npx_confi + 1
 
         # List with the configuration duplicated as many times as indicated by nx and nx.
         conf_y_ex = np.reshape(np.array(conf_y * ny), (ny, len(conf_y)))
@@ -516,10 +547,10 @@ def spatial_average_storm_configurations(da, radius):
         shifted_confi = list(product(pos_y, pos_x))
 
         for shift, confi_shifted in enumerate(shifted_confi):
-            matrix_mask = np.full((len(da.y), len(da.x)), np.nan)
+            matrix_mask = np.full((len(da[y]), len(da[x])), np.nan)
             matrix_mask[(confi_shifted[0], confi_shifted[1])] = 1
             da_mask = da * matrix_mask
-            da_mean = da_mask.mean(dim=["x", "y"]).expand_dims(
+            da_mean = da_mask.mean(dim=[x, y]).expand_dims(
                 dim={"conf": [name + "_" + str(shift)]}
             )
 
