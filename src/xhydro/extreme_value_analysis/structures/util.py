@@ -27,7 +27,7 @@ __all__ = [
 
 def jl_variable_fit_parameters(covariate_list: list[list]):
     r"""
-    Transform a list of lists, into a julia.Vector of julia.Extremes.Variable objects.
+    Transform a list of lists into a julia.Vector of julia.Extremes.Variable objects.
 
     Parameters
     ----------
@@ -55,7 +55,7 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
 
 
 def param_cint(
-    jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95
+    jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95, main_dim_length: int = 1, return_period: int = 100
 ) -> dict[str, list[float]]:
     r"""
     Return a list of parameters and confidence intervals for a given Julia fitted model.
@@ -79,6 +79,13 @@ def param_cint(
         A dictionary containing the estimated parameters and the lower and upper bounds for the confidence interval
         of each parameter.
     """
+    # TODO: return_level of appropriate length
+    empty_return = {
+            "params": [np.nan for _ in range(nparams)],
+            "cint_lower": [np.nan for _ in range(nparams)],
+            "cint_upper": [np.nan for _ in range(nparams)],
+            "return_level": [np.nan for _ in range(main_dim_length)]
+        }
     if bayesian:
         jl_params_sims = jl_model.sim.value
         py_params_sims = [
@@ -95,17 +102,24 @@ def param_cint(
         cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
         cint_lower = [interval[0] for interval in cint]
         cint_upper = [interval[1] for interval in cint]
-        return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper}
     except JuliaError:
         warnings.warn(
             f"There was an error in computing confidence interval. "
-            f"Returned parameter and confidence interval values are numpy.nan"
+            f"Returned parameter, confidence interval and return level values are numpy.nan"
         )
-        return {
-            "params": [np.nan for _ in range(nparams)],
-            "cint_lower": [np.nan for _ in range(nparams)],
-            "cint_upper": [np.nan for _ in range(nparams)],
-        }
+        return empty_return
+    try:
+        jl_return_level = Extremes.returnlevel(jl_model, return_period)
+        py_return_level = jl_vector_to_py_list(jl_return_level.value)
+        # print("return level 100: ", py_return_level, "\n")
+    except JuliaError:
+        warnings.warn(
+            f"There was an error in computing return level. "
+            f"Returned parameter, confidence interval and return level values are numpy.nan"
+        )
+        return empty_return
+    return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper, "return_level": py_return_level}
+
 
 
 def insert_covariates(
