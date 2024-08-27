@@ -372,7 +372,16 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
             np.nan,
             np.nan,
         )  # Returning nans for H, b4, sigma4, tau4_r
-
+    except Exception as error:
+        if "Failed to converge" in repr(error):
+            return (
+                np.nan,
+                np.nan,
+                np.nan,
+                np.nan,
+            )  # Returning nans for H, b4, sigma4, tau4_r
+        else:
+            raise error
     n_sim = 500  # Nbre de "regions virtuelles" simulees
 
     def calc_tsim(kappa_param, longeur, n_sim):
