@@ -325,9 +325,7 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
 
 def _calculate_gev_tau4(ds_groups, ds_moments_groups):  # calcul indice de crue
     # H&W
-    lambda_r_1, lambda_r_2, lambda_r_3 = calculate_lambda_r(
-        ds_groups, ds_moments_groups
-    )
+    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
     kappa = _calc_kappa(lambda_r_2, lambda_r_3)
 
@@ -538,7 +536,7 @@ def _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp):  # calcul indice d
     # xi    = parametre d'echelle (scale)
     # kappa = parametre de forme (shape)
 
-    kappa = calculate_kappa(lambda_r_2, lambda_r_3)
+    kappa = _calc_kappa(lambda_r_2, lambda_r_3)
 
     term = xr.apply_ufunc(_calc_gamma, (1 + kappa), vectorize=True)
 
