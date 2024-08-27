@@ -1,11 +1,11 @@
 default_language_version:
-    python: python3
+  python: python3
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.17.0
     hooks:
-    -   id: pyupgrade
+      - id: pyupgrade
         args: [ '--py39-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -33,7 +33,7 @@ repos:
       - id: python-use-type-annotations
       - id: rst-inline-touching-normal
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
@@ -42,13 +42,13 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.5.7
     hooks:
       - id: ruff
         args: [ '--fix' ]
-#      - id: format
+      # - id: format
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies: [ 'flake8-rst-docstrings' ]
@@ -83,9 +83,14 @@ repos:
     rev: v1.35.1
     hooks:
       - id: yamllint
-        args: ['--config-file=.yamllint.yaml']
+        args: [ '--config-file=.yamllint.yaml' ]
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.8.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: ^docs/|^tests/
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.6
+    rev: 0.29.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
@@ -95,13 +100,13 @@ repos:
       - id: check-useless-excludes
 
 ci:
-    autofix_commit_msg: |
-        [pre-commit.ci] auto fixes from pre-commit.com hooks
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
 
-        for more information, see https://pre-commit.ci
-    autofix_prs: true
-    autoupdate_branch: ''
-    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-    autoupdate_schedule: quarterly
-    skip: []
-    submodules: false
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: quarterly
+  skip: [ ]
+  submodules: false

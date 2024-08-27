@@ -42,7 +42,7 @@ dependencies = [
   "haversine",
   "leafmap",
   "numpy <2.0.0",
-  "pandas",
+  "pandas >=2.2.0",
   "planetary-computer",
   "pooch >=1.8.0",
   "pydantic >=2.0,<2.5.3",
@@ -53,7 +53,7 @@ dependencies = [
   "ravenpy >=0.15.0",
   "rioxarray",
   "spotpy",
-  "stackstac",
+  "stackstac >=0.5.1",
   "statsmodels",
   "tqdm",
   "xarray>=2023.11.0",
@@ -67,24 +67,25 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "pip >=24.0",
-  "bump-my-version >=0.23.0",
-  "watchdog >=3.0.0",
-  "flake8 >=7.0.0",
+  "pip >=24.2.0",
+  "bump-my-version >=0.25.1",
+  "watchdog >=4.0.0",
+  "flake8 >=7.1.1",
   "flake8-alphabetize >=0.0.21",
   "flake8-rst-docstrings >=0.3.0",
-  "flit >=3.9.0",
-  "tox >=4.15.1",
+  "flit >=3.9.0,<4.0",
+  "tox >=4.17.1",
   "coverage >=7.5.0",
-  "coveralls >=4.0.0",
+  "coveralls >=4.0.1",
   "mypy",
-  "pytest >=7.3.1",
-  "pytest-cov >=4.0.0",
-  "black ==24.4.2",
+  "numpydoc >=1.8.0",
+  "pytest >=8.3.2",
+  "pytest-cov >=5.0.0",
+  "black ==24.8.0",
   "blackdoc ==0.3.9",
   "isort ==5.13.2",
-  "pre-commit >=3.3.2",
-  "ruff >=0.4.0"
+  "pre-commit >=3.5.0",
+  "ruff >=0.5.7"
 ]
 docs = [
   # Documentation and examples
@@ -108,8 +109,8 @@ all = ["xhydro[dev]", "xhydro[docs]"]
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
 "Changelog" = "https://xhydro.readthedocs.io/en/stable/changelog.html"
-"Source" = "https://github.com/hydrologie/xhydro"
 "Issue tracker" = "https://github.com/hydrologie/xhydro/issues"
+"Source" = "https://github.com/hydrologie/xhydro"
 
 [tool]
 
@@ -122,7 +123,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.7-dev.1"
+current_version = "0.3.7-dev.2"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -262,12 +263,19 @@ checks = [
   "GL01",
   "SA01"
 ]
+# remember to use single quotes for regex in TOML
 exclude = [
   # don't report on objects that match any of these regex
   '\.undocumented_method$',
   '\.__repr__$',
   # any object starting with an underscore is a private object
   '\._\w+'
+]
+override_SS05 = [
+  # override SS05 to allow docstrings starting with these words
+  '^Process ',
+  '^Assess ',
+  '^Access '
 ]
 
 [tool.pytest.ini_options]
@@ -342,7 +350,7 @@ max-complexity = 15
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["E402"]
 "src/xhydro/**/__init__.py" = ["F401", "F403"]
-"tests/**/*.py" = ["D100", "D101", "D102", "D103", "S101"]
+"tests/**" = ["D100", "D101", "D102", "D103", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180
