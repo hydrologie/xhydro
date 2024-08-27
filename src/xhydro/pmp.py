@@ -203,15 +203,26 @@ def precipitable_water_100y(
     pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
     if rebuild_time:
+        hour = np.unique(pw.time.dt.hour)
+        if len(hour) > 1:
+            raise ValueError("The time dimension must be homogeneous.")
+        hour = hour[0]
         pw100_m = pw100_m.expand_dims(dim={"year": np.unique(pw.time.dt.year)})
         pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
         if isinstance(pw.indexes["time"], pd.core.indexes.datetimes.DatetimeIndex):
             time_coord = pd.DatetimeIndex(
-                pd.to_datetime({"year": pw100_m.year, "month": pw100_m.month, "day": 1})
+                pd.to_datetime(
+                    {
+                        "year": pw100_m.year,
+                        "month": pw100_m.month,
+                        "day": 1,
+                        "hour": hour,
+                    }
+                )
             )
         elif isinstance(pw.indexes["time"], xr.coding.cftimeindex.CFTimeIndex):
             time_coord = [
-                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1)
+                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1, hour)
                 for y, m in zip(
                     pw100_m.year.values,
                     pw100_m.month.values,
@@ -237,9 +248,10 @@ def compute_spring_and_summer_mask(
     snw: xr.DataArray,
     thresh: str = "1 cm",
     window_wint_start: int = 14,
-    window_wint_end: int = 90,
+    window_wint_end: int = 45,
     spr_start: int = 60,
     spr_end: int = 30,
+    freq: str = "YS-JUL",
 ):
     """Create a mask that defines the spring and summer seasons based on the snow water equivalent.
 
@@ -257,6 +269,8 @@ def compute_spring_and_summer_mask(
         Number of days before the end of winter to define the start of spring.
     spr_end : int
         Number of days after the end of winter to define the end of spring.
+    freq : str
+        Frequency of the time axis (annual frequency). Defaults to "YS-JUL".
 
     Returns
     -------
@@ -271,19 +285,24 @@ def compute_spring_and_summer_mask(
     snw.attrs["units"] = "mm"
 
     winter_start = xclim.indices.snd_season_start(
-        snd=snw, thresh=thresh, window=window_wint_start, freq="YS-JUL"
+        snd=snw, thresh=thresh, window=window_wint_start, freq=freq
     )
+    first_day = int(winter_start.time.dt.dayofyear[0])
+    if first_day < 182:
+        raise NotImplementedError(
+            "Frequencies starting before July 1st are not yet supported."
+        )
 
-    # Summer ends when the winter starts, or at the end of the year
+    # Summer ends when winter starts, or at the end of the year
     summer_end = (
-        xr.where(winter_start > 182, winter_start - 1, 366)
+        xr.where(winter_start > first_day, winter_start - 1, 366)
         .assign_coords({"year": winter_start.time.dt.year})
         .swap_dims({"time": "year"})
         .drop_vars("time")
         .sel(year=slice(min(snw.time.dt.year), max(snw.time.dt.year)))
     )
 
-    # YS-JUL shifts the start by a year. Since we are looking for the dates in spring and summer, we need to add a year.
+    # YS-JUL and similar freqs shifts the start by a year. Since we are looking for dates in spring and summer, we need to add a year.
     winter_start = winter_start.assign_coords({"year": winter_start.time.dt.year + 1})
     winter_start = winter_start.swap_dims({"time": "year"}).drop_vars("time")
     winter_start = winter_start.sel(
@@ -291,22 +310,26 @@ def compute_spring_and_summer_mask(
     )  # The last year is not complete
     mask = xr.where(winter_start.isnull(), np.nan, 1)
     winter_start = (
-        winter_start.where(winter_start <= 182, 1) * mask
+        winter_start.where(winter_start <= first_day, 1) * mask
     )  # Set to 1 where winter started before January 1st
 
     winter_end = (
         xclim.indices.snd_season_end(
-            snd=snw, thresh=thresh, window=window_wint_end, freq="YS-JUL"
+            snd=snw, thresh=thresh, window=window_wint_end, freq=freq
         )
         - 1
     )  # xclim gives the first day without snow, we want the last day with snow
+    winter_end = winter_end.where(
+        winter_end < first_day - 2
+    )  # If winter never ends, xclim gives the last day of the year
+
     winter_end = winter_end.assign_coords({"year": winter_end.time.dt.year + 1})
     winter_end = winter_end.swap_dims({"time": "year"}).drop_vars("time")
     winter_end = winter_end.sel(
         year=slice(min(snw.time.dt.year), max(snw.time.dt.year))
     )  # The last year is not complete
     winter_end = xr.where(
-        winter_end >= 182, 1, winter_end
+        winter_end >= first_day, 1, winter_end
     )  # If winter ends the autumn before, set to 1
     winter_end = winter_end.where(
         winter_end < summer_end, summer_end - 1
@@ -317,7 +340,7 @@ def compute_spring_and_summer_mask(
     # Sanity check
     if (winter_end.isnull() & winter_start.notnull()).any():
         raise ValueError(
-            "Winter starts but never ends. Check your `window` parameters."
+            "Winter starts but never ends. Check your `freq` or `window` parameters."
         )
 
     # Summer starts when winter ends, or at the beginning of the year
