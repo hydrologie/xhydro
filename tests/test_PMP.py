@@ -4,65 +4,72 @@ import pandas as pd  # noqa: E402
 import pytest  # noqa: E402
 import xarray as xr  # noqa: E402
 from pint.errors import DimensionalityError
-from xclim.testing import open_dataset
 from xclim.testing.helpers import test_timeseries as timeseries
 
 from xhydro import pmp  # noqa: E402
 
 
 class TestPMP:
-    # Prepare a dataset with the required fields
-    ds = open_dataset("ERA5/daily_surface_cancities_1990-1993.nc")[
-        ["huss", "pr", "snw"]
-    ]
-    ds = ds.rename({"huss": "hus"})
+    @staticmethod
+    def prepare_dataset(open_dataset, dataset):
+        # Prepare a dataset with the required fields
+        ds = open_dataset(dataset)[["huss", "pr", "snw"]]
+        ds = ds.rename({"huss": "hus"})
 
-    # Fake Geopotential field
-    np.random.seed(42)
-    zg = timeseries(
-        np.random.rand(1461) * 1000,
-        variable="geopotential",
-        start="1990-01-01",
-        freq="D",
-    ).expand_dims(location=ds.location)
-    zg.attrs = {
-        "units": "m",
-        "long_name": "Geopotential Height",
-        "standard_name": "geopotential_height",
-    }
-    ds["zg"] = zg
-
-    # Expand the dataset to have a 3D field
-    ds = xr.concat(
-        [
-            ds.expand_dims(plev=[1000]),
-            (ds * 1.1).expand_dims(plev=[1500]),
-            (ds * 1.2).expand_dims(plev=[2000]),
-        ],
-        dim="plev",
-    )
-    ds["plev"].attrs = {
-        "units": "Pa",
-        "long_name": "pressure level",
-        "standard_name": "air_pressure",
-        "axis": "Z",
-        "positive": "down",
-    }
-
-    # Fake orography field
-    ds["orog"] = xr.DataArray(
-        np.array([50, 100, 95, 25, 450]),
-        dims=["location"],
-        coords={"location": ds.location},
-        attrs={
+        # Fake Geopotential field
+        np.random.seed(42)
+        zg = timeseries(
+            np.random.rand(1461) * 1000,
+            variable="geopotential",
+            start="1990-01-01",
+            freq="D",
+        ).expand_dims(location=ds.location)
+        zg.attrs = {
             "units": "m",
-            "long_name": "Orography",
-            "standard_name": "surface_altitude",
-        },
-    )
+            "long_name": "Geopotential Height",
+            "standard_name": "geopotential_height",
+        }
+        ds["zg"] = zg
 
-    def test_major_precipitation_events(self):
-        da = self.ds.pr.sel(location="Halifax").isel(plev=0)
+        # Expand the dataset to have a 3D field
+        ds = xr.concat(
+            [
+                ds.expand_dims(plev=[1000]),
+                (ds * 1.1).expand_dims(plev=[1500]),
+                (ds * 1.2).expand_dims(plev=[2000]),
+            ],
+            dim="plev",
+        )
+        ds["plev"].attrs = {
+            "units": "Pa",
+            "long_name": "pressure level",
+            "standard_name": "air_pressure",
+            "axis": "Z",
+            "positive": "down",
+        }
+
+        # Fake orography field
+        ds["orog"] = xr.DataArray(
+            np.array([50, 100, 95, 25, 450]),
+            dims=["location"],
+            coords={"location": ds.location},
+            attrs={
+                "units": "m",
+                "long_name": "Orography",
+                "standard_name": "surface_altitude",
+            },
+        )
+
+        return ds
+
+    def test_major_precipitation_events(self, open_dataset):
+        da = (
+            self.prepare_dataset(
+                open_dataset, "ERA5/daily_surface_cancities_1990-1993.nc"
+            )
+            .pr.sel(location="Halifax")
+            .isel(plev=0)
+        )
 
         result = pmp.major_precipitation_events(da, windows=[1, 2], quantile=0.9)
 
@@ -105,10 +112,12 @@ class TestPMP:
             ),
         )
 
-    def test_precipitable_water(self):
-        result = pmp.precipitable_water(
-            self.ds.hus, self.ds.zg, self.ds.orog, windows=[1, 2]
+    def test_precipitable_water(self, open_dataset):
+        ds = self.prepare_dataset(
+            open_dataset, "ERA5/daily_surface_cancities_1990-1993.nc"
         )
+
+        result = pmp.precipitable_water(ds.hus, ds.zg, ds.orog, windows=[1, 2])
 
         np.testing.assert_array_almost_equal(
             result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
