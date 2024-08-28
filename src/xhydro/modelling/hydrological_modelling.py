@@ -1,6 +1,7 @@
 """Hydrological modelling framework."""
 
 import inspect
+import warnings
 from copy import deepcopy
 from os import PathLike
 from pathlib import Path
@@ -156,6 +157,8 @@ def format_input(
 
     Hydrotel requires the following variables: ["pr", "tasmax", "tasmin", "time", "latitude", "longitude", "vertical"].
     """
+    ds = ds.copy()
+
     if model == "Hydrotel":
         # Convert units
         ds["pr"] = xc.units.convert_units_to(ds["pr"], "mm", context="hydro")
@@ -164,6 +167,18 @@ def format_input(
         ds[ds.cf["vertical"].name] = xc.units.convert_units_to(
             ds[ds.cf["vertical"].name], "m"
         )
+
+        # Ensure that longitude is in the range [-180, 180]
+        # This tries guessing if lons are wrapped around at 180+ but without much information, this might not be true
+        lon = ds[ds.cf["longitude"].name]
+        if np.min(lon) >= -180 and np.max(lon) <= 180:
+            pass
+        elif np.min(lon) >= 0 and np.max(lon) <= 360:
+            warnings.warn(
+                "Longitude values appear to be in the range [0, 360]. They will be converted to [-180, 180]."
+            )
+            with xr.set_options(keep_attrs=True):
+                ds[ds.cf["longitude"].name] = ds[ds.cf["longitude"].name] - 180
 
         # Convert calendar
         # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
@@ -225,6 +240,7 @@ def format_input(
 
         out = (ds, cfg)
         if save_as:
+            Path(save_as).parent.mkdir(parents=True, exist_ok=True)
             with Path(save_as).with_suffix(".nc.config").open("w") as f:
                 for k, v in cfg.items():
                     f.write(f"{k}; {v}\n")
