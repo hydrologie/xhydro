@@ -206,20 +206,28 @@ def precipitable_water_100y(
         pw100_m = pw100_m.expand_dims(dim={"year": np.unique(pw.time.dt.year)})
         pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
 
-        time_coord = np.concatenate(
-            [
+        time_coord = [
+            (
                 pw.time.sel(
                     time=(pw.time.dt.month == m)
                     & (pw.time.dt.year == y)
                     & (pw.time.dt.day == 1)
+                ).values[0]
+                if len(
+                    pw.time.sel(
+                        time=(pw.time.dt.month == m)
+                        & (pw.time.dt.year == y)
+                        & (pw.time.dt.day == 1)
+                    )
                 )
-                or np.array([np.datetime64("NaT")])
-                for y, m in zip(
-                    pw100_m.year.values,
-                    pw100_m.month.values,
-                )
-            ]
-        )
+                > 0
+                else np.array(np.datetime64("NaT"))
+            )
+            for y, m in zip(
+                pw100_m.year.values,
+                pw100_m.month.values,
+            )
+        ]
 
         pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
         pw100_m = pw100_m.where(pw100_m.time != np.datetime64("NaT"), drop=True)
