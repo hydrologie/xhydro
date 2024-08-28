@@ -203,35 +203,26 @@ def precipitable_water_100y(
     pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
     if rebuild_time:
-        hour = np.unique(pw.time.dt.hour)
-        if len(hour) > 1:
-            raise ValueError("The time dimension must be homogeneous.")
-        hour = hour[0]
         pw100_m = pw100_m.expand_dims(dim={"year": np.unique(pw.time.dt.year)})
         pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
-        if isinstance(pw.indexes["time"], pd.core.indexes.datetimes.DatetimeIndex):
-            time_coord = pd.DatetimeIndex(
-                pd.to_datetime(
-                    {
-                        "year": pw100_m.year,
-                        "month": pw100_m.month,
-                        "day": 1,
-                        "hour": hour,
-                    }
+
+        time_coord = np.concatenate(
+            [
+                pw.time.sel(
+                    time=(pw.time.dt.month == m)
+                    & (pw.time.dt.year == y)
+                    & (pw.time.dt.day == 1)
                 )
-            )
-        elif isinstance(pw.indexes["time"], xr.coding.cftimeindex.CFTimeIndex):
-            time_coord = [
-                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1, hour)
+                or np.array([np.datetime64("NaT")])
                 for y, m in zip(
                     pw100_m.year.values,
                     pw100_m.month.values,
                 )
             ]
-        else:
-            raise ValueError("The type of 'time' was not understood.")
+        )
 
         pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
+        pw100_m = pw100_m.where(pw100_m.time != np.datetime64("NaT"), drop=True)
         pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
         pw100_m = (
             pw100_m.interp_like(pw)
