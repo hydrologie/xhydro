@@ -166,12 +166,11 @@ def format_input(
         )
 
         # Convert calendar
-        try:
+        # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
+        if xs.__version__ > "0.9.1":
             convert_calendar_kwargs = {"target": "standard", "use_cftime": False}
-        except AttributeError:
-            convert_calendar_kwargs = {
-                "target": "default"
-            }  # FIXME: xscen calls the old xclim function
+        else:
+            convert_calendar_kwargs = {"target": "default"}
         if isinstance(convert_calendar_missing, dict):
             missing_by_var = convert_calendar_missing
         else:
@@ -200,7 +199,7 @@ def format_input(
         if (len(ds.cf["latitude"].dims) == 2) or (ds.cf["latitude"].name in ds.dims):
             mask = ~ds.pr.isnull().all(
                 dim="time"
-            )  # FIXME: Temporary fix for xscen 0.9.1
+            )  # FIXME: xscen 0.9.1 currently requires a separate mask.
             ds = xs.utils.stack_drop_nans(ds, mask=mask, new_dim="station")
 
             # Add station ID
@@ -215,8 +214,8 @@ def format_input(
         cfg = {
             "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
             "STATION_DIM_NAME": station_dim,
-            "LATITUDE_NAME": ds.cf["latitude"],
-            "LONGITUDE_NAME": ds.cf["longitude"],
+            "LATITUDE_NAME": ds.cf["latitude"].name,
+            "LONGITUDE_NAME": ds.cf["longitude"].name,
             "ELEVATION_NAME": ds.cf["vertical"].name,
             "TIME_NAME": ds.cf["time"].name,
             "TMIN_NAME": "tasmin",
