@@ -11,9 +11,11 @@ from xhydro import pmp  # noqa: E402
 
 class TestPMP:
     @staticmethod
-    def prepare_dataset(open_dataset, dataset):
+    def prepare_era5(open_dataset):
         # Prepare a dataset with the required fields
-        ds = open_dataset(dataset)[["huss", "pr", "snw"]]
+        ds = open_dataset("ERA5/daily_surface_cancities_1990-1993.nc")[
+            ["huss", "pr", "snw"]
+        ]
         ds = ds.rename({"huss": "hus"})
 
         # Fake Geopotential field
@@ -63,13 +65,7 @@ class TestPMP:
         return ds
 
     def test_major_precipitation_events(self, open_dataset):
-        da = (
-            self.prepare_dataset(
-                open_dataset, "ERA5/daily_surface_cancities_1990-1993.nc"
-            )
-            .pr.sel(location="Halifax")
-            .isel(plev=0)
-        )
+        da = self.prepare_era5(open_dataset).pr.sel(location="Halifax").isel(plev=0)
 
         result = pmp.major_precipitation_events(da, windows=[1, 2], quantile=0.9)
 
@@ -113,9 +109,7 @@ class TestPMP:
         )
 
     def test_precipitable_water(self, open_dataset):
-        ds = self.prepare_dataset(
-            open_dataset, "ERA5/daily_surface_cancities_1990-1993.nc"
-        )
+        ds = self.prepare_era5(open_dataset)
 
         result = pmp.precipitable_water(ds.hus, ds.zg, ds.orog, windows=[1, 2])
 
