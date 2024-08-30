@@ -161,7 +161,9 @@ def calc_moments_iter(ds_samples):
     return xr.concat(ds_mom, dim="samples")
 
 
-def calc_q_iter(bv, var, ds_groups, ds_moments_iter, return_periods):
+def calc_q_iter(
+    bv, var, ds_groups, ds_moments_iter, return_periods, small_regions_threshold=5
+):
     """
     Calculate quantiles for each bootstrap sample and group.
 
@@ -177,6 +179,8 @@ def calc_q_iter(bv, var, ds_groups, ds_moments_iter, return_periods):
         The L-moments for each bootstrap sample.
     return_periods : array-like
         The return periods to calculate quantiles for.
+    small_regions_threshold : int, optional
+        The threshold for removing small regions. Default is 5.
 
     Returns
     -------
@@ -208,7 +212,7 @@ def calc_q_iter(bv, var, ds_groups, ds_moments_iter, return_periods):
     )
     # Avec les obs et mles moments de même dimensions, on calcul Q
     qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods)
-    qt = remove_small_regions(qt)
+    qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # pour chaque bv on stack les régions et bootstat et on calcul les centiles
     return (
         qt.rename({"samples": "obs_samples"})
@@ -223,8 +227,8 @@ def generate_combinations(da, n):
 
     Parameters
     ----------
-    da : (pd.DataFrame):
-        Input DataFrame.
+    da : (xarray.DataArray):
+        Input DataArray.
     n : (int)
         Number of indices to omit in each combination.
 

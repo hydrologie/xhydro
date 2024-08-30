@@ -361,8 +361,6 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
     # Kappa distribution
     # Fit a kappa distribution to the region average L-moment ratios:
     try:
-        from .distr import kap  # Temp fix to replace lmom3 until issue is fixed
-
         kappa_param = kap.lmom_fit(lmom_ratios=[1, tau_r, tau3_r, tau4_r])
     except ValueError:
 
