@@ -187,15 +187,14 @@ def calc_q_iter(
     xarray.DataArray
         Quantiles for each bootstrap sample and group.
     """
-    # try:
-    # On sélectionne les groupes pour 1 seul bv bv
+    # We select groups for only one id
     ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", "all")
     ds_mom = []
 
-    # Pour chacun de ces groupes, on trouve quels bv en font partie
+    # For each group, we find which id are in it
     for group_id in ds_temp.group_id.values:
         id_list = ds_groups.sel(group_id=group_id).dropna("id", how="all").id.values
-        # On prends les moments avec le ressampel fait précédemment, on on cré un ds_moment_group avec les itérations
+        # We use moments with ressample previously done, and we create ds_moment_group with iterations
         ds_mom.append(
             ds_moments_iter[[var]]
             .sel(id=id_list)
@@ -203,14 +202,14 @@ def calc_q_iter(
             .expand_dims("group_id")
         )
 
-    # on concatene pour les différents group_id
+    # Concat along group_id
     ds_moments_groups = xr.concat(ds_mom, dim="group_id")
     ds_groups = (
         ds_groups[[var]]
         .sel(group_id=ds_moments_groups.group_id.values)
         .dropna(dim="id", how="all")
     )
-    # Avec les obs et mles moments de même dimensions, on calcul Q
+    # With obs and moments  of same dims, we calculate
     qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods)
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # pour chaque bv on stack les régions et bootstat et on calcul les centiles
