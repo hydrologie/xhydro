@@ -193,7 +193,7 @@ def moment_l_vector(x_vec):
 
 
 # Calcul des moments L
-def _moment_l(x=[], ordered_dict=False):
+def _moment_l(x=[]):
     """
     Calculate L-moments for a given dataset.
 
@@ -209,9 +209,8 @@ def _moment_l(x=[], ordered_dict=False):
 
     Returns
     -------
-    OrderedDict or list : Depending on the ordered_dict parameter, returns either:
-        - OrderedDict with keys: "loc" (lambda1), "scale" (lambda2), "tau" (L-CV), "tau3" (L-CS), "tau4" (L-CK)
-        - List in the order: [lambda1, lambda2, lambda3, tau, tau3, tau4]
+    list :
+        Returns List in the order: [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
     L-moments calculated:
     - lambda1: First L-moment (location)
@@ -255,19 +254,8 @@ def _moment_l(x=[], ordered_dict=False):
     tau = lambda2 / lambda1  # L_CV # tau2 dans Anctil, tau dans Hosking et al.
     tau3 = lambda3 / lambda2  # L_CS
     tau4 = lambda4 / lambda2  # L_CK
-    # Not sure its still used, to check
-    if ordered_dict:
-        return OrderedDict(
-            [
-                ("loc", lambda1),
-                ("scale", lambda2),
-                ("tau", tau),
-                ("tau3", tau3),
-                ("tau4", tau4),
-            ]
-        )
-    else:
-        return [lambda1, lambda2, lambda3, tau, tau3, tau4]
+
+    return [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
 
 # Faire un fct qui appele
