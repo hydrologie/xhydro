@@ -183,7 +183,7 @@ def format_input(
         # Convert calendar
         # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
         if xs.__version__ > "0.9.1":
-            convert_calendar_kwargs = {"target": "standard", "use_cftime": False}
+            convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
         else:
             convert_calendar_kwargs = {"target": "default"}
         if isinstance(convert_calendar_missing, dict):
