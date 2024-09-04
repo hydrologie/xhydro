@@ -222,10 +222,6 @@ def _moment_l(x):
     - NaN values are removed from the input data before calculations.
     - The input data is sorted in descending order for the calculations.
     """
-    from collections import OrderedDict
-
-    import numpy as np
-
     x = x[~np.isnan(x)]
 
     # Sorting the data in descending order
@@ -323,8 +319,6 @@ def _calculate_gev_tau4(ds_groups, ds_moments_groups):
 
 def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
 
-    import numpy as np
-
     # We remove nan or 0 length
     # If not enough values to calulculate some moments, other moments are removed as well
     bool_maks = (n != 0) & (~np.isnan(t)) & (~np.isnan(t3)) & (~np.isnan(t4))
@@ -365,7 +359,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
             raise error
     n_sim = 500  # Number of "virtual regions" simulated
 
-    def calc_tsim(kappa_param, longeur, n_sim):
+    def _calc_tsim(kappa_param, longeur, n_sim):
 
         # For each station, we get n_sim vectors de same lenght than the observations
         rvs = kap.rvs(
@@ -378,7 +372,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
 
         return _momentl_optim(rvs)
 
-    t_sim_tau4m = [calc_tsim(kappa_param, longeur, n_sim) for longeur in n]
+    t_sim_tau4m = [_calc_tsim(kappa_param, length, n_sim) for length in n]
 
     t_sim = np.array(
         [tt[3] for tt in t_sim_tau4m]
@@ -405,7 +399,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
 
 
 # Calculating L-moments
-def _momentl_optim(x=[]):
+def _momentl_optim(x):
     if x.ndim == 1:
         x = x[~np.isnan(x)]
         # reverse sorting
@@ -436,7 +430,7 @@ def _momentl_optim(x=[]):
             x_sort.T,
         )[0]
     else:
-        print("Only 1d and 2d have been implemented")
+        raise NotImplementedError("Only 1d and 2d have been implemented")
 
     # Moment L
     lambda1 = b0
@@ -537,7 +531,7 @@ def _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp):
     xi = lambda_r_1 + (alpha * (term - 1)) / kappa
 
     # Calculating wanted return periods
-    t = xr.DataArray(data=rp, dims="rp").assign_coords(rp=rp)
+    t = xr.DataArray(data=rp, dims="return_period").assign_coords(return_period=rp)
 
     # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
     q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** kappa) / kappa
