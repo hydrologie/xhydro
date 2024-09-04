@@ -281,6 +281,8 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
     tau4 = ds_moments_groups.sel(lmom="tau4").load()
     longeur = ds_groups.count(dim="time").load()
 
+    station_dim = tau.cf.cf_roles["timeseries_id"][0]
+
     ds_h, ds_b4, ds_sigma4, ds_tau4_r = xr.apply_ufunc(
         _heterogeneite_et_score_z,
         kap,
@@ -288,7 +290,13 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
         tau,
         tau3,
         tau4,
-        input_core_dims=[[], ["id"], ["id"], ["id"], ["id"]],
+        input_core_dims=[
+            [],
+            [station_dim],
+            [station_dim],
+            [station_dim],
+            [station_dim],
+        ],
         output_core_dims=[[], [], [], []],
         vectorize=True,
     )
@@ -510,7 +518,8 @@ def calculate_rp_from_afr(ds_groups, ds_moments_groups, rp, l1=None):
     The function internally calls calculate_ic_from_AFR to compute the index flood.
     """
     if l1 is None:
-        l1 = ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all")
+        station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
+        l1 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
     return _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
 
 
@@ -559,8 +568,12 @@ def remove_small_regions(ds, thresh=5):
     xarray.Dataset
         The dataset with small regions removed.
     """
+    station_dim = ds.cf.cf_roles["timeseries_id"][0]
     for gr in ds.group_id:
-        if len(ds.sel(group_id=gr).dropna(dim="id", how="all").id) < thresh:
+        if (
+            len(ds.sel(group_id=gr).dropna(dim=station_dim, how="all")[[station_dim]])
+            < thresh
+        ):
             ds = ds.drop_sel(group_id=gr)
     return ds
 
@@ -576,19 +589,20 @@ def _calc_kappa(lambda_r_2, lambda_r_3):
 
 
 def _calc_lambda_r(ds_groups, ds_moments_groups):
-    # H&W
-    nr = ds_moments_groups.count(dim="id").isel(lmom=0)
-    nk = ds_groups.dropna(dim="id", how="all").count(dim="time")
+    station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
+
+    nr = ds_moments_groups.count(dim=station_dim).isel(lmom=0)
+    nk = ds_groups.dropna(dim=station_dim, how="all").count(dim="time")
     wk = (nk * nr) / (nk + nr)
 
-    lambda_k0 = ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all")
-    lambda_k1 = ds_moments_groups.sel(lmom="l2").dropna(dim="id", how="all")
-    lambda_k2 = ds_moments_groups.sel(lmom="l3").dropna(dim="id", how="all")
+    lambda_k0 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
+    lambda_k1 = ds_moments_groups.sel(lmom="l2").dropna(dim=station_dim, how="all")
+    lambda_k2 = ds_moments_groups.sel(lmom="l3").dropna(dim=station_dim, how="all")
 
     l2 = (lambda_k1 / lambda_k0) * wk
     l3 = (lambda_k2 / lambda_k0) * wk
 
     lambda_r_1 = 1  # Anctil et al. 1998 (p.362)
-    lambda_r_2 = l2.sum(dim="id") / wk.sum(dim="id")
-    lambda_r_3 = l3.sum(dim="id") / wk.sum(dim="id")
+    lambda_r_2 = l2.sum(dim=station_dim) / wk.sum(dim=station_dim)
+    lambda_r_3 = l3.sum(dim=station_dim) / wk.sum(dim=station_dim)
     return lambda_r_1, lambda_r_2, lambda_r_3

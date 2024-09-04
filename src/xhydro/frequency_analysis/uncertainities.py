@@ -237,9 +237,9 @@ def generate_combinations(da, n):
         List of all combinations.
     """
     # Get the list of indices
-    for id in da.indexes:
-        if id != "components":
-            indices = da[id].values
+    for ids in da.indexes:
+        if ids != "components":
+            indices = da[ids].values
 
     # Variable to store all combinations
     all_combinations = []
