@@ -150,7 +150,7 @@ def _scale_data(ds):
     scaled_data = pd.DataFrame(scalar.fit_transform(df))  # scaling the data
     scaled_data.columns = (
         df.columns
-    )  # Attribue les noms de colonnes et l'index du dataframe original au dataframe mis à l'échelle
+    )  # Sets columns name and index from original dataframe to scaled dataframe
     scaled_data.index = df.index
     return xr.Dataset(scaled_data)
 
@@ -192,8 +192,8 @@ def moment_l_vector(x_vec):
     return [_moment_l(x[~np.isnan(x)]) for x in x_vec]
 
 
-# Calcul des moments L
-def _moment_l(x=[]):
+# L-moments calculation
+def _moment_l(x):
     """
     Calculate L-moments for a given dataset.
 
@@ -204,8 +204,6 @@ def _moment_l(x=[]):
     ----------
     x : list or array-like
         Input data for which to calculate L-moments.
-    ordered_dict : bool
-        If True, return results as an OrderedDict; if False, return as a list.
 
     Returns
     -------
@@ -230,14 +228,14 @@ def _moment_l(x=[]):
 
     x = x[~np.isnan(x)]
 
-    # Trier en ordre decroissant
+    # Sorting the data in descending order
     x_sort = np.sort(x)
     x_sort = x_sort[::-1]
 
     n = np.size(x_sort)
     j = np.arange(1, n + 1)
 
-    # Moments ponderes
+    # ponderation of moments
     b0 = np.mean(x_sort)
     b1 = np.dot((n - j) / (n * (n - 1)), x_sort)
     b2 = np.dot((n - j) * (n - j - 1) / (n * (n - 1) * (n - 2)), x_sort)
@@ -245,7 +243,7 @@ def _moment_l(x=[]):
         (n - j) * (n - j - 1) * (n - j - 2) / (n * (n - 1) * (n - 2) * (n - 3)), x_sort
     )
 
-    # Moment L
+    # L-Moment
     lambda1 = b0
     lambda2 = 2 * b1 - b0
     lambda3 = 6 * b2 - 6 * b1 + b0
@@ -258,7 +256,6 @@ def _moment_l(x=[]):
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
 
-# Faire un fct qui appele
 def calc_h_z(ds_groups, ds_moments_groups, kap):
     """
     Calculate heterogeneity measure H and Z-score for regional frequency analysis.
@@ -311,13 +308,13 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
     return _combine_h_z(xr.merge([z_score, ds_h]))
 
 
-def _calculate_gev_tau4(ds_groups, ds_moments_groups):  # calcul indice de crue
+def _calculate_gev_tau4(ds_groups, ds_moments_groups):
     # H&W
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
     kappa = _calc_kappa(lambda_r_2, lambda_r_3)
 
-    # Hosking et Wallis, éq. A53
+    # Hosking et Wallis, eq. A53
     tau4 = (5 * (1 - 4**-kappa) - 10 * (1 - 3**-kappa) + 6 * (1 - 2**-kappa)) / (
         1 - 2**-kappa
     )
@@ -328,10 +325,8 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
 
     import numpy as np
 
-    np.random.seed(seed=42)
-
-    # On enlève les valeurs hors groupe ou aberrantes
-    # Certaines longeurs sont trop courtes poru calculer les moments, on les enlèeve aussi
+    # We remove nan or 0 length
+    # If not enough values to calulculate some moments, other moments are removed as well
     bool_maks = (n != 0) & (~np.isnan(t)) & (~np.isnan(t3)) & (~np.isnan(t4))
     n = n[bool_maks]
     t = t[bool_maks]
@@ -343,7 +338,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
     tau3_r = np.dot(n, t3) / np.sum(n)
     tau4_r = np.dot(n, t4) / np.sum(n)
 
-    # Calcul de l'ecart-type pondere L-CVs pour l'echantillon (eq. 4.4)
+    # L-CVs ponderated standard deviation for the sample (eq. 4.4)
     v = np.sqrt(np.dot(n, (t - tau_r) ** 2) / np.sum(n))
 
     # Kappa distribution
@@ -368,11 +363,11 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
             )  # Returning nans for H, b4, sigma4, tau4_r
         else:
             raise error
-    n_sim = 500  # Nbre de "regions virtuelles" simulees
+    n_sim = 500  # Number of "virtual regions" simulated
 
     def calc_tsim(kappa_param, longeur, n_sim):
 
-        # Pour chaque station, on génère 500 vecteurs de même longeur que la série d'obs
+        # For each station, we get n_sim vectors de same lenght than the observations
         rvs = kap.rvs(
             kappa_param["k"],
             kappa_param["h"],
@@ -381,12 +376,14 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
             size=(n_sim, int(longeur)),
         )
 
-        return _momentl_optim(rvs)  # Tau correspond au 3e moment.
+        return _momentl_optim(rvs)
 
     t_sim_tau4m = [calc_tsim(kappa_param, longeur, n_sim) for longeur in n]
 
-    t_sim = np.array([tt[3] for tt in t_sim_tau4m])  # Tau correspond au 3e moment.
-    tau4m = np.array([tt[5] for tt in t_sim_tau4m])  # Tau4 correspond au 5e terme.
+    t_sim = np.array(
+        [tt[3] for tt in t_sim_tau4m]
+    )  # Tau corresponds to the 3rd moment.
+    tau4m = np.array([tt[5] for tt in t_sim_tau4m])  # Tau4 corresponds to the 5th term.
 
     b4 = np.mean(tau4m - tau4_r)
 
@@ -394,7 +391,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
         (1 / (n_sim - 1)) * (np.sum((tau4m - tau4_r) ** 2) - (n_sim * b4 * b4))
     )
 
-    # Calcul du V
+    # Calculating V
     tau_r_sim = np.dot(n, t_sim) / np.sum(n)
 
     v_sim = np.sqrt(np.dot(n, (t_sim - tau_r_sim) ** 2) / np.sum(n))
@@ -407,11 +404,11 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
     return h, b4, sigma4, tau4_r
 
 
-# Calcul des moments L
+# Calculating L-moments
 def _momentl_optim(x=[]):
     if x.ndim == 1:
         x = x[~np.isnan(x)]
-        # Trier en ordre decroissant
+        # reverse sorting
         x_sort = np.sort(x)
         x_sort = x_sort[::-1]
         n = np.size(x_sort)
@@ -447,7 +444,7 @@ def _momentl_optim(x=[]):
     lambda3 = 6 * b2 - 6 * b1 + b0
     lambda4 = 20 * b3 - 30 * b2 + 12 * b1 - b0
 
-    tau = lambda2 / lambda1  # L_CV # tau2 dans Anctil, tau dans Hosking et al.
+    tau = lambda2 / lambda1  # L_CV # tau2 in Anctil, tau dans Hosking et al.
     tau3 = lambda3 / lambda2  # L_CS
     tau4 = lambda4 / lambda2  # L_CK
 
@@ -523,32 +520,28 @@ def calculate_rp_from_afr(ds_groups, ds_moments_groups, rp, l1=None):
     return _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
 
 
-def _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp):  # calcul indice de crue
+def _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp):
 
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
-    # alpha = parametre de localisation (location)
-    # xi    = parametre d'echelle (scale)
-    # kappa = parametre de forme (shape)
+    # alpha = location
+    # xi    = scale
+    # kappa = shape
 
     kappa = _calc_kappa(lambda_r_2, lambda_r_3)
 
     term = xr.apply_ufunc(_calc_gamma, (1 + kappa), vectorize=True)
 
-    # Hosking et Wallis, éq. A56. et Anctil et al. 1998, eq. 7 et 8.
+    # Hosking et Wallis, eq. A56. et Anctil et al. 1998, eq. 7 et 8.
     alpha = (lambda_r_2 * kappa) / ((1 - (2**-kappa)) * term)
     xi = lambda_r_1 + (alpha * (term - 1)) / kappa
 
-    # On calcul les périodes de retour souhaitées
-
+    # Calculating wanted return periods
     t = xr.DataArray(data=rp, dims="rp").assign_coords(rp=rp)
 
-    # Hosking et Wallis, éq. A44 et Anctil et al. 1998, eq. 5.
+    # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
     q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** kappa) / kappa
 
-    # Pour obtenir le quantile à un site particulier, il suffit de multiplier Q_RT
-    # par la moyenne des maximums annuels à ce site (lambda_1).
-    # Hosking et Wallis, éq. 6.4 et Anctil et al. 1998, eq. 9.
     return q_rt
 
 
@@ -580,10 +573,10 @@ def remove_small_regions(ds, thresh=5):
 
 def _calc_kappa(lambda_r_2, lambda_r_3):
 
-    # NB Il y a une erreur de signe dans Anctil et al. 1998, eq. 6. Voir # Hosking et Wallis, éq. A55
+    # Hosking et Wallis, éq. A55
     c = (2 / (3 + (lambda_r_3 / lambda_r_2))) - (np.log(2) / np.log(3))
 
-    # Hosking et Wallis, éq. A55 (approximation generalement acceptable)
+    # Hosking et Wallis, éq. A55 (generally acceptable approximation)
     kappa = 7.8590 * c + 2.9554 * (c**2)
     return kappa
 
