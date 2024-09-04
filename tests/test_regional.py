@@ -281,10 +281,12 @@ class TestRegionalFrequencyAnalysis:
                 ]
             ]
         )
-        return xr.Dataset(
+        ds = xr.Dataset(
             {"Qp": (("group_id", "id", "time"), data)},
             coords={"time": time, "id": ["A", "B", "C"], "group_id": ["G1"]},
         )
+        ds["id"].attrs["cf_role"] = "timeseries_id"
+        return ds
 
     @pytest.fixture
     def sample_ds_moments_groups(self):
@@ -325,10 +327,12 @@ class TestRegionalFrequencyAnalysis:
                 ]
             ]
         )
-        return xr.Dataset(
+        ds = xr.Dataset(
             {"Qp": (("group_id", "id", "lmom"), data)},
             coords={"lmom": lmom, "id": ["A", "B", "C"], "group_id": ["G1"]},
         )
+        ds["id"].attrs["cf_role"] = "timeseries_id"
+        return ds
 
     @pytest.fixture
     def sample_kappa3(self):
@@ -356,9 +360,11 @@ class TestRegionalFrequencyAnalysis:
     def test_calc_h_z_values(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
-        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, sample_kappa3)
-        assert 0.29237844 == pytest.approx(result.sel(crit="H").Qp)
-        assert 0.25736036 == pytest.approx(result.sel(crit="Z").Qp)
+        result = calc_h_z(
+            sample_ds_groups, sample_ds_moments_groups, sample_kappa3, seed=42
+        )
+        np.testing.assert_almost_equal(0.42279565, result.sel(crit="H").Qp)
+        np.testing.assert_almost_equal(0.2568702, result.sel(crit="Z").Qp)
 
     def test_calc_h_z_values_error(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
@@ -382,8 +388,8 @@ class TestRegionalFrequencyAnalysis:
         result = calculate_rp_from_afr(
             sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000]
         )
-        assert 197.83515837 == pytest.approx(result.Qp.sel(rp=100, id="A"))
-        assert 98.87950615 == pytest.approx(result.Qp.sel(rp=1000, id="B"))
+        assert 197.83515837 == pytest.approx(result.Qp.sel(return_period=100, id="A"))
+        assert 98.87950615 == pytest.approx(result.Qp.sel(return_period=1000, id="B"))
 
     def test_calculate_rp_from_afr_with_l1(
         self, sample_ds_groups, sample_ds_moments_groups
@@ -392,5 +398,5 @@ class TestRegionalFrequencyAnalysis:
         result = calculate_rp_from_afr(
             sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000], l1=l1
         )
-        assert 217.618674207 == pytest.approx(result.Qp.sel(rp=100, id="A"))
-        assert 108.767456765 == pytest.approx(result.Qp.sel(rp=1000, id="B"))
+        assert 217.618674207 == pytest.approx(result.Qp.sel(return_period=100, id="A"))
+        assert 108.767456765 == pytest.approx(result.Qp.sel(return_period=1000, id="B"))

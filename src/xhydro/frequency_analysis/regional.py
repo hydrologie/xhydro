@@ -42,9 +42,9 @@ def cluster_indices(clust_num, labels_array):
 
     Parameters
     ----------
-    clust_num : (int)
+    clust_num : int
         Cluster number to find indices for.
-    labels_array : (numpy.ndarray)
+    labels_array : numpy.ndarray
         Array containing cluster labels.
 
     Returns
@@ -252,7 +252,7 @@ def _moment_l(x):
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
 
-def calc_h_z(ds_groups, ds_moments_groups, kap):
+def calc_h_z(ds_groups, ds_moments_groups, kap, seed=None):
     """
     Calculate heterogeneity measure H and Z-score for regional frequency analysis.
 
@@ -264,6 +264,8 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
         Dataset containing L-moments for grouped data.
     kap : scipy.stats.kappa3
         Kappa3 distribution object.
+    seed : int, optional
+        Random seed for reproducibility. Default is None.
 
     Returns
     -------
@@ -279,9 +281,9 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
     tau = ds_moments_groups.sel(lmom="tau").load()
     tau3 = ds_moments_groups.sel(lmom="tau3").load()
     tau4 = ds_moments_groups.sel(lmom="tau4").load()
-    longeur = ds_groups.count(dim="time").load()
+    longeur = ds_groups.copy().count(dim="time").load()
 
-    station_dim = tau.cf.cf_roles["timeseries_id"][0]
+    station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
 
     ds_h, ds_b4, ds_sigma4, ds_tau4_r = xr.apply_ufunc(
         _heterogeneite_et_score_z,
@@ -290,12 +292,14 @@ def calc_h_z(ds_groups, ds_moments_groups, kap):
         tau,
         tau3,
         tau4,
+        seed,
         input_core_dims=[
             [],
             [station_dim],
             [station_dim],
             [station_dim],
             [station_dim],
+            [],
         ],
         output_core_dims=[[], [], [], []],
         vectorize=True,
@@ -325,7 +329,7 @@ def _calculate_gev_tau4(ds_groups, ds_moments_groups):
     return tau4
 
 
-def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
+def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[], seed=None):
 
     # We remove nan or 0 length
     # If not enough values to calulculate some moments, other moments are removed as well
@@ -376,6 +380,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[]):
             kappa_param["loc"],
             kappa_param["scale"],
             size=(n_sim, int(longeur)),
+            random_state=seed,
         )
 
         return _momentl_optim(rvs)
