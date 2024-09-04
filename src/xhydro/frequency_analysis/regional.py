@@ -576,7 +576,7 @@ def remove_small_regions(ds, thresh=5):
     station_dim = ds.cf.cf_roles["timeseries_id"][0]
     for gr in ds.group_id:
         if (
-            len(ds.sel(group_id=gr).dropna(dim=station_dim, how="all")[[station_dim]])
+            len(ds.sel(group_id=gr).dropna(dim=station_dim, how="all")[station_dim])
             < thresh
         ):
             ds = ds.drop_sel(group_id=gr)

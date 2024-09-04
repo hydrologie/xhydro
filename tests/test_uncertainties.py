@@ -82,6 +82,7 @@ def test_calc_q_iter():
         freq="YS",
         as_dataset=True,
     )
+
     n_samples = 1000
     bo = boostrap_obs(ds, n_samples).assign_coords(id="S1").expand_dims("id")
     ds_moments_iter = calc_moments_iter(bo)
@@ -270,10 +271,12 @@ def test_calc_q_iter():
         {"streamflow": (("group_id", "id", "time"), data)},
         coords={"time": time, "id": ["S1", "B", "C"], "group_id": ["G1"]},
     )
+    ds_groups["id"].attrs["cf_role"] = "timeseries_id"
     ds_moments_iter = xr.concat(
         [ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id"
     )
     ds_moments_iter["id"] = ["S1", "B", "C"]
+    ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
     result = calc_q_iter(
         "S1",
         "streamflow",
@@ -285,7 +288,8 @@ def test_calc_q_iter():
     assert "obs_samples" in result.coords
     assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
     assert 256.16618321 == pytest.approx(
-        result.streamflow.sel(id="S1", group_id="G1", rp=1000).quantile(0.5), 1
+        result.streamflow.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
+        1,
     )
 
 
