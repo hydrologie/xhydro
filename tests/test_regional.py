@@ -1,9 +1,17 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
 import scipy
 import xarray as xr
-from lmoments3.distr import KappaGen
+
+try:
+    from lmoments3.distr import KappaGen
+except ImportError:
+    warnings.warn("lmoments3 is not installed. Please install it")
+    lmoments3 = None
+
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 

@@ -43,6 +43,7 @@ dependencies:
   - ipython
   - isort ==5.13.2
   - jupyter_client
+  - lmoments3
   - nbsphinx
   - nbval >=0.11.0
   - numpydoc >=1.8.0
