@@ -15,13 +15,13 @@ except ImportError:
     lmoments3 = None
 
 from xhydro.frequency_analysis.regional import (
+    _moment_l_vector,
     calc_h_z,
     calculate_rp_from_afr,
     cluster_indices,
     fit_pca,
     get_group_from_fit,
     get_groups_indices,
-    moment_l_vector,
 )
 
 
@@ -70,8 +70,8 @@ class TestRegionalFrequencyAnalysis:
         assert isinstance(pca_obj, PCA)
         assert data_pca.shape[1] == 3
 
-    def test_moment_l_vector(self, sample_data):
-        result = moment_l_vector(sample_data)
+    def test__moment_l_vector(self, sample_data):
+        result = _moment_l_vector(sample_data)
         count = 0
         for element in result:
             count += len(element)
