@@ -144,7 +144,7 @@ def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
     return data_pca, obj_pca
 
 
-def _scale_data(ds):
+def _scale_data(ds: xr.Dataset) -> xr.Dataset:
     scalar = StandardScaler()
     df = ds.to_dataframe()
 
@@ -161,7 +161,7 @@ def _moment_l_vector(x_vec: np.array) -> list:
 
 
 # L-moments calculation
-def _moment_l(x):
+def _moment_l(x: np.array) -> list:
     """
     Calculate L-moments for a given dataset.
 
@@ -289,7 +289,9 @@ def calc_h_z(
     return _combine_h_z(xr.merge([z_score, ds_h]))
 
 
-def _calculate_gev_tau4(ds_groups, ds_moments_groups):
+def _calculate_gev_tau4(
+    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset
+) -> xr.Dataset:
     # H&W
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
@@ -302,7 +304,9 @@ def _calculate_gev_tau4(ds_groups, ds_moments_groups):
     return tau4
 
 
-def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[], seed=None):
+def _heterogeneite_et_score_z(
+    kap: object, n: np.array, t: np.array, t3: np.array, t4: np.array, seed=None
+) -> tuple:
 
     # We remove nan or 0 length
     # If not enough values to calulculate some moments, other moments are removed as well
@@ -344,7 +348,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[], seed=None):
             raise error
     n_sim = 500  # Number of "virtual regions" simulated
 
-    def _calc_tsim(kappa_param, longeur, n_sim):
+    def _calc_tsim(kappa_param: dict, length: float, n_sim: int) -> np.array:
 
         # For each station, we get n_sim vectors de same lenght than the observations
         rvs = kap.rvs(
@@ -352,7 +356,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[], seed=None):
             kappa_param["h"],
             kappa_param["loc"],
             kappa_param["scale"],
-            size=(n_sim, int(longeur)),
+            size=(n_sim, int(length)),
             random_state=seed,
         )
 
@@ -385,7 +389,7 @@ def _heterogeneite_et_score_z(kap, n=[], t=[], t3=[], t4=[], seed=None):
 
 
 # Calculating L-moments
-def _momentl_optim(x):
+def _momentl_optim(x: np.array) -> list:
     if x.ndim == 1:
         x = x[~np.isnan(x)]
         # reverse sorting
@@ -431,7 +435,7 @@ def _momentl_optim(x):
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
 
-def _append_ds_vars_names(ds, suffix):
+def _append_ds_vars_names(ds: xr.Dataset, suffix: str) -> xr.Dataset:
     for name in ds.data_vars:
         ds = ds.rename({name: name + suffix})
     return ds
@@ -439,7 +443,7 @@ def _append_ds_vars_names(ds, suffix):
 
 def mask_h_z(
     ds: xr.Dataset, thresh_h: Optional[float] = 1, thresh_z: Optional[float] = 1.64
-):
+) -> xr.DataArray:
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
 
@@ -460,7 +464,7 @@ def mask_h_z(
     return (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
 
 
-def _combine_h_z(ds: xr.Dataset):
+def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     new_ds = xr.Dataset()
     for v in ds:
         if "_Z" in v:
@@ -475,7 +479,7 @@ def calculate_rp_from_afr(
     ds_moments_groups: xr.Dataset,
     rp: np.array,
     l1: Optional[xr.DataArray] = None,
-):
+) -> xr.DataArray:
     """
     Calculate return periods from Annual Flow Regime (AFR) analysis.
 
@@ -508,7 +512,9 @@ def calculate_rp_from_afr(
     return _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
 
 
-def _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp):
+def _calculate_ic_from_afr(
+    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset, rp: list
+) -> xr.Dataset:
 
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
@@ -537,7 +543,7 @@ def _calc_gamma(val):
     return math.gamma(val)
 
 
-def remove_small_regions(ds: xr.Dataset, thresh: int = 5):
+def remove_small_regions(ds: xr.Dataset, thresh: int = 5) -> xr.Dataset:
     """
     Remove regions from the dataset that have fewer than the threshold number of stations.
 
@@ -573,7 +579,7 @@ def _calc_kappa(lambda_r_2, lambda_r_3):
     return kappa
 
 
-def _calc_lambda_r(ds_groups, ds_moments_groups):
+def _calc_lambda_r(ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset) -> xr.Dataset:
     station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
 
     nr = ds_moments_groups.count(dim=station_dim).isel(lmom=0)
