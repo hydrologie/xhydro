@@ -28,6 +28,7 @@ This module is designed for hydrologists and data scientists working with region
 """
 
 import math
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -36,7 +37,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 
-def cluster_indices(clust_num, labels_array):
+def cluster_indices(clust_num: int, labels_array: np.ndarray) -> np.ndarray:
     """
     Get the indices of elements with a specific cluster number using NumPy.
 
@@ -55,7 +56,7 @@ def cluster_indices(clust_num, labels_array):
     return np.where(labels_array == clust_num)[0]
 
 
-def get_groups_indices(cluster, sample):
+def get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
     """
     Get indices of groups from a clustering result, excluding the group labeled -1.
 
@@ -77,7 +78,7 @@ def get_groups_indices(cluster, sample):
     ]
 
 
-def get_group_from_fit(model, param, sample):
+def get_group_from_fit(model: object, param: dict, sample: xr.Dataset) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
 
@@ -85,7 +86,7 @@ def get_group_from_fit(model, param, sample):
     ----------
     model : obj
         Model class or instance with a fit method.
-    param : disct
+    param : dict
         Parameters for the model.
     sample : xr.Dataset
         Data sample to fit the model.
@@ -103,7 +104,7 @@ def get_group_from_fit(model, param, sample):
     return get_groups_indices(model(**param).fit(sample), sample)
 
 
-def fit_pca(ds, **kwargs):
+def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
     r"""
     Perform Principal Component Analysis (PCA) on the input dataset.
 
@@ -155,7 +156,7 @@ def _scale_data(ds):
     return xr.Dataset(scaled_data)
 
 
-def moment_l_vector(x_vec):
+def moment_l_vector(x_vec: np.array) -> list:
     """
     Calculate L-moments for multiple datasets.
 
@@ -252,7 +253,12 @@ def _moment_l(x):
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
 
 
-def calc_h_z(ds_groups, ds_moments_groups, kap, seed=None):
+def calc_h_z(
+    ds_groups: xr.Dataset,
+    ds_moments_groups: xr.Dataset,
+    kap: object,
+    seed: Optional[int] = None,
+) -> xr.Dataset:
     """
     Calculate heterogeneity measure H and Z-score for regional frequency analysis.
 
@@ -464,7 +470,9 @@ def _append_ds_vars_names(ds, suffix):
     return ds
 
 
-def mask_h_z(ds, thresh_h=1, thresh_z=1.64):
+def mask_h_z(
+    ds: xr.Dataset, thresh_h: Optional[float] = 1, thresh_z: Optional[float] = 1.64
+):
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
 
@@ -485,7 +493,7 @@ def mask_h_z(ds, thresh_h=1, thresh_z=1.64):
     return (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
 
 
-def _combine_h_z(ds):
+def _combine_h_z(ds: xr.Dataset):
     new_ds = xr.Dataset()
     for v in ds:
         if "_Z" in v:
@@ -495,7 +503,12 @@ def _combine_h_z(ds):
     return new_ds
 
 
-def calculate_rp_from_afr(ds_groups, ds_moments_groups, rp, l1=None):
+def calculate_rp_from_afr(
+    ds_groups: xr.Dataset,
+    ds_moments_groups: xr.Dataset,
+    rp: np.array,
+    l1: Optional[xr.DataArray] = None,
+):
     """
     Calculate return periods from Annual Flow Regime (AFR) analysis.
 
@@ -557,7 +570,7 @@ def _calc_gamma(val):
     return math.gamma(val)
 
 
-def remove_small_regions(ds, thresh=5):
+def remove_small_regions(ds: xr.Dataset, thresh: int = 5):
     """
     Remove regions from the dataset that have fewer than the threshold number of stations.
 
