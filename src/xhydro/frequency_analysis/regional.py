@@ -156,40 +156,7 @@ def _scale_data(ds):
     return xr.Dataset(scaled_data)
 
 
-def moment_l_vector(x_vec: np.array) -> list:
-    """
-    Calculate L-moments for multiple datasets.
-
-    This function computes L-moments for each dataset in the input vector,
-    ignoring NaN values.
-
-    Parameters
-    ----------
-    x_vec : array-like
-        A vector of datasets, where each element is an array-like object
-        containing the data for which to calculate L-moments.
-
-    Returns
-    -------
-    list
-        A list of L-moment arrays, one for each input dataset.
-        Each L-moment array contains the L-moments calculated
-        for the corresponding dataset, excluding NaN values.
-
-    Notes
-    -----
-    - NaN values in each dataset are removed before calculating L-moments.
-    - The function uses the `moment_l` function to calculate L-moments
-      for each individual dataset.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> data1 = np.array([1, 2, 3, np.nan, 5])
-    >>> data2 = np.array([2, 4, 6, 8, 10])
-    >>> moment_l_vector([data1, data2])
-    [array([...]), array([...])]  # L-moments for data1 and data2
-    """
+def _moment_l_vector(x_vec: np.array) -> list:
     return [_moment_l(x[~np.isnan(x)]) for x in x_vec]
 
 
@@ -624,3 +591,56 @@ def _calc_lambda_r(ds_groups, ds_moments_groups):
     lambda_r_2 = l2.sum(dim=station_dim) / wk.sum(dim=station_dim)
     lambda_r_3 = l3.sum(dim=station_dim) / wk.sum(dim=station_dim)
     return lambda_r_1, lambda_r_2, lambda_r_3
+
+
+def calc_moments(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Calculate L-moments for multiple stations.
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        A vector of stations, where each element is an array-like object
+        containing the data for which to calculate L-moments.
+
+    Returns
+    -------
+    xarray.Dataset
+        L-moment dataset with a new lmom dimension.
+
+    Notes
+    -----
+    - NaN values in each stations are removed before calculating L-moments.
+    - The function uses the `moment_l` function to calculate L-moments
+      for each individual stations.
+    """
+    return xr.apply_ufunc(
+        _moment_l_vector, ds, input_core_dims=[["time"]], output_core_dims=[["lmom"]]
+    ).assign_coords(lmom=["l1", "l2", "l3", "tau", "tau3", "tau4"])
+
+
+def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
+    """
+    Group a dataset by a list of groups.
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        The input dataset to be grouped.
+    groups : list
+        A list of groups to be used for grouping the dataset.
+
+    Returns
+    -------
+    xarray.Dataset
+        A new dataset with the grouped data.
+    """
+    ds_groups = xr.concat(
+        [
+            ds.sel(id=groups[i]).assign_coords(group_id=i).expand_dims("group_id")
+            for i in range(len(groups))
+        ],
+        dim="group_id",
+    )
+    ds_groups["group_id"].attrs["cf_role"] = "group_id"
+    return ds_groups

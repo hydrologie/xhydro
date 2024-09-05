@@ -24,7 +24,7 @@ from scipy import stats
 
 import xhydro.frequency_analysis as xhfa
 
-from .regional import calculate_rp_from_afr, moment_l_vector, remove_small_regions
+from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
 
 
 def boostrap_obs(obs, n_samples):
@@ -150,14 +150,7 @@ def calc_moments_iter(ds_samples):
     ds_mom = []
     for sample in ds_samples.samples.values:
         ds = ds_samples.sel(samples=sample)
-        ds_mom.append(
-            xr.apply_ufunc(
-                moment_l_vector,
-                ds,
-                input_core_dims=[["time"]],
-                output_core_dims=[["lmom"]],
-            ).assign_coords(lmom=["l1", "l2", "l3", "tau", "tau3", "tau4"])
-        )
+        ds_mom.append(calc_moments(ds))
     return xr.concat(ds_mom, dim="samples")
 
 
