@@ -20,6 +20,7 @@ dependencies:
   - rasterio
   - ravenpy >=0.15.0
   - rioxarray
+  - s3fs <=2024.6.1
   - spotpy
   - stackstac >=0.5.1
   - statsmodels
