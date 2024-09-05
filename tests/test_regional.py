@@ -5,15 +5,14 @@ import pandas as pd
 import pytest
 import scipy
 import xarray as xr
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.decomposition import PCA
 
 try:
     from lmoments3.distr import KappaGen
 except ImportError:
     warnings.warn("lmoments3 is not installed. Please install it")
     lmoments3 = None
-
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.decomposition import PCA
 
 from xhydro.frequency_analysis.regional import (
     calc_h_z,
@@ -388,8 +387,12 @@ class TestRegionalFrequencyAnalysis:
         result = calculate_rp_from_afr(
             sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000]
         )
-        assert 197.83515837 == pytest.approx(result.Qp.sel(return_period=100, id="A"))
-        assert 98.87950615 == pytest.approx(result.Qp.sel(return_period=1000, id="B"))
+        np.testing.assert_almost_equal(
+            197.83515837, result.Qp.sel(return_period=100, id="A")
+        )
+        np.testing.assert_almost_equal(
+            98.87950615, result.Qp.sel(return_period=1000, id="B")
+        )
 
     def test_calculate_rp_from_afr_with_l1(
         self, sample_ds_groups, sample_ds_moments_groups
@@ -398,5 +401,9 @@ class TestRegionalFrequencyAnalysis:
         result = calculate_rp_from_afr(
             sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000], l1=l1
         )
-        assert 217.618674207 == pytest.approx(result.Qp.sel(return_period=100, id="A"))
-        assert 108.767456765 == pytest.approx(result.Qp.sel(return_period=1000, id="B"))
+        np.testing.assert_almost_equal(
+            217.618674207, result.Qp.sel(return_period=100, id="A")
+        )
+        np.testing.assert_almost_equal(
+            108.767456765, result.Qp.sel(return_period=1000, id="B")
+        )

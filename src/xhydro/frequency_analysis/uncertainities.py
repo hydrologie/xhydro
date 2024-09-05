@@ -205,7 +205,7 @@ def calc_q_iter(
     # With obs and moments  of same dims, we calculate
     qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods)
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
-    # pour chaque bv on stack les régions et bootstat et on calcul les centiles
+    # For each station we stack regions et bootstrap
     return (
         qt.rename({"samples": "obs_samples"})
         .stack(samples=["group_id", "obs_samples"])

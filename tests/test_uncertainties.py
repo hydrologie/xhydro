@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-import pytest
 import xarray as xr
-from scipy import stats
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
@@ -287,9 +285,9 @@ def test_calc_q_iter():
     )
     assert "obs_samples" in result.coords
     assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
-    assert 256.16618321 == pytest.approx(
+    np.testing.assert_almost_equal(
+        256.16618321,
         result.streamflow.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
-        1,
     )
 
 
