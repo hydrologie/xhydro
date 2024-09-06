@@ -28,7 +28,7 @@ This module is designed for hydrologists and data scientists working with region
 """
 
 import math
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 import pandas as pd

@@ -16,6 +16,7 @@ Functions:
 """
 
 from itertools import combinations
+from typing import Optional
 
 import numpy as np
 import xarray as xr
@@ -27,7 +28,9 @@ import xhydro.frequency_analysis as xhfa
 from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
 
 
-def boostrap_obs(obs, n_samples, seed=None):
+def boostrap_obs(
+    obs: xr.DataArray, n_samples: int, seed: Optional[int] = None
+) -> xr.DataArray:
     """
     Generate bootstrap samples from observed data.
 
@@ -46,7 +49,9 @@ def boostrap_obs(obs, n_samples, seed=None):
         Bootstrap samples with dimensions [samples, time].
     """
 
-    def _gen_boot(f, samples, seed=None):
+    def _gen_boot(
+        f: np.array, n_samples: int, seed: Optional[int] = None
+    ) -> np.ndarray:
         vals = f[~np.isnan(f)]
         rng = np.random.default_rng(seed=seed)
         idx = rng.choice(vals, size=(n_samples, len(vals)))
@@ -65,7 +70,9 @@ def boostrap_obs(obs, n_samples, seed=None):
     ).assign_coords(samples=range(n_samples))
 
 
-def boostrap_dist(ds_obs, ds_params, n_samples):
+def boostrap_dist(
+    ds_obs: xr.Dataset, ds_params: xr.Dataset, n_samples: int
+) -> xr.Dataset:
     """
     Generate bootstrap samples from a fitted distribution.
 
@@ -113,7 +120,7 @@ def boostrap_dist(ds_obs, ds_params, n_samples):
     return ds
 
 
-def fit_boot_dist(ds):
+def fit_boot_dist(ds: xr.Dataset) -> xr.Dataset:
     """
     Fit distributions to bootstrap samples.
 
@@ -137,7 +144,7 @@ def fit_boot_dist(ds):
     return xr.concat(params_ince, dim="scipy_dist")
 
 
-def calc_moments_iter(ds_samples):
+def calc_moments_iter(ds_samples: xr.Dataset) -> xr.Dataset:
     """
     Calculate L-moments for each bootstrap sample.
 
@@ -159,8 +166,13 @@ def calc_moments_iter(ds_samples):
 
 
 def calc_q_iter(
-    bv, var, ds_groups, ds_moments_iter, return_periods, small_regions_threshold=5
-):
+    bv: str,
+    var: str,
+    ds_groups: xr.Dataset,
+    ds_moments_iter: xr.Dataset,
+    return_periods: np.array,
+    small_regions_threshold: Optional[int] = 5,
+) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
 
@@ -217,15 +229,15 @@ def calc_q_iter(
     )
 
 
-def generate_combinations(da, n):
+def generate_combinations(da: xr.DataArray, n: int) -> list:
     """
     Generate combinations of indices omitting up to N indices.
 
     Parameters
     ----------
-    da : (xarray.DataArray):
+    da : xarray.DataArray
         Input DataArray.
-    n : (int)
+    n : int
         Number of indices to omit in each combination.
 
     Returns
