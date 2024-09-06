@@ -82,7 +82,7 @@ def test_calc_q_iter():
     )
 
     n_samples = 1000
-    bo = boostrap_obs(ds, n_samples).assign_coords(id="S1").expand_dims("id")
+    bo = boostrap_obs(ds, n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
     ds_moments_iter = calc_moments_iter(bo)
     time = pd.date_range("2020-01-01", periods=54)
     data = np.array(
@@ -286,7 +286,7 @@ def test_calc_q_iter():
     assert "obs_samples" in result.coords
     assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
     np.testing.assert_almost_equal(
-        256.16618321,
+        260.68926104,
         result.streamflow.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
     )
 

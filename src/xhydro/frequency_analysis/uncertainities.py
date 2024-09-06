@@ -27,7 +27,7 @@ import xhydro.frequency_analysis as xhfa
 from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
 
 
-def boostrap_obs(obs, n_samples):
+def boostrap_obs(obs, n_samples, seed=None):
     """
     Generate bootstrap samples from observed data.
 
@@ -37,6 +37,8 @@ def boostrap_obs(obs, n_samples):
         The observed data to bootstrap.
     n_samples : int
         The number of bootstrap samples to generate.
+    seed : int, optional
+        Seed for the random number generator.
 
     Returns
     -------
@@ -44,9 +46,10 @@ def boostrap_obs(obs, n_samples):
         Bootstrap samples with dimensions [samples, time].
     """
 
-    def _gen_boot(f, samples):
+    def _gen_boot(f, samples, seed=None):
         vals = f[~np.isnan(f)]
-        idx = np.random.choice(vals, size=(n_samples, len(vals)))
+        rng = np.random.default_rng(seed=seed)
+        idx = rng.choice(vals, size=(n_samples, len(vals)))
         frep = np.dstack([f] * n_samples)[0].T
         frep[~np.isnan(frep)] = idx.flatten()
         return frep
@@ -55,7 +58,8 @@ def boostrap_obs(obs, n_samples):
         _gen_boot,
         obs,
         n_samples,
-        input_core_dims=[["time"], []],
+        seed,
+        input_core_dims=[["time"], [], []],
         output_core_dims=[["samples", "time"]],
         vectorize=True,
     ).assign_coords(samples=range(n_samples))
