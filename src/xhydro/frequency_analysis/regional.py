@@ -250,11 +250,12 @@ def calc_h_z(
     This function applies the heterogeneity measure and Z-score calculations
     to grouped data for regional frequency analysis. It uses L-moments and
     the Kappa3 distribution in the process.
+    This function does not support lazy evaluation.
     """
-    tau = ds_moments_groups.sel(lmom="tau")
-    tau3 = ds_moments_groups.sel(lmom="tau3")
-    tau4 = ds_moments_groups.sel(lmom="tau4")
-    longeur = ds_groups.copy().count(dim="time")
+    tau = ds_moments_groups.sel(lmom="tau").load()
+    tau3 = ds_moments_groups.sel(lmom="tau3").load()
+    tau4 = ds_moments_groups.sel(lmom="tau4").load()
+    longeur = ds_groups.copy().count(dim="time").load()
 
     station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
 
@@ -277,7 +278,7 @@ def calc_h_z(
         output_core_dims=[[], [], [], []],
         vectorize=True,
     )
-    ds_tau4 = _calculate_gev_tau4(ds_groups, ds_moments_groups)
+    ds_tau4 = _calculate_gev_tau4(ds_groups.load(), ds_moments_groups.load())
 
     z_score = (
         ds_tau4 - ds_tau4_r + ds_b4

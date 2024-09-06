@@ -89,6 +89,10 @@ def boostrap_dist(
     -------
     xarray.Dataset
         Bootstrap samples with dimensions [samples, time].
+
+    Notes
+    -----
+    This function does not support lazy evaluation.
     """
 
     def _calc_rvs(data, params, dist, p_names, n_samples):
