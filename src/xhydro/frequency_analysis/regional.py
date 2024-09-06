@@ -28,6 +28,7 @@ This module is designed for hydrologists and data scientists working with region
 """
 
 import math
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -251,6 +252,7 @@ def calc_h_z(
     to grouped data for regional frequency analysis. It uses L-moments and
     the Kappa3 distribution in the process.
     This function does not support lazy evaluation.
+    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     tau = ds_moments_groups.sel(lmom="tau").load()
     tau3 = ds_moments_groups.sel(lmom="tau3").load()
@@ -280,9 +282,7 @@ def calc_h_z(
     )
     ds_tau4 = _calculate_gev_tau4(ds_groups.load(), ds_moments_groups.load())
 
-    z_score = (
-        ds_tau4 - ds_tau4_r + ds_b4
-    ) / ds_sigma4  # Should we calc abs here or leave it for later ?
+    z_score = (ds_tau4 - ds_tau4_r + ds_b4) / ds_sigma4
 
     z_score = _append_ds_vars_names(z_score, "_Z")
 
@@ -510,7 +510,8 @@ def calculate_rp_from_afr(
     -----
     This function calculates return periods using the Annual Flow Regime method.
     If l1 is not provided, it uses the first L-moment from ds_moments_groups.
-    The function internally calls calculate_ic_from_AFR to compute the index flood.
+    The function internally calls calculate_ic_from_AFR to compute the flood index.
+    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     if l1 is None:
         station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
@@ -622,9 +623,9 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
 
     Notes
     -----
-    - NaN values in each stations are removed before calculating L-moments.
-    - The function uses the `moment_l` function to calculate L-moments
-      for each individual stations.
+        NaN values in each stations are removed before calculating L-moments.
+        The function uses the `moment_l` function to calculate L-moments for each individual stations.
+        Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     return xr.apply_ufunc(
         _moment_l_vector, ds, input_core_dims=[["time"]], output_core_dims=[["lmom"]]
