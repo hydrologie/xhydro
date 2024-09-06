@@ -329,8 +329,8 @@ def _heterogeneite_et_score_z(
     # Fit a kappa distribution to the region average L-moment ratios:
     try:
         kappa_param = kap.lmom_fit(lmom_ratios=[1, tau_r, tau3_r, tau4_r])
-    except ValueError:
-
+    except ValueError as error:
+        warnings.warn(f"Kappa distribution fit blablabla (quelle serait la cause d'un ValueError?), returning all NaNs. Error: {error}.")
         return (
             np.nan,
             np.nan,
@@ -338,6 +338,7 @@ def _heterogeneite_et_score_z(
             np.nan,
         )  # Returning nans for H, b4, sigma4, tau4_r
     except Exception as error:
+        warnings.warn(f"Kappa distribution fit failed to converge, returning all NaNs. Error: {error}.")
         if "Failed to converge" in repr(error):
             return (
                 np.nan,
