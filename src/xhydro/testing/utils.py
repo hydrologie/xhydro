@@ -183,7 +183,7 @@ def publish_release_notes(
     This function exists solely for development purposes.
     Adapted from xclim.testing.utils.publish_release_notes.
     """
-    if isinstance(changes, (str, Path)):
+    if isinstance(changes, str | Path):
         changes_file = Path(changes).absolute()
     else:
         changes_file = Path(__file__).absolute().parents[2].joinpath("CHANGELOG.rst")
@@ -235,6 +235,6 @@ def publish_release_notes(
 
     if not file:
         return changes
-    if isinstance(file, (Path, os.PathLike)):
+    if isinstance(file, os.PathLike):
         file = Path(file).open("w")
     print(changes, file=file)
