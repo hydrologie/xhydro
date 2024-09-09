@@ -73,7 +73,7 @@ repos:
     rev: 1.8.5
     hooks:
       - id: nbqa-pyupgrade
-        args: [ '--py10-plus' ]
+        args: [ '--py310-plus' ]
         additional_dependencies: [ 'pyupgrade==3.16.0' ]
       - id: nbqa-black
         additional_dependencies: [ 'black==24.4.2' ]
