@@ -2,7 +2,7 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.13
+  - python >=3.10,<3.13
   - pip >=24.2.0
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages

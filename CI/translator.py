@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def translate_missing_po_entries(  # noqa: C901
-    dir_path: Union[str, Path],
+    dir_path: str | Path,
     translator: str = "GoogleTranslator",
     source_lang: str = "en",
     target_lang: str = "fr",

@@ -14,7 +14,7 @@ maintainers = [
   {name = "Gabriel Rondeau-Genesse", email = "rondeau-genesse.gabriel@ouranos.ca"}
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.9.0"
+requires-python = ">=3.10.0"
 keywords = ["xhydro"]
 license = {file = "LICENSE"}
 classifiers = [
@@ -26,7 +26,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -116,7 +115,6 @@ all = ["xhydro[dev]", "xhydro[docs]"]
 
 [tool.black]
 target-version = [
-  "py39",
   "py310",
   "py311",
   "py312"
@@ -235,11 +233,11 @@ exclude = [
 
 [tool.isort]
 profile = "black"
-py_version = 39
+py_version = 310
 
 [tool.mypy]
 files = "."
-python_version = 3.9
+python_version = 3.10
 show_error_codes = true
 warn_no_return = true
 warn_return_any = true
@@ -292,7 +290,7 @@ markers = [
 [tool.ruff]
 src = ["xhydro"]
 line-length = 150
-target-version = "py39"
+target-version = "py310"
 exclude = [
   ".eggs",
   ".git",
