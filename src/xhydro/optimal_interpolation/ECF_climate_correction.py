@@ -18,8 +18,8 @@ def correction(
     variogram_bins: int = 10,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: Optional[list] = None,
-    hmax_mult_range_bnds: Optional[list] = None,
+    p1_bnds: list | None = None,
+    hmax_mult_range_bnds: list | None = None,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
