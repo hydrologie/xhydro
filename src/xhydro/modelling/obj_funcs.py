@@ -34,9 +34,9 @@ def get_objective_function(
     qsim: np.array,
     obj_func: str = "rmse",
     take_negative: bool = False,
-    mask: Optional[np.array] = None,
-    transform: Optional[str] = None,
-    epsilon: Optional[float] = None,
+    mask: np.array | None = None,
+    transform: str | None = None,
+    epsilon: float | None = None,
 ):
     """Entrypoint function for the objective function calculation.
 
@@ -300,7 +300,7 @@ def _get_optimizer_minimize_or_maximize(algorithm: str):
 def transform_flows(
     qsim: np.array,
     qobs: np.array,
-    transform: Optional[str] = None,
+    transform: str | None = None,
     epsilon: float = 0.01,
 ):
     """Transform flows before computing the objective function.
