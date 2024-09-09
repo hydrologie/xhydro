@@ -75,7 +75,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - python-version: "3.9"
+          - python-version: "3.10"
     defaults:
       run:
         shell: bash -l {0}
@@ -135,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        python-version: [ "3.10", "3.11", "3.12" ]
     defaults:
       run:
         shell: bash -l {0}
@@ -204,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        python-version: [ "3.10", "3.11", "3.12" ]
     defaults:
       run:
         shell: bash -l {0}
