@@ -19,8 +19,8 @@ __all__ = [
 
 def fit(
     ds,
-    distributions: Optional[list[str]] = None,
-    min_years: Optional[int] = None,
+    distributions: list[str] | None = None,
+    min_years: int | None = None,
     method: str = "ML",
 ) -> xr.Dataset:
     """Fit multiple distributions to data.
@@ -92,7 +92,7 @@ def fit(
 
 
 def parametric_quantiles(
-    p: xr.Dataset, t: Union[float, list[float]], mode: str = "max"
+    p: xr.Dataset, t: float | list[float], mode: str = "max"
 ) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 

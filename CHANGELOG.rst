@@ -25,6 +25,10 @@ Internal changes
     * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
     * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+* `xhydro` now requires `python` >= 3.10. (:pull:`195`).
+
 v0.3.6 (2024-06-10)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Richard Arsenault (:user:`richardarsenault`), Sébastien Langlois (:user:`sebastienlanglois`).

@@ -19,7 +19,7 @@ __all__ = [
 
 
 def compute_volume(
-    da: xr.DataArray, *, out_units: str = "m3", attrs: Optional[dict] = None
+    da: xr.DataArray, *, out_units: str = "m3", attrs: dict | None = None
 ) -> xr.DataArray:
     """Compute the volume of water from a streamflow variable, keeping the same frequency.
 
@@ -60,9 +60,9 @@ def get_yearly_op(
     *,
     input_var: str = "streamflow",
     window: int = 1,
-    timeargs: Optional[dict] = None,
+    timeargs: dict | None = None,
     missing: str = "skip",
-    missing_options: Optional[dict] = None,
+    missing_options: dict | None = None,
     interpolate_na: bool = False,
 ) -> xr.Dataset:
     """Compute yearly operations on a variable.
