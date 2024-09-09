@@ -117,8 +117,8 @@ def get_hydrological_model_inputs(
 def format_input(
     ds: xr.Dataset,
     model: str,
-    convert_calendar_missing: Optional[Union[float, str, dict]] = None,
-    save_as: Optional[Union[str, PathLike]] = None,
+    convert_calendar_missing: float | str | dict | None = None,
+    save_as: str | PathLike | None = None,
     **kwargs,
 ) -> tuple[xr.Dataset, dict]:
     r"""Reformat CF-compliant meteorological data for use in hydrological models.
