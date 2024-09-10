@@ -28,10 +28,10 @@ rem Run sphinx-intl update
 sphinx-intl update -p docs\_build\gettext -d docs\locales -l fr
 
 rem Generate Sphinx HTML documentation in English
-nmake -C docs html BUILDDIR=_build\html\en
+call docs\make.bat html "-D language=en"
 
 rem Generate Sphinx HTML documentation in French
-nmake -C docs html BUILDDIR=_build\html\fr SPHINXOPTS=-D language=fr
+call docs\make.bat html "-D language=fr"
 
 if %ERRORLEVEL% neq 0 (
     echo Error occurred during documentation update.
