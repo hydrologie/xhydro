@@ -8,6 +8,7 @@ dependencies:
   - cartopy
   - geopandas
   - haversine
+  - importlib-metadata <8.0  # Required for xesmf >=8.4.0,<8.6 to work on Windows
   - leafmap
   - numpy <2.0.0
   - pandas >=2.2.0
@@ -66,5 +67,3 @@ dependencies:
   # Notebooks
   - hvplot
   - xagg
-  # wip
-  - esmpy <8.4.0,>=8.6
