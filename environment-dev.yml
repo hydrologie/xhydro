@@ -66,6 +66,5 @@ dependencies:
   # Notebooks
   - hvplot
   - xagg
-  # WIP
-  - esmf >=8.6.0
-  - esmpy >=8.6.0
+  # wip
+  - esmpy <8.4.0,>=8.6
