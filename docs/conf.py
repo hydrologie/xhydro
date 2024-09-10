@@ -62,6 +62,8 @@ autodoc_default_options = {
     "special-members": False,
 }
 
+autodoc_mock_imports = ["esmpy", "xesmf"]
+
 # For styling class attributes
 napoleon_use_ivar = True
 

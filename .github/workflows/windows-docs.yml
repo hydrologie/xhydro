@@ -39,7 +39,7 @@ jobs:
           init-shell: powershell
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Install xhydro with docs extras
+      - name: Install xhydro
         run: |
           python -m pip install --editable .
       - name: Generate Docs
