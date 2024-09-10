@@ -1,0 +1,46 @@
+name: Windows Docs Testing - WIP
+
+on:
+  pull_request:
+
+concurrency:
+  # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Make Docs
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.x"
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Set up Python${{ matrix.python-version }}
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install CI libraries
+        run: |
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Install xhydro with docs extras
+        run: |
+          python -m pip install --editable ".[docs]"
+      - name: Generate Docs
+        run: |
+          .\make-docs.bat
