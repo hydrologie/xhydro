@@ -31,12 +31,13 @@ jobs:
         uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
+          cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
       - name: Install xhydro with docs extras
         run: |
-          python -m pip install --editable --no-deps .
+          python -m pip install --editable .
       - name: Generate Docs
         run: |
           .\make-docs.bat
