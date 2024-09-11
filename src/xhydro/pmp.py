@@ -86,7 +86,7 @@ def precipitable_water(
     hus: xr.DataArray,
     zg: xr.DataArray,
     orog: xr.DataArray,
-    windows: Optional[list[int]] = None,
+    windows: list[int] | None = None,
     beta_func: bool = True,
     add_pre_lay: bool = False,
 ):
