@@ -22,12 +22,12 @@ def sampled_indicators(
     deltas: xr.Dataset,
     delta_type: str,
     *,
-    ds_weights: Optional[xr.DataArray] = None,
-    delta_weights: Optional[xr.DataArray] = None,
+    ds_weights: xr.DataArray | None = None,
+    delta_weights: xr.DataArray | None = None,
     n: int = 50000,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     return_dist: bool = False,
-) -> Union[xr.Dataset, tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]]:
+) -> xr.Dataset | tuple[xr.Dataset, xr.Dataset, xr.Dataset, xr.Dataset]:
     """Compute future indicators using a perturbation approach and random sampling.
 
     Parameters
@@ -151,7 +151,7 @@ def sampled_indicators(
         return fut_pct
 
 
-def _percentile_weights(da: Union[xr.DataArray, xr.Dataset]) -> xr.DataArray:
+def _percentile_weights(da: xr.DataArray | xr.Dataset) -> xr.DataArray:
     """Compute the weights associated with percentiles, with support for unevenly spaced percentiles.
 
     Parameters
@@ -182,7 +182,7 @@ def _percentile_weights(da: Union[xr.DataArray, xr.Dataset]) -> xr.DataArray:
 
 
 def _weighted_sampling(
-    ds: xr.Dataset, weights: xr.DataArray, n: int = 50000, seed: Optional[int] = None
+    ds: xr.Dataset, weights: xr.DataArray, n: int = 50000, seed: int | None = None
 ) -> xr.Dataset:
     """Sample from a distribution with weights.
 
@@ -226,9 +226,7 @@ def _weighted_sampling(
     return ds_dist
 
 
-def _perc_or_quantile(
-    da: Union[xr.DataArray, xr.Dataset]
-) -> tuple[xr.DataArray, str, int]:
+def _perc_or_quantile(da: xr.DataArray | xr.Dataset) -> tuple[xr.DataArray, str, int]:
     """Return 'percentile' or 'quantile' depending on the name of the percentile dimension."""
     if isinstance(da, xr.DataArray):
         if len(da.dims) != 1:
