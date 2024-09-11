@@ -64,7 +64,7 @@ DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}
 
 
 def generate_registry(
-    filenames: Optional[list[str]] = None, base_url: str = DATA_URL
+    filenames: list[str] | None = None, base_url: str = DATA_URL
 ) -> None:
     """Generate a registry file for the test data.
 
@@ -97,7 +97,7 @@ def generate_registry(
         pooch.make_registry(data.as_posix(), registry.as_posix())
 
 
-def load_registry(file: Optional[Union[str, Path]] = None) -> dict[str, str]:
+def load_registry(file: str | Path | None = None) -> dict[str, str]:
     """Load the registry file for the test data.
 
     Parameters
@@ -166,8 +166,8 @@ Using the registry to download a file:
 
 
 def populate_testing_data(
-    registry: Optional[Union[str, Path]] = None,
-    temp_folder: Optional[Path] = None,
+    registry: str | Path | None = None,
+    temp_folder: Path | None = None,
     branch: str = TESTDATA_BRANCH,
     _local_cache: Path = _default_cache_dir,
 ) -> None:

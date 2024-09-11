@@ -236,7 +236,7 @@ def calc_h_z(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     kap: object,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> xr.Dataset:
     """
     Calculate heterogeneity measure H and Z-score for regional frequency analysis.
@@ -463,7 +463,7 @@ def _append_ds_vars_names(ds: xr.Dataset, suffix: str) -> xr.Dataset:
 
 
 def mask_h_z(
-    ds: xr.Dataset, thresh_h: Optional[float] = 1, thresh_z: Optional[float] = 1.64
+    ds: xr.Dataset, thresh_h: float | None = 1, thresh_z: float | None = 1.64
 ) -> xr.DataArray:
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
@@ -508,7 +508,7 @@ def calculate_rp_from_afr(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     rp: np.array,
-    l1: Optional[xr.DataArray] = None,
+    l1: xr.DataArray | None = None,
 ) -> xr.DataArray:
     """
     Calculate return periods from Annual Flow Regime (AFR) analysis.
