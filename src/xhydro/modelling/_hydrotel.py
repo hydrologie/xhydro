@@ -53,14 +53,14 @@ class Hydrotel(HydrologicalModel):
 
     def __init__(
         self,
-        project_dir: Union[str, os.PathLike],
+        project_dir: str | os.PathLike,
         project_file: str,
         *,
-        project_config: Optional[dict] = None,
-        simulation_config: Optional[dict] = None,
-        output_config: Optional[dict] = None,
+        project_config: dict | None = None,
+        simulation_config: dict | None = None,
+        output_config: dict | None = None,
         use_defaults: bool = True,
-        executable: Union[str, os.PathLike] = "hydrotel",
+        executable: str | os.PathLike = "hydrotel",
     ):
         """Initialise the Hydrotel simulation."""
         project_config = project_config or dict()
@@ -184,9 +184,9 @@ class Hydrotel(HydrologicalModel):
     def update_config(
         self,
         *,
-        project_config: Optional[dict] = None,
-        simulation_config: Optional[dict] = None,
-        output_config: Optional[dict] = None,
+        project_config: dict | None = None,
+        simulation_config: dict | None = None,
+        output_config: dict | None = None,
     ):
         """Update the configuration options in the project, simulation, and output files.
 
@@ -235,9 +235,9 @@ class Hydrotel(HydrologicalModel):
         self,
         check_missing: bool = False,
         dry_run: bool = False,
-        xr_open_kwargs_in: Optional[dict] = None,
-        xr_open_kwargs_out: Optional[dict] = None,
-    ) -> Union[str, xr.Dataset]:
+        xr_open_kwargs_in: dict | None = None,
+        xr_open_kwargs_out: dict | None = None,
+    ) -> str | xr.Dataset:
         """Run the simulation.
 
         Parameters
@@ -290,7 +290,7 @@ class Hydrotel(HydrologicalModel):
 
     def get_inputs(
         self, subset_time: bool = False, return_config=False, **kwargs
-    ) -> Union[xr.Dataset, tuple[xr.Dataset, dict]]:
+    ) -> xr.Dataset | tuple[xr.Dataset, dict]:
         r"""Get the weather file from the simulation.
 
         Parameters
@@ -637,7 +637,7 @@ def _fix_dates(d: dict):
     return d
 
 
-def _read_csv(file: Union[str, os.PathLike]) -> dict:
+def _read_csv(file: str | os.PathLike) -> dict:
     """Read a CSV file and return the content as a dictionary.
 
     Parameters
@@ -687,7 +687,7 @@ def _read_csv(file: Union[str, os.PathLike]) -> dict:
     return output
 
 
-def _overwrite_csv(file: Union[str, os.PathLike], d: dict):
+def _overwrite_csv(file: str | os.PathLike, d: dict):
     """Overwrite a CSV file with new configuration options.
 
     Hydrotel is very picky about the formatting of the files and needs blank lines at specific places

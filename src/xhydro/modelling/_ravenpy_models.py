@@ -66,7 +66,7 @@ class RavenpyModel(HydrologicalModel):
         self,
         model_name: str,
         parameters: np.ndarray,
-        drainage_area: Union[str, os.PathLike],
+        drainage_area: str | os.PathLike,
         elevation: str,
         latitude,
         longitude,
@@ -78,7 +78,7 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
-        workdir: Optional[Union[str, os.PathLike]] = None,
+        workdir: str | os.PathLike | None = None,
         rain_snow_fraction="RAINSNOW_DINGMAN",
         evaporation="PET_PRIESTLEY_TAYLOR",
         **kwargs,
@@ -125,7 +125,7 @@ class RavenpyModel(HydrologicalModel):
         self.qobs = xr.open_dataset(qobs_path)
         self.model_name = model_name
 
-    def run(self) -> Union[str, xr.Dataset]:
+    def run(self) -> str | xr.Dataset:
         """Run the ravenpy hydrological model and return simulated streamflow.
 
         Returns

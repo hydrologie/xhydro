@@ -392,15 +392,15 @@ def execute_interpolation(
     station_correspondence: xr.Dataset,
     observation_stations: list,
     ratio_var_bg: float = 0.15,
-    percentiles: Optional[list[float]] = None,
+    percentiles: list[float] | None = None,
     variogram_bins: int = 10,
     parallelize: bool = False,
     max_cores: int = 1,
     leave_one_out_cv: bool = False,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: Optional[list] = None,
-    hmax_mult_range_bnds: Optional[list] = None,
+    p1_bnds: list | None = None,
+    hmax_mult_range_bnds: list | None = None,
 ):
     """Run the interpolation algorithm for leave-one-out cross-validation or operational use.
 

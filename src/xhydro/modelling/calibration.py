@@ -133,12 +133,12 @@ class SpotSetup:
     def __init__(
         self,
         model_config: dict,
-        bounds_high: np.array,
-        bounds_low: np.array,
-        obj_func: Optional[str] = None,
+        bounds_high: np.ndarray,
+        bounds_low: np.ndarray,
+        obj_func: str | None = None,
         take_negative: bool = False,
-        mask: Optional[np.array] = None,
-        transform: Optional[str] = None,
+        mask: np.ndarray | None = None,
+        transform: str | None = None,
         epsilon: float = 0.01,
     ):
         """
@@ -306,14 +306,14 @@ class SpotSetup:
 def perform_calibration(
     model_config: dict,
     obj_func: str,
-    bounds_high: np.array,
-    bounds_low: np.array,
+    bounds_high: np.ndarray,
+    bounds_low: np.ndarray,
     evaluations: int,
     algorithm: str = "DDS",
-    mask: Optional[np.array] = None,
-    transform: Optional[str] = None,
+    mask: np.ndarray | None = None,
+    transform: str | None = None,
     epsilon: float = 0.01,
-    sampler_kwargs: Optional[dict] = None,
+    sampler_kwargs: dict | None = None,
 ):
     """Perform calibration using SPOTPY.
 

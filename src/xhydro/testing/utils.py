@@ -20,10 +20,10 @@ __all__ = [
 
 
 def fake_hydrotel_project(
-    project_dir: Union[str, os.PathLike],
+    project_dir: str | os.PathLike,
     *,
-    meteo: Union[bool, xr.Dataset] = False,
-    debit_aval: Union[bool, xr.Dataset] = False,
+    meteo: bool | xr.Dataset = False,
+    debit_aval: bool | xr.Dataset = False,
 ):
     """Create a fake Hydrotel project in the given directory.
 
@@ -158,9 +158,9 @@ def fake_hydrotel_project(
 
 def publish_release_notes(
     style: str = "md",
-    file: Optional[Union[os.PathLike, StringIO, TextIO]] = None,
-    changes: Optional[Union[str, os.PathLike]] = None,
-) -> Optional[str]:
+    file: os.PathLike | StringIO | TextIO | None = None,
+    changes: str | os.PathLike | None = None,
+) -> str | None:
     """Format release history in Markdown or ReStructuredText.
 
     Parameters
@@ -183,7 +183,7 @@ def publish_release_notes(
     This function exists solely for development purposes.
     Adapted from xclim.testing.utils.publish_release_notes.
     """
-    if isinstance(changes, (str, Path)):
+    if isinstance(changes, str | Path):
         changes_file = Path(changes).absolute()
     else:
         changes_file = Path(__file__).absolute().parents[2].joinpath("CHANGELOG.rst")
@@ -235,6 +235,6 @@ def publish_release_notes(
 
     if not file:
         return changes
-    if isinstance(file, (Path, os.PathLike)):
+    if isinstance(file, os.PathLike):
         file = Path(file).open("w")
     print(changes, file=file)
