@@ -12,9 +12,9 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==0.25.1 \
-    --hash=sha256:d5e72b1a88db4cc808009fd4f03c3b3ab5c06db7bf1501e4f8387eb50c352589 \
-    --hash=sha256:f9a2723999be5c4416c854ad4a7f950491644944dff82a91634f8a45d1da81ac
+bump-my-version==0.26.0 \
+    --hash=sha256:9e2c01b7639960379440c4a371b3c8c0aa66cf6979985f1c9ba2e7c2fb4a185f \
+    --hash=sha256:fe35ebae91e92deebe809ce06bfa37303e45e4f087ad4a371f605702e767623f
     # via -r CI/requirements_ci.in
 cachetools==5.4.0 \
     --hash=sha256:3ae3b49a3d5e28a77a0be2b37dbcb89005058959cb2323858c2657c4a8cab474 \
@@ -393,16 +393,18 @@ tomlkit==0.13.0 \
     --hash=sha256:08ad192699734149f5b97b45f1f18dad7eb1b6d16bc72ad0c2335772650d7b72 \
     --hash=sha256:7075d3042d03b80f603482d69bf0c8f345c2b30e41699fd8883227f89972b264
     # via bump-my-version
-tox==4.17.1 \
-    --hash=sha256:2974597c0353577126ab014f52d1a399fb761049e165ff34427f84e8cfe6c990 \
-    --hash=sha256:2c41565a571e34480bd401d668a4899806169a4633e972ac296c54406d2ded8a
+tox==4.18.0 \
+    --hash=sha256:0a457400cf70615dc0627eb70d293e80cd95d8ce174bb40ac011011f0c03a249 \
+    --hash=sha256:5dfa1cab9f146becd6e351333a82f9e0ade374451630ba65ee54584624c27b58
     # via -r CI/requirements_ci.in
 typing-extensions==4.12.2 \
     --hash=sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d \
     --hash=sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8
     # via
+    #   annotated-types
     #   pydantic
     #   pydantic-core
+    #   rich
     #   rich-click
 urllib3==2.2.2 \
     --hash=sha256:a448b2f64d686155468037e1ace9f2d2199776e17f0a46610480d311f73e3472 \
