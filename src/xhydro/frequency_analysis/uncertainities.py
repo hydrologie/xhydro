@@ -29,7 +29,7 @@ from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
 
 
 def boostrap_obs(
-    obs: xr.DataArray, n_samples: int, seed: Optional[int] = None
+    obs: xr.DataArray, n_samples: int, seed: int | None = None
 ) -> xr.DataArray:
     """
     Generate bootstrap samples from observed data.
@@ -49,9 +49,7 @@ def boostrap_obs(
         Bootstrap samples with dimensions [samples, time].
     """
 
-    def _gen_boot(
-        f: np.array, n_samples: int, seed: Optional[int] = None
-    ) -> np.ndarray:
+    def _gen_boot(f: np.array, n_samples: int, seed: int | None = None) -> np.ndarray:
         vals = f[~np.isnan(f)]
         rng = np.random.default_rng(seed=seed)
         idx = rng.choice(vals, size=(n_samples, len(vals)))
@@ -175,7 +173,7 @@ def calc_q_iter(
     ds_groups: xr.Dataset,
     ds_moments_iter: xr.Dataset,
     return_periods: np.array,
-    small_regions_threshold: Optional[int] = 5,
+    small_regions_threshold: int | None = 5,
 ) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
