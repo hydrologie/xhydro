@@ -27,6 +27,7 @@ Example Usage:
 This module is designed for hydrologists and data scientists working with regional frequency analysis in water resources.
 """
 
+import datetime
 import math
 import warnings
 from typing import Optional
@@ -36,6 +37,10 @@ import pandas as pd
 import xarray as xr
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+from xhydro import __version__
+
+from .. import utils
 
 
 def cluster_indices(clust_num: int, labels_array: np.ndarray) -> np.ndarray:
@@ -142,6 +147,12 @@ def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
             "components": list(range(pca.n_components_)),
         },
     )
+
+    data_pca.attrs["description"] = (
+        "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
+    )
+    data_pca.attrs["fitted_variables"] = [v for v in ds.var()]
+
     return data_pca, obj_pca
 
 
@@ -287,7 +298,11 @@ def calc_h_z(
     z_score = _append_ds_vars_names(z_score, "_Z")
 
     ds_h = _append_ds_vars_names(ds_h, "_H")
-    return _combine_h_z(xr.merge([z_score, ds_h]))
+    ds = _combine_h_z(xr.merge([z_score, ds_h]))
+    ds.attrs["description"] = (
+        f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    )
+    return ds
 
 
 def _calculate_gev_tau4(
@@ -467,7 +482,16 @@ def mask_h_z(
     xarray.DataArray
         Boolean mask where True indicates groups that meet both threshold criteria.
     """
-    return (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
+    ds_out = (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
+    for v in ds_out.var():
+        ds_out[v].attrs["H_threshold"] = thresh_h
+        ds_out[v].attrs["Z_threshold"] = thresh_z
+        ds_out[v].attrs["description"] = "Mask for regions based on H & Z thresholds"
+        ds_out[v].attrs["history"] = utils.update_history(
+            f"Mask for regions based on H ({thresh_h}) & Z ({thresh_z}) thresholds",
+            ds_out[v],
+        )
+    return ds_out
 
 
 def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
@@ -627,9 +651,24 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
         The function uses the `moment_l` function to calculate L-moments for each individual stations.
         Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
-    return xr.apply_ufunc(
-        _moment_l_vector, ds, input_core_dims=[["time"]], output_core_dims=[["lmom"]]
+    ds = xr.apply_ufunc(
+        _moment_l_vector,
+        ds,
+        input_core_dims=[["time"]],
+        output_core_dims=[["lmom"]],
+        keep_attrs=True,
     ).assign_coords(lmom=["l1", "l2", "l3", "tau", "tau3", "tau4"])
+    # TODO: add attributes
+    for v in ds.var():
+        ds[v].attrs["long_name"] = "L-moments"
+        ds[v].attrs["standard_name"] = "L-moments"
+        ds[v].attrs[
+            "description"
+        ] = "L-moments based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240)"
+        ds[v].attrs["history"] = utils.update_history("Computed L-moments", ds[v])
+        ds[v].attrs.pop("cell_methods", None)
+        ds[v].attrs.pop("units", None)
+    return ds
 
 
 def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
@@ -656,4 +695,8 @@ def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
         dim="group_id",
     )
     ds_groups["group_id"].attrs["cf_role"] = "group_id"
+    for v in ds_groups.var():
+        ds_groups[v].attrs["history"] = utils.update_history(
+            "Grouped with", ds_groups[v]
+        )
     return ds_groups
