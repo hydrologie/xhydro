@@ -16,14 +16,15 @@ from xscen.utils import unstack_dates
 def major_precipitation_events(
     da: xr.DataArray, windows: list[int], quantile: float = 0.9
 ):
-    """Apply a mask to only keep precipitation events that exceed a given quantile for the given days accumulation.
+    """
+    Get precipitation events that exceed a given quantile for given time step accumulation. Based on Clavet-Gaumont et al. (2017).
 
     Parameters
     ----------
     da : xr.DataArray
         DataArray containing the precipitation values.
     windows : list of int
-        List of the number of days to accumulate precipitation.
+        List of the number of time steps to accumulate precipitation.
     quantile : float
         Threshold that limits the events to those that exceed this quantile. Defaults to 0.9.
 
@@ -86,8 +87,11 @@ def precipitable_water(
     zg: xr.DataArray,
     orog: xr.DataArray,
     windows: Optional[list[int]] = None,
+    beta_func: bool = True,
+    add_pre_lay: bool = False,
 ):
-    """Compute the precipitable water given antecedent conditions, for various durations.
+    """
+    Compute precipitable water based on Clavet-Gaumont et al. (2017) and Rousseau et al (2014).
 
     Parameters
     ----------
@@ -98,8 +102,15 @@ def precipitable_water(
     orog : xr.DataArray
         Surface altitude.
     windows : list of int, optional
-        Duration of the event. Defaults to [1].
-        Note that an additional day will be added to the window size to account for antecedent conditions.
+        Duration of the event in time steps. Defaults to [1].
+        Note that an additional time step will be added to the window size to account for antecedent conditions.
+    beta_func : bool, optional
+        If True, use the beta function proposed by Boer (1982) to get the pressure layers above the topography.
+        If False, the surface altitude is used as the lower boundary of the atmosphere assuming that the surface altitude
+        and the geopotential height are virtually identical at low altitudes.
+    add_pre_lay : bool, optional
+        If True, add the pressure layer between the surface and the lowest pressure level (e.g., at sea level).
+        If False, only the pressure layers between the lowest and highest pressure level are considered.
 
     Returns
     -------
@@ -108,8 +119,10 @@ def precipitable_water(
 
     Notes
     -----
-    The precipitable water of an event is defined as the maximum precipitable water found during the entire duration of the event, extending
-    up to 6 hours before the start of the event. Thus, the rolling operation made using `windows` is a maximum, not a sum.
+    1) The precipitable water of an event is defined as the maximum precipitable water found during the entire duration of the event,
+    extending up to one time step before the start of the event. Thus, the rolling operation made using `windows` is a maximum, not a sum.
+
+    2) beta_func = True and add_pre_lay = False follow Clavet-Gaumont et al. (2017) and Rousseau et al (2014).
     """
     windows = windows or [1]
 
@@ -123,21 +136,31 @@ def precipitable_water(
     # Correction of the first zone above the topography to consider the correct fraction.
     da = zg - orog
     da = da.where(da >= 0)
+
+    # The surface altitude is used as lower boundary of the atmosphere assuming that the surface altitude and the geopotential height
+    # are virtually identical at low altitudes. This layer will be removed if beta_func=True.
     zg_corr = (da + orog).fillna(orog)
 
-    # Betas computation for zones equal to zero.
-    db = da.where(da >= 0, 0)
-    beta = db.where(db <= 0, 1)
-
-    # Evaluation of average elevation for each pressure level, including beta coefficient
+    # Thickness of the pressure layers.
     zg1 = zg_corr.diff("plev", label="upper")
     zg2 = zg_corr.diff("plev", label="lower")
-    zg_moy = (
-        xr.concat([zg1, zg2], dim="variable").sum("variable") / 2
-    )  # FIXME: Is it `mean` or `sum / 2`?
-    zg_moy = zg_moy * beta
+    zg_moy = xr.concat([zg1, zg2], dim="variable").sum("variable") / 2
 
-    # Precipitable water. You can then juxtapose with Pevent to return only PWevent (max).
+    # Add the pressure layer below the lowest pressure level when the surface altitude is bewlow it (e.g., at  sea level).
+    if add_pre_lay:
+        plev_first = float(zg.plev.max())
+        zg_moy = zg_moy.where(
+            ~((zg_moy == zg_moy.sel(plev=plev_first)) & (~da.isnull())),
+            other=(zg + zg_moy).sel(plev=plev_first),
+        )
+
+    # Betas computation for zones equal to zero.
+    if beta_func:
+        db = da.where(da >= 0, 0)
+        beta = db.where(db <= 0, 1)
+        zg_moy = zg_moy * beta
+
+    # Precipitable water.
     pw = (zg_moy * hus).sum("plev")
     pw.name = "precipitable_water"
     pw.attrs = {
@@ -167,7 +190,7 @@ def precipitable_water(
 def precipitable_water_100y(
     pw: xr.DataArray, dist: str, method: str, mf: float = 0.2, rebuild_time: bool = True
 ):
-    """Compute the 100-year return period of precipitable water for each month of the year.
+    """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
 
     Parameters
     ----------
@@ -203,34 +226,35 @@ def precipitable_water_100y(
     pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
     if rebuild_time:
+        hour = np.unique(pw.time.dt.hour)
+        if len(hour) > 1:
+            raise ValueError("The time dimension must be homogeneous.")
+        hour = hour[0]
         pw100_m = pw100_m.expand_dims(dim={"year": np.unique(pw.time.dt.year)})
         pw100_m = pw100_m.stack(stacked_coords=("month", "year"))
-
-        time_coord = [
-            (
-                pw.time.sel(
-                    time=(pw.time.dt.month == m)
-                    & (pw.time.dt.year == y)
-                    & (pw.time.dt.day == 1)
-                ).values[0]
-                if len(
-                    pw.time.sel(
-                        time=(pw.time.dt.month == m)
-                        & (pw.time.dt.year == y)
-                        & (pw.time.dt.day == 1)
-                    )
+        if isinstance(pw.indexes["time"], pd.core.indexes.datetimes.DatetimeIndex):
+            time_coord = pd.DatetimeIndex(
+                pd.to_datetime(
+                    {
+                        "year": pw100_m.year,
+                        "month": pw100_m.month,
+                        "day": 1,
+                        "hour": hour,
+                    }
                 )
-                > 0
-                else np.array(np.datetime64("NaT"))
             )
-            for y, m in zip(
-                pw100_m.year.values,
-                pw100_m.month.values,
-            )
-        ]
+        elif isinstance(pw.indexes["time"], xr.coding.cftimeindex.CFTimeIndex):
+            time_coord = [
+                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1, hour)
+                for y, m in zip(
+                    pw100_m.year.values,
+                    pw100_m.month.values,
+                )
+            ]
+        else:
+            raise ValueError("The type of 'time' was not understood.")
 
         pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
-        pw100_m = pw100_m.where(pw100_m.time != np.datetime64("NaT"), drop=True)
         pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
         pw100_m = (
             pw100_m.interp_like(pw)
@@ -259,7 +283,7 @@ def compute_spring_and_summer_mask(
     snw : xarray.DataArray
         Snow water equivalent. Must be a length (e.g. "mm") or a mass (e.g. "kg m-2").
     thresh : Quantified
-        SWE threshold to define the start and end of winter.
+        Threshold snow thickness to define the start and end of winter.
     window_wint_start : int
         Minimum number of days with snow depth above or equal to threshold to define the start of winter.
     window_wint_end : int
@@ -330,17 +354,18 @@ def compute_spring_and_summer_mask(
     winter_end = xr.where(
         winter_end >= first_day, 1, winter_end
     )  # If winter ends the autumn before, set to 1
-    winter_end = winter_end.where(
-        winter_end < summer_end, summer_end - 1
-    )  # Winter can't end after summer
-    mask = xr.where(winter_start.isnull(), np.nan, 1)
-    winter_end = winter_end * mask
 
     # Sanity check
     if (winter_end.isnull() & winter_start.notnull()).any():
         raise ValueError(
             "Winter starts but never ends. Check your `freq` or `window` parameters."
         )
+
+    winter_end = winter_end.where(
+        winter_end < summer_end, summer_end - 1
+    )  # Winter can't end after summer
+    mask = xr.where(winter_start.isnull(), np.nan, 1)
+    winter_end = winter_end * mask
 
     # Summer starts when winter ends, or at the beginning of the year
     summer_start = xr.where(winter_end.isnull(), 1, winter_end + 1)
@@ -401,7 +426,7 @@ def compute_spring_and_summer_mask(
 
 
 def spatial_average_storm_configurations(da, radius):
-    """Compute the spatial average for different storm configurations (Clavet-Gaumont et al., 2017).
+    """Compute the spatial average for different storm configurations proposed by Clavet-Gaumont et al. (2017).
 
     Parameters
     ----------

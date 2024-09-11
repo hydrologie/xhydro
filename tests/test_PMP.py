@@ -52,7 +52,7 @@ class TestPMP:
 
         # Fake orography field
         ds["orog"] = xr.DataArray(
-            np.array([50, 100, 95, 25, 450]),
+            np.array([800, 100, 95, 25, 450]),
             dims=["location"],
             coords={"location": ds.location},
             attrs={
@@ -108,31 +108,131 @@ class TestPMP:
             ),
         )
 
-    def test_precipitable_water(self, open_dataset):
+    @pytest.mark.parametrize("beta_func", [True, False])
+    def test_precipitable_water(self, open_dataset, beta_func):
         ds = self.prepare_era5(open_dataset)
 
-        result = pmp.precipitable_water(ds.hus, ds.zg, ds.orog, windows=[1, 2])
-
-        np.testing.assert_array_almost_equal(
-            result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
-            np.array(
-                [
-                    598.74492655,
-                    584.66359906,
-                    584.66359906,
-                    726.52627974,
-                    726.52627974,
-                    726.52627974,
-                    683.28554801,
-                    683.28554801,
-                    244.57570789,
-                    211.11846614,
-                ]
-            ),
+        result = pmp.precipitable_water(
+            ds.hus,
+            ds.zg,
+            ds.orog,
+            windows=[1, 2],
+            beta_func=beta_func,
+            add_pre_lay=False,
         )
-        assert isinstance(result, xr.DataArray)
-        assert result.dims == ("window", "location", "time")
-        assert result.attrs["units"] == "mm"
+
+        if beta_func:
+            print(
+                result.sel(window=2, location="Halifax")
+                .isel(time=slice(400, 410))
+                .values
+            )
+            np.testing.assert_array_almost_equal(
+                result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
+                np.array(
+                    [
+                        364.72795369,
+                        584.66359906,
+                        584.66359906,
+                        726.52627974,
+                        726.52627974,
+                        726.52627974,
+                        683.28554801,
+                        683.28554801,
+                        211.11846614,
+                        211.11846614,
+                    ]
+                ),
+            )
+            assert isinstance(result, xr.DataArray)
+            assert result.dims == ("window", "location", "time")
+            assert result.attrs["units"] == "mm"
+        else:
+            print(
+                result.sel(window=2, location="Halifax")
+                .isel(time=slice(400, 410))
+                .values
+            )
+            np.testing.assert_array_almost_equal(
+                result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
+                np.array(
+                    [
+                        411.77127214,
+                        584.66359906,
+                        584.66359906,
+                        726.52627974,
+                        726.52627974,
+                        726.52627974,
+                        683.28554801,
+                        683.28554801,
+                        211.11846614,
+                        211.11846614,
+                    ]
+                ),
+            )
+
+    @pytest.mark.parametrize("add_pre_lay", [True, False])
+    def test_precipitable_water_2(self, open_dataset, add_pre_lay):
+        ds = self.prepare_era5(open_dataset)
+
+        result = pmp.precipitable_water(
+            ds.hus,
+            ds.zg,
+            ds.orog,
+            windows=[1, 2],
+            beta_func=True,
+            add_pre_lay=add_pre_lay,
+        )
+
+        if add_pre_lay:
+            print(
+                result.sel(window=2, location="Halifax")
+                .isel(time=slice(400, 410))
+                .values
+            )
+            np.testing.assert_array_almost_equal(
+                result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
+                np.array(
+                    [
+                        4283.78575011,
+                        4411.55270279,
+                        4411.55270279,
+                        5481.97127172,
+                        5481.97127172,
+                        5481.97127172,
+                        5155.70013505,
+                        5155.70013505,
+                        1592.98476697,
+                        1592.98476697,
+                    ]
+                ),
+            )
+            assert isinstance(result, xr.DataArray)
+            assert result.dims == ("window", "location", "time")
+            assert result.attrs["units"] == "mm"
+        else:
+            print(
+                result.sel(window=2, location="Halifax")
+                .isel(time=slice(400, 410))
+                .values
+            )
+            np.testing.assert_array_almost_equal(
+                result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
+                np.array(
+                    [
+                        364.72795369,
+                        584.66359906,
+                        584.66359906,
+                        726.52627974,
+                        726.52627974,
+                        726.52627974,
+                        683.28554801,
+                        683.28554801,
+                        211.11846614,
+                        211.11846614,
+                    ]
+                ),
+            )
 
     @pytest.mark.parametrize("rebuild_time", [True, False])
     def test_precipitable_water_100y(self, rebuild_time):
