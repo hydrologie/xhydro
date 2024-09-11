@@ -23,6 +23,7 @@ Internal changes
     * Warnings in Pull Requests from forks are now less buggy.
     * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
     * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
+* Added a new Batch (`.bat`) file to help facilitate the translation and generation of the `xhydro` documentation in Windows environments. (:pull:`196`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
