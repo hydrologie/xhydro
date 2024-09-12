@@ -486,6 +486,7 @@ def mask_h_z(
     for v in ds_out.var():
         ds_out[v].attrs["H_threshold"] = thresh_h
         ds_out[v].attrs["Z_threshold"] = thresh_z
+        ds_out[v].attrs["long_name"] = "Mask"
         ds_out[v].attrs["description"] = "Mask for regions based on H & Z thresholds"
         ds_out[v].attrs["history"] = update_history(
             f"Mask for regions based on H ({thresh_h}) & Z ({thresh_z}) thresholds",
