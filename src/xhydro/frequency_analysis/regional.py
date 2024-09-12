@@ -39,8 +39,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from xhydro import __version__
-
-from .. import utils
+from xhydro.utils import update_history
 
 
 def cluster_indices(clust_num: int, labels_array: np.ndarray) -> np.ndarray:
@@ -487,7 +486,7 @@ def mask_h_z(
         ds_out[v].attrs["H_threshold"] = thresh_h
         ds_out[v].attrs["Z_threshold"] = thresh_z
         ds_out[v].attrs["description"] = "Mask for regions based on H & Z thresholds"
-        ds_out[v].attrs["history"] = utils.update_history(
+        ds_out[v].attrs["history"] = update_history(
             f"Mask for regions based on H ({thresh_h}) & Z ({thresh_z}) thresholds",
             ds_out[v],
         )
@@ -665,7 +664,7 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
         ds[v].attrs[
             "description"
         ] = "L-moments based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240)"
-        ds[v].attrs["history"] = utils.update_history("Computed L-moments", ds[v])
+        ds[v].attrs["history"] = update_history("Computed L-moments", ds[v])
         ds[v].attrs.pop("cell_methods", None)
         ds[v].attrs.pop("units", None)
     return ds
@@ -696,7 +695,5 @@ def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
     )
     ds_groups["group_id"].attrs["cf_role"] = "group_id"
     for v in ds_groups.var():
-        ds_groups[v].attrs["history"] = utils.update_history(
-            "Grouped with", ds_groups[v]
-        )
+        ds_groups[v].attrs["history"] = update_history("Grouped with", ds_groups[v])
     return ds_groups
