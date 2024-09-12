@@ -661,7 +661,6 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
     # TODO: add attributes
     for v in ds.var():
         ds[v].attrs["long_name"] = "L-moments"
-        ds[v].attrs["standard_name"] = "L-moments"
         ds[v].attrs[
             "description"
         ] = "L-moments based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240)"
