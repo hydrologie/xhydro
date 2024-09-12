@@ -299,9 +299,14 @@ def calc_h_z(
 
     ds_h = _append_ds_vars_names(ds_h, "_H")
     ds = _combine_h_z(xr.merge([z_score, ds_h]))
-    ds.attrs["description"] = (
-        f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
-    )
+    ds["crit"].attrs[
+        "description"
+    ] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    ds["crit"].attrs["long_name"] = "Score"
+    for v in ds.var():
+        ds[v].attrs[
+            "description"
+        ] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
     return ds
 
 
@@ -541,7 +546,15 @@ def calculate_rp_from_afr(
     if l1 is None:
         station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
         l1 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
-    return _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
+    ds = _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
+    for v in ds.var():
+        ds[v].attrs["long_name"] = "Return period"
+        ds[v].attrs[
+            "description"
+        ] = "Calculated return periods for each group and specified return period."
+        ds[v].attrs["history"] = update_history("Computed return periods", ds[v])
+        ds[v].attrs["units"] = ds_groups[v].attrs["units"]
+    return ds
 
 
 def _calculate_ic_from_afr(
