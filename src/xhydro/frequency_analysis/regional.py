@@ -147,6 +147,7 @@ def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
         },
     )
 
+    data_pca.attrs["long_name"] = "Fitted Scaled Data"
     data_pca.attrs["description"] = (
         "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
     )
