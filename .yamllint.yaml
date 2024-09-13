@@ -31,8 +31,8 @@ rules:
     max: 180
     level: warning
 
-  new-lines:
-    type: unix
+  # new-lines:
+  #   type: unix
 
   trailing-spaces: {}
 
