@@ -285,6 +285,7 @@ class TestRegionalFrequencyAnalysis:
             coords={"time": time, "id": ["A", "B", "C"], "group_id": ["G1"]},
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
+        ds["Qp"].attrs["units"] = "m^3 s-1"
         return ds
 
     @pytest.fixture

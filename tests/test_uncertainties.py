@@ -270,6 +270,7 @@ def test_calc_q_iter():
         coords={"time": time, "id": ["S1", "B", "C"], "group_id": ["G1"]},
     )
     ds_groups["id"].attrs["cf_role"] = "timeseries_id"
+    ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
     ds_moments_iter = xr.concat(
         [ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id"
     )
