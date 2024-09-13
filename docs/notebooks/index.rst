@@ -9,4 +9,5 @@ Usage
     hydrological_modelling
     optimal_interpolation
     local_frequency_analysis
+    regional_frequency_analysis
     climate_change
