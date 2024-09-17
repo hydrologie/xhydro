@@ -4,11 +4,13 @@ Changelog
 
 v.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
+* Regional frequency analysis functions have been added under `xhydro.frequency_analysis` module. (:pull:`186`).
+* Ressampling function for uncertainitieshave been added under `xhydro.frequency_analysis` module. (:pull:`186`).
 * `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation from climate change scenarios. (:pull:`176`).
 
 Internal changes
