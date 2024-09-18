@@ -4,11 +4,14 @@ Changelog
 
 v.4.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
+* Regional frequency analysis functions have been added under `xhydro.frequency_analysis` module. (:pull:`186`).
+* Ressampling function for uncertainitieshave been added under `xhydro.frequency_analysis` module. (:pull:`186`).
+
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -23,6 +26,7 @@ Internal changes
     * Warnings in Pull Requests from forks are now less buggy.
     * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
     * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
+* Added a new Batch (`.bat`) file to help facilitate the translation and generation of the `xhydro` documentation in Windows environments. (:pull:`196`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
