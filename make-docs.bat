@@ -15,17 +15,8 @@ rem Remove specific rst files from docs/apidoc
 del /q docs\apidoc\xhydro*.rst
 del /q docs\apidoc\modules.rst
 
-rem Remove French locale .mo files
-del /q docs\locales\fr\LC_MESSAGES\*.mo
-
 rem Generate API documentation
 sphinx-apidoc -o docs\apidoc --private --module-first src\xhydro
-
-rem Generate gettext files
-sphinx-build -b gettext docs docs\_build\gettext
-
-rem Run sphinx-intl update
-sphinx-intl update -p docs\_build\gettext -d docs\locales -l fr
 
 rem Generate Sphinx HTML documentation in English
 call docs\make.bat html "-D language=en"
@@ -34,7 +25,7 @@ rem Generate Sphinx HTML documentation in French
 call docs\make.bat html "-D language=fr"
 
 if %ERRORLEVEL% neq 0 (
-    echo Error occurred during documentation update.
+    echo Error occurred during documentation generation.
     exit /b %ERRORLEVEL%
 )
 
