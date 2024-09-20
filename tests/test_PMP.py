@@ -89,21 +89,33 @@ class TestPMP:
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
 
-        precip_agg = pmp.spatial_average_storm_configurations(precip, 1).chunk(
+        precip_agg = pmp.spatial_average_storm_configurations(precip, 3).chunk(
             dict(time=-1)
         )
         result = pmp.major_precipitation_events(precip_agg, [1, 2], quantile=0.9)
 
         assert "window" in result.dims
-        np.testing.assert_array_equal(result.conf, ["1_0", "1_1", "1_2", "1_3"])
+        np.testing.assert_array_equal(
+            result.conf, ["2.1", "2.2", "3.1", "3.2", "3.3", "3.4", "4.1"]
+        )
         np.testing.assert_array_almost_equal(
-            result.sel(window=2).values,
+            result.sel(window=2, conf=["2.2", "3.4"]).values,
             np.array(
                 [
-                    [np.nan, np.nan, np.nan, 1.43355765, np.nan],
-                    [np.nan, 1.10670883, np.nan, np.nan, np.nan],
-                    [np.nan, 0.79007755, np.nan, np.nan, np.nan],
-                    [np.nan, np.nan, 1.836086, np.nan, np.nan],
+                    [
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[np.nan, 1.35007655], [np.nan, np.nan]],
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[0.87522743, np.nan], [np.nan, np.nan]],
+                    ],
+                    [
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                        [[0.85212627, np.nan], [np.nan, np.nan]],
+                        [[np.nan, np.nan], [np.nan, np.nan]],
+                    ],
                 ]
             ),
         )
@@ -297,7 +309,7 @@ class TestPMP:
                 "time": xr.cftime_range(
                     start="2000", periods=2000, freq="1D", calendar="noleap"
                 ),
-                "conf": ["1_0", "4.1_0"],
+                "conf": ["1.1", "4.1"],
             },
         )
         da_pw = da_pw.rename("pw")
@@ -329,34 +341,8 @@ class TestPMP:
         da["some_y"].attrs = {"axis": "Y"}
         da["some_x"].attrs = {"axis": "X"}
 
-        result = pmp.spatial_average_storm_configurations(da, 3)
-
-        np.testing.assert_array_equal(
-            result.conf,
-            [
-                "1_0",
-                "1_1",
-                "1_2",
-                "1_3",
-            ],
-        )
-        np.testing.assert_array_almost_equal(
-            result[3, :],
-            [
-                0.59865848,
-                0.86617615,
-                0.96990985,
-                0.18340451,
-                0.29122914,
-                0.36636184,
-                0.51423444,
-                0.17052412,
-                0.80839735,
-                0.44015249,
-            ],
-        )
-        assert result.shape[1] == da.shape[0]
-        assert isinstance(result, xr.DataArray)
+        with pytest.raises(ValueError):
+            pmp.spatial_average_storm_configurations(da, 3)
 
     def test_spatial_average_storm_configurations2(self):
         np.random.seed(42)
@@ -377,20 +363,69 @@ class TestPMP:
 
         result = pmp.spatial_average_storm_configurations(da, 10)
 
-        np.testing.assert_array_almost_equal(
-            result[10, :],
+        np.testing.assert_array_equal(
+            result.conf,
             [
-                0.66532621,
-                0.49524717,
-                0.36158708,
-                0.35695411,
-                0.88701469,
-                0.47185446,
-                0.87235873,
-                0.18527881,
-                0.4715606,
-                0.71793226,
+                "2.1",
+                "2.2",
+                "3.1",
+                "3.2",
+                "3.3",
+                "3.4",
+                "4.1",
+                "5.1",
+                "5.2",
+                "5.3",
+                "5.4",
             ],
+        )
+
+        np.testing.assert_array_almost_equal(
+            result[10, :, :],
+            np.array(
+                [
+                    [
+                        [np.nan, 0.33907024, 0.55259251, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.50715886, 0.26124513, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.37449802, 0.35094036, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.49753116, 0.36187383, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.42009121, 0.62731504, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.3700457, 0.40477336, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.6327582, 0.71380813, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.35464784, 0.33961, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.53146259, 0.52829354, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                    [
+                        [np.nan, 0.40495285, 0.41413964, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan],
+                    ],
+                ]
+            ),
         )
         assert result.shape[1] == da.shape[0]
         assert isinstance(result, xr.DataArray)
@@ -413,19 +448,18 @@ class TestPMP:
 
         result = pmp.spatial_average_storm_configurations(da, 3000)
         np.testing.assert_array_almost_equal(
-            result[10, :],
-            [
-                0.6413043,
-                0.39272977,
-                0.75969915,
-                0.40939542,
-                0.37340927,
-                0.37256953,
-                0.58516013,
-                0.26979637,
-                0.60744483,
-                0.28081279,
-            ],
+            result[:, 5, :, :].values,
+            np.array(
+                [
+                    [[0.37567338, np.nan], [0.32925325, np.nan]],
+                    [[0.45199877, 0.25292785], [np.nan, np.nan]],
+                    [[0.42345313, np.nan], [np.nan, np.nan]],
+                    [[0.26600012, np.nan], [np.nan, np.nan]],
+                    [[0.37256953, np.nan], [np.nan, np.nan]],
+                    [[0.34783047, np.nan], [np.nan, np.nan]],
+                    [[0.35246331, np.nan], [np.nan, np.nan]],
+                ]
+            ),
         )
         assert result.shape[1] == da.shape[0]
         assert isinstance(result, xr.DataArray)

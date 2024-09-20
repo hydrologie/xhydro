@@ -356,10 +356,6 @@ def compute_spring_and_summer_mask(
     )  # If winter ends the autumn before, set to 1
 
     # Sanity check
-    if winter_start.isnull().any():
-        raise ValueError(
-            "Winter never starts. Check the `thresh`, `freq` or `window` parameters."
-        )
     if (winter_end.isnull() & winter_start.notnull()).any():
         raise ValueError(
             "Winter starts but never ends. Check your `freq` or `window` parameters."
@@ -429,7 +425,7 @@ def compute_spring_and_summer_mask(
     )
 
 
-def spatial_average_storm_configurations(da, radius, stat_agg="mean"):
+def spatial_average_storm_configurations(da, radius):
     """Compute the spatial average for different storm configurations proposed by Clavet-Gaumont et al. (2017).
 
     Parameters
@@ -438,225 +434,130 @@ def spatial_average_storm_configurations(da, radius, stat_agg="mean"):
         DataArray containing the precipitation values.
     radius : float
         Maximum radius of the storm.
-    stat_agg : str, optional
-        How to aggregate the multiple possible configurations for the same area and the same number of grid cells. Can be "mean" or "max".
 
     Returns
     -------
     xr.DataSet
-        DataSet contaning the spatial averages for all the storm configurations.
+        DataSet contaning the spatial averages for all the storm configurations. The y and x coordinates indicate
+        the location of the storm. This location is determined by n//2, where n is the total number of cells for
+        both the rows and columns in the configuration, and // represents floor division.
 
     Notes
     -----
     https://doi.org/10.1016/j.ejrh.2017.07.003.
     """
     dict_config = {
-        "2": [[0, 0], [0, 1], 2],
-        "3": [[0, 0, -1], [0, 1, 0], 4],
-        "4": [[0, 0, -1, -1], [0, 1, 0, 1], 1],
-        "5.a": [[0, 0, -1, -1, 0], [0, 1, 0, 1, -1], 4],
-        "5.b": [[0, 0, -1, -1, -1], [0, 1, -1, 0, 1], 4],
-        "6": [[0, 0, 0, 1, 1, 1], [0, 1, -1, 0, 1, -1], 2],
-        "7": [[0, 0, 0, -1, -1, -1, 1], [0, 1, -1, 0, 1, -1, 0], 4],
-        "8": [[0, 0, 0, -1, -1, -1, 1, 1], [0, 1, -1, 0, 1, -1, 0, 1], 4],
-        "9": [[0, 0, 0, -1, -1, -1, 1, 1, 1], [0, 1, -1, 0, 1, -1, 0, 1, -1], 1],
-        "10": [[0, 0, 0, 0, -1, -1, -1, -1, 1, 1], [-1, 0, 1, 2, -1, 0, 1, 2, 0, 1], 4],
-        "12": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
-            2,
+        "2.1": [[0, 0], [0, 1]],
+        "2.2": [[0, 1], [0, 0]],
+        "3.1": [[0, 1, 1], [0, 0, 1]],
+        "3.2": [[0, 1, 1], [1, 0, 1]],
+        "3.3": [[0, 0, 1], [0, 1, 1]],
+        "3.4": [[0, 0, 1], [0, 1, 0]],
+        "4.1": [[0, 0, 1, 1], [0, 1, 0, 1]],
+        "5.1": [[0, 0, 1, 1, 1], [1, 2, 0, 1, 2]],
+        "5.2": [[0, 0, 0, 1, 1], [0, 1, 2, 1, 2]],
+        "5.3": [[0, 0, 0, 1, 1], [0, 1, 2, 0, 1]],
+        "5.4": [[0, 0, 1, 1, 1], [0, 1, 0, 1, 2]],
+        "5.5": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 0]],
+        "5.6": [[0, 0, 1, 1, 2], [0, 1, 0, 1, 1]],
+        "5.7": [[0, 1, 1, 2, 2], [0, 0, 1, 0, 1]],
+        "5.8": [[0, 1, 1, 2, 2], [1, 0, 1, 0, 1]],
+        "6.1": [[0, 0, 0, 1, 1, 1], [0, 1, 2, 0, 1, 2]],
+        "6.2": [[0, 0, 1, 1, 2, 2], [0, 1, 0, 1, 0, 1]],
+        "7.1": [[0, 0, 0, 1, 1, 1, 2], [0, 1, 2, 0, 1, 2, 1]],
+        "7.2": [[0, 0, 1, 1, 1, 2, 2], [0, 1, 0, 1, 2, 0, 1]],
+        "7.3": [[0, 1, 1, 1, 2, 2, 2], [1, 0, 1, 2, 0, 1, 2]],
+        "7.4": [[0, 0, 1, 1, 1, 2, 2], [1, 2, 0, 1, 2, 1, 2]],
+        "8.1": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 1, 2]],
+        "8.2": [[0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 0, 1, 2, 0, 1, 2]],
+        "8.3": [[0, 0, 1, 1, 1, 2, 2, 2], [1, 2, 0, 1, 2, 0, 1, 2]],
+        "8.4": [[0, 0, 0, 1, 1, 1, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1]],
+        "9.1": [[0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2]],
+        "10.1": [[0, 0, 0, 0, 1, 1, 1, 1, 2, 2], [0, 1, 2, 3, 0, 1, 2, 3, 1, 2]],
+        "10.2": [[0, 0, 1, 1, 1, 1, 2, 2, 2, 2], [1, 2, 0, 1, 2, 3, 0, 1, 2, 3]],
+        "10.3": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [0, 1, 0, 1, 2, 0, 1, 2, 0, 1]],
+        "10.4": [[0, 0, 1, 1, 1, 2, 2, 2, 3, 3], [1, 2, 0, 1, 2, 0, 1, 2, 1, 2]],
+        "12.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "14": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, 0, 1],
-            4,
+        "12.2": [
+            [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
         ],
-        "16": [
-            [0, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
-            1,
+        "14.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
         ],
-        "18": [
-            [0, 0, 0, 0, -2, -2, -2, -2, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, 0, 1],
-            4,
+        "14.2": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2],
         ],
-        "20": [
-            [0, 0, 0, 0, -2, -2, -2, -2, -1, -1, -1, -1, 1, 1, 1, 1, 2, 2, 2, 2],
-            [-1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2, -1, 0, 1, 2],
-            2,
+        "14.3": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "23": [
-            [
-                -2,
-                -2,
-                -2,
-                -2,
-                -2,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                1,
-                2,
-                2,
-                2,
-            ],
-            [
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-            ],
-            4,
+        "14.4": [
+            [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3],
+            [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3],
         ],
-        "24": [
-            [
-                -2,
-                -2,
-                -2,
-                -2,
-                -1,
-                -1,
-                -1,
-                -1,
-                0,
-                0,
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                2,
-                2,
-                2,
-                2,
-                3,
-                3,
-                3,
-                3,
-            ],
-            [
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-                2,
-                -1,
-                0,
-                1,
-                2,
-            ],
-            2,
+        "16.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
         ],
-        "25": [
-            [
-                -2,
-                -2,
-                -2,
-                -2,
-                -2,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                1,
-                1,
-                1,
-                1,
-                2,
-                2,
-                2,
-                2,
-                2,
-            ],
-            [
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-            ],
-            1,
+        "18.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
+        ],
+        "18.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
+        ],
+        "18.3": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2],
+        ],
+        "18.4": [
+            [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "20.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "20.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "23.1": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3],
+        ],
+        "23.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+            [1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3, 4],
+        ],
+        "23.3": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 1, 2, 3],
+        ],
+        "23.4": [
+            [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
+        ],
+        "24.1": [
+            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
+            [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5],
+        ],
+        "24.2": [
+            [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
+            [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        ],
+        "25.1": [
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4],
         ],
     }
-
-    if stat_agg not in ["mean", "max"]:
-        raise ValueError(
-            f"Invalid value for stat_agg: {stat_agg}. Must be 'mean' or 'max'."
-        )
 
     x = da.cf.axes["X"][0]
     y = da.cf.axes["Y"][0]
@@ -665,20 +566,31 @@ def spatial_average_storm_configurations(da, radius, stat_agg="mean"):
     dy = (da[y][1] - da[y][0]).values
     dx = (da[x][1] - da[x][0]).values
 
+    r_max = dy * max(dict_config["24.2"][0]) / 2
+    if r_max < radius:
+        warnings.warn(
+            f"The chosen `radius` exceeds the maximum storm radius that can be calculated. As a result, the maximum storm radius will be {r_max}."
+        )
+
+    if (dy > radius) or (dx > radius):
+        raise ValueError(
+            "The chosen `radius` is smaller than the grid size. Please choose a larger `radius`."
+        )
+
     # Number of pixels in da
     npy_da = len(da[y])
     npx_da = len(da[x])
 
     da_stacked = da.stack(stacked_coords=("y", "x"))
-    confi_ds = xr.Dataset()
+    confi_lst = []
     for name, confi in dict_config.items():
 
         conf_y = confi[0]
         conf_x = confi[1]
 
         # Number of pixels in the configuration
-        npy_confi = np.abs(max(conf_y)) + np.abs(min(conf_y)) + 1
-        npx_confi = np.abs(max(conf_x)) + np.abs(min(conf_x)) + 1
+        npy_confi = np.abs(conf_y).max() + 1
+        npx_confi = np.abs(conf_x).max() + 1
 
         # Checks that the configuration size is within the desired storn size.
         if (dy * npy_confi / 2 > radius) or (dx * npx_confi / 2 > radius):
@@ -704,144 +616,42 @@ def spatial_average_storm_configurations(da, radius, stat_agg="mean"):
         pos_y = (conf_y_ex + inc_y).astype(int)
         pos_x = (conf_x_ex + inc_x).astype(int)
 
-        # Drop shifted configuration that are out of the domain
-        pos_y = pos_y[~np.any(pos_y < 0, axis=(1))]
-        pos_x = pos_x[~np.any(pos_x < 0, axis=(1))]
-
         # List of all the combinations of the shifted configurations
         shifted_confi = list(product(pos_y, pos_x))
 
-        # Center of the configuration
-        cen_conf = np.where((np.array(conf_y) == 0) & (np.array(conf_x) == 0))[0][0]
-
-        list_conf = []
+        list_mean = []
         for confi_shifted in shifted_confi:
+
             matrix_mask = np.full((len(da[y]), len(da[x])), np.nan)
 
-            shift_y = confi_shifted[0]
-            shift_x = confi_shifted[1]
+            cen_shift_y = (min(confi_shifted[0]) + max(confi_shifted[0])) // 2
+            cen_shift_x = (min(confi_shifted[1]) + max(confi_shifted[1])) // 2
 
-            matrix_mask[(shift_y, shift_x)] = 1
-
-            cen_shift_y = shift_y[cen_conf]
-            cen_shift_x = shift_x[cen_conf]
-
-            list_rot = []
-            for rot in range(4):
-                matrix_mask_rot = _rotate_around_center(
-                    matrix_mask, (cen_shift_y, cen_shift_x), k=rot
+            matrix_mask[(confi_shifted[0], confi_shifted[1])] = 1
+            da_mask = da * matrix_mask
+            da_mean = (
+                da_mask.mean(dim=[x, y])
+                .expand_dims(
+                    dim={
+                        "y": [da[y][cen_shift_y].values],
+                        "x": [da[x][cen_shift_x].values],
+                    }
                 )
-
-                if np.sum(~np.isnan(matrix_mask_rot)) != np.shape(
-                    confi_shifted[0]
-                ):  # Include nan to mask the cases when the configuration is out of the domain.
-                    matrix_mask_rot[:, :] = np.nan
-
-                da_mask = da * matrix_mask_rot
-
-                list_rot.append(
-                    da_mask.mean(dim=["x", "y"]).expand_dims(
-                        dim={"conf": [name + "_" + str(rot)]}
-                    )
-                )
-
-            if stat_agg == "max":
-                rot_concat = xr.concat(list_rot, dim="conf").max(
-                    dim="conf", skipna=False
-                )
-
-            if stat_agg == "mean":
-                rot_concat = xr.concat(list_rot, dim="conf").mean(
-                    dim="conf", skipna=False
-                )
-
-            list_conf.append(
-                rot_concat.expand_dims(
-                    dim={"y": [da.y[cen_shift_y]], "x": [da.x[cen_shift_x]]}
-                ).stack(stacked_coords=("y", "x"))
+                .stack(stacked_coords=("y", "x"))
             )
 
-        confi_ds[name] = xr.concat(list_conf, dim="stacked_coords").reindex_like(
-            da_stacked, fill_value=np.nan
+            list_mean.append(da_mean)
+
+        confi_lst.append(
+            xr.concat(list_mean, dim="stacked_coords")
+            .reindex_like(da_stacked, fill_value=np.nan)
+            .unstack("stacked_coords")
+            .expand_dims(dim={"conf": [name]})
         )
 
-    confi_ds = confi_ds.squeeze().unstack("stacked_coords")
+    confi_ds = xr.concat(confi_lst, dim="conf")
 
     if "units" in da.attrs:
         confi_ds.attrs["units"] = da.attrs["units"]
 
     return confi_ds
-
-
-def _rotate_around_center(matrix, center, k=1):
-    """
-    Rotate a matrix around a given center point by 90 degrees k times.
-
-    Parameters
-    ----------
-    matrix : array_like
-        2D numpy array to be rotated.
-    center: Tuple
-        (row, col) indicating the center of rotation.
-    k : int
-        Number of 90-degree rotations.
-
-    Returns
-    -------
-    array_like
-        Rotated 2D numpy array.
-    """
-
-    def _rotate_point_k_times(py, px, cy, cx, k):
-        """
-        Rotate a point (px, py) by 90 degrees around a center point (cx, cy) for k times.
-
-        Parameters
-        ----------
-        py : float
-            y-coordinate of the point to be rotated.
-        px : float
-            x-coordinate of the point to be rotated.
-        cy : float
-            y-coordinate of the center of rotation.
-        cx : float
-            x-coordinate of the center of rotation.
-        k : int
-            Number of 90-degree rotations.
-
-        Returns
-        -------
-        Tuple
-            New coordinates of the point after rotation.
-        """
-        # Normalize n to be within [0, 3] to avoid unnecessary rotations
-        k = k % 4
-
-        # Translate point to origin (subtract the center coordinates)
-        translated_x = px - cx
-        translated_y = py - cy
-
-        # Rotate point k times
-        for _ in range(k):
-            translated_x, translated_y = -translated_y, translated_x
-
-        # Translate point back to original coordinates
-        final_x = translated_x + cx
-        final_y = translated_y + cy
-
-        return (final_y, final_x)
-
-    matrix = np.array(matrix)
-    rows, cols = matrix.shape
-    rotated_matrix = np.full_like(matrix, np.nan)
-
-    center_row, center_col = center
-
-    for r in range(rows):
-        for c in range(cols):
-            if not np.isnan(matrix[r, c]):
-                new_r, new_c = _rotate_point_k_times(r, c, center_row, center_col, k)
-                if 0 <= new_r < rows and 0 <= new_c < cols:
-                    rotated_matrix[new_r, new_c] = matrix[r, c]
-
-    return rotated_matrix
