@@ -92,7 +92,7 @@ jobs:
             echo "Version is stable, bumping 'patch' version"
             bump-my-version bump patch
           fi
-          NEW_VERSION="$(grep -E '__version__' src/hydrologie/__init__.py | cut -d ' ' -f3)"
+          NEW_VERSION="$(grep -E '__version__' src/xhydro/__init__.py | cut -d ' ' -f3)"
           echo "new_version=${NEW_VERSION}"
           echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
       - name: Push Changes
