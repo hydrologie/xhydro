@@ -25,10 +25,10 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  # "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology"
@@ -68,13 +68,13 @@ dependencies = [
 dev = [
   # Dev tools and testing
   "pip >=24.2.0",
-  "bump-my-version >=0.25.1",
+  "bump-my-version >=0.26.0",
   "watchdog >=4.0.0",
   "flake8 >=7.1.1",
   "flake8-alphabetize >=0.0.21",
   "flake8-rst-docstrings >=0.3.0",
   "flit >=3.9.0,<4.0",
-  "tox >=4.17.1",
+  "tox >=4.18.0",
   "coverage >=7.5.0",
   "coveralls >=4.0.1",
   "mypy",
@@ -118,7 +118,8 @@ all = ["xhydro[dev]", "xhydro[docs]"]
 target-version = [
   "py310",
   "py311",
-  "py312"
+  "py312",
+  "py313"
 ]
 
 [tool.bumpversion]
@@ -138,11 +139,11 @@ serialize = [
 filename = "CHANGELOG.rst"
 include_bumps = ["release"]
 search = """\
-`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
 --------------------------------------------------------
 """
 replace = """\
-`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
 --------------------------------------------------------
 
 Contributors:
@@ -186,10 +187,12 @@ values = [
   "release"
 ]
 
+[tool.coverage.paths]
+source = ["src/xhydro/", "*/site-packages/xhydro/"]
+
 [tool.coverage.run]
 omit = ["tests/*.py"]
 relative_files = true
-source = ["xhydro"]
 
 [tool.flit.sdist]
 include = [
@@ -291,7 +294,6 @@ markers = [
 [tool.ruff]
 src = ["xhydro"]
 line-length = 150
-target-version = "py310"
 exclude = [
   ".eggs",
   ".git",
