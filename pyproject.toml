@@ -139,11 +139,11 @@ serialize = [
 filename = "CHANGELOG.rst"
 include_bumps = ["release"]
 search = """\
-`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
 --------------------------------------------------------
 """
 replace = """\
-`Unreleased <https://github.com/TC-FF/xhydro>`_ (latest)
+`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
 --------------------------------------------------------
 
 Contributors:
