@@ -26,6 +26,11 @@ Internal changes
     * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
     * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
 * Added two new Batch (`.bat`) files to help facilitate the translation of and the generation of the `xhydro` documentation in Windows environments. (:pull:`196`).
+* The bumpversion workflow now uses the Hydrologie Helper Bot to make signed commits. (:pull:`199`).
+* Updated the cookiecutter template to the latest commit. (:pull:`199`):
+    * Updated development dependencies to the latest versions.
+    * Staged support for Python3.13.
+    * Added environment caching to existing workflows.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
