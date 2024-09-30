@@ -62,6 +62,8 @@ autodoc_default_options = {
     "special-members": False,
 }
 
+autodoc_mock_imports = ["esmpy", "xesmf"]
+
 # For styling class attributes
 napoleon_use_ivar = True
 
@@ -91,10 +93,8 @@ else:
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-source_suffix = [".rst"]
+# You can specify multiple suffix as a dictionary of suffix: filetype
+source_suffix = {".rst": "restructuredtext"}
 
 # The master toctree document.
 master_doc = "index"
