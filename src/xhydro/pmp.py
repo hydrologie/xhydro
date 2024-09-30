@@ -32,6 +32,10 @@ def major_precipitation_events(
     -------
     xr.DataArray
         Masked DataArray containing the major precipitation events.
+
+    Notes
+    -----
+    https://doi.org/10.1016/j.ejrh.2017.07.003
     """
     da_exp = xr.concat(
         [
@@ -55,7 +59,6 @@ def major_precipitation_events(
     events.attrs["description"] = (
         f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
     )
-    events.attrs["standard_name"] = ""
 
     return events
 
@@ -123,6 +126,10 @@ def precipitable_water(
     extending up to one time step before the start of the event. Thus, the rolling operation made using `windows` is a maximum, not a sum.
 
     2) beta_func = True and add_pre_lay = False follow Clavet-Gaumont et al. (2017) and Rousseau et al (2014).
+
+    3) https://doi.org/10.1016/j.ejrh.2017.07.003
+       https://doi.org/10.1016/j.jhydrol.2014.10.053
+       https://doi.org/10.1175/1520-0493(1982)110<1801:DEIIC>2.0.CO;2
     """
     windows = windows or [1]
 
@@ -201,17 +208,20 @@ def precipitable_water_100y(
     method : {"ML" or "MLE", "MM", "PWM", "APP"}
         Fitting method, either maximum likelihood (ML or MLE), method of moments (MM) or approximate method (APP).
         Can also be the probability weighted moments (PWM), also called L-Moments, if a compatible `dist` object is passed.
-        The PWM method is usually more robust to outliers.
     mf : float
         Maximum majoration factor of the 100-year event compared to the maximum of the timeseries.
         Used as an upper limit for the frequency analysis.
     rebuild_time : bool
-        Whether or not to reconstruct a timeseries with the same dimensions as `pw`.
+        Whether or not to reconstruct a timeseries with the same time dimensions as `pw`.
 
     Returns
     -------
     xr.DataArray
         Precipitable water for a 100-year return period.
+
+    Notes
+    -----
+    https://doi.org/10.1016/j.ejrh.2017.07.003
     """
     # Compute max monthly and add a «year» dimension.
     pw_m = pw.resample({"time": "MS"}).max()
