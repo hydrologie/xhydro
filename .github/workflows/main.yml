@@ -110,18 +110,17 @@ jobs:
         uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
+          cache-environment: false
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Conda and Mamba versions
-        run: |
-          echo "micromamba $(micromamba --version)"
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
@@ -172,22 +171,18 @@ jobs:
         uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
-          cache-environment: true
+          cache-environment: false
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
-            python=${{ matrix.python-version }}
             lmoments3
-      - name: Conda and Mamba versions
-        run: |
-          mamba --version
-          echo "micromamba $(micromamba --version)"
+            python=${{ matrix.python-version }}
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
@@ -243,23 +238,18 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           cache-downloads: true
-          cache-environment: true
+          cache-environment: false
           environment-file: environment-dev.yml
           create-args: >-
-            mamba
-            python=${{ matrix.python-version }}
             lmoments3
+            python=${{ matrix.python-version }}
           micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
-      - name: Conda and Mamba versions
-        run: |
-          mamba --version
-          echo "micromamba $(micromamba --version)"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
       - name: Check versions
         run: |
-          conda list
+          micromamba list
           echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test Notebooks
