@@ -249,6 +249,7 @@ jobs:
             mamba
             python=${{ matrix.python-version }}
             lmoments3
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Conda and Mamba versions
         run: |
           mamba --version
