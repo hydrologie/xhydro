@@ -140,7 +140,7 @@ class TestFormatInputs:
             .drop_vars("time")
             .equals(ds_loaded.isel(time=0).drop_vars("time"))
         )
-        assert Path.isfile(tmpdir / "meteo.nc.config")
+        assert Path(tmpdir / "meteo.nc.config").is_file()
 
         assert cfg["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"
         assert cfg["STATION_DIM_NAME"] == "station"
