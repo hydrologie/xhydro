@@ -1,5 +1,5 @@
-bump-my-version==0.26.0
+bump-my-version==0.26.1
 coveralls==4.0.1
 pip==24.2.0
 flit==3.9.0
-tox==4.18.0
+tox==4.21.0

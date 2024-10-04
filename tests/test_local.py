@@ -46,20 +46,10 @@ class TestFit:
             as_dataset=True,
         )
         params = xhfa.local.fit(ds)
-        np.testing.assert_array_equal(
-            params.dparams, ["a", "c", "skew", "loc", "scale"]
-        )
+        np.testing.assert_array_equal(params.dparams, ["c", "skew", "loc", "scale"])
         np.testing.assert_array_equal(
             params.scipy_dist,
-            [
-                "expon",
-                "gamma",
-                "genextreme",
-                "genpareto",
-                "gumbel_r",
-                "pearson3",
-                "weibull_min",
-            ],
+            ["genextreme", "pearson3", "gumbel_r", "expon"],
         )
 
     @pytest.mark.parametrize("miny", [10, 15])
