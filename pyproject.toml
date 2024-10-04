@@ -123,7 +123,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.3.7-dev.8"
+current_version = "0.4.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -134,33 +134,6 @@ serialize = [
   "{major}.{minor}.{patch}-{release}.{build}",
   "{major}.{minor}.{patch}"
 ]
-
-[[tool.bumpversion.files]]
-filename = "CHANGELOG.rst"
-include_bumps = ["release"]
-search = """\
-`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
---------------------------------------------------------
-"""
-replace = """\
-`Unreleased <https://github.com/hydrologie/xhydro>`_ (latest)
---------------------------------------------------------
-
-Contributors:
-
-Changes
-^^^^^^^
-* No change.
-
-Fixes
-^^^^^
-* No change.
-
-.. _changes_{new_version}:
-
-`v{new_version} <https://github.com/TC-FF/xhydro/tree/{new_version}>`_
-------------------------------------------------------
-"""
 
 [[tool.bumpversion.files]]
 filename = "src/xhydro/__init__.py"
