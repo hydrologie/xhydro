@@ -2,8 +2,8 @@
 Changelog
 =========
 
-v.4.0 (unreleased)
--------------------
+v.4.0 (2024-10-04)
+------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
