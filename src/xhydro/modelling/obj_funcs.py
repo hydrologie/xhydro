@@ -30,13 +30,13 @@ __all__ = ["get_objective_function", "transform_flows"]
 
 
 def get_objective_function(
-    qobs: np.array,
-    qsim: np.array,
+    qobs: np.ndarray,
+    qsim: np.ndarray,
     obj_func: str = "rmse",
     take_negative: bool = False,
-    mask: Optional[np.array] = None,
-    transform: Optional[str] = None,
-    epsilon: Optional[float] = None,
+    mask: np.ndarray | None = None,
+    transform: str | None = None,
+    epsilon: float | None = None,
 ):
     """Entrypoint function for the objective function calculation.
 
@@ -298,9 +298,9 @@ def _get_optimizer_minimize_or_maximize(algorithm: str):
 
 
 def transform_flows(
-    qsim: np.array,
-    qobs: np.array,
-    transform: Optional[str] = None,
+    qsim: np.ndarray,
+    qobs: np.ndarray,
+    transform: str | None = None,
     epsilon: float = 0.01,
 ):
     """Transform flows before computing the objective function.
@@ -368,7 +368,7 @@ BEGIN OBJECTIVE FUNCTIONS DEFINITIONS
 """
 
 
-def _abs_bias(qsim: np.array, qobs: np.array):
+def _abs_bias(qsim: np.ndarray, qobs: np.ndarray):
     """Absolute bias metric.
 
     Parameters
@@ -393,7 +393,7 @@ def _abs_bias(qsim: np.array, qobs: np.array):
     return np.abs(_bias(qsim, qobs))
 
 
-def _abs_pbias(qsim: np.array, qobs: np.array):
+def _abs_pbias(qsim: np.ndarray, qobs: np.ndarray):
     """Absolute pbias metric.
 
     Parameters
@@ -418,7 +418,7 @@ def _abs_pbias(qsim: np.array, qobs: np.array):
     return np.abs(_pbias(qsim, qobs))
 
 
-def _abs_volume_error(qsim: np.array, qobs: np.array):
+def _abs_volume_error(qsim: np.ndarray, qobs: np.ndarray):
     """Absolute value of the volume error metric.
 
     Parameters
@@ -444,7 +444,7 @@ def _abs_volume_error(qsim: np.array, qobs: np.array):
     return np.abs(_volume_error(qsim, qobs))
 
 
-def _agreement_index(qsim: np.array, qobs: np.array):
+def _agreement_index(qsim: np.ndarray, qobs: np.ndarray):
     """Index of agreement metric.
 
     Parameters
@@ -471,7 +471,7 @@ def _agreement_index(qsim: np.array, qobs: np.array):
     return 1 - (a / c)
 
 
-def _bias(qsim: np.array, qobs: np.array):
+def _bias(qsim: np.ndarray, qobs: np.ndarray):
     """The bias metric.
 
     Parameters
@@ -498,7 +498,7 @@ def _bias(qsim: np.array, qobs: np.array):
     return np.mean(qsim - qobs)
 
 
-def _correlation_coeff(qsim: np.array, qobs: np.array):
+def _correlation_coeff(qsim: np.ndarray, qobs: np.ndarray):
     """Correlation coefficient metric.
 
     Parameters
@@ -520,7 +520,7 @@ def _correlation_coeff(qsim: np.array, qobs: np.array):
     return np.corrcoef(qobs, qsim)[0, 1]
 
 
-def _kge(qsim: np.array, qobs: np.array):
+def _kge(qsim: np.ndarray, qobs: np.ndarray):
     """Kling-Gupta efficiency metric (2009 version).
 
     Parameters
@@ -557,7 +557,7 @@ def _kge(qsim: np.array, qobs: np.array):
     return kge
 
 
-def _kge_mod(qsim: np.array, qobs: np.array):
+def _kge_mod(qsim: np.ndarray, qobs: np.ndarray):
     """Kling-Gupta efficiency metric (2012 version).
 
     Parameters
@@ -594,7 +594,7 @@ def _kge_mod(qsim: np.array, qobs: np.array):
     return kge_mod
 
 
-def _mae(qsim: np.array, qobs: np.array):
+def _mae(qsim: np.ndarray, qobs: np.ndarray):
     """Mean absolute error metric.
 
     Parameters
@@ -617,7 +617,7 @@ def _mae(qsim: np.array, qobs: np.array):
     return np.mean(np.abs(qsim - qobs))
 
 
-def _mare(qsim: np.array, qobs: np.array):
+def _mare(qsim: np.ndarray, qobs: np.ndarray):
     """Mean absolute relative error metric.
 
     Parameters
@@ -640,7 +640,7 @@ def _mare(qsim: np.array, qobs: np.array):
     return np.sum(np.abs(qobs - qsim)) / np.sum(qobs)
 
 
-def _mse(qsim: np.array, qobs: np.array):
+def _mse(qsim: np.ndarray, qobs: np.ndarray):
     """Mean square error metric.
 
     Parameters
@@ -664,7 +664,7 @@ def _mse(qsim: np.array, qobs: np.array):
     return np.mean((qobs - qsim) ** 2)
 
 
-def _nse(qsim: np.array, qobs: np.array):
+def _nse(qsim: np.ndarray, qobs: np.ndarray):
     """Nash-Sutcliffe efficiency metric.
 
     Parameters
@@ -690,7 +690,7 @@ def _nse(qsim: np.array, qobs: np.array):
     return 1 - (num / den)
 
 
-def _pbias(qsim: np.array, qobs: np.array):
+def _pbias(qsim: np.ndarray, qobs: np.ndarray):
     """Percent bias metric.
 
     Parameters
@@ -717,7 +717,7 @@ def _pbias(qsim: np.array, qobs: np.array):
     return (np.sum(qsim - qobs) / np.sum(qobs)) * 100
 
 
-def _r2(qsim: np.array, qobs: np.array):
+def _r2(qsim: np.ndarray, qobs: np.ndarray):
     """The r-squred metric.
 
     Parameters
@@ -740,7 +740,7 @@ def _r2(qsim: np.array, qobs: np.array):
     return _correlation_coeff(qsim, qobs) ** 2
 
 
-def _rmse(qsim: np.array, qobs: np.array):
+def _rmse(qsim: np.ndarray, qobs: np.ndarray):
     """Root mean square error metric.
 
     Parameters
@@ -763,7 +763,7 @@ def _rmse(qsim: np.array, qobs: np.array):
     return np.sqrt(np.mean((qobs - qsim) ** 2))
 
 
-def _rrmse(qsim: np.array, qobs: np.array):
+def _rrmse(qsim: np.ndarray, qobs: np.ndarray):
     """Relative root mean square error (ratio of rmse to mean) metric.
 
     Parameters
@@ -788,7 +788,7 @@ def _rrmse(qsim: np.array, qobs: np.array):
     return _rmse(qsim, qobs) / np.mean(qobs)
 
 
-def _rsr(qsim: np.array, qobs: np.array):
+def _rsr(qsim: np.ndarray, qobs: np.ndarray):
     """Ratio of root mean square error to standard deviation metric.
 
     Parameters
@@ -812,7 +812,7 @@ def _rsr(qsim: np.array, qobs: np.array):
     return _rmse(qobs, qsim) / np.std(qobs)
 
 
-def _volume_error(qsim: np.array, qobs: np.array):
+def _volume_error(qsim: np.ndarray, qobs: np.ndarray):
     """Volume error metric.
 
     Parameters

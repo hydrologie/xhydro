@@ -6,7 +6,7 @@ repos:
     rev: v3.17.0
     hooks:
       - id: pyupgrade
-        args: [ '--py39-plus' ]
+        args: [ '--py310-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -42,7 +42,7 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.7
+    rev: v0.6.7
     hooks:
       - id: ruff
         args: [ '--fix' ]
@@ -53,11 +53,17 @@ repos:
       - id: flake8
         additional_dependencies: [ 'flake8-rst-docstrings' ]
         args: [ '--config=.flake8' ]
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.8.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: 'tests|docs/conf.py'
   - repo: https://github.com/keewis/blackdoc
     rev: v0.3.9
     hooks:
       - id: blackdoc
-        additional_dependencies: [ 'black==24.4.2' ]
+        additional_dependencies: [ 'black==24.8.0' ]
+      - id: blackdoc-autoupdate-black
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
@@ -65,13 +71,13 @@ repos:
         files: '.ipynb'
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.5
+    rev: 1.8.7
     hooks:
       - id: nbqa-pyupgrade
-        args: [ '--py39-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.16.0' ]
+        args: [ '--py310-plus' ]
+        additional_dependencies: [ 'pyupgrade==3.17.0' ]
       - id: nbqa-black
-        additional_dependencies: [ 'black==24.4.2' ]
+        additional_dependencies: [ 'black==24.8.0' ]
       - id: nbqa-isort
         additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/adrienverge/yamllint.git
@@ -85,7 +91,7 @@ repos:
       - id: numpydoc-validation
         exclude: ^docs/|^tests/
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.1
+    rev: 0.29.2
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
