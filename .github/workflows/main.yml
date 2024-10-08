@@ -145,9 +145,11 @@ jobs:
         python-version: [ "3.10", "3.11", "3.12" ]
         julia: [ false ]
         include: # Only run the latest Python version on push
-          - python-version: "3.9"
+          - os: 'ubuntu-latest'
+            python-version: "3.9"
             julia: true
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             julia: true
     defaults:
       run:
@@ -224,9 +226,11 @@ jobs:
         python-version: [ "3.10", "3.11", "3.12" ]
         julia: [ false ]
         include:
-          - python-version: "3.9"
+          - os: 'ubuntu-latest'
+            python-version: "3.9"
             julia: true
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             julia: true
     defaults:
       run:
