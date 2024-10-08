@@ -17,7 +17,7 @@ def major_precipitation_events(
     da: xr.DataArray, windows: list[int], quantile: float = 0.9
 ):
     """
-    Get precipitation events that exceed a given quantile for given time step accumulation. Based on Clavet-Gaumont et al. (2017).
+    Get precipitation events that exceed a given quantile for a given time step accumulation. Based on Clavet-Gaumont et al. (2017).
 
     Parameters
     ----------
