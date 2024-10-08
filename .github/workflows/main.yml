@@ -146,7 +146,7 @@ jobs:
         julia: [ false ]
         include: # Only run the latest Python version on push
           - os: 'ubuntu-latest'
-            python-version: "3.9"
+            python-version: "3.10"
             julia: true
           - os: 'ubuntu-latest'
             python-version: "3.12"
@@ -183,7 +183,6 @@ jobs:
           cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
-            lmoments3
             python=${{ matrix.python-version }}
           micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install julia
@@ -227,7 +226,7 @@ jobs:
         julia: [ false ]
         include:
           - os: 'ubuntu-latest'
-            python-version: "3.9"
+            python-version: "3.10"
             julia: true
           - os: 'ubuntu-latest'
             python-version: "3.12"
@@ -263,7 +262,6 @@ jobs:
           cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
-            lmoments3
             python=${{ matrix.python-version }}
           micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install xHydro

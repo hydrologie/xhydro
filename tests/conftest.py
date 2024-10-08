@@ -22,7 +22,7 @@ def genextreme_data(threadsafe_data_dir):
 
     ge = deveraux().fetch(
         "extreme_value_analysis/genextreme.zip",
-        processor=Unzip(extract_dir=extremes_data_folder),
+        processor=Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
     )
 
     mappings = dict()
