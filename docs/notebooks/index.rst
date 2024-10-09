@@ -11,3 +11,4 @@ Usage
     local_frequency_analysis
     regional_frequency_analysis
     climate_change
+    pmp
