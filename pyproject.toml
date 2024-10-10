@@ -256,11 +256,13 @@ override_SS05 = [
 [tool.pytest.ini_options]
 addopts = [
   "--color=yes",
+  "--strict-markers",
   "--verbose"
 ]
 filterwarnings = ["ignore::UserWarning"]
 testpaths = "tests"
 markers = [
+  "online: mark tests that require access to the internet",
   "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')"
 ]
 
