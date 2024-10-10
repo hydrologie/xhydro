@@ -9,6 +9,7 @@ import xhydro.testing.utils as xhu
 
 
 class TestFakeHydrotelProject:
+
     def test_defaults(self, tmp_path):
         xhu.fake_hydrotel_project(tmp_path / "fake")
         assert (tmp_path / "fake").exists()

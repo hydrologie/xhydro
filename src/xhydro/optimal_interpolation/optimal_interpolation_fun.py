@@ -3,7 +3,7 @@
 import os
 from functools import partial
 from multiprocessing import Pool
-from typing import Any, Optional
+from typing import Any
 
 import haversine
 import numpy as np
@@ -32,7 +32,7 @@ def optimal_interpolation(
     bg_departures: np.ndarray,
     bg_est: np.ndarray,
     precalcs: dict,
-):
+) -> tuple[np.ndarray, np.ndarray, dict]:
     """Perform optimal interpolation to estimate values at specified locations.
 
     Parameters
@@ -46,8 +46,8 @@ def optimal_interpolation(
     lon_est : np.ndarray
         Vector of longitudes of the estimation/simulation stations catchment centroids.
     ecf : partial
-        The function to use for the empirical distribution correction. It is a partial function from functools. The
-        error covariance is a function of distance h, and this partial function represents this relationship.
+        The function to use for the empirical distribution correction. It is a partial function from functools.
+        The error covariance is a function of distance h, and this partial function represents this relationship.
     bg_var_obs : np.ndarray
         Background field variance at the observation stations (vector of size "observation stations").
     bg_var_est : np.ndarray
@@ -55,23 +55,21 @@ def optimal_interpolation(
     var_obs : np.ndarray
         Observation variance at observation sites (vector of size "observation stations").
     bg_departures : np.ndarray
-        Difference between observation and background field at observation sites (vector of size "observation
-        stations").
+        Difference between observation and background field at observation sites (vector of size "observation stations").
     bg_est : np.ndarray
         Background field values at estimation sites (vector of size "estimation stations").
     precalcs : dict
-        Additional arguments and state information for the interpolation process, to accelerate calculations between
-        timesteps.
+        Additional arguments and state information for the interpolation process, to accelerate calculations between timesteps.
 
     Returns
     -------
-    v_est : float
+    v_est : np.ndarray
         Estimated values at the estimation sites (vector of size "estimation stations").
-    var_est : float
+    var_est : np.ndarray
         Estimated variance at the estimation sites (vector of size "estimation stations").
     precalcs : dict
-        Additional arguments and state information for the interpolation process, to accelerate calculations between
-        timesteps. This variable returns the pre-calcualted distance matrices.
+        Additional arguments and state information for the interpolation process, to accelerate calculations between timesteps.
+        This variable returns the pre-calculated distance matrices.
     """
     # Number of simulation stations
     estimated_count = len(bg_est)
@@ -401,8 +399,9 @@ def execute_interpolation(
     hmax_divider: float = 2.0,
     p1_bnds: list | None = None,
     hmax_mult_range_bnds: list | None = None,
-):
-    """Run the interpolation algorithm for leave-one-out cross-validation or operational use.
+) -> xr.Dataset:
+    """
+    Run the interpolation algorithm for leave-one-out cross-validation or operational use.
 
     Parameters
     ----------
@@ -442,9 +441,7 @@ def execute_interpolation(
 
     Returns
     -------
-    flow_quantiles : list
-        A list containing the flow quantiles for each desired percentile.
-    ds : xr.Dataset
+    xr.Dataset
         An xarray dataset containing the flow quantiles and all the associated metadata.
     """
     # Set default flow percentiles to evaluate if none are provided.

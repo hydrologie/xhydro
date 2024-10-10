@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-from typing import Optional, Union
 
 import numpy as np
 import ravenpy.config.emulators
@@ -37,21 +36,20 @@ class RavenpyModel(HydrologicalModel):
         The first date of the simulation.
     end_date : dt.datetime
         The last date of the simulation.
-    qobs_path : Union[str, os.PathLike]
+    qobs_path : str or os.PathLike
         The path to the dataset containing the observed streamflow.
     alt_names_flow : dict
         A dictionary that allows users to change the names of flow variables of their dataset to cf-compliant names.
-    meteo_file : Union[str, os.PathLike]
+    meteo_file : str or os.PathLike
         The path to the file containing the observed meteorological data.
     data_type : dict
-        The dictionary necessary to tell raven which variables are being fed such that it can adjust it's processes
-        internally.
+        The dictionary necessary to tell raven which variables are being fed such that it can adjust its processes internally.
     alt_names_meteo : dict
         A dictionary that allows users to change the names of meteo variables of their dataset to cf-compliant names.
     meteo_station_properties : dict
         The properties of the weather stations providing the meteorological data. Used to adjust weather according to
         differences between station and catchment elevations (adiabatic gradients, etc.).
-    workdir : Union[str, os.PathLike]
+    workdir : str or  os.PathLike
         Path to save the .rv files and model outputs.
     rain_snow_fraction : str
         The method used by raven to split total precipitation into rain and snow.
@@ -130,7 +128,7 @@ class RavenpyModel(HydrologicalModel):
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The simulated streamflow from the selected ravenpy model.
         """
         default_emulator_config = self.default_emulator_config
@@ -182,7 +180,7 @@ class RavenpyModel(HydrologicalModel):
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The simulated streamflow from the selected ravenpy model.
         """
         return self.qsim
@@ -192,7 +190,7 @@ class RavenpyModel(HydrologicalModel):
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The observed meteorological data used to run the ravenpy model simulation.
         """
         ds = xr.open_dataset(self.meteo_file)

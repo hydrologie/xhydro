@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import os
 import tempfile
 import urllib.request
 import warnings
 from pathlib import Path
-from typing import Optional
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -38,6 +36,7 @@ __all__ = [
 ]
 
 
+# FIXME: `map` is a reserved keyword in Python, so it should not be used as a variable name.
 def watershed_delineation(
     coordinates: list[tuple] | tuple | None = None,
     map: leafmap.Map | None = None,
@@ -61,6 +60,10 @@ def watershed_delineation(
     -------
     gpd.GeoDataFrame
         GeoDataFrame containing the watershed boundaries.
+
+    Warnings
+    --------
+    This function relies on an Amazon S3-hosted dataset to delineate watersheds.
     """
     # level 12 HydroBASINS polygons dataset url (North America only at the moment)
     url = "https://s3.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
@@ -183,8 +186,10 @@ def _compute_watershed_boundaries(
     coordinates: tuple,
     gdf: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    """Algorithm for watershed delineation using HydroBASINS (hybas_na_lev01-12_v1c). The process involves assessing
-    all upstream sub-basins from a specified pour point and consolidating them into a unified watershed.
+    """
+    Algorithm for watershed delineation using HydroBASINS (hybas_na_lev01-12_v1c).
+
+    The process involves assessing all upstream sub-basins from a specified pour point and consolidating them into a unified watershed.
 
     Parameters
     ----------
@@ -240,7 +245,8 @@ def _recursive_upstream_lookup(
     direct_upstream_indexes: list,
     all_upstream_indexes: list | None = None,
 ):
-    """Recursive function to iterate over each upstream sub-basin until all sub-basins in a watershed are identified.
+    """
+    Recursive function to iterate over each upstream sub-basin until all sub-basins in a watershed are identified.
 
     Parameters
     ----------
@@ -248,7 +254,7 @@ def _recursive_upstream_lookup(
         HydroBASINS level 12 dataset in GeodataFrame format stream of the pour point.
     direct_upstream_indexes : list
         List of all sub-basins indexes directly upstream.
-    all_upstream_indexes : list
+    all_upstream_indexes : list, optional
         Cumulative upstream indexes from `direct_upstream_indexes` accumulated during each iteration.
 
     Returns
@@ -287,10 +293,11 @@ def surface_properties(
     dataset_date: str = "2021-04-22",
     collection: str = "cop-dem-glo-90",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Surface properties for watersheds.
+    """
+    Surface properties for watersheds.
 
-    Surface properties are calculated using Copernicus's GLO-90 Digital Elevation Model. By default, the dataset
-    has a geographic coordinate system (EPSG: 4326) and this function expects a projected crs for more accurate results.
+    Surface properties are calculated using Copernicus's GLO-90 Digital Elevation Model.
+    By default, the dataset has a geographic coordinate system (EPSG: 4326) and this function expects a projected crs for more accurate results.
 
     The calculated properties are :
     - elevation (meters)
@@ -318,6 +325,10 @@ def surface_properties(
     -------
     gpd.GeoDataFrame or xr.Dataset
         Output dataset containing the surface properties.
+
+    Warnings
+    --------
+    This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
     # Geometries are projected to make calculations more accurate
     projected_gdf = gdf.to_crs(projected_crs)
@@ -394,7 +405,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year):
     # our merged dataset. Get the EPSG code of the first item and the nodata value.
     item = items[0]
 
-    # Create a single DataArray from out multiple resutls with the corresponding
+    # Create a single DataArray from out multiple results with the corresponding
     # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
     # matches our data, since stackstac will use float64 by default.
     stack = (
@@ -486,6 +497,10 @@ def land_use_classification(
     -------
     gpd.GeoDataFrame or xr.Dataset
         Output dataset containing the watershed properties.
+
+    Warnings
+    --------
+    This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
@@ -549,6 +564,10 @@ def land_use_plot(
     -------
     None
         Nothing to return.
+
+    Warnings
+    --------
+    This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
