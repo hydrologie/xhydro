@@ -22,15 +22,15 @@ class RavenpyModel(HydrologicalModel):
     ----------
     model_name : {"Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"}
         The name of the ravenpy model to run.
-    parameters : np.ndarray
+    parameters : np.ndarray or list of float
         The model parameters for simulation or calibration.
-    drainage_area : float
+    drainage_area : np.ndarray or float
         The watershed drainage area, in km².
-    elevation : float
+    elevation : np.ndarray or float
         The elevation of the watershed, in meters.
-    latitude : float
+    latitude : np.ndarray or float
         The latitude of the watershed centroid.
-    longitude : float
+    longitude : np.ndarray or float
         The longitude of the watershed centroid.
     start_date : dt.datetime
         The first date of the simulation.
@@ -38,11 +38,13 @@ class RavenpyModel(HydrologicalModel):
         The last date of the simulation.
     qobs_path : str or os.PathLike
         The path to the dataset containing the observed streamflow.
-    alt_names_flow : dict
+    alt_names_flow : sequence of str
+        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
         A dictionary that allows users to change the names of flow variables of their dataset to cf-compliant names.
     meteo_file : str or os.PathLike
         The path to the file containing the observed meteorological data.
-    data_type : dict
+    data_type : sequence of str
+        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
         The dictionary necessary to tell raven which variables are being fed such that it can adjust its processes internally.
     alt_names_meteo : dict
         A dictionary that allows users to change the names of meteo variables of their dataset to cf-compliant names.
@@ -63,11 +65,11 @@ class RavenpyModel(HydrologicalModel):
     def __init__(
         self,
         model_name: str,
-        parameters: np.ndarray,
-        drainage_area: str | os.PathLike,
-        elevation: str,
-        latitude,
-        longitude,
+        parameters: np.ndarray | list[float],
+        drainage_area: np.ndarray | float,
+        elevation: np.ndarray | float,
+        latitude: np.ndarray | float,
+        longitude: np.ndarray | float,
         start_date,
         end_date,
         qobs_path,
