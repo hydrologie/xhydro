@@ -81,7 +81,7 @@ def optimal_interpolation(
     # simulation points are the same as the previous time step (same NaN positions, so same stations contributing), then
     # simply load the distance matrix that was computed at the previous timestep. If it did change, we need to
     # recompute, and save it for the next iteration.
-    # TODO: Check to see if xESMG reuse_weights could be useful here.
+    # TODO: Check to see if xESMF reuse_weights could be useful here.
     cond = False
     if isinstance(precalcs, dict):
         if "lat_obs" in precalcs:
@@ -189,7 +189,7 @@ def loop_optimal_interpolation_stations_cross_validation(
         A list containing the quantiles of the flow values for each percentile over the specified time range.
     """
     # TODO: Change variables that are input here, instead of dict pass more explicit. Need to find a way around the
-    #  parallel comuputation
+    #  parallel computation
     (station_index, args) = args
 
     # Process data from the observations/simulations corresponding dataset
@@ -530,8 +530,9 @@ def retrieve_data(
     qsim: xr.Dataset,
     station_correspondence: xr.Dataset,
     observation_stations: list,
-) -> xr.Dataset:
-    """Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
+) -> tuple[xr.Dataset, xr.Dataset]:
+    """
+    Retrieve data from files to populate the Optimal Interpolation (OI) algorithm.
 
     Parameters
     ----------
@@ -542,18 +543,17 @@ def retrieve_data(
     station_correspondence : xr.Dataset
         Matching between the tag in the HYDROTEL simulated files and the observed station number for the obs dataset.
     observation_stations : list
-        Observed hydrometric dataset stations to be used in the optimal interpolation step, for contributing to the
-        generation of the error field.
+        Observed hydrometric dataset stations to be used in the optimal interpolation step,
+        for contributing to the generation of the error field.
 
     Returns
     -------
     filtered_dataset : xr.Dataset
-        An xr.Dataset containing the retrieved and preprocessed data for the OI algorithm. Includes the corresponding
-        datasets between the observation stations and the corresponding simulation stations, so includes only a
-        reordered subset of the "full_background_dataset" simulation stations.
+        An xr.Dataset containing the retrieved and preprocessed data for the OI algorithm.
+        Includes the corresponding datasets between the observation stations and the corresponding simulation stations,
+        so includes only a reordered subset of the "full_background_dataset" simulation stations.
     full_background_dataset : xr.Dataset
-        The dataset containing all the data (including positions and drainage areas of subcatchments) of the background
-        field.
+        The dataset containing all the data (including positions and drainage areas of subcatchments) of the background field.
     """
     # Get some information from the input files
     if "time" in qobs.dims:
