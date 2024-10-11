@@ -15,6 +15,7 @@ import leafmap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import planetary_computer
 import pystac_client
 import rasterio
 import rasterio.features
@@ -270,11 +271,9 @@ def _recursive_upstream_lookup(
 
 
 def _flatten(x, dim="time"):
-    # FIXME: assert statements should only be found in test code
-    assert isinstance(x, xr.DataArray)  # noqa: S101
-    if len(x[dim].values) > len(set(x[dim].values)):
-        x = x.groupby(dim).map(stackstac.mosaic)
-
+    if isinstance(x, xr.DataArray):
+        if len(x[dim].values) > len(set(x[dim].values)):
+            x = x.groupby(dim).map(stackstac.mosaic)
     return x
 
 
@@ -324,6 +323,7 @@ def surface_properties(
 
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
+        modifier=planetary_computer.sign_inplace,
     )
 
     search = catalog.search(
@@ -489,6 +489,7 @@ def land_use_classification(
     """
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
+        modifier=planetary_computer.sign_inplace,
     )
     collection = catalog.get_collection(collection)
     ia = ItemAssetsExtension.ext(collection)
@@ -552,6 +553,7 @@ def land_use_plot(
     """
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
+        modifier=planetary_computer.sign_inplace,
     )
 
     collection = catalog.get_collection(collection)
