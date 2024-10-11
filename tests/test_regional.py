@@ -62,7 +62,7 @@ class TestRegionalFrequencyAnalysis:
         # return result
         assert len(result) == len(expected)
         for i, list_st in enumerate(result):
-            assert (list_st == expected[i]).all()
+            assert np.all(list_st == expected[i])
 
     def test_fit_pca(self, sample_dataset):
         data_pca, pca_obj = fit_pca(sample_dataset, n_components=3)
@@ -96,6 +96,14 @@ class TestRegionalFrequencyAnalysis:
         clusters = np.array([1, 1, 1])
         result = cluster_indices(clusters, 0)
         assert len(result) == 0
+
+
+@pytest.mark.skipif(KappaGen is None, reason="lmoments3 is not installed")
+class TestRegionalFrequencyAnalysisKappa:
+
+    @pytest.fixture
+    def sample_kappa3(self):
+        return KappaGen()
 
     @pytest.fixture
     def sample_ds_groups(self):
@@ -291,7 +299,7 @@ class TestRegionalFrequencyAnalysis:
     @pytest.fixture
     def sample_ds_moments_groups(self):
         lmom = ["l1", "l2", "l3", "tau", "tau3", "tau4"]
-        data = data = np.array(
+        data = np.array(
             [
                 [
                     np.array(
@@ -333,14 +341,6 @@ class TestRegionalFrequencyAnalysis:
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         return ds
-
-
-@pytest.mark.skipif(KappaGen is None, reason="lmoments3 is not installed")
-class TestRegionalFrequencyAnalysisKappa:
-
-    @pytest.fixture
-    def sample_kappa3(self):
-        return KappaGen()
 
     def test_calc_h_z_output_structure(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
