@@ -81,6 +81,7 @@ dev = [
   "numpydoc >=1.8.0",
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
+  "pytest-xdist[psutil] >=3.2",
   "black ==24.8.0",
   "blackdoc ==0.3.9",
   "isort ==5.13.2",
@@ -256,6 +257,10 @@ override_SS05 = [
 [tool.pytest.ini_options]
 addopts = [
   "--color=yes",
+  "--numprocesses=0",
+  "--maxprocesses=8",
+  "--dist=worksteal",
+  "--strict-config",
   "--strict-markers",
   "--verbose"
 ]

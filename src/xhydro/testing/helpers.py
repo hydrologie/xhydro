@@ -4,28 +4,42 @@ import importlib.resources as ilr
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Union
-from urllib.parse import urljoin
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import urlretrieve
 
 import pooch
 
-from xhydro import __version__ as __xhydro_version__
-
 __all__ = [
-    "DATA_DIR",
-    "DATA_URL",
-    "DEVEREAUX",
-    "generate_registry",
+    "TESTDATA_BRANCH",
+    "TESTDATA_CACHE_DIR",
+    "TESTDATA_REPO_URL",
+    "audit_url",
+    "default_testdata_cache",
+    "default_testdata_repo_url",
+    "default_testdata_version",
+    "deveraux",
     "load_registry",
     "populate_testing_data",
 ]
 
-_default_cache_dir = pooch.os_cache("xhydro-testdata")
+default_testdata_version = "v1"
+"""Default version of the testing data to use when fetching datasets."""
 
-DATA_DIR = os.getenv("XHYDRO_DATA_DIR", _default_cache_dir)
-"""Sets the directory to store the testing datasets.
+default_testdata_repo_url = (
+    "https://raw.githubusercontent.com/hydrologie/xhydro-testdata"
+)
+"""Default URL of the testing data repository to use when fetching datasets."""
 
-If not set, the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+try:
+    default_testdata_cache = Path(pooch.os_cache("xhydro-testdata"))
+    """Default location for the testing data cache."""
+except AttributeError:
+    default_testdata_cache = None
+
+
+TESTDATA_REPO_URL = str(os.getenv("XCLIM_TESTDATA_REPO_URL", default_testdata_repo_url))
+"""Sets the URL of the testing data repository to use when fetching datasets.
 
 Notes
 -----
@@ -33,16 +47,16 @@ When running tests locally, this can be set for both `pytest` and `tox` by expor
 
 .. code-block:: console
 
-    $ export XHYDRO_DATA_DIR="/path/to/my/data"
+    $ export XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata"
 
 or setting the variable at runtime:
 
 .. code-block:: console
 
-    $ env XHYDRO_DATA_DIR="/path/to/my/data" pytest
+    $ env XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata" pytest
 """
 
-TESTDATA_BRANCH = os.getenv("XHYDRO_TESTDATA_BRANCH", "main")
+TESTDATA_BRANCH = os.getenv("XHYDRO_TESTDATA_BRANCH", default_testdata_version)
 """Sets the branch of hydrologie/xhydro-testdata to use when fetching testing datasets.
 
 Notes
@@ -60,146 +74,204 @@ or setting the variable at runtime:
     $ env XHYDRO_TESTDATA_BRANCH="my_testing_branch" pytest
 """
 
-DATA_URL = f"https://github.com/hydrologie/xhydro-testdata/raw/{TESTDATA_BRANCH}"
+TESTDATA_CACHE_DIR = os.getenv("XHYDRO_TESTDATA_CACHE_DIR", default_testdata_cache)
+"""Sets the directory to store the testing datasets.
+
+If not set, the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+
+Notes
+-----
+When running tests locally, this can be set for both `pytest` and `tox` by exporting the variable:
+
+.. code-block:: console
+
+    $ export XHYDRO_TESTDATA_CACHE_DIR="/path/to/my/data"
+
+or setting the variable at runtime:
+
+.. code-block:: console
+
+    $ env XHYDRO_TESTDATA_CACHE_DIR="/path/to/my/data" pytest
+"""
 
 
-def generate_registry(
-    filenames: list[str] | None = None, base_url: str = DATA_URL
-) -> None:
-    """Generate a registry file for the test data.
-
-    Parameters
-    ----------
-    filenames : list of str, optional
-        List of filenames to generate the registry file for.
-        If not provided, all files under xhydro/testing/data will be used.
-    base_url : str, optional
-        Base URL to the test data repository.
+def load_registry(
+    branch: str = TESTDATA_BRANCH, repo: str = TESTDATA_REPO_URL
+) -> dict[str, str]:
     """
-    # Gather the data folder and registry file locations from installed package_data
-    data_folder = ilr.files("xhydro").joinpath("testing/data")
-    registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
-
-    # Download the files to the installed xhydro/testing/data folder
-    if filenames is None:
-        with ilr.as_file(data_folder) as data:
-            for file in data.rglob("*"):
-                filename = file.relative_to(data).as_posix()
-                pooch.retrieve(
-                    url=urljoin(base_url, filename),
-                    known_hash=None,
-                    fname=filename,
-                    path=data_folder,
-                )
-
-    # Generate the registry file
-    with ilr.as_file(data_folder) as data, ilr.as_file(registry_file) as registry:
-        pooch.make_registry(data.as_posix(), registry.as_posix())
-
-
-def load_registry(file: str | Path | None = None) -> dict[str, str]:
-    """Load the registry file for the test data.
+    Load the registry file for the test data.
 
     Parameters
     ----------
-    file : str or Path, optional
-        Path to the registry file. If not provided, the registry file found within the package data will be used.
+    branch : str
+        Branch of the repository to use when fetching testing datasets.
+    repo : str
+        URL of the repository to use when fetching testing datasets.
 
     Returns
     -------
     dict
         Dictionary of filenames and hashes.
     """
-    # Get registry file from package_data
-    if file is None:
-        registry_file = ilr.files("xhydro").joinpath("testing/registry.txt")
-        if registry_file.is_file():
-            logging.info("Registry file found in package_data: %s", registry_file)
-    else:
-        registry_file = Path(file)
-        if not registry_file.is_file():
-            raise FileNotFoundError(f"Registry file not found: {registry_file}")
+    remote_registry = audit_url(f"{repo}/{branch}/data/registry.txt")
+
+    if branch != default_testdata_version:
+        custom_registry_folder = Path(
+            str(ilr.files("xhydro").joinpath(f"testing/{branch}"))
+        )
+        custom_registry_folder.mkdir(parents=True, exist_ok=True)
+        registry_file = custom_registry_folder.joinpath("registry.txt")
+        urlretrieve(remote_registry, registry_file)  # noqa: S310
+
+    elif repo != default_testdata_repo_url:
+        registry_file = Path(str(ilr.files("xhydro").joinpath("testing/registry.txt")))
+        urlretrieve(remote_registry, registry_file)  # noqa: S310
+
+    registry_file = Path(str(ilr.files("xhydro").joinpath("testing/registry.txt")))
+    if not registry_file.exists():
+        raise FileNotFoundError(f"Registry file not found: {registry_file}")
 
     # Load the registry file
-    registry = dict()
-    with registry_file.open() as buffer:
-        for entry in buffer.readlines():
-            registry[entry.split()[0]] = entry.split()[1]
-
+    with registry_file.open(encoding="utf-8") as f:
+        registry = {line.split()[0]: line.split()[1] for line in f}
     return registry
 
 
-DEVEREAUX = pooch.create(
-    path=pooch.os_cache("xhydro-testdata"),
-    base_url=DATA_URL,
-    version=__xhydro_version__,
-    version_dev="main",
-    env="XHYDRO_DATA_DIR",
-    allow_updates="XHYDRO_DATA_UPDATES",
-    registry=load_registry(),
-)
-"""Pooch registry instance for xhydro test data.
+def deveraux(  # noqa: PR01
+    repo: str = TESTDATA_REPO_URL,
+    branch: str = TESTDATA_BRANCH,
+    cache_dir: str | Path = TESTDATA_CACHE_DIR,
+    data_updates: bool = True,
+):
+    """Pooch registry instance for xhydro test data.
 
-Notes
------
-There are two environment variables that can be used to control the behaviour of this registry:
+    Parameters
+    ----------
+    repo : str
+        URL of the repository to use when fetching testing datasets.
+    branch : str
+        Branch of repository to use when fetching testing datasets.
+    cache_dir : str or Path
+        The path to the directory where the data files are stored.
+    data_updates : bool
+        If True, allow updates to the data files. Default is True.
 
-  - ``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used as the base directory to store the data
-    files. The directory should be an absolute path (i.e., it should start with ``/``). Otherwise,
-    the default location will be used (based on ``platformdirs``, see :func:`pooch.os_cache`).
+    Returns
+    -------
+    pooch.Pooch
+        The Pooch instance for accessing the xhydro testing data.
 
-  - ``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the data files will be downloaded even if the
-    upstream hashes do not match. This is useful if you want to always use the latest version of the data files.
+    Notes
+    -----
+    There are three environment variables that can be used to control the behaviour of this registry:
+        - ``XHYDRO_TESTDATA_CACHE_DIR``: If this environment variable is set, it will be used as the base directory to
+          store the data files. The directory should be an absolute path (i.e., it should start with ``/``).
+          Otherwise,the default location will be used (based on ``platformdirs``, see :py:func:`pooch.os_cache`).
+        - ``XHYDRO_TESTDATA_REPO_URL``: If this environment variable is set, it will be used as the URL of the repository
+          to use when fetching datasets. Otherwise, the default repository will be used.
+        - ``XHYDRO_TESTDATA_BRANCH``: If this environment variable is set, it will be used as the branch of the repository
+          to use when fetching datasets. Otherwise, the default branch will be used.
 
-Examples
---------
-Using the registry to download a file:
+    Examples
+    --------
+    Using the registry to download a file:
 
-.. code-block:: python
+    .. code-block:: python
 
-    from xhydro.testing.utils import DEVEREAUX
-    import xarray as xr
+        import xarray as xr
+        from xhydro.testing.helpers import devereaux
 
-    example_file = DEVEREAUX.fetch("example.nc")
-    data = xr.open_dataset(example_file)
-"""
+        example_file = deveraux().fetch("example.nc")
+        data = xr.open_dataset(example_file)
+    """
+    if pooch is None:
+        raise ImportError(
+            "The `pooch` package is required to fetch the xhydro testing data. "
+            "You can install it with `pip install pooch` or `pip install xhydro[dev]`."
+        )
+
+    remote = audit_url(f"{repo}/{branch}/data")
+    return pooch.create(
+        path=cache_dir,
+        base_url=remote,
+        version=default_testdata_version,
+        version_dev=branch,
+        allow_updates=data_updates,
+        registry=load_registry(branch=branch, repo=repo),
+    )
 
 
 def populate_testing_data(
-    registry: str | Path | None = None,
     temp_folder: Path | None = None,
+    repo: str = TESTDATA_REPO_URL,
     branch: str = TESTDATA_BRANCH,
-    _local_cache: Path = _default_cache_dir,
+    local_cache: Path = TESTDATA_CACHE_DIR,
 ) -> None:
     """Populate the local cache with the testing data.
 
     Parameters
     ----------
-    registry : str or Path, optional
-        Path to the registry file. If not provided, the registry file from package_data will be used.
     temp_folder : Path, optional
         Path to a temporary folder to use as the local cache. If not provided, the default location will be used.
+    repo : str, optional
+        URL of the repository to use when fetching testing datasets.
     branch : str, optional
-        Branch of hydrologie/xhydro-testdata to use when fetching testing datasets.
-    _local_cache : Path, optional
-        Path to the local cache. Defaults to the default location.
+        Branch of xhydro-testdata to use when fetching testing datasets.
+    local_cache : Path
+        The path to the local cache. Defaults to the location set by the platformdirs library.
+        The testing data will be downloaded to this local cache.
+    """
+    # Create the Pooch instance
+    n = deveraux(repo=repo, branch=branch, cache_dir=temp_folder or local_cache)
+
+    # Download the files
+    errored_files = []
+    for file in load_registry():
+        try:
+            n.fetch(file, processor=pooch.Unzip())
+        except HTTPError:  # noqa: PERF203
+            msg = f"File `{file}` not accessible in remote repository."
+            logging.error(msg)
+            errored_files.append(file)
+        else:
+            logging.info("Files were downloaded successfully.")
+
+    if errored_files:
+        logging.error(
+            "The following files were unable to be downloaded: %s",
+            errored_files,
+        )
+
+
+# Testing Utilities
+def audit_url(url: str, context: str | None = None) -> str:
+    """Check if the URL is well-formed.
+
+    Parameters
+    ----------
+    url : str
+        The URL to check.
+    context : str, optional
+        Additional context to include in the error message.
 
     Returns
     -------
-    None
-        The testing data will be downloaded to the local cache.
+    str
+        The URL if it is well-formed.
+
+    Raises
+    ------
+    URLError
+        If the URL is not well-formed.
     """
-    # Get registry file from package_data or provided path
-    registry = load_registry(registry)
+    msg = ""
+    result = urlparse(url)
+    if result.scheme == "http":
+        msg = f"{context if context else ''} URL is not using secure HTTP: '{url}'".strip()
+    if not all([result.scheme, result.netloc]):
+        msg = f"{context if context else ''} URL is not well-formed: '{url}'".strip()
 
-    # Set the local cache to the temp folder
-    if temp_folder is not None:
-        _local_cache = temp_folder
-    # Set the branch
-    DEVEREAUX.version_dev = branch
-    # Set the local cache
-    DEVEREAUX.path = _local_cache
-
-    # Download the files
-    for filename in registry.keys():
-        DEVEREAUX.fetch(filename)
+    if msg:
+        logging.error(msg)
+        raise URLError(msg)
+    return url
