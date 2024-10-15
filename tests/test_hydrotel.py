@@ -24,6 +24,7 @@ class TestHydrotel:
             model_name="Hydrotel",
             project_dir=tmpdir / "fake",
             project_file="SLNO.csv",
+            executable="command",
             use_defaults=True,
             project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
             simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
@@ -50,7 +51,10 @@ class TestHydrotel:
         assert ht.output_config == df
 
         ht2 = Hydrotel(
-            project_dir=tmpdir / "fake", project_file="SLNO.csv", use_defaults=False
+            project_dir=tmpdir / "fake",
+            project_file="SLNO.csv",
+            executable="command",
+            use_defaults=False,
         )
         assert ht2.project_config == ht.project_config
         assert ht2.simulation_config == ht.simulation_config
@@ -74,6 +78,7 @@ class TestHydrotel:
         ht = Hydrotel(
             project_dir=tmpdir,
             project_file="SLNO.csv",
+            executable="command",
             use_defaults=True,
             simulation_config=simulation_config,
         )
@@ -142,6 +147,7 @@ class TestHydrotel:
         ht = Hydrotel(
             project_dir=tmpdir,
             project_file="SLNO.csv",
+            executable="command",
             use_defaults=True,
             simulation_config=simulation_config,
         )
@@ -208,6 +214,7 @@ class TestHydrotel:
         ht = Hydrotel(
             project_dir=tmpdir,
             project_file="SLNO.csv",
+            executable="command",
             use_defaults=True,
             simulation_config=simulation_config,
         )
@@ -236,7 +243,7 @@ class TestHydrotel:
     def test_standard(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, debit_aval=True)
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", use_defaults=True)
+        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=True)
         with ht.get_streamflow() as ds_tmp:
             ds_orig = deepcopy(ds_tmp)
         ht._standardise_outputs()
@@ -270,11 +277,12 @@ class TestHydrotel:
             Hydrotel(
                 tmpdir,
                 "SLNO.csv",
+                executable="command",
                 use_defaults=False,
                 project_config={"SIMULATION COURANTE": "test"},
             )
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", use_defaults=False)
+        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
         with pytest.raises(ValueError, match="folder does not exist"):
             ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
@@ -284,6 +292,7 @@ class TestHydrotel:
         Hydrotel(
             tmpdir,
             "SLNO.csv",
+            executable="command",
             use_defaults=True,
             project_config={"SIMULATION COURANTE": "test"},
         )
@@ -293,6 +302,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir,
             "SLNO.csv",
+            executable="command",
             use_defaults=True,
             simulation_config={
                 "DATE DEBUT": "2001-01-01",
@@ -314,6 +324,7 @@ class TestHydrotel:
         ht = Hydrotel(
             tmpdir,
             "SLNO.csv",
+            executable="command",
             use_defaults=False,
             simulation_config={
                 "DATE DEBUT": "2001-01-01",
@@ -402,6 +413,7 @@ class TestHydrotel:
         Hydrotel(
             tmpdir,
             "SLNO.csv",
+            executable="command",
             use_defaults=True,
         )
         assert Path(tmpdir / "simulation" / "simulation" / "simulation.csv").exists()
@@ -409,7 +421,7 @@ class TestHydrotel:
     def test_errors(self, tmpdir):
         # Missing project folder
         with pytest.raises(ValueError, match="The project folder does not exist."):
-            Hydrotel("fake", "SLNO.csv", use_defaults=True)
+            Hydrotel("fake", "SLNO.csv", executable="command", use_defaults=True)
 
         # Missing project name
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
@@ -421,7 +433,7 @@ class TestHydrotel:
             ValueError,
             match="'SIMULATION COURANTE' must be specified",
         ):
-            Hydrotel(tmpdir, "SLNO.csv", use_defaults=False)
+            Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
 
     def test_bad_config(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
@@ -432,7 +444,7 @@ class TestHydrotel:
         )
         # Multiple warnings should be raised, so we use a list
         with pytest.warns(UserWarning) as record:
-            Hydrotel(tmpdir, "SLNO.csv", use_defaults=False)
+            Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
         assert len(record) == 2
         assert (
             "configuration file on disk has some entries that might not be valid."
