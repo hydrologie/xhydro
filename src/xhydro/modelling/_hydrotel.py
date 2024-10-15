@@ -31,6 +31,9 @@ class Hydrotel(HydrologicalModel):
         Path to the project folder.
     project_file : str
         Name of the project file (e.g. 'projet.csv').
+    executable : str or os.PathLike
+        Command to execute Hydrotel.
+        On Windows, this should be the path to Hydrotel.exe.
     project_config : dict, optional
         Dictionary of configuration options to overwrite in the project file.
     simulation_config : dict, optional
@@ -40,9 +43,6 @@ class Hydrotel(HydrologicalModel):
     use_defaults : bool
         If True, use default configuration options loaded from xhydro/modelling/data/hydrotel_defaults/.
         If False, read the configuration options directly from the files in the project folder.
-    executable : str or os.PathLike
-        Command to run the simulation.
-        On Windows, this should be the path to Hydrotel.exe.
 
     Notes
     -----
@@ -55,14 +55,14 @@ class Hydrotel(HydrologicalModel):
         self,
         project_dir: str | os.PathLike,
         project_file: str,
+        executable: str | os.PathLike,
         *,
         project_config: dict | None = None,
         simulation_config: dict | None = None,
         output_config: dict | None = None,
         use_defaults: bool = True,
-        executable: str | os.PathLike = "hydrotel",
     ):
-        """Initialise the Hydrotel simulation."""
+        """Initialize the Hydrotel simulation."""
         project_config = project_config or dict()
         simulation_config = simulation_config or dict()
         output_config = output_config or dict()
