@@ -2,6 +2,14 @@
 Changelog
 =========
 
+v0.5.0 (unreleased)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the notebooks to reduce the load on ReadTheDocs. (:pull:`211`).
+
 v.4.0 (2024-10-04)
 ------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
