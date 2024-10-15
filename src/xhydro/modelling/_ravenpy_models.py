@@ -117,7 +117,7 @@ class RavenpyModel(HydrologicalModel):
                     data_kwds=meteo_station_properties,
                 )
             ],
-            RainSnowFraction=rain_snow_fraction,
+            rain_snow_fraction=rain_snow_fraction,
             Evaporation=evaporation,
             **kwargs,
         )
@@ -151,9 +151,6 @@ class RavenpyModel(HydrologicalModel):
         # Need to remove qobs as pydantic forbids extra inputs...
         if "qobs" in default_emulator_config:
             default_emulator_config.pop("qobs")
-
-        if model_name == "HBVEC":
-            default_emulator_config.pop("RainSnowFraction")
 
         self.model = getattr(ravenpy.config.emulators, model_name)(
             **default_emulator_config
