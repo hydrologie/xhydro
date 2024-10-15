@@ -342,7 +342,7 @@ class TestHydrotel:
         else:
             if test == "ok":
                 command = ht.run(dry_run=True)
-                assert command == f"hydrotel {ht.config_files['project']} -t 1"
+                assert command == f"command {ht.config_files['project']} -t 1"
             elif test == "pdt":
                 with pytest.raises(
                     ValueError,
