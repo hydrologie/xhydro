@@ -27,10 +27,9 @@ Example Usage:
 This module is designed for hydrologists and data scientists working with regional frequency analysis in water resources.
 """
 
-import datetime
 import math
 import warnings
-from typing import Optional
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
@@ -42,15 +41,17 @@ from xhydro import __version__
 from xhydro.utils import update_history
 
 
-def cluster_indices(clust_num: int, labels_array: np.ndarray) -> np.ndarray:
+def cluster_indices(
+    clust_num: int | np.ndarray, labels_array: int | np.ndarray
+) -> np.ndarray:
     """
     Get the indices of elements with a specific cluster number using NumPy.
 
     Parameters
     ----------
-    clust_num : int
+    clust_num : numpy.ndarray or int
         Cluster number to find indices for.
-    labels_array : numpy.ndarray
+    labels_array : numpy.ndarray or int
         Array containing cluster labels.
 
     Returns
@@ -75,25 +76,28 @@ def get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
     Returns
     -------
     list
-        List of indices for each non-excluded group.
+        Indices for each non-excluded group.
     """
-    return [
+    grouped: list = [
         sample.index.to_numpy()[cluster_indices(i, cluster.labels_)]
         for i in range(np.max(cluster.labels_) + 1)
     ]
+    return grouped
 
 
-def get_group_from_fit(model: object, param: dict, sample: xr.Dataset) -> list:
+def get_group_from_fit(
+    model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
+) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
 
     Parameters
     ----------
-    model : obj
+    model : callable
         Model class or instance with a fit method.
     param : dict
         Parameters for the model.
-    sample : xr.Dataset
+    sample : xr.Dataset or xr.DataArray
         Data sample to fit the model.
 
     Returns
@@ -109,7 +113,7 @@ def get_group_from_fit(model: object, param: dict, sample: xr.Dataset) -> list:
     return get_groups_indices(model(**param).fit(sample), sample)
 
 
-def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
+def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     r"""
     Perform Principal Component Analysis (PCA) on the input dataset.
 
@@ -126,7 +130,7 @@ def fit_pca(ds: xr.Dataset, **kwargs: dict) -> tuple:
     Returns
     -------
     tuple: A tuple containing:
-        - data_pca (xarray.DataArray): PCA-transformed data with 'Station' and 'components' as coordinates.
+        - data_pca (xr.DataArray): PCA-transformed data with 'Station' and 'components' as coordinates.
         - obj_pca (sklearn.decomposition.PCA): Fitted PCA object.
 
     Notes
@@ -243,9 +247,9 @@ def calc_h_z(
 
     Parameters
     ----------
-    ds_groups : xarray.Dataset
+    ds_groups : xr.Dataset
         Dataset containing grouped data.
-    ds_moments_groups : xarray.Dataset
+    ds_moments_groups : xr.Dataset
         Dataset containing L-moments for grouped data.
     kap : scipy.stats.kappa3
         Kappa3 distribution object.
@@ -254,7 +258,7 @@ def calc_h_z(
 
     Returns
     -------
-    xarray.Dataset
+    xr.Dataset
         Dataset containing calculated H values and Z-scores for each group.
 
     Notes
@@ -326,11 +330,11 @@ def _calculate_gev_tau4(
 
 
 def _heterogeneite_et_score_z(
-    kap: object, n: np.array, t: np.array, t3: np.array, t4: np.array, seed=None
+    kap: Callable, n: np.array, t: np.array, t3: np.array, t4: np.array, seed=None
 ) -> tuple:
 
     # We remove nan or 0 length
-    # If not enough values to calulculate some moments, other moments are removed as well
+    # If not enough values to calculate some moments, other moments are removed as well
     bool_maks = (n != 0) & (~np.isnan(t)) & (~np.isnan(t3)) & (~np.isnan(t4))
     n = n[bool_maks]
     t = t[bool_maks]
@@ -350,6 +354,7 @@ def _heterogeneite_et_score_z(
     try:
         kappa_param = kap.lmom_fit(lmom_ratios=[1, tau_r, tau3_r, tau4_r])
     except ValueError as error:
+        # FIXME: Cette message could be plus informative.
         warnings.warn(
             f"Kappa distribution fit blablabla (quelle serait la cause d'un ValueError?), returning all NaNs. Error: {error}."
         )
@@ -374,16 +379,18 @@ def _heterogeneite_et_score_z(
             raise error
     n_sim = 500  # Number of "virtual regions" simulated
 
-    def _calc_tsim(kappa_param: dict, length: float, n_sim: int) -> np.array:
+    def _calc_tsim(
+        _kappa_param: dict, _length: float, _n_sim: int, _seed=seed
+    ) -> np.array:
 
-        # For each station, we get n_sim vectors de same lenght than the observations
+        # For each station, we get n_sim vectors de same length than the observations
         rvs = kap.rvs(
-            kappa_param["k"],
-            kappa_param["h"],
-            kappa_param["loc"],
-            kappa_param["scale"],
-            size=(n_sim, int(length)),
-            random_state=seed,
+            _kappa_param["k"],
+            _kappa_param["h"],
+            _kappa_param["loc"],
+            _kappa_param["scale"],
+            size=(_n_sim, int(_length)),
+            random_state=_seed,
         )
 
         return _momentl_optim(rvs)
@@ -475,7 +482,7 @@ def mask_h_z(
 
     Parameters
     ----------
-    ds : xarray.Dataset
+    ds : xr.Dataset
         Dataset containing H and Z values for each group.
     thresh_h : float, optional
         Threshold for the heterogeneity measure H. Default is 1.
@@ -484,7 +491,7 @@ def mask_h_z(
 
     Returns
     -------
-    xarray.DataArray
+    xr.DataArray
         Boolean mask where True indicates groups that meet both threshold criteria.
     """
     ds_out = (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
@@ -521,19 +528,19 @@ def calculate_rp_from_afr(
 
     Parameters
     ----------
-    ds_groups : xarray.Dataset
+    ds_groups : xr.Dataset
         Dataset containing grouped flow data.
-    ds_moments_groups : xarray.Dataset
+    ds_moments_groups : xr.Dataset
         Dataset containing L-moments for grouped data.
     rp : array-like
         Return periods to calculate.
-    l1 : xarray.DataArray, optional
+    l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If None, values are taken from ds_moments_groups.
 
     Returns
     -------
-    xarray.DataArray
+    xr.DataArray
         Calculated return periods for each group and specified return period.
 
     Notes
@@ -594,14 +601,14 @@ def remove_small_regions(ds: xr.Dataset, thresh: int = 5) -> xr.Dataset:
 
     Parameters
     ----------
-    ds : xarray.Dataset
+    ds : xr.Dataset
         The input dataset containing regions and stations.
     thresh : int, optional
         The minimum number of stations required for a region to be kept. Default is 5.
 
     Returns
     -------
-    xarray.Dataset
+    xr.Dataset
         The dataset with small regions removed.
     """
     station_dim = ds.cf.cf_roles["timeseries_id"][0]
@@ -624,7 +631,9 @@ def _calc_kappa(lambda_r_2, lambda_r_3):
     return kappa
 
 
-def _calc_lambda_r(ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset) -> xr.Dataset:
+def _calc_lambda_r(
+    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset
+) -> tuple[int, xr.Dataset, xr.Dataset]:
     station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
 
     nr = ds_moments_groups.count(dim=station_dim).isel(lmom=0)
@@ -650,20 +659,19 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
 
     Parameters
     ----------
-    ds : xarray.Dataset
-        A vector of stations, where each element is an array-like object
-        containing the data for which to calculate L-moments.
+    ds : xr.Dataset
+        A vector of stations, where each element is an array-like object containing the data for which to calculate L-moments.
 
     Returns
     -------
-    xarray.Dataset
+    xr.Dataset
         L-moment dataset with a new lmom dimension.
 
     Notes
     -----
-        NaN values in each stations are removed before calculating L-moments.
-        The function uses the `moment_l` function to calculate L-moments for each individual stations.
-        Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
+    NaN values in each station are removed before calculating L-moments.
+    The function uses the `moment_l` function to calculate L-moments for each individual stations.
+    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     ds = xr.apply_ufunc(
         _moment_l_vector,
@@ -690,14 +698,14 @@ def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
 
     Parameters
     ----------
-    ds : xarray.Dataset
+    ds : xr.Dataset
         The input dataset to be grouped.
     groups : list
         A list of groups to be used for grouping the dataset.
 
     Returns
     -------
-    xarray.Dataset
+    xr.Dataset
         A new dataset with the grouped data.
     """
     ds_groups = xr.concat(
