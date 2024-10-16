@@ -199,7 +199,7 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group.
     """
     # We select groups for only one id
-    ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", "all")
+    ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it

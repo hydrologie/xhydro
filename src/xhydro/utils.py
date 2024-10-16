@@ -5,7 +5,7 @@ import datetime as dt
 import xarray as xr
 from xscen.diagnostics import health_checks
 
-__all__ = ["health_checks"]
+__all__ = ["health_checks", "merge_attributes", "update_history"]
 
 
 def update_history(

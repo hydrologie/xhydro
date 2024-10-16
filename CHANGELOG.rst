@@ -4,14 +4,22 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
+* The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Updated the notebooks to reduce the load on ReadTheDocs. (:pull:`211`).
+* Tests can now be run using the `pytest-xdist` plugin for distributed testing. See the `pytest-xdist documentation <https://pytest-xdist.readthedocs.io/en/stable/>`_ for more information. (:pull:`212`).
+* Several tests reliant on online servers and services have been marked as `online` to prevent them from running in contexts where internet access is limited. (:pull:`212`).
+* Many function docstrings and type hints have been updated for accuracy and precision. (:pull:`212`).
 
-v.4.0 (2024-10-04)
-------------------
+v0.4.0 (2024-10-04)
+-------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements

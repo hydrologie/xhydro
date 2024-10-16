@@ -146,6 +146,7 @@ def test_transform():
 class TestRavenpyModelCalibration:
     """Test calibration of RavenPy models."""
 
+    # FIXME: This needs to be turned into a pytest fixture in the future.
     # Set Github URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "main"
