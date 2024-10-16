@@ -3,7 +3,6 @@ import warnings
 import numpy as np
 import pandas as pd
 import pytest
-import scipy
 import xarray as xr
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
@@ -12,7 +11,7 @@ try:
     from lmoments3.distr import KappaGen
 except ImportError:
     warnings.warn("lmoments3 is not installed. Please install it")
-    lmoments3 = None
+    KappaGen = None
 
 from xhydro.frequency_analysis.regional import (
     _moment_l_vector,
@@ -21,20 +20,21 @@ from xhydro.frequency_analysis.regional import (
     cluster_indices,
     fit_pca,
     get_group_from_fit,
-    get_groups_indices,
 )
 
 
+@pytest.fixture
+def sample_data():
+    return np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+
+@pytest.fixture
+def sample_dataset():
+    data = np.random.rand(100, 5)
+    return xr.Dataset({"data": (("time", "Station"), data)})
+
+
 class TestRegionalFrequencyAnalysis:
-
-    @pytest.fixture
-    def sample_data(self):
-        return np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-
-    @pytest.fixture
-    def sample_dataset(self):
-        data = np.random.rand(100, 5)
-        return xr.Dataset({"data": (("time", "Station"), data)})
 
     def test_cluster_indices(self):
         clusters = np.array([0, 1, 0, 2, 1])
@@ -62,7 +62,7 @@ class TestRegionalFrequencyAnalysis:
         # return result
         assert len(result) == len(expected)
         for i, list_st in enumerate(result):
-            assert (list_st == expected[i]).all()
+            assert np.all(list_st == expected[i])
 
     def test_fit_pca(self, sample_dataset):
         data_pca, pca_obj = fit_pca(sample_dataset, n_components=3)
@@ -96,6 +96,14 @@ class TestRegionalFrequencyAnalysis:
         clusters = np.array([1, 1, 1])
         result = cluster_indices(clusters, 0)
         assert len(result) == 0
+
+
+@pytest.mark.skipif(KappaGen is None, reason="lmoments3 is not installed")
+class TestRegionalFrequencyAnalysisKappa:
+
+    @pytest.fixture
+    def sample_kappa3(self):
+        return KappaGen()
 
     @pytest.fixture
     def sample_ds_groups(self):
@@ -291,7 +299,7 @@ class TestRegionalFrequencyAnalysis:
     @pytest.fixture
     def sample_ds_moments_groups(self):
         lmom = ["l1", "l2", "l3", "tau", "tau3", "tau4"]
-        data = data = np.array(
+        data = np.array(
             [
                 [
                     np.array(
@@ -333,10 +341,6 @@ class TestRegionalFrequencyAnalysis:
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         return ds
-
-    @pytest.fixture
-    def sample_kappa3(self):
-        return KappaGen()
 
     def test_calc_h_z_output_structure(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
