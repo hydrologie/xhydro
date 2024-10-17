@@ -52,7 +52,7 @@ class TestHydrologicalModelRequirements:
     @pytest.mark.parametrize("model_name", ["Dummy", "Hydrotel", "GR4JCN"])
     def test_get_model_requirements(self, model_name):
         """Test for required inputs for models"""
-        expected_keys = {"Dummy": (6, 6), "Hydrotel": (8, 3), "GR4JCN": (5, 5)}
+        expected_keys = {"Dummy": (6, 6), "Hydrotel": (8, 4), "GR4JCN": (5, 5)}
 
         all_config, _ = get_hydrological_model_inputs(model_name)
         assert len(all_config.keys()) == expected_keys[model_name][0]
