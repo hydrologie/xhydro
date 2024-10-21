@@ -1,0 +1,30 @@
+@import url("styles/furo.css");
+
+img.xhydro-logo-small.only-dark-inline {
+    width: 91px;
+    height: 103px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    border-image-width: 0;
+    background-image: url("xhydro-logo-small-transparent.png");
+}
+
+img.xhydro-logo-small.only-light-inline {
+    width: 91px;
+    height: 103px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    border-image-width: 0;
+    background-image: url("xhydro-logo-small-light.png");
+}
+
+img.xhydro-logo-small.no-theme {
+  display: none;
+  width: 0;
+}

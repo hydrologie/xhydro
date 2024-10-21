@@ -1,6 +1,6 @@
-======
-xHydro
-======
+======================================
+xHydro |logo| |logo-light| |logo-dark|
+======================================
 
 +----------------------------+-----------------------------------------------------+
 | Versions                   | |pypi| |versions|                                   |
@@ -61,6 +61,20 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
         :alt: License
+
+.. |logo| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/xhydro-logo-small-light.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt: xhydro
+
+.. |logo-light| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-light-inline
+
+.. |logo-dark| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-dark-inline
 
 .. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/hydrologie/xhydro
