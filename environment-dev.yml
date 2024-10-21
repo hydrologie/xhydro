@@ -28,7 +28,7 @@ dependencies:
   - tqdm
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
-  - xclim >=0.48.2
+  - xclim >=0.48.2,<0.53
   - xdatasets >=0.3.6
   - xscen >=0.8.3
   - xvec
