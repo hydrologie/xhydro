@@ -10,6 +10,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
 * The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
+* Many core dependencies have been updated to more modern versions.
 
 Internal changes
 ^^^^^^^^^^^^^^^^
