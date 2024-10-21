@@ -38,7 +38,8 @@ __all__ = [
 
 # FIXME: `map` is a reserved keyword in Python, so it should not be used as a variable name.
 def watershed_delineation(
-    coordinates: list[tuple] | tuple,
+    *,
+    coordinates: list[tuple] | tuple | None = None,
     map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
     """Calculate watershed delineation from pour point.
