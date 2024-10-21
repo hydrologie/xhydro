@@ -16,14 +16,13 @@ import pandas as pd
 import planetary_computer
 import pystac_client
 import rasterio
-import rasterio.features
 import rioxarray  # noqa: F401
 import stackstac
 import xarray as xr
 import xvec  # noqa: F401
 from matplotlib.colors import ListedColormap
 from pystac.extensions.item_assets import ItemAssetsExtension
-from pystac.extensions.projection import ProjectionExtension as proj  # noqa: N813
+from pystac.extensions.projection import ProjectionExtension
 from shapely import Point
 from tqdm.auto import tqdm
 from xrspatial import aspect, slope
@@ -39,6 +38,7 @@ __all__ = [
 
 # FIXME: `map` is a reserved keyword in Python, so it should not be used as a variable name.
 def watershed_delineation(
+    *,
     coordinates: list[tuple] | tuple | None = None,
     map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
@@ -591,7 +591,7 @@ def land_use_plot(
 
     merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
 
-    epsg = proj.ext(item).epsg
+    epsg = ProjectionExtension.ext(item).epsg
 
     class_count = len(class_names)
 
