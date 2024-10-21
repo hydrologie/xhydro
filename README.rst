@@ -22,7 +22,7 @@ Hydrological analysis library built with xarray
 Features
 --------
 
-* Easily find and extract geospacial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
+* Easily find and extract geospatial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
 * Calibrate and execute Hydrotel and Raven-emulated hydrological models.
 * Perform optimal interpolation on hydrological data (daily streamflow and indices).
 * Compute hydrological indicators (e.g. n-day peak flow, annual maximum series, low flow, average flow, etc.) over custom date ranges.
@@ -64,7 +64,7 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 
 .. |logo| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/xhydro-logo-small-light.png
         :target: https://github.com/hydrologie/xhydro
-        :alt: xhydro
+        :alt: xHydro
 
 .. |logo-light| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
         :target: https://github.com/hydrologie/xhydro
