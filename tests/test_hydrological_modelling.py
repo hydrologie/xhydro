@@ -1,6 +1,5 @@
 """Test suite for hydrological modelling in hydrological_modelling.py"""
 
-import os.path
 from pathlib import Path
 
 import numpy as np

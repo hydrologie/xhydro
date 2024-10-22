@@ -19,6 +19,7 @@ def test_xscen_imported():
 
 
 class TestSampledIndicators:
+
     @pytest.mark.parametrize("delta_type", ["absolute", "percentage", "foo"])
     def test_sampled_indicators_type(self, delta_type):
         ds = xr.DataArray(
@@ -204,6 +205,8 @@ class TestSampledIndicators:
             np.testing.assert_array_almost_equal(
                 out[0].QMOYAN.isel(station=0).values, [6.3, 12.0, 13.5, 13.5, 14.865]
             )
+        else:
+            raise ValueError(f"Unknown value for 'weights': {weights}")
 
         assert all(
             chosen in expected_out1

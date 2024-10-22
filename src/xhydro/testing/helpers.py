@@ -23,10 +23,12 @@ __all__ = [
     "populate_testing_data",
 ]
 
-default_testdata_version = "v1"
+default_testdata_version = "v2024.10.16"
 """Default version of the testing data to use when fetching datasets."""
 
-default_testdata_repo_url = "https://github.com/hydrology/xhydro-testdata"
+default_testdata_repo_url = (
+    "https://raw.githubusercontent.com/hydrologie/xhydro-testdata"
+)
 """Default URL of the testing data repository to use when fetching datasets."""
 
 try:
@@ -111,7 +113,7 @@ def load_registry(
     dict
         Dictionary of filenames and hashes.
     """
-    remote_registry = audit_url(f"{repo}/raw/{branch}/data/registry.txt")
+    remote_registry = audit_url(f"{repo}/{branch}/data/registry.txt")
 
     if branch != default_testdata_version:
         custom_registry_folder = Path(
@@ -188,7 +190,7 @@ def deveraux(  # noqa: PR01
             "You can install it with `pip install pooch` or `pip install xhydro[dev]`."
         )
 
-    remote = audit_url(f"{repo}/raw/{branch}/data")
+    remote = audit_url(f"{repo}/{branch}/data")
     return pooch.create(
         path=cache_dir,
         base_url=remote,

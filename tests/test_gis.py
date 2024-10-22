@@ -28,7 +28,7 @@ class TestWatershedDelineation:
             [gdf.to_crs(32198).area.values[0]], [area], decimal=3
         )
 
-    @pytest.mark.parametrize("area", [(18891676494.940426)])
+    @pytest.mark.parametrize("area", [18891676494.940426])
     def test_watershed_delineation_from_map(self, area):
         # Richelieu watershed
         self.m.draw_features = [
@@ -123,6 +123,20 @@ class TestWatershedOperations:
 
         xr.testing.assert_allclose(ds_properties, output_dataset)
 
+
+class TestSurfaceProperties:
+
+    gdf = xd.Query(
+        **{
+            "datasets": {
+                "deh_polygons": {
+                    "id": ["031501", "042103"],
+                    "regulated": ["Natural"],
+                }
+            }
+        }
+    ).data.reset_index()
+
     @pytest.fixture
     def surface_properties_data(self):
         data = {
@@ -135,6 +149,7 @@ class TestWatershedOperations:
         df.index.names = ["Station"]
         return df
 
+    @pytest.mark.online
     def test_surface_properties(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
@@ -146,6 +161,7 @@ class TestWatershedOperations:
             surface_properties_data.reset_index(drop=True)[_properties_name],
         )
 
+    @pytest.mark.online
     def test_surface_properties_unique_id(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
         unique_id = "Station"
@@ -157,6 +173,7 @@ class TestWatershedOperations:
             surface_properties_data[_properties_name],
         )
 
+    @pytest.mark.online
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
@@ -177,6 +194,21 @@ class TestWatershedOperations:
         output_dataset["aspect"].attrs = {"units": "degrees"}
 
         xr.testing.assert_allclose(ds_properties, output_dataset)
+
+
+@pytest.mark.online
+class TestLandClassification:
+
+    gdf = xd.Query(
+        **{
+            "datasets": {
+                "deh_polygons": {
+                    "id": ["031501", "042103"],
+                    "regulated": ["Natural"],
+                }
+            }
+        }
+    ).data.reset_index()
 
     @pytest.fixture
     def land_classification_data_latest(self):
