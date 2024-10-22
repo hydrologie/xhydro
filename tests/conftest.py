@@ -208,3 +208,33 @@ def corrected_oi_data(deveraux):
     }
 
     return data
+
+
+@pytest.fixture(scope="session")
+def genextreme_data(threadsafe_data_dir, deveraux):
+    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
+
+    ge = deveraux.fetch(
+        "extreme_value_analysis/genextreme.zip",
+        processor=pooch.Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
+    )
+
+    mappings = dict()
+    mappings["gev_nonstationary"] = pd.read_csv(ge[0])
+    mappings["gev_stationary"] = pd.read_csv(ge[1])
+    return mappings
+
+
+@pytest.fixture(scope="session")
+def genpareto_data(threadsafe_data_dir, deveraux):
+    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
+
+    gp = deveraux.fetch(
+        "extreme_value_analysis/genpareto.zip",
+        processor=pooch.Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
+    )
+
+    mappings = dict()
+    mappings["gp_nonstationary"] = pd.read_csv(gp[0])
+    mappings["gp_stationary"] = pd.read_csv(gp[1])
+    return mappings
