@@ -19,8 +19,8 @@ __all__ = [
 
 def fit(
     ds,
-    distributions: Optional[list[str]] = None,
-    min_years: Optional[int] = None,
+    distributions: list[str] | None = None,
+    min_years: int | None = None,
     method: str = "ML",
 ) -> xr.Dataset:
     """Fit multiple distributions to data.
@@ -31,7 +31,7 @@ def fit(
         Dataset containing the data to fit. All variables will be fitted.
     distributions : list of str, optional
         List of distribution names as defined in `scipy.stats`. See https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-distributions.
-        Defaults to ["expon", "gamma", "genextreme", "genpareto", "gumbel_r", "pearson3", "weibull_min"].
+        Defaults to ["genextreme", "pearson3", "gumbel_r", "expon"].
     min_years : int, optional
         Minimum number of years required for a distribution to be fitted.
     method : str
@@ -47,15 +47,7 @@ def fit(
     In order to combine the parameters of multiple distributions, the size of the `dparams` dimension is set to the
     maximum number of unique parameters between the distributions.
     """
-    distributions = distributions or [
-        "expon",
-        "gamma",
-        "genextreme",
-        "genpareto",
-        "gumbel_r",
-        "pearson3",
-        "weibull_min",
-    ]
+    distributions = distributions or ["genextreme", "pearson3", "gumbel_r", "expon"]
     out = []
     for v in ds.data_vars:
         p = []
@@ -92,7 +84,7 @@ def fit(
 
 
 def parametric_quantiles(
-    p: xr.Dataset, t: Union[float, list[float]], mode: str = "max"
+    p: xr.Dataset, t: float | list[float], mode: str = "max"
 ) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 

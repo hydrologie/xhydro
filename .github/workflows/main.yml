@@ -45,7 +45,7 @@ jobs:
           - "3.x"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0d381219ddf674d61a7572ddd19d7941e271515c # v2.9.0
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -54,34 +54,40 @@ jobs:
             github.com:443
             pypi.org:443
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
       - name: Install CI libraries
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Environment Caching
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: .tox
+          key: ${{ matrix.os }}-Python${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
       - name: Run linting suite
         run: |
           python -m tox -e lint
 
   test-preliminary:
-    name: Preliminary Tests (Python${{ matrix.python-version }})
+    name: Preliminary Tests (Python${{ matrix.python-version }}, ${{ matrix.os }})
     needs: lint
     if: |
       (github.event_name == 'pull_request') && !contains(github.event.pull_request.labels.*.name, 'approved')
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - python-version: "3.9"
+        os: [ 'ubuntu-latest' ]
+        python-version: [ "3.10" ]
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0d381219ddf674d61a7572ddd19d7941e271515c # v2.9.0
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -99,14 +105,16 @@ jobs:
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
+          cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
@@ -123,29 +131,32 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-conda:
-    name: Test with Python${{ matrix.python-version }} (Anaconda)
+    name: Test with Python${{ matrix.python-version }} (Anaconda, ${{ matrix.os }})
     needs: lint
     if: |
       contains(github.event.pull_request.labels.*.name, 'approved') ||
       (github.event.review.state == 'approved') ||
       (github.event_name == 'push')
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ 'ubuntu-latest' ]
         python-version: [ "3.10", "3.11", "3.12" ]
         julia: [ false ]
         include: # Only run the latest Python version on push
-          - python-version: "3.9"
+          - os: 'ubuntu-latest'
+            python-version: "3.10"
             julia: true
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             julia: true
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0d381219ddf674d61a7572ddd19d7941e271515c # v2.9.0
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -164,14 +175,16 @@ jobs:
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
         with:
           cache-downloads: true
+          cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install julia
         if: ${{ matrix.julia == true }}
         run: |
@@ -198,29 +211,32 @@ jobs:
           COVERALLS_SERVICE_NAME: github
 
   test-notebooks:
-    name: Test Notebooks
+    name: Test Notebooks (Python${{ matrix.python-version }}, ${{ matrix.os }})
     needs: lint
     if: |
       contains(github.event.pull_request.labels.*.name, 'notebooks') ||
       contains(github.event.pull_request.labels.*.name, 'approved') ||
       (github.event.review.state == 'approved') ||
       (github.event_name == 'push')
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ 'ubuntu-latest' ]
         python-version: [ "3.10", "3.11", "3.12" ]
         julia: [ false ]
         include:
-          - python-version: "3.9"
+          - os: 'ubuntu-latest'
+            python-version: "3.10"
             julia: true
-          - python-version: "3.12"
+          - os: 'ubuntu-latest'
+            python-version: "3.12"
             julia: true
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0d381219ddf674d61a7572ddd19d7941e271515c # v2.9.0
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -238,14 +254,16 @@ jobs:
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@v1
         with:
           cache-downloads: true
+          cache-environment: true
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
+          micromamba-version: "1.5.10-0"  # pinned to avoid the breaking changes with mamba and micromamba (2.0.0).
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
@@ -311,19 +329,13 @@ jobs:
       - test-conda
       - test-notebooks
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
         with:
-          sparse-checkout: |
-            CI/requirements_ci.txt
-      - name: Install CI libraries
-        run: |
-          python -m pip install --require-hashes -r CI/requirements_ci.txt
-      - name: Coveralls finished
-        run: |
-          python -m coveralls --finish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_SERVICE_NAME: github
+          disable-sudo: true
+          egress-policy: audit
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63 # v2.3.0
+        with:
+          parallel-finished: true

@@ -60,8 +60,6 @@ Any comments are welcome!
 from copy import deepcopy
 
 # Import packages
-from typing import Optional
-
 import numpy as np
 import spotpy
 import xarray as xr
@@ -87,10 +85,10 @@ class SpotSetup:
         The model configuration object that contains all info to run the model.
         The model function called to run this model should always use this object and read-in data it requires.
         It will be up to the user to provide the data that the model requires.
-    bounds_high : np.array
+    bounds_high : np.ndarray
         High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
-    bounds_low : np.array
+    bounds_low : np.ndarray
         Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
     obj_func : str
@@ -115,7 +113,7 @@ class SpotSetup:
     take_negative : bool
         Inidactor to take the negative of the objective function value in optimization to ensure convergence
         in the right direction.
-    mask : np.array
+    mask : np.ndarray
         A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
     transform : str
         The method to transform streamflow prior to computing the objective function. Can be one of:
@@ -133,12 +131,12 @@ class SpotSetup:
     def __init__(
         self,
         model_config: dict,
-        bounds_high: np.array,
-        bounds_low: np.array,
-        obj_func: Optional[str] = None,
+        bounds_high: np.ndarray | list[float | int],
+        bounds_low: np.ndarray | list[float | int],
+        obj_func: str | None = None,
         take_negative: bool = False,
-        mask: Optional[np.array] = None,
-        transform: Optional[str] = None,
+        mask: np.ndarray | list[float | int] | None = None,
+        transform: str | None = None,
         epsilon: float = 0.01,
     ):
         """
@@ -175,10 +173,10 @@ class SpotSetup:
                 - "rmse" : Root Mean Square Error
                 - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
                 - "rsr" : Ratio of RMSE to standard deviation.
-        bounds_high : np.array
+        bounds_high : np.ndarray
             High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
             within these bounds. The size must be equal to the number of parameters to calibrate.
-        bounds_low : np.array
+        bounds_low : np.ndarray
             Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
             within these bounds. The size must be equal to the number of parameters to calibrate.
         evaluations : int
@@ -188,7 +186,7 @@ class SpotSetup:
         take_negative : bool
             Wether to take the negative of the objective function value in optimization to ensure convergence
             in the right direction.
-        mask : np.array, optional
+        mask : np.ndarray, optional
             A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
         transform : str, optional
             The method to transform streamflow prior to computing the objective function. Can be one of:
@@ -306,14 +304,14 @@ class SpotSetup:
 def perform_calibration(
     model_config: dict,
     obj_func: str,
-    bounds_high: np.array,
-    bounds_low: np.array,
+    bounds_high: np.ndarray | list[float | int],
+    bounds_low: np.ndarray | list[float | int],
     evaluations: int,
     algorithm: str = "DDS",
-    mask: Optional[np.array] = None,
-    transform: Optional[str] = None,
+    mask: np.ndarray | list[float | int] | None = None,
+    transform: str | None = None,
     epsilon: float = 0.01,
-    sampler_kwargs: Optional[dict] = None,
+    sampler_kwargs: dict | None = None,
 ):
     """Perform calibration using SPOTPY.
 
@@ -446,6 +444,8 @@ def perform_calibration(
             raise ValueError(
                 "sampler_kwargs should only contain the keywords [ngs, kstop, peps, pcento] when using SCEUA."
             )
+    else:
+        raise ValueError(f"Algorithm {algorithm} is not supported.")
 
     # Gather optimization results
     results = sampler.getdata()
@@ -456,8 +456,7 @@ def perform_calibration(
     )
     best_parameters = [best_parameters[0][i] for i in range(0, len(best_parameters[0]))]
 
-    # Get the best objective function as well depending if maximized or
-    # minimized
+    # Get the best objective function as well, dependent on if maximized or minimized
     if of_maximize:
         _, bestobjf = analyser.get_maxlikeindex(results)
     else:

@@ -2,12 +2,11 @@
 """Empirical Covariance Function variogram calibration package."""
 
 from functools import partial
-from typing import Optional
 
 import haversine
 import numpy as np
-import scipy.optimize
 import xarray as xr
+from scipy.optimize import minimize
 
 
 def correction(
@@ -18,8 +17,8 @@ def correction(
     variogram_bins: int = 10,
     form: int = 3,
     hmax_divider: float = 2.0,
-    p1_bnds: Optional[list] = None,
-    hmax_mult_range_bnds: Optional[list] = None,
+    p1_bnds: list | None = None,
+    hmax_mult_range_bnds: list | None = None,
 ) -> tuple:
     """Perform correction on flow observations using optimal interpolation.
 
@@ -172,7 +171,7 @@ def correction(
         return np.sqrt(np.mean(weights * np.power(ecf_fun(h=h_b, par=par) - cov_b, 2)))
 
     # Perform the training using the bounds for the parameters as passed by the users before.
-    par_opt = scipy.optimize.minimize(
+    par_opt = minimize(
         _rmse_func,
         [
             np.mean(cov_b),
@@ -193,7 +192,7 @@ def calculate_ECF_stats(  # noqa: N802
     covariance: np.ndarray,
     covariance_weights: np.ndarray,
     valid_heights: np.ndarray,
-) -> tuple:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculate statistics for Empirical Covariance Function (ECF), climatological version.
 
     Uses the histogram data from all previous days and reapplies the same steps, but inputs are of size (timesteps x
@@ -213,7 +212,7 @@ def calculate_ECF_stats(  # noqa: N802
 
     Returns
     -------
-    tuple
+    tuple[np.ndarray, np.ndarray, np.ndarray]
         A tuple containing the following:
         - h_b: Array of mean distances for each height bin.
         - cov_b: Array of weighted average covariances for each height bin.
@@ -259,7 +258,7 @@ def eval_covariance_bin(
     values: np.ndarray,
     hmax_divider: float = 2.0,
     variogram_bins: int = 10,
-):
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Evaluate the covariance of a binomial distribution.
 
     Parameters
@@ -275,7 +274,7 @@ def eval_covariance_bin(
 
     Returns
     -------
-    tuple
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
         Arrays for heights, covariance, standard deviation, row length.
     """
     # Step 1: Calculate weights based on errors
@@ -392,14 +391,14 @@ def initialize_stats_variables(
     return distance, covariance, covariance_weights, valid_heights
 
 
-def general_ecf(h: np.ndarray, par: list, form: int):
+def general_ecf(h: np.ndarray, par: list | np.ndarray, form: int):
     """Define the form of the Error Covariance Function (ECF) equations.
 
     Parameters
     ----------
     h : float or array
         The distance or distances at which to evaluate the ECF.
-    par : list
+    par : list or array-like
         Parameters for the ECF equation.
     form : int
         The form of the ECF equation to use (1, 2, 3 or 4). See :py:func:`correction` for details.

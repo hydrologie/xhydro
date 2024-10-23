@@ -2,13 +2,33 @@
 Changelog
 =========
 
-v.4.0 (unreleased)
+v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
+* The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
+* Many core dependencies have been updated to more modern versions. (:pull:`218`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the notebooks to reduce the load on ReadTheDocs. (:pull:`211`).
+* Tests can now be run using the `pytest-xdist` plugin for distributed testing. See the `pytest-xdist documentation <https://pytest-xdist.readthedocs.io/en/stable/>`_ for more information. (:pull:`212`).
+* Several tests reliant on online servers and services have been marked as `online` to prevent them from running in contexts where internet access is limited. (:pull:`212`).
+* Many function docstrings and type hints have been updated for accuracy and precision. (:pull:`212`).
+
+v0.4.0 (2024-10-04)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
+* Regional frequency analysis functions as well as Resampling function for uncertainties have been added to the ``xhydro.frequency_analysis`` module. (:pull:`186`).
+* New function ``xhydro.modelling.format_input`` to format CF-compliant input data for hydrological models (currently only supports Hydrotel). (:pull:`185`).
+* `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation from climate change scenarios. (:pull:`176`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -17,12 +37,22 @@ Internal changes
 * The `conda` environment now relies on the newly created `xdatasets` package. (:pull:`164`).
 * The cookiecutter has been updated to the latest commit. Changes include workflow fixes, stricter coding standards, and many small adjustments to the documentation. (:pull:`164`).
 * A previously uncaught YAML formatting issue has been addressed. Stricter style conventions are now enforced. (:pull:`174`).
-* Chunking was adjusted in a few functions to work with the new requirements of `apply_ufunc`. (:pull:`180`).
+* Chunking was adjusted in a few functions to work with the new requirements of ``apply_ufunc``. (:pull:`180`).
 * Updated the cookiecutter template to the latest commit. (:pull:`177`):
     * Actions have been updated and synchronized.
     * Warnings in Pull Requests from forks are now less buggy.
     * A new pre-commit hook and linting step for validating numpy docstrings has been added (`numpydoc`).
     * All `pip`-based dependencies used to run in CI are now managed by a ``CI/requirements_ci.txt`` that uses hashes of packages for security.
+* Added two new Batch (`.bat`) files to help facilitate the translation of and the generation of the `xhydro` documentation in Windows environments. (:pull:`196`).
+* The bumpversion workflow now uses the Hydrologie Helper Bot to make signed commits. (:pull:`199`).
+* Updated the cookiecutter template to the latest commit. (:pull:`199`):
+    * Updated development dependencies to the latest versions.
+    * Staged support for Python3.13.
+    * Added environment caching to existing workflows.
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* `xhydro` now requires `python` >= 3.10. (:pull:`195`).
 
 v0.3.6 (2024-06-10)
 -------------------

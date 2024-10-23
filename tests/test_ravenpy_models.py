@@ -2,9 +2,7 @@ import datetime as dt
 import warnings
 
 import numpy as np
-import pooch
 import pytest
-import xarray as xr
 from raven_hydro import __raven_version__
 
 from xhydro.modelling import RavenpyModel
@@ -13,19 +11,9 @@ from xhydro.modelling import RavenpyModel
 class TestRavenpyModels:
     """Test configurations of RavenPy models."""
 
-    # Set Github URL for getting files for tests
-    GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
-    BRANCH_OR_COMMIT_HASH = "main"
-
     # Get data from xhydro-testdata repo
-    meteo_file = pooch.retrieve(
-        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/ravenpy/ERA5_Riviere_Rouge_global.nc",
-        known_hash="md5:de985fa27ddceac690aeb34182a93f11",
-    )
-    qobs_path = pooch.retrieve(
-        url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/ravenpy/Debit_Riviere_Rouge.nc",
-        known_hash="md5:5b0feedc34333244b1d9e9c251323478",
-    )
+    riviere_rouge_meteo = "ravenpy/ERA5_Riviere_Rouge_global.nc"
+    riviere_rouge_qobs = "ravenpy/Debit_Riviere_Rouge.nc"
 
     # List of types of data provided to Raven in the meteo file
     data_type = ["TEMP_MAX", "TEMP_MIN", "PRECIP"]
@@ -34,7 +22,6 @@ class TestRavenpyModels:
     alt_names_flow = "qobs"
     start_date = dt.datetime(1985, 1, 1)
     end_date = dt.datetime(1990, 1, 1)
-    qobs = xr.open_dataset(qobs_path).qobs.sel(time=slice(start_date, end_date)).values
     drainage_area = np.array([100.0])
     elevation = np.array([250.5])
     latitude = np.array([46.0])
@@ -47,7 +34,7 @@ class TestRavenpyModels:
     rain_snow_fraction = "RAINSNOW_DINGMAN"
     evaporation = "PET_PRIESTLEY_TAYLOR"
 
-    def test_ravenpy_gr4jcn(self):
+    def test_ravenpy_gr4jcn(self, deveraux):
         """Test for GR4JCN ravenpy model"""
         model_name = "GR4JCN"
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
@@ -62,9 +49,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -80,7 +67,7 @@ class TestRavenpyModels:
         met = rpm.get_inputs()
         assert len(met.time) == len(qsim.time)
 
-    def test_ravenpy_hmets(self):
+    def test_ravenpy_hmets(self, deveraux):
         model_name = "HMETS"
         parameters = [
             9.5019,
@@ -115,9 +102,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -128,7 +115,7 @@ class TestRavenpyModels:
         qsim = rpm.run()
         assert qsim["streamflow"].shape == (1827,)
 
-    def test_ravenpy_mohyse(self):
+    def test_ravenpy_mohyse(self, deveraux):
         """Test for Mohyse ravenpy model"""
         model_name = "Mohyse"
         parameters = [
@@ -153,9 +140,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -170,7 +157,7 @@ class TestRavenpyModels:
     @pytest.mark.skip(
         reason="Weird error with negative simulated PET in ravenpy for HBVEC."
     )
-    def test_ravenpy_hbvec(self):
+    def test_ravenpy_hbvec(self, deveraux):
         """Test for HBVEC ravenpy model"""
         model_name = "HBVEC"
         parameters = [
@@ -206,9 +193,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -223,7 +210,7 @@ class TestRavenpyModels:
     @pytest.mark.skip(
         reason="Weird error with negative simulated PET in ravenpy for HYPR."
     )
-    def test_ravenpy_hypr(self):
+    def test_ravenpy_hypr(self, deveraux):
         """Test for HYPR ravenpy model"""
         model_name = "HYPR"
         parameters = [
@@ -259,9 +246,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -273,7 +260,7 @@ class TestRavenpyModels:
 
         assert qsim["streamflow"].shape == (1827,)
 
-    def test_ravenpy_sacsma(self):
+    def test_ravenpy_sacsma(self, deveraux):
         """Test for SAC-SMA ravenpy model"""
         model_name = "SACSMA"
         parameters = [
@@ -309,9 +296,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -323,7 +310,7 @@ class TestRavenpyModels:
 
         assert qsim["streamflow"].shape == (1827,)
 
-    def test_ravenpy_blended(self):
+    def test_ravenpy_blended(self, deveraux):
         """Test for Blended ravenpy model"""
         model_name = "Blended"
         parameters = [
@@ -381,9 +368,9 @@ class TestRavenpyModels:
             longitude=self.longitude,
             start_date=self.start_date,
             end_date=self.end_date,
-            qobs_path=self.qobs_path,
+            qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
             alt_names_flow=self.alt_names_flow,
-            meteo_file=self.meteo_file,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
             meteo_station_properties=self.meteo_station_properties,
@@ -399,7 +386,7 @@ class TestRavenpyModels:
             qsim = rpm.run()
             assert qsim["streamflow"].shape == (1827,)
 
-    def test_fake_ravenpy(self):
+    def test_fake_ravenpy(self, deveraux):
         """Test for GR4JCN ravenpy model"""
         model_name = "fake_test"
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
@@ -414,9 +401,9 @@ class TestRavenpyModels:
                 longitude=self.longitude,
                 start_date=self.start_date,
                 end_date=self.end_date,
-                qobs_path=self.qobs_path,
+                qobs_path=deveraux.fetch(self.riviere_rouge_qobs),
                 alt_names_flow=self.alt_names_flow,
-                meteo_file=self.meteo_file,
+                meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
                 data_type=self.data_type,
                 alt_names_meteo=self.alt_names_meteo,
                 meteo_station_properties=self.meteo_station_properties,

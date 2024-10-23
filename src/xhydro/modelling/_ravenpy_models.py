@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-from typing import Optional, Union
 
 import numpy as np
 import ravenpy.config.emulators
@@ -23,35 +22,36 @@ class RavenpyModel(HydrologicalModel):
     ----------
     model_name : {"Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"}
         The name of the ravenpy model to run.
-    parameters : np.ndarray
+    parameters : np.ndarray or list of float
         The model parameters for simulation or calibration.
-    drainage_area : float
+    drainage_area : np.ndarray or float
         The watershed drainage area, in km².
-    elevation : float
+    elevation : np.ndarray or float
         The elevation of the watershed, in meters.
-    latitude : float
+    latitude : np.ndarray or float
         The latitude of the watershed centroid.
-    longitude : float
+    longitude : np.ndarray or float
         The longitude of the watershed centroid.
     start_date : dt.datetime
         The first date of the simulation.
     end_date : dt.datetime
         The last date of the simulation.
-    qobs_path : Union[str, os.PathLike]
+    qobs_path : str or os.PathLike
         The path to the dataset containing the observed streamflow.
-    alt_names_flow : dict
+    alt_names_flow : sequence of str
+        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
         A dictionary that allows users to change the names of flow variables of their dataset to cf-compliant names.
-    meteo_file : Union[str, os.PathLike]
+    meteo_file : str or os.PathLike
         The path to the file containing the observed meteorological data.
-    data_type : dict
-        The dictionary necessary to tell raven which variables are being fed such that it can adjust it's processes
-        internally.
+    data_type : sequence of str
+        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
+        The dictionary necessary to tell raven which variables are being fed such that it can adjust its processes internally.
     alt_names_meteo : dict
         A dictionary that allows users to change the names of meteo variables of their dataset to cf-compliant names.
     meteo_station_properties : dict
         The properties of the weather stations providing the meteorological data. Used to adjust weather according to
         differences between station and catchment elevations (adiabatic gradients, etc.).
-    workdir : Union[str, os.PathLike]
+    workdir : str or  os.PathLike
         Path to save the .rv files and model outputs.
     rain_snow_fraction : str
         The method used by raven to split total precipitation into rain and snow.
@@ -65,9 +65,9 @@ class RavenpyModel(HydrologicalModel):
     def __init__(
         self,
         model_name: str,
-        parameters: np.ndarray,
-        drainage_area: Union[str, os.PathLike],
-        elevation: str,
+        parameters: np.ndarray | list[float],
+        drainage_area: np.ndarray | float,
+        elevation: np.ndarray | float,
         latitude,
         longitude,
         start_date,
@@ -78,7 +78,7 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
-        workdir: Optional[Union[str, os.PathLike]] = None,
+        workdir: str | os.PathLike | None = None,
         rain_snow_fraction="RAINSNOW_DINGMAN",
         evaporation="PET_PRIESTLEY_TAYLOR",
         **kwargs,
@@ -117,7 +117,7 @@ class RavenpyModel(HydrologicalModel):
                     data_kwds=meteo_station_properties,
                 )
             ],
-            RainSnowFraction=rain_snow_fraction,
+            rain_snow_fraction=rain_snow_fraction,
             Evaporation=evaporation,
             **kwargs,
         )
@@ -125,12 +125,12 @@ class RavenpyModel(HydrologicalModel):
         self.qobs = xr.open_dataset(qobs_path)
         self.model_name = model_name
 
-    def run(self) -> Union[str, xr.Dataset]:
+    def run(self) -> str | xr.Dataset:
         """Run the ravenpy hydrological model and return simulated streamflow.
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The simulated streamflow from the selected ravenpy model.
         """
         default_emulator_config = self.default_emulator_config
@@ -151,9 +151,6 @@ class RavenpyModel(HydrologicalModel):
         # Need to remove qobs as pydantic forbids extra inputs...
         if "qobs" in default_emulator_config:
             default_emulator_config.pop("qobs")
-
-        if model_name == "HBVEC":
-            default_emulator_config.pop("RainSnowFraction")
 
         self.model = getattr(ravenpy.config.emulators, model_name)(
             **default_emulator_config
@@ -182,7 +179,7 @@ class RavenpyModel(HydrologicalModel):
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The simulated streamflow from the selected ravenpy model.
         """
         return self.qsim
@@ -192,7 +189,7 @@ class RavenpyModel(HydrologicalModel):
 
         Returns
         -------
-        xr.dataset
+        xr.Dataset
             The observed meteorological data used to run the ravenpy model simulation.
         """
         ds = xr.open_dataset(self.meteo_file)
