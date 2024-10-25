@@ -73,6 +73,57 @@ class TestFit:
                 [[np.nan, np.nan]],
             )
 
+    @pytest.mark.parametrize(
+        "periods",
+        [
+            None,
+            ["1961", "1980"],
+            ["1962", "2010"],
+            ["2001", "2020"],
+            [["2001", "2020"], ["2041", "2060"]],
+        ],
+    )
+    def test_periods(self, periods):
+        ds = timeseries(
+            np.arange(1, 100) * 5 + 350,
+            variable="streamflow",
+            start="2001-01-01",
+            freq="YS",
+            as_dataset=True,
+        )
+
+        min_years = 30 if periods == ["2001", "2020"] else None
+        params = xhfa.local.fit(
+            ds, distributions=["gumbel_r"], periods=periods, min_years=min_years
+        )
+
+        if periods is None:
+            assert "horizon" not in params
+            np.testing.assert_array_almost_equal(
+                params.streamflow.squeeze(), [528.9, 129.23], decimal=2
+            )
+
+        elif isinstance(periods[0], str):
+            np.testing.assert_array_equal(
+                params.horizon, [f"{periods[0]}-{periods[1]}"]
+            )
+            results = {
+                "1961": np.array([np.nan, np.nan]),
+                "1962": np.array([370.35, 12.96]),
+                "2001": np.array([np.nan, np.nan]),
+            }
+            np.testing.assert_array_almost_equal(
+                params.streamflow.squeeze(), results[periods[0]], decimal=2
+            )
+
+        elif periods[0] == ["2001", "2020"]:
+            np.testing.assert_array_equal(params.horizon, ["2001-2020", "2041-2060"])
+            np.testing.assert_array_almost_equal(
+                params.streamflow.squeeze(),
+                np.array([[388.15, 26.06], [588.15, 26.06]]),
+                decimal=2,
+            )
+
 
 @pytest.mark.parametrize("mode", ["max", "min", "foo"])
 def test_quantiles(mode):

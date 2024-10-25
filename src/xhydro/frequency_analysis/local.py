@@ -55,10 +55,11 @@ def fit(
     """
     distributions = distributions or ["genextreme", "pearson3", "gumbel_r", "expon"]
 
+    asked_periods = True if periods is not None else False
     periods = (
         standardize_periods(periods, multiple=True)
         if periods is not None
-        else [[str(ds.time.dt.year.min()), str(ds.time.dt.year.max())]]
+        else [[str(int(ds.time.dt.year.min())), str(int(ds.time.dt.year.max()))]]
     )
 
     out = []
@@ -101,7 +102,11 @@ def fit(
     out.attrs = ds.attrs
 
     if len(out.horizon) == 1:
-        out = out.squeeze("horizon").drop_vars("horizon")
+        # If only one period was asked, remove the horizon dimension, but keep the period in the coordinates.
+        out = out.squeeze("horizon")
+        if asked_periods is False:
+            # If no period was asked, remove everything related to the period.
+            out = out.drop_vars("horizon")
 
     return out
 
