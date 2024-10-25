@@ -6,11 +6,11 @@ try:
     from copy import deepcopy
 
     import numpy as np
+    import xarray as xr
     from juliacall import JuliaError
     from juliacall import convert as jl_convert
-    from xhydro_temp.extreme_value_analysis.julia_import import Extremes
 
-    from xhydro.extreme_value_analysis.julia_import import jl
+    from xhydro.extreme_value_analysis.julia_import import Extremes, jl
     from xhydro.extreme_value_analysis.structures.conversions import (
         jl_vector_to_py_list,
         py_variable_to_jl_variable,
@@ -59,9 +59,11 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
     return jl_vector_variables
 
 
-def param_cint(
-    jl_model, nparams: int, bayesian: bool = False, confidence_level: float = 0.95, main_dim_length: int = 1, return_period: int = 100
-) -> dict[str, list[float]]:
+def param_cint_conf(
+    jl_model,
+    bayesian: bool = False,
+    confidence_level: float = 0.95,
+) -> list:
     r"""
     Return a list of parameters and confidence intervals for a given Julia fitted model.
 
@@ -69,8 +71,6 @@ def param_cint(
     ----------
     jl_model : Julia.Extremes.AbstractExtremeValueModel
         The fitted Julia model from which parameters and confidence intervals are to be extracted.
-    nparams : int
-        The number of parameters, including covariates, for the given distribution.
     bayesian : bool
         If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
         Defaults to False.
@@ -80,17 +80,10 @@ def param_cint(
 
     Returns
     -------
-    dict[str, list[float]]
-        A dictionary containing the estimated parameters and the lower and upper bounds for the confidence interval
+    list
+        A list containing NumPy arrays for the estimated parameters, and upper bounds for the confidence interval
         of each parameter.
     """
-    # TODO: return_level of appropriate length
-    empty_return = {
-            "params": [np.nan for _ in range(nparams)],
-            "cint_lower": [np.nan for _ in range(nparams)],
-            "cint_upper": [np.nan for _ in range(nparams)],
-            "return_level": [np.nan for _ in range(main_dim_length)]
-        }
     if bayesian:
         jl_params_sims = jl_model.sim.value
         py_params_sims = [
@@ -101,30 +94,94 @@ def param_cint(
             sum(x) / len(py_params_sims) for x in zip(*py_params_sims)
         ]  # each parameter is estimated to be the average over all simulations
     else:
-        params = jl_vector_to_py_list(getattr(jl_model, "θ̂"))
+        params = np.array(jl_vector_to_py_list(getattr(jl_model, "θ̂")))
+
     try:
         jl_cint = Extremes.cint(jl_model, confidence_level)
         cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
-        cint_lower = [interval[0] for interval in cint]
-        cint_upper = [interval[1] for interval in cint]
-    except JuliaError:
-        warnings.warn(
-            f"There was an error in computing confidence interval. "
-            f"Returned parameter, confidence interval and return level values are numpy.nan"
-        )
-        return empty_return
-    try:
-        jl_return_level = Extremes.returnlevel(jl_model, return_period)
-        py_return_level = jl_vector_to_py_list(jl_return_level.value)
-        # print("return level 100: ", py_return_level, "\n")
-    except JuliaError:
-        warnings.warn(
-            f"There was an error in computing return level. "
-            f"Returned parameter, confidence interval and return level values are numpy.nan"
-        )
-        return empty_return
-    return {"params": params, "cint_lower": cint_lower, "cint_upper": cint_upper, "return_level": py_return_level}
+        cint_lower = np.array([interval[0] for interval in cint])
+        cint_upper = np.array([interval[1] for interval in cint])
 
+        return [params, cint_lower, cint_upper]
+
+    except JuliaError:
+        warnings.warn(f"There was an error in computing confidence interval.")
+
+
+def param_cint_return_level(
+    jl_model,
+    confidence_level: float = 0.95,
+    return_period: float = 100,
+    pareto: bool = False,
+    threshold_pareto=None,
+    nobs_pareto=None,
+    nobsperblock_pareto=None,
+) -> dict[str, list[float]]:
+    r"""
+    Return a list of parameters and confidence intervals for a given Julia fitted model.
+
+    Parameters
+    ----------
+    jl_model : Julia.Extremes.AbstractExtremeValueModel
+        The fitted Julia model from which parameters and confidence intervals are to be extracted.
+    confidence_level : float
+        The confidence level for the confidence interval of each parameter.
+        Defaults to 0.95.
+    return_period : float
+        Return period used to compute the return level.
+    pareto : bool
+        If True, the return level parameters and confidence intervals will be based on the Pareto distribution.
+        Defaults to False.
+    threshold_pareto : float
+        Threshold.
+    nobs_pareto : int,
+        Number of total observation.
+    nobsperblock_pareto : int,
+        Number of observation per block.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        A dictionary containing the estimated parameters and the lower and upper bounds for the confidence interval
+        of each parameter.
+    """
+    try:
+        if pareto:
+            if (
+                threshold_pareto is None
+                or nobs_pareto is None
+                or nobsperblock_pareto is None
+            ):
+                raise ValueError(
+                    "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when jl_model use a 'genpareto'."
+                )
+            else:
+                jl_return_level = Extremes.returnlevel(
+                    jl_model,
+                    threshold_pareto,
+                    nobs_pareto,
+                    nobsperblock_pareto,
+                    return_period,
+                )
+        else:
+            jl_return_level = Extremes.returnlevel(jl_model, return_period)
+        py_return_level = np.array(jl_vector_to_py_list(jl_return_level.value))
+
+    except JuliaError:
+        warnings.warn(f"There was an error in computing return level.")
+
+    try:
+        jl_cint = Extremes.cint(jl_return_level, confidence_level)
+        cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
+        cint_lower = np.array([interval[0] for interval in cint])
+        cint_upper = np.array([interval[1] for interval in cint])
+
+        return [py_return_level, cint_lower, cint_upper]
+
+    except JuliaError:
+        warnings.warn(
+            f"There was an error in computing confidence interval for the return level."
+        )
 
 
 def insert_covariates(
@@ -229,8 +286,10 @@ def exponentiate_logscale(
         Updated parameter list with logscale parameter and its covariates having been exponentiated.
     """
     scale_param_index = 1 + len(locationcov_data)
+
     if pareto:
         scale_param_index = 0
+
     for index in range(
         scale_param_index, scale_param_index + len(logscalecov_data) + 1
     ):
