@@ -6,6 +6,11 @@ v0.5.0 (unreleased)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
 
+Bug fixes
+^^^^^^^^^
+* Fixed a bug in `xhydro.modelling.format_input` where the function would fail if the input data was a `dask` array. (:pull:`214`).
+* The `executable` parameter in the Hydrotel model class is now always required. (:pull:`214`).
+
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
