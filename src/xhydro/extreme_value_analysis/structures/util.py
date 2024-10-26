@@ -27,6 +27,7 @@ __all__ = [
     "jl_variable_fit_parameters",
     "match_length",
     "param_cint",
+    "return_level_cint",
 ]
 
 
@@ -59,7 +60,7 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
     return jl_vector_variables
 
 
-def param_cint_conf(
+def param_cint(
     jl_model,
     bayesian: bool = False,
     confidence_level: float = 0.95,
@@ -90,9 +91,9 @@ def param_cint_conf(
             jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :]))
             for i in range(len(jl_params_sims[:, 0, 0]))
         ]
-        params = [
-            sum(x) / len(py_params_sims) for x in zip(*py_params_sims)
-        ]  # each parameter is estimated to be the average over all simulations
+        params = np.array(
+            [sum(x) / len(py_params_sims) for x in zip(*py_params_sims)]
+        )  # each parameter is estimated to be the average over all simulations
     else:
         params = np.array(jl_vector_to_py_list(getattr(jl_model, "θ̂")))
 
@@ -108,7 +109,7 @@ def param_cint_conf(
         warnings.warn(f"There was an error in computing confidence interval.")
 
 
-def param_cint_return_level(
+def return_level_cint(
     jl_model,
     confidence_level: float = 0.95,
     return_period: float = 100,
@@ -118,7 +119,7 @@ def param_cint_return_level(
     nobsperblock_pareto=None,
 ) -> dict[str, list[float]]:
     r"""
-    Return a list of parameters and confidence intervals for a given Julia fitted model.
+    Return a list of retun level and confidence intervals for a given Julia fitted model.
 
     Parameters
     ----------
