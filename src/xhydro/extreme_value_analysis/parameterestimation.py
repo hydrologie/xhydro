@@ -256,7 +256,6 @@ def gpfit(
             cint = return_level_cint(
                 jl_model,
                 confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
                 return_period=return_period,
                 pareto=True,
                 threshold_pareto=threshold_pareto,
