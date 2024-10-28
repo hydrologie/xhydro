@@ -34,6 +34,8 @@ Credits
 
 This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pypackage`_ project template.
 
+This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou-a), with inputs from the `xHydro` team.
+
 .. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage
 
