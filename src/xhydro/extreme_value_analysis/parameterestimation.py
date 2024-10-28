@@ -555,7 +555,10 @@ def gevfitbayes(
             )
         elif return_type == "returnlevel":
             cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
+                jl_model,
+                confidence_level=confidence_level,
+                return_period=return_period,
+                bayesian=True,
             )
         return cint
 
@@ -638,7 +641,10 @@ def gumbelfitbayes(
             )
         elif return_type == "returnlevel":
             cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
+                jl_model,
+                confidence_level=confidence_level,
+                return_period=return_period,
+                bayesian=True,
             )
         return cint
 
@@ -737,6 +743,7 @@ def gpfitbayes(
                 threshold_pareto=threshold_pareto,
                 nobs_pareto=nobs_pareto,
                 nobsperblock_pareto=nobsperblock_pareto,
+                bayesian=True,
             )
         else:
             raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
@@ -1030,7 +1037,7 @@ def _fitfunc_param_cint(
                 exponentiate_logscale(params_, locationcov_data, scalecov_data)
                 for params_ in param_list
             ]  # because Extremes.jl gives us log(scale)
-            params = np.roll(params, 1)  # to have [shape, loc, scale]
+            params = np.roll(params, 1, axis=1)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(arr_pruned, confidence_level=confidence_level)
 
@@ -1066,7 +1073,7 @@ def _fitfunc_param_cint(
             ]
             num_shape_covariates = len(shapecov_data)
             params = np.roll(
-                params, 1 + num_shape_covariates
+                params, 1 + num_shape_covariates, axis=1
             )  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(

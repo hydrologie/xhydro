@@ -87,21 +87,22 @@ def param_cint(
     """
     if bayesian:
         jl_params_sims = jl_model.sim.value
+
         py_params_sims = [
             jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :]))
-            for i in range(len(jl_params_sims[:, 0, 0]))
+            for i in range(jl_params_sims.shape[0])
         ]
-        params = np.array(
-            [sum(x) / len(py_params_sims) for x in zip(*py_params_sims)]
+        params = np.mean(
+            np.stack(py_params_sims), axis=0
         )  # each parameter is estimated to be the average over all simulations
     else:
         params = np.array(jl_vector_to_py_list(getattr(jl_model, "θ̂")))
 
     try:
         jl_cint = Extremes.cint(jl_model, confidence_level)
-        cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
-        cint_lower = np.array([interval[0] for interval in cint])
-        cint_upper = np.array([interval[1] for interval in cint])
+        cint = np.stack([jl_vector_to_py_list(interval) for interval in jl_cint])
+        cint_lower = cint[:, 0]
+        cint_upper = cint[:, 1]
 
         return [params, cint_lower, cint_upper]
 
@@ -117,6 +118,7 @@ def return_level_cint(
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
+    bayesian: bool = False,
 ) -> dict[str, list[float]]:
     r"""
     Return a list of retun level and confidence intervals for a given Julia fitted model.
@@ -139,6 +141,9 @@ def return_level_cint(
         Number of total observation.
     nobsperblock_pareto : int,
         Number of observation per block.
+    bayesian : bool
+        If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
+        Defaults to False.
 
     Returns
     -------
@@ -166,16 +171,22 @@ def return_level_cint(
                 )
         else:
             jl_return_level = Extremes.returnlevel(jl_model, return_period)
-        py_return_level = np.array(jl_vector_to_py_list(jl_return_level.value))
+
+        if bayesian:
+            py_return_level_m = np.array(jl_vector_to_py_list(jl_return_level.value))
+            shp = jl_return_level.value.shape
+            py_return_level = np.mean(np.reshape(py_return_level_m, shp[::-1]), axis=1)
+        else:
+            py_return_level = np.array(jl_vector_to_py_list(jl_return_level.value))
 
     except JuliaError:
         warnings.warn(f"There was an error in computing return level.")
 
     try:
         jl_cint = Extremes.cint(jl_return_level, confidence_level)
-        cint = [jl_vector_to_py_list(interval) for interval in jl_cint]
-        cint_lower = np.array([interval[0] for interval in cint])
-        cint_upper = np.array([interval[1] for interval in cint])
+        cint = np.stack([jl_vector_to_py_list(interval) for interval in jl_cint])
+        cint_lower = cint[:, 0]
+        cint_upper = cint[:, 1]
 
         return [py_return_level, cint_lower, cint_upper]
 
