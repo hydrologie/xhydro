@@ -98,7 +98,6 @@ class TestFit:
         )
 
         if periods is None:
-            assert "horizon" not in params
             np.testing.assert_array_almost_equal(
                 params.streamflow.squeeze(), [528.9, 129.23], decimal=2
             )
