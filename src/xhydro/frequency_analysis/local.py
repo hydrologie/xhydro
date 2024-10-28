@@ -55,7 +55,6 @@ def fit(
     """
     distributions = distributions or ["genextreme", "pearson3", "gumbel_r", "expon"]
 
-    asked_periods = True if periods is not None else False
     periods = (
         standardize_periods(periods, multiple=True)
         if periods is not None
@@ -104,9 +103,6 @@ def fit(
     if len(out.horizon) == 1:
         # If only one period was asked, remove the horizon dimension, but keep the period in the coordinates.
         out = out.squeeze("horizon")
-        if asked_periods is False:
-            # If no period was asked, remove everything related to the period.
-            out = out.drop_vars("horizon")
 
     return out
 
