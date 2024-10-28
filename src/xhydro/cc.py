@@ -18,11 +18,11 @@ __all__ = [
 ]
 
 
-def sampled_indicators(
+def sampled_indicators(  # noqa: C901
     ds: xr.Dataset,
     deltas: xr.Dataset,
     *,
-    delta_type: str | dict | None = None,
+    delta_kind: str | dict | None = None,
     ds_weights: xr.DataArray | None = None,
     delta_weights: xr.DataArray | None = None,
     n: int = 50000,
@@ -38,7 +38,7 @@ def sampled_indicators(
         The percentiles should be stored in either a dimension called "percentile" [0, 100] or "quantile" [0, 1].
     deltas : xr.Dataset
         Dataset containing the future deltas to apply to the historical indicators.
-    delta_type : str or dict, optional
+    delta_kind : str or dict, optional
         Type of delta provided. Recognized values are: ['absolute', 'abs.', '+'], ['percentage', 'pct.', '%'].
         If a dict is provided, it should map the variable names to their respective delta type.
         If None, the variables should have a 'delta_kind' attribute.
@@ -96,7 +96,9 @@ def sampled_indicators(
             )
         }
     )
+    deltas_weighted = True
     if delta_weights is None:
+        deltas_weighted = False
         dims = set(deltas.dims).difference(list(shared_dims) + exclude_dims)
         delta_weights = xr.DataArray(
             np.ones([deltas.sizes[dim] for dim in dims]),
@@ -121,6 +123,43 @@ def sampled_indicators(
             f"Dimension(s) {problem_dims} is shared between 'ds' and 'deltas', but not between 'ds_weights' and 'delta_weights'."
         )
 
+    # Prepare the operation to apply on the variables
+    if delta_kind is None:
+        try:
+            delta_kind = {
+                var: deltas[var].attrs["delta_kind"] for var in deltas.data_vars
+            }
+        except KeyError:
+            raise KeyError(
+                "The 'delta_kind' argument is None, but the variables within the 'deltas' Dataset are missing a 'delta_kind' attribute."
+            )
+    elif isinstance(delta_kind, str):
+        delta_kind = {var: delta_kind for var in deltas.data_vars}
+    elif isinstance(delta_kind, dict):
+        if not all([var in delta_kind for var in deltas.data_vars]):
+            raise ValueError(
+                f"If 'delta_kind' is a dict, it should contain all the variables in 'deltas'. Missing variables: "
+                f"{list(set(deltas.data_vars) - set(delta_kind))}."
+            )
+
+    def _add_sampling_attrs(d, prefix, history, ds_for_attrs=None):
+        for var in d.data_vars:
+            if ds_for_attrs is not None:
+                d[var].attrs = ds_for_attrs[var].attrs
+            d[var].attrs["sampling_kind"] = delta_kind[var]
+            d[var].attrs["sampling_n"] = n
+            d[var].attrs["sampling_seed"] = seed
+            d[var].attrs[
+                "description"
+            ] = f"{prefix} of {d[var].attrs.get('long_name', var)} constructed from a perturbation approach and random sampling."
+            d[var].attrs[
+                "long_name"
+            ] = f"{prefix} of {d[var].attrs.get('long_name', var)}"
+            old_history = d[var].attrs.get("history", "")
+            d[var].attrs[
+                "history"
+            ] = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {history}\n {old_history}"
+
     # Sample the distributions
     _, pdim, mult = _perc_or_quantile(ds)
     ds_dist = (
@@ -128,60 +167,60 @@ def sampled_indicators(
         .drop_vars("sample", errors="ignore")
         .assign_coords({"sample": np.arange(n)})
     )
+    _add_sampling_attrs(
+        ds_dist,
+        "Historical distribution",
+        f"{'Weighted' if ds_weights is not None else 'Uniform'} random sampling "
+        f"applied to the historical distribution using 'xhydro.sampled_indicators' "
+        f"and {n} samples.",
+        ds_for_attrs=ds,
+    )
+
     deltas_dist = (
         _weighted_sampling(deltas, delta_weights, n=n, seed=seed)
         .drop_vars("sample", errors="ignore")
         .assign_coords({"sample": np.arange(n)})
     )
-
-    # Prepare the operation to apply on the variables
-    if delta_type is None:
-        delta_type = {var: deltas[var].attrs["delta_kind"] for var in deltas.data_vars}
-    elif isinstance(delta_type, str):
-        delta_type = {var: delta_type for var in deltas.data_vars}
+    _add_sampling_attrs(
+        deltas_dist,
+        "Future delta distribution",
+        f"{'Weighted' if deltas_weighted else 'Uniform'} random sampling "
+        f"applied to the delta distribution using 'xhydro.sampled_indicators' "
+        f"and {n} samples.",
+        ds_for_attrs=deltas,
+    )
 
     # Apply the deltas element-wise to the historical distribution
     fut_dist = xr.Dataset()
     for var in deltas.data_vars:
         with xr.set_options(keep_attrs=True):
-            if delta_type[var] in ["absolute", "abs.", "+"]:
+            if delta_kind[var] in ["absolute", "abs.", "+"]:
                 fut_dist[var] = ds_dist[var] + deltas_dist[var]
-            elif delta_type[var] in ["percentage", "pct.", "%"]:
+            elif delta_kind[var] in ["percentage", "pct.", "%"]:
                 fut_dist[var] = ds_dist[var] * (1 + deltas_dist[var] / 100)
             else:
                 raise ValueError(
-                    f"Unknown operation '{delta_type[var]}', expected one of ['absolute', 'abs.', '+'], ['percentage', 'pct.', '%']."
+                    f"Unknown operation '{delta_kind[var]}', expected one of ['absolute', 'abs.', '+'], ['percentage', 'pct.', '%']."
                 )
-            fut_dist[var].attrs = ds_dist[var].attrs
-            fut_dist[var].attrs["sampling_kind"] = delta_type[var]
-            fut_dist[var].attrs["sampling_n"] = n
-            fut_dist[var].attrs["sampling_seed"] = seed
-            fut_dist[var].attrs[
-                "description"
-            ] = f"Future distribution of {fut_dist[var].attrs.get('long_name', var)} constructed from a perturbation approach and random sampling."
-            fut_dist[var].attrs[
-                "long_name"
-            ] = f"Future distribution of {fut_dist[var].attrs.get('long_name', var)}."
-            old_history = ds_dist[var].attrs.get("history", "") + deltas_dist[
-                var
-            ].attrs.get("history", "")
-            fut_dist[var].attrs["history"] = (
-                f"[{datetime.now().isoformat()}] Perturbation approach and random sampling applied to historical distribution and deltas "
-                f"using 'xhydro.sampled_indicators' and {n} samples.\n {old_history}"
+            _add_sampling_attrs(
+                fut_dist,
+                "Future distribution",
+                f"Future distribution constructed from a perturbation approach and random sampling with {n} samples.",
+                ds_for_attrs=ds,
             )
+
     # Build the attributes based on common attributes between the historical and delta distributions
     fut_dist = xs.clean_up(fut_dist, common_attrs_only=[ds, deltas])
 
     # Compute future percentiles
     with xr.set_options(keep_attrs=True):
         fut_pct = fut_dist.quantile(ds.percentile / mult, dim="sample")
-    for var in fut_pct.data_vars:
-        fut_pct[var].attrs["description"] = (
-            fut_pct[var].attrs["description"].replace("distribution", f"{pdim}s")
-        )
-        fut_pct[var].attrs["long_name"] = (
-            fut_pct[var].attrs["long_name"].replace("distribution", f"{pdim}s")
-        )
+    _add_sampling_attrs(
+        fut_pct,
+        "Future percentiles",
+        f"Future percentiles computed from the future distribution using 'xhydro.sampled_indicators' and {n} samples.",
+        ds_for_attrs=ds,
+    )
 
     if pdim == "percentile":
         fut_pct = fut_pct.rename({"quantile": "percentile"})
