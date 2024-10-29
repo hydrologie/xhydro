@@ -309,6 +309,32 @@ def exponentiate_logscale(
     return params
 
 
+def _recover_nan(
+    mask: np.ma.MaskedArray, lists: list[list[float]]
+) -> list[list[float]]:
+    """
+    Recover the original length of lists by filling NaN in masked positions.
+
+    Parameters
+    ----------
+    mask:
+        A masked array indicating positions of valid data.
+    lists:
+        A list of arrays to be recovered.
+
+    Returns
+    -------
+    A list of lists with NaNs filled in the original masked positions.
+    """
+    reco_list = []
+    for lst in lists:
+        recovered = np.full(mask.shape, np.nan, dtype=lst.dtype)
+        recovered[~mask.mask] = lst
+        reco_list.append(recovered)
+
+    return reco_list
+
+
 class CovariateIndex:
     r"""CovariatedIndex class."""
 
