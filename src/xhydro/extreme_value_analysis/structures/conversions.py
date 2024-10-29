@@ -78,8 +78,6 @@ def py_list_to_jl_vector(py_list: list):
         If the list contains mixed types that are not all strings or numbers.
         If the list contains unsupported types/complex structures such that it cannot be converted to a Julia Vector.
     """
-    # Cleaning up nans and numpy.float32 elements
-    py_list = [x for x in py_list if not np.isnan(x)]  # TODO: deal with nans beter
     py_list = [float(i) if isinstance(i, np.float32) else i for i in py_list]
 
     if all(isinstance(i, float) or isinstance(i, int) for i in py_list):
