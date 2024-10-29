@@ -18,12 +18,13 @@ try:
     )
     from xhydro.extreme_value_analysis.structures.util import (
         CovariateIndex,
+        _create_nan_mask,
         _recover_nan,
         exponentiate_logscale,
         insert_covariates,
         jl_variable_fit_parameters,
-        match_length,
         param_cint,
+        remove_nan,
         return_level_cint,
     )
 except (ImportError, ModuleNotFoundError) as e:
@@ -962,7 +963,6 @@ def _fitfunc_param_cint(
     params : list
         A list of fitted distribution parameters.
     """
-    arr = arr.tolist()
     if distributed:
         locationcov_data = [
             locationcov_data[i][COVARIATE_INDEX.get()]
@@ -975,16 +975,16 @@ def _fitfunc_param_cint(
             shapecov_data[i][COVARIATE_INDEX.get()] for i in range(len(shapecov_data))
         ]
 
-    # removing NANs from fitting data and covariate data
-    locationcov_data_pruned = match_length(arr, locationcov_data)
-    scalecov_data_pruned = match_length(arr, scalecov_data)
-    shapecov_data_pruned = match_length(arr, shapecov_data)
-    arr_pruned = np.ma.masked_invalid(arr).compressed()  # pylint: disable=no-member
+    nan_mask = _create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
+
+    locationcov_data_pruned = remove_nan(nan_mask, locationcov_data)
+    scalecov_data_pruned = remove_nan(nan_mask, scalecov_data)
+    shapecov_data_pruned = remove_nan(nan_mask, shapecov_data)
+    arr_pruned = remove_nan(nan_mask, [arr])[0]
 
     # Return NaNs if fitting data contains fewer points than number of params for the given distribution
     if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
         return np.array([np.nan] * nparams)
-    arr_pruned = arr_pruned.tolist()
 
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
@@ -1325,12 +1325,12 @@ def _fitfunc_return_level(
             shapecov_data[i][COVARIATE_INDEX.get()] for i in range(len(shapecov_data))
         ]
 
-    # removing NANs from fitting data and covariate data
-    locationcov_data_pruned = match_length(arr, locationcov_data)
-    scalecov_data_pruned = match_length(arr, scalecov_data)
-    shapecov_data_pruned = match_length(arr, shapecov_data)
-    arr_mask = np.ma.masked_invalid(arr)
-    arr_pruned = arr_mask.compressed()  # pylint: disable=no-member
+    nan_mask = _create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
+
+    locationcov_data_pruned = remove_nan(nan_mask, locationcov_data)
+    scalecov_data_pruned = remove_nan(nan_mask, scalecov_data)
+    shapecov_data_pruned = remove_nan(nan_mask, shapecov_data)
+    arr_pruned = remove_nan(nan_mask, [arr])[0]
 
     stationary = not (
         locationcov_data_pruned or scalecov_data_pruned or shapecov_data_pruned
@@ -1339,7 +1339,7 @@ def _fitfunc_return_level(
     # Return NaNs if fitting data contains fewer points than number of params for the given distribution
     # if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
     #     return np.array([np.nan] * nparams)
-    arr_pruned = arr_pruned.tolist()
+
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             return_level_list = gevfit(
@@ -1458,7 +1458,7 @@ def _fitfunc_return_level(
     COVARIATE_INDEX.inc_covariate_index()
 
     if not stationary:
-        return_level_list = _recover_nan(arr_mask, return_level_list)
+        return_level_list = _recover_nan(nan_mask, return_level_list)
 
     return tuple(return_level_list)
 

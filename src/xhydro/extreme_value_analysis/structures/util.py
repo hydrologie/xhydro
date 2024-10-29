@@ -22,11 +22,13 @@ except ImportError as e:
     raise ImportError(JULIA_WARNING) from e
 
 __all__ = [
+    "_create_nan_mask",
+    "_recover_nan",
     "exponentiate_logscale",
     "insert_covariates",
     "jl_variable_fit_parameters",
-    "match_length",
     "param_cint",
+    "remove_nan",
     "return_level_cint",
 ]
 
@@ -229,46 +231,26 @@ def insert_covariates(
     )
 
 
-def match_length(py_list: list, covariates: list[list]) -> list[list]:
+def remove_nan(mask: np.array, covariates: list[list]) -> list[list]:
     r"""
-    Adjust covariate data length to match fitting data by removing entries corresponding to NANs in the fitting data.
+    Remove entries from a list of lists based on a boolean mask.
 
     Parameters
     ----------
-    py_list : list
-        The fitting data which may contain NaNs.
+    mask : np.array
+        Array containing the True and False values.
     covariates : list[list]
-        List of covariate data lists to be adjusted.
+        List of lists from which values will be removed according
+        to the mask.
 
     Returns
     -------
     list[list]
-        A new list of covariates with entries removed to match the length of the fitting data without NaNs.
-
-    Notes
-    -----
-    This function is useful when the fitting data contains NaNs and needs to be pruned.
-    To ensure that the covariate data remains aligned with the fitting data, the function removes
-    the corresponding entries from the covariate data.
-
-    Examples
-    --------
-    >>> fitting_data = [1, 2, np.nan, 4, 5]
-    >>> loc_covariate = [6, 5, 7, 8, 9]
-    >>> shape_covariate = [9, 7, 6, 5, 4]
-    >>> match_length(fitting_data, [loc_covariate, shape_covariate])
-    >>> [[6, 5, 8, 9], [9, 7, 5, 4]]
+        A new list containing the list without the masked values.
     """
-    nan_indexes = [
-        index
-        for index, value in enumerate(py_list)
-        if (math.isnan(value) or np.isnan(value))
-    ]
-    covariates_copy = deepcopy(covariates)
-    for sublist in covariates_copy:
-        for index in sorted(nan_indexes, reverse=True):
-            del sublist[index]
-    return covariates_copy
+    covariate_mask = [np.array(sublist)[~mask].tolist() for sublist in covariates]
+
+    return covariate_mask
 
 
 def exponentiate_logscale(
@@ -309,9 +291,41 @@ def exponentiate_logscale(
     return params
 
 
-def _recover_nan(
-    mask: np.ma.MaskedArray, lists: list[list[float]]
-) -> list[list[float]]:
+def _create_nan_mask(*nested_lists) -> list:
+    """
+    Create a mask indicating NaN positions across multiple nested lists.
+
+    Parameters
+    ----------
+    nested_lists:
+        Any number of nested lists (lists of lists).
+
+    Returns
+    -------
+        A single list mask with True where NaNs are present for all the nested lists.
+
+    Notes
+    -----
+    This function is useful when the fitting data and covariates contains NaNs and needs to be pruned.
+    To ensure that the covariate data remains aligned with the fitting data, the function returns a mask
+    with True values where ther is at leat one NaN.
+
+    Examples
+    --------
+    >>> fitting_data = [1, 2, np.nan, 4, 5]
+    >>> loc_covariate = [6, 5, 7, 8, 9]
+    >>> shape_covariate = [9, 7, 6, 5, np.nan]
+    >>> match_length(fitting_data, [loc_covariate, shape_covariate])
+    >>> [False, False, True, False, True]
+    """
+    arrays = [np.array(lst, dtype=float) for lst in nested_lists if lst]
+    stack = np.vstack(arrays)
+    mask = np.any(np.isnan(stack), axis=0)
+
+    return mask
+
+
+def _recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
     """
     Recover the original length of lists by filling NaN in masked positions.
 
@@ -329,7 +343,7 @@ def _recover_nan(
     reco_list = []
     for lst in lists:
         recovered = np.full(mask.shape, np.nan, dtype=lst.dtype)
-        recovered[~mask.mask] = lst
+        recovered[~mask] = lst
         reco_list.append(recovered)
 
     return reco_list
