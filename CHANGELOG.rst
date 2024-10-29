@@ -6,6 +6,10 @@ v0.5.0 (unreleased)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
 
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* A `periods` parameter was added to ``frequency_analysis.local.fit`` to compute multiple separate periods with a single call. (:pull:`219`).
+
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
