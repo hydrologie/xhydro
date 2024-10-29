@@ -18,6 +18,7 @@ try:
     )
     from xhydro.extreme_value_analysis.structures.util import (
         CovariateIndex,
+        _recover_nan,
         exponentiate_logscale,
         insert_covariates,
         jl_variable_fit_parameters,
@@ -1184,13 +1185,6 @@ def return_level(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
-    if dist == "genpareto" and (
-        threshold_pareto is None or nobs_pareto is None or nobsperblock_pareto is None
-    ):
-        raise ValueError(
-            "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'."
-        )
-
     COVARIATE_INDEX.init_covariate_index()
     vars = vars or ds.data_vars
     method = method.upper()
@@ -1205,7 +1199,12 @@ def return_level(
         ds,
         vars,
         return_period=return_period,
+        return_type="returnlevel",
+        threshold_pareto=threshold_pareto,
+        nobs_pareto=nobs_pareto,
+        nobsperblock_pareto=nobsperblock_pareto,
     )
+
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
     return_level_dim = ["return_level"] if stationary else ds[dim].values
     dist = get_dist(dist)
@@ -1312,12 +1311,6 @@ def _fitfunc_return_level(
     nobs_pareto=None,
     nobsperblock_pareto=None,
 ):
-    if dist == "genpareto" and (
-        threshold_pareto is None or nobs_pareto is None or nobsperblock_pareto is None
-    ):
-        raise ValueError(
-            "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'."
-        )
 
     arr = arr.tolist()
     if distributed:
@@ -1336,7 +1329,12 @@ def _fitfunc_return_level(
     locationcov_data_pruned = match_length(arr, locationcov_data)
     scalecov_data_pruned = match_length(arr, scalecov_data)
     shapecov_data_pruned = match_length(arr, shapecov_data)
-    arr_pruned = np.ma.masked_invalid(arr).compressed()  # pylint: disable=no-member
+    arr_mask = np.ma.masked_invalid(arr)
+    arr_pruned = arr_mask.compressed()  # pylint: disable=no-member
+
+    stationary = not (
+        locationcov_data_pruned or scalecov_data_pruned or shapecov_data_pruned
+    )
 
     # Return NaNs if fitting data contains fewer points than number of params for the given distribution
     # if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
@@ -1452,21 +1450,17 @@ def _fitfunc_return_level(
                 nobs_pareto=nobs_pareto,
                 nobsperblock_pareto=nobsperblock_pareto,
             )
+
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
         raise ValueError(f"Fitting method not recognized: {method}")
     COVARIATE_INDEX.inc_covariate_index()
-    # If the length is less than main_dim_length, pad with NaNs
-    return_level = [
-        (
-            np.pad(rtl, (0, main_dim_length - len(rtl)), constant_values=np.nan)
-            if np.shape(rtl)[0] < main_dim_length
-            else rtl
-        )
-        for rtl in return_level_list
-    ]
-    return tuple(return_level)
+
+    if not stationary:
+        return_level_list = _recover_nan(arr_mask, return_level_list)
+
+    return tuple(return_level_list)
 
 
 def get_params(
@@ -1534,6 +1528,10 @@ def _check_fit_params(
     ds: xr.Dataset,
     vars: list[str],
     return_period: float = 1,
+    return_type=None,
+    threshold_pareto=None,
+    nobs_pareto=None,
+    nobsperblock_pareto=None,
 ):
     r"""Validate the parameters for fitting a univariate distribution. This function is called at the start of fit()
         to make sure that the parameters it is called with are valid.
@@ -1554,6 +1552,14 @@ def _check_fit_params(
         The confidence level for the confidence interval of each parameter.
     distributed : bool
         Indicates whether the covariate data is distributed along all dimensions or not.
+    return_type : str
+        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
+    threshold_pareto : float
+        Threshold used to compute the returnlevel with the pareto distribution .
+    nobs_pareto : int,
+        Number of total observation used to compute the returnlevel with the pareto distribution .
+    nobsperblock_pareto : int,
+        Number of observation per block used to compute the returnlevel with the pareto distribution
 
     Raises
     ------
@@ -1589,6 +1595,20 @@ def _check_fit_params(
     ) != 0:
         raise ValueError(
             f"Pareto distribution has no location parameter and thus cannot have location covariates {locationcov}"
+        )
+
+    # Check
+    if (
+        return_type == "returnlevel"
+        and dist == "genpareto"
+        and (
+            threshold_pareto is None
+            or nobs_pareto is None
+            or nobsperblock_pareto is None
+        )
+    ):
+        raise ValueError(
+            "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'."
         )
 
     # Confidence level must be between 0 and 1
