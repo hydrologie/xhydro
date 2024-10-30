@@ -1,7 +1,6 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
-from typing import Optional, Union
 
 import numpy as np
 import statsmodels
@@ -9,6 +8,7 @@ import xarray as xr
 import xclim.indices.stats
 from scipy.stats.mstats import plotting_positions
 from statsmodels.tools import eval_measures
+from xscen.utils import standardize_periods
 
 __all__ = [
     "criteria",
@@ -19,9 +19,11 @@ __all__ = [
 
 def fit(
     ds,
+    *,
     distributions: list[str] | None = None,
     min_years: int | None = None,
     method: str = "ML",
+    periods: list[str] | list[list[str]] | None = None,
 ) -> xr.Dataset:
     """Fit multiple distributions to data.
 
@@ -36,6 +38,10 @@ def fit(
         Minimum number of years required for a distribution to be fitted.
     method : str
         Fitting method. Defaults to "ML" (maximum likelihood).
+    periods : list of str or list of list of str, optional
+        Either [start, end] or list of [start, end] of periods to be considered.
+        If multiple periods are given, the output will have a `horizon` dimension.
+        If None, all data is used.
 
     Returns
     -------
@@ -48,37 +54,55 @@ def fit(
     maximum number of unique parameters between the distributions.
     """
     distributions = distributions or ["genextreme", "pearson3", "gumbel_r", "expon"]
+
+    periods = (
+        standardize_periods(periods, multiple=True)
+        if periods is not None
+        else [[str(int(ds.time.dt.year.min())), str(int(ds.time.dt.year.max()))]]
+    )
+
     out = []
-    for v in ds.data_vars:
-        p = []
-        for d in distributions:
-            p.append(  # noqa: PERF401
-                xclim.indices.stats.fit(
-                    ds[v].chunk({"time": -1}), dist=d, method=method
+    for period in periods:
+        outp = []
+        ds_subset = ds.sel(time=slice(period[0], period[1]))
+        for v in ds.data_vars:
+            p = []
+            for d in distributions:
+                p.append(  # noqa: PERF401
+                    xclim.indices.stats.fit(
+                        ds_subset[v].chunk({"time": -1}), dist=d, method=method
+                    )
+                    .assign_coords(scipy_dist=d)
+                    .expand_dims("scipy_dist")
                 )
-                .assign_coords(scipy_dist=d)
-                .expand_dims("scipy_dist")
-            )
-        params = xr.concat(p, dim="scipy_dist")
+            params = xr.concat(p, dim="scipy_dist")
 
-        # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
-        p_order = sorted(set(params.dparams.values).difference(["loc", "scale"])) + [
-            "loc",
-            "scale",
-        ]
-        params = params.sel(dparams=p_order)
+            # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
+            p_order = sorted(
+                set(params.dparams.values).difference(["loc", "scale"])
+            ) + [
+                "loc",
+                "scale",
+            ]
+            params = params.sel(dparams=p_order)
 
-        if min_years is not None:
-            params = params.where(ds[v].notnull().sum("time") >= min_years)
-        params.attrs["scipy_dist"] = distributions
-        params.attrs["description"] = "Parameters of the distributions"
-        params.attrs["long_name"] = "Distribution parameters"
-        params.attrs["min_years"] = min_years
-        out.append(params)
+            if min_years is not None:
+                params = params.where(ds_subset[v].notnull().sum("time") >= min_years)
+            params = params.expand_dims({"horizon": ["-".join(period)]})
+            params.attrs["scipy_dist"] = distributions
+            params.attrs["description"] = "Parameters of the distributions"
+            params.attrs["long_name"] = "Distribution parameters"
+            params.attrs["min_years"] = min_years
+            outp.append(params)
+        out.append(xr.merge(outp))
 
-    out = xr.merge(out)
+    out = xr.concat(out, dim="horizon")
     out = out.chunk({"dparams": -1})
     out.attrs = ds.attrs
+
+    if len(out.horizon) == 1:
+        # If only one period was asked, remove the horizon dimension, but keep the period in the coordinates.
+        out = out.squeeze("horizon")
 
     return out
 
