@@ -183,6 +183,9 @@ def return_level_cint(
 
     except JuliaError:
         warnings.warn(f"There was an error in computing return level.")
+        raise ValueError(
+            f"There was an error in computing confidence interval for the return level."
+        )
 
     try:
         jl_cint = Extremes.cint(jl_return_level, confidence_level)
@@ -194,6 +197,10 @@ def return_level_cint(
 
     except JuliaError:
         warnings.warn(
+            f"There was an error in computing confidence interval for the return level."
+        )
+
+        raise ValueError(
             f"There was an error in computing confidence interval for the return level."
         )
 
@@ -342,9 +349,13 @@ def _recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
     """
     reco_list = []
     for lst in lists:
-        recovered = np.full(mask.shape, np.nan, dtype=lst.dtype)
-        recovered[~mask] = lst
-        reco_list.append(recovered)
+        if np.all(np.isnan(lst)):
+            reco_list.append(lst)
+        else:
+            recovered = np.full(mask.shape, np.nan, dtype=lst.dtype)
+            recovered[~mask] = lst
+
+            reco_list.append(recovered)
 
     return reco_list
 

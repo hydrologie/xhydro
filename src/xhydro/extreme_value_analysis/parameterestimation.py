@@ -1185,7 +1185,6 @@ def return_level(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
-    COVARIATE_INDEX.init_covariate_index()
     vars = vars or ds.data_vars
     method = method.upper()
     _check_fit_params(
@@ -1210,56 +1209,47 @@ def return_level(
     dist = get_dist(dist)
 
     # Covariates
-    locationcov_data = [ds[covariate].values.tolist() for covariate in locationcov]
-    scalecov_data = [ds[covariate].values.tolist() for covariate in scalecov]
-    shapecov_data = [ds[covariate].values.tolist() for covariate in shapecov]
-
-    # Only do return level estimation on wanted vars
-    for data_var in ds.data_vars:
-        if data_var not in vars:
-            ds = ds.drop_vars(data_var)
+    locationcov_data = [ds[covariate] for covariate in locationcov]
+    scalecov_data = [ds[covariate] for covariate in scalecov]
+    shapecov_data = [ds[covariate] for covariate in shapecov]
 
     result_return = xr.Dataset()
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
-    try:
-        for data_var in ds.data_vars:
-            temp_data = xr.apply_ufunc(
-                _fitfunc_return_level,
-                ds[data_var],
-                input_core_dims=[[dim]],
-                output_core_dims=[["return_level"], ["return_level"], ["return_level"]],
-                vectorize=True,
-                dask="parallelized",
-                keep_attrs=True,
-                kwargs=dict(
-                    dist=dist,
-                    method=method,
-                    main_dim_length=len(return_level_dim),
-                    locationcov_data=locationcov_data,
-                    scalecov_data=scalecov_data,
-                    shapecov_data=shapecov_data,
-                    niter=niter,
-                    warmup=warmup,
-                    confidence_level=confidence_level,
-                    distributed=distributed,
-                    return_period=return_period,
-                    threshold_pareto=threshold_pareto,
-                    nobs_pareto=nobs_pareto,
-                    nobsperblock_pareto=nobsperblock_pareto,
-                ),
-                dask_gufunc_kwargs={
-                    "output_sizes": {"return_level": len(return_level_dim)}
-                },
-            )
 
-            result_return = xr.merge([result_return, temp_data[0]])
-            result_lower = xr.merge([result_lower, temp_data[1]])
-            result_upper = xr.merge([result_upper, temp_data[2]])
-    except IndexError:
-        warnings.warn(
-            "List assignment index was out of range, did you forget to set distributed=True?"
+    for data_var in vars:
+        args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
+        temp_data = xr.apply_ufunc(
+            _fitfunc_return_level,
+            *args,
+            input_core_dims=[[dim]] * len(args),
+            output_core_dims=[["return_level"], ["return_level"], ["return_level"]],
+            vectorize=True,
+            dask="parallelized",
+            keep_attrs=True,
+            output_dtypes=[float, float, float],
+            kwargs=dict(
+                dist=dist,
+                method=method,
+                main_dim_length=len(return_level_dim),
+                n_loccov=len(locationcov),
+                n_scalecov=len(scalecov),
+                n_shapecov=len(shapecov),
+                niter=niter,
+                warmup=warmup,
+                confidence_level=confidence_level,
+                return_period=return_period,
+                threshold_pareto=threshold_pareto,
+                nobs_pareto=nobs_pareto,
+                nobsperblock_pareto=nobsperblock_pareto,
+            ),
+            dask_gufunc_kwargs={
+                "output_sizes": {"return_level": len(return_level_dim)}
+            },
         )
+        result_return = xr.merge([result_return, temp_data[0]])
+        result_lower = xr.merge([result_lower, temp_data[1]])
+        result_upper = xr.merge([result_upper, temp_data[2]])
 
     cint_lower_data = result_lower.rename(
         {var: var + "_lower" for var in result_lower.data_vars}
@@ -1294,36 +1284,29 @@ def return_level(
 
 
 def _fitfunc_return_level(
-    arr,
-    *,
+    *arg,
     dist,
     method,
     main_dim_length,
-    locationcov_data: list[list],
-    scalecov_data: list[list],
-    shapecov_data: list[list],
+    n_loccov: int,
+    n_scalecov: int,
+    n_shapecov: int,
     niter: int,
     warmup: int,
     confidence_level: float = 0.95,
-    distributed: bool = False,
     return_period: float = 100,
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
 ):
 
-    arr = arr.tolist()
-    if distributed:
-        locationcov_data = [
-            locationcov_data[i][COVARIATE_INDEX.get()]
-            for i in range(len(locationcov_data))
-        ]
-        scalecov_data = [
-            scalecov_data[i][COVARIATE_INDEX.get()] for i in range(len(scalecov_data))
-        ]
-        shapecov_data = [
-            shapecov_data[i][COVARIATE_INDEX.get()] for i in range(len(shapecov_data))
-        ]
+    arr = arg[0]
+
+    locationcov_data = arg[1 : n_loccov + 1]
+    scalecov_data = arg[n_loccov + 1 : n_loccov + n_scalecov + 1]
+    shapecov_data = arg[
+        n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1
+    ]
 
     nan_mask = _create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
 
@@ -1455,7 +1438,6 @@ def _fitfunc_return_level(
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
         raise ValueError(f"Fitting method not recognized: {method}")
-    COVARIATE_INDEX.inc_covariate_index()
 
     if not stationary:
         return_level_list = _recover_nan(nan_mask, return_level_list)
@@ -1671,6 +1653,7 @@ def apply_func(ds: xr.Dataset, function, **kwargs):
             vectorize=True,
             dask="parallelized",
             keep_attrs=True,
+            output_dtypes=[float, float, float],
             kwargs=dict(
                 dist=kwargs["dist"],
                 nparams=len(kwargs["dist_params"]),
