@@ -358,31 +358,3 @@ def _recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
             reco_list.append(recovered)
 
     return reco_list
-
-
-class CovariateIndex:
-    r"""CovariatedIndex class."""
-
-    covariate_index: int
-
-    def __init__(self):
-        pass
-
-    def init_covariate_index(self):
-        r"""Initialize covariate_index to 0."""
-        self.covariate_index = 0
-
-    def inc_covariate_index(self):
-        r"""Increment covariate_index by 1."""
-        self.covariate_index += 1
-
-    def get(self):
-        r"""
-        Return current covariate_index value.
-
-        Returns
-        -------
-        int
-            Current covariate_index value.
-        """
-        return self.covariate_index

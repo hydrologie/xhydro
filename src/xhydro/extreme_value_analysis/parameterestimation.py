@@ -17,7 +17,6 @@ try:
         py_list_to_jl_vector,
     )
     from xhydro.extreme_value_analysis.structures.util import (
-        CovariateIndex,
         _create_nan_mask,
         _recover_nan,
         exponentiate_logscale,
@@ -47,8 +46,6 @@ DIST_NAMES = {
     "gumbel_r": "<class 'scipy.stats._continuous_distns.gumbel_r_gen'>",
     "genpareto": "<class 'scipy.stats._continuous_distns.genpareto_gen'>",
 }
-
-COVARIATE_INDEX = CovariateIndex()
 
 
 # Maximum likelihood estimation
@@ -779,7 +776,6 @@ def fit(
     niter: int = 5000,
     warmup: int = 2000,
     confidence_level: float = 0.95,
-    distributed: bool = False,
 ) -> xr.Dataset:
     r"""Fit an array to a univariate distribution along the time dimension.
 
@@ -812,10 +808,6 @@ def fit(
         The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
-    distributed : bool
-        Boolean value indicating whether the covariate data (locationcov, scalecov, shapecov) is a single array
-        (typically found in the coordinates of the Dataset in that case) or if it is distributed along all
-        dimensions like the fitting data (typically found in the data variables of the Dataset in that case).
 
     Returns
     -------
@@ -828,7 +820,6 @@ def fit(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
-    COVARIATE_INDEX.init_covariate_index()
     vars = vars or ds.data_vars
     method = method.upper()
     _check_fit_params(
@@ -838,7 +829,6 @@ def fit(
         scalecov,
         shapecov,
         confidence_level,
-        distributed,
         ds,
         vars,
     )
@@ -846,44 +836,49 @@ def fit(
     dist = get_dist(dist)
 
     # Covariates
-    locationcov_data = [ds[covariate].values.tolist() for covariate in locationcov]
-    scalecov_data = [ds[covariate].values.tolist() for covariate in scalecov]
-    shapecov_data = [ds[covariate].values.tolist() for covariate in shapecov]
+    locationcov_data = [ds[covariate] for covariate in locationcov]
+    scalecov_data = [ds[covariate] for covariate in scalecov]
+    shapecov_data = [ds[covariate] for covariate in shapecov]
 
-    # Only do parameter estimation on wanted vars
-    for data_var in ds.data_vars:
-        if data_var not in vars:
-            ds = ds.drop_vars(data_var)
+    result_params = xr.Dataset()
+    result_lower = xr.Dataset()
+    result_upper = xr.Dataset()
 
-    try:
-        results = apply_func(
-            ds,
+    for data_var in vars:
+        args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
+        results = xr.apply_ufunc(
             _fitfunc_param_cint,
-            dim=dim,
-            dist_params=dist_params,
-            dist=dist,
-            method=method,
-            locationcov_data=locationcov_data,
-            scalecov_data=scalecov_data,
-            shapecov_data=shapecov_data,
-            niter=niter,
-            warmup=warmup,
-            confidence_level=confidence_level,
-            distributed=distributed,
+            *args,
+            input_core_dims=[[dim]] * len(args),
+            output_core_dims=[["dparams"], ["dparams"], ["dparams"]],
+            vectorize=True,
+            dask="parallelized",
+            keep_attrs=True,
+            output_dtypes=[float, float, float],
+            kwargs=dict(
+                dist=dist,
+                nparams=len(dist_params),
+                method=method,
+                n_loccov=len(locationcov),
+                n_scalecov=len(scalecov),
+                n_shapecov=len(shapecov),
+                niter=niter,
+                warmup=warmup,
+                confidence_level=confidence_level,
+            ),
+            dask_gufunc_kwargs={"output_sizes": {"dparams": len(dist_params)}},
         )
-    except IndexError:
-        warnings.warn(
-            "List assignment index was out of range, did you forget to set distributed=True?"
-        )
+        result_params = xr.merge([result_params, results[0]])
+        result_lower = xr.merge([result_lower, results[1]])
+        result_upper = xr.merge([result_upper, results[2]])
 
-    params_data = results["params"]
-    cint_lower_data = results["cint_lower"].rename(
-        {var: var + "_lower" for var in results["cint_lower"].data_vars}
+    cint_lower_data = result_lower.rename(
+        {var: var + "_lower" for var in result_lower.data_vars}
     )
-    cint_upper_data = results["cint_upper"].rename(
-        {var: var + "_upper" for var in results["cint_upper"].data_vars}
+    cint_upper_data = result_upper.rename(
+        {var: var + "_upper" for var in result_upper.data_vars}
     )
-    data = xr.merge([params_data, cint_lower_data, cint_upper_data])
+    data = xr.merge([result_params, cint_lower_data, cint_upper_data])
 
     # Add coordinates for the distribution parameters and transpose to original shape (with dim -> dparams)
     dims = [d if d != dim else "dparams" for d in ds.dims]
@@ -910,26 +905,23 @@ def fit(
 
 
 def _fitfunc_param_cint(
-    arr,
-    *,
+    *arg,
     dist,
     nparams,
     method,
-    locationcov_data: list[list],
-    scalecov_data: list[list],
-    shapecov_data: list[list],
+    n_loccov: int,
+    n_scalecov: int,
+    n_shapecov: int,
     niter: int,
     warmup: int,
     confidence_level: float = 0.95,
-    distributed: bool = False,
-    # param_type: str,
 ):
     r"""Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
     ----------
-    arr : array-like
-        Input array containing the data to be fitted to the distribution.
+    arg : list
+        Input list containing the data to be fitted and the covariates.
     dist : str or rv_continuous
         The univariate distribution to fit, either as a string or as a distribution object.
         Supported distributions include genextreme, gumbel_r, genpareto.
@@ -953,8 +945,6 @@ def _fitfunc_param_cint(
         The number of warmup iterations for the Bayesian inference algorithm used for parameter estimation (default: 2000).
     confidence_level : float, optional
         The confidence level for the confidence interval of each parameter (default: 0.95).
-    distributed : bool, optional
-        Boolean value indicating whether the covariate data is distributed along all dimensions (default: False).
     param_type : str
         The type of parameter to be estimated (e.g., "location", "scale", "shape").
 
@@ -963,17 +953,13 @@ def _fitfunc_param_cint(
     params : list
         A list of fitted distribution parameters.
     """
-    if distributed:
-        locationcov_data = [
-            locationcov_data[i][COVARIATE_INDEX.get()]
-            for i in range(len(locationcov_data))
-        ]
-        scalecov_data = [
-            scalecov_data[i][COVARIATE_INDEX.get()] for i in range(len(scalecov_data))
-        ]
-        shapecov_data = [
-            shapecov_data[i][COVARIATE_INDEX.get()] for i in range(len(shapecov_data))
-        ]
+    arr = arg[0]
+
+    locationcov_data = arg[1 : n_loccov + 1]
+    scalecov_data = arg[n_loccov + 1 : n_loccov + n_scalecov + 1]
+    shapecov_data = arg[
+        n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1
+    ]
 
     nan_mask = _create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
 
@@ -1108,7 +1094,7 @@ def _fitfunc_param_cint(
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
         raise ValueError(f"Fitting method not recognized: {method}")
-    COVARIATE_INDEX.inc_covariate_index()
+
     return tuple(params)
 
 
@@ -1124,7 +1110,6 @@ def return_level(
     niter: int = 5000,
     warmup: int = 2000,
     confidence_level: float = 0.95,
-    distributed: bool = False,
     return_period: float = 100,
     threshold_pareto=None,
     nobs_pareto=None,
@@ -1161,10 +1146,6 @@ def return_level(
         The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
-    distributed : bool
-        Boolean value indicating whether the covariate data (locationcov, scalecov, shapecov) is a single array
-        (typically found in the coordinates of the Dataset in that case) or if it is distributed along all
-        dimensions like the fitting data (typically found in the data variables of the Dataset in that case).
     return_period : float
         Return period used to compute the return level.
     threshold_pareto : float
@@ -1194,7 +1175,6 @@ def return_level(
         scalecov,
         shapecov,
         confidence_level,
-        distributed,
         ds,
         vars,
         return_period=return_period,
@@ -1219,7 +1199,7 @@ def return_level(
 
     for data_var in vars:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
-        temp_data = xr.apply_ufunc(
+        results = xr.apply_ufunc(
             _fitfunc_return_level,
             *args,
             input_core_dims=[[dim]] * len(args),
@@ -1247,9 +1227,9 @@ def return_level(
                 "output_sizes": {"return_level": len(return_level_dim)}
             },
         )
-        result_return = xr.merge([result_return, temp_data[0]])
-        result_lower = xr.merge([result_lower, temp_data[1]])
-        result_upper = xr.merge([result_upper, temp_data[2]])
+        result_return = xr.merge([result_return, results[0]])
+        result_lower = xr.merge([result_lower, results[1]])
+        result_upper = xr.merge([result_upper, results[2]])
 
     cint_lower_data = result_lower.rename(
         {var: var + "_lower" for var in result_lower.data_vars}
@@ -1506,7 +1486,6 @@ def _check_fit_params(
     scalecov: list[str],
     shapecov: list[str],
     confidence_level: float,
-    distributed: bool,
     ds: xr.Dataset,
     vars: list[str],
     return_period: float = 1,
@@ -1532,8 +1511,6 @@ def _check_fit_params(
         List of covariate names for the shape parameter.
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
-    distributed : bool
-        Indicates whether the covariate data is distributed along all dimensions or not.
     return_type : str
         Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     threshold_pareto : float
@@ -1599,15 +1576,6 @@ def _check_fit_params(
             f"Confidence level must be strictly smaller than 1 and strictly larger than 0"
         )
 
-    # Parameter 'distributed' should only be set to true if there are covariates
-    if distributed and (
-        len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
-    ):
-        raise ValueError(
-            f"Parameter 'distributed' is used to indicate how to fetch covariate data; "
-            f"it should not be set left to default value of False if there are no covariates"
-        )
-
     # Vars has to contain data variables present in the Dataset
     for var in vars:
         if var not in ds.data_vars:
@@ -1622,65 +1590,3 @@ def _check_fit_params(
             f"Return period has to be strictly larger than 0. "
             f"Current return period value is {return_period}"
         )
-
-
-def apply_func(ds: xr.Dataset, function, **kwargs):
-    r"""Apply a specified function to each data variable in the Dataset.
-
-    Parameters
-    ----------
-    ds : xr.Dataset
-        The input dataset on which the function will be applied.
-    function : callable
-        The function to be applied to each data variable in the dataset.
-    \*\*kwargs : dict
-        Additional keyword arguments to be passed to the function.
-
-    Returns
-    -------
-    xr.Dataset
-        A new Dataset with the function applied to each data variable.
-    """
-    result_param = xr.Dataset()
-    result_lower = xr.Dataset()
-    result_upper = xr.Dataset()
-    for data_var in ds.data_vars:
-        temp_data = xr.apply_ufunc(
-            function,
-            ds[data_var],
-            input_core_dims=[[kwargs["dim"]]],
-            output_core_dims=[["dparams"], ["dparams"], ["dparams"]],
-            vectorize=True,
-            dask="parallelized",
-            keep_attrs=True,
-            output_dtypes=[float, float, float],
-            kwargs=dict(
-                dist=kwargs["dist"],
-                nparams=len(kwargs["dist_params"]),
-                method=kwargs["method"],
-                locationcov_data=kwargs["locationcov_data"],
-                scalecov_data=kwargs["scalecov_data"],
-                shapecov_data=kwargs["shapecov_data"],
-                niter=kwargs["niter"],
-                warmup=kwargs["warmup"],
-                confidence_level=kwargs["confidence_level"],
-                distributed=kwargs["distributed"],
-            ),
-            dask_gufunc_kwargs={
-                "output_sizes": {"dparams": len(kwargs["dist_params"])}
-            },
-        )
-
-        result_param = xr.merge([result_param, temp_data[0]])
-        result_lower = xr.merge([result_lower, temp_data[1]])
-        result_upper = xr.merge([result_upper, temp_data[2]])
-
-        COVARIATE_INDEX.init_covariate_index()
-
-    results = {
-        "params": result_param,
-        "cint_lower": result_lower,
-        "cint_upper": result_upper,
-    }
-
-    return results
