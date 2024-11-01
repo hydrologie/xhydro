@@ -17,8 +17,11 @@ try:
         py_list_to_jl_vector,
     )
     from xhydro.extreme_value_analysis.structures.util import (
+        DIST_NAMES,
+        METHOD_NAMES,
         _create_nan_mask,
         _recover_nan,
+        change_sign_param,
         exponentiate_logscale,
         insert_covariates,
         jl_variable_fit_parameters,
@@ -34,18 +37,6 @@ except (ImportError, ModuleNotFoundError) as e:
 
 warnings.simplefilter("always", UserWarning)
 __all__ = ["fit", "return_level"]
-
-METHOD_NAMES = {
-    "ML": "maximum likelihood",
-    "PWM": "probability weighted moments",
-    "BAYES": "bayesian",
-}
-
-DIST_NAMES = {
-    "genextreme": "<class 'scipy.stats._continuous_distns.genextreme_gen'>",
-    "gumbel_r": "<class 'scipy.stats._continuous_distns.gumbel_r_gen'>",
-    "genpareto": "<class 'scipy.stats._continuous_distns.genpareto_gen'>",
-}
 
 
 # Maximum likelihood estimation
@@ -75,7 +66,7 @@ def gevfit(
     return_type : str
         Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     confidence_level : float
-        The confidence level for the confidence interval of each parameter.
+        The confidence level for the confidence interval.
     return_period : float
         Return period used to compute the return level.
     main_dim_length : int
@@ -84,8 +75,7 @@ def gevfit(
     Returns
     -------
     List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
+        List containing the estimated parameters or return level and the lower and upper bounds for the confidence interval.
     """
     jl_y = py_list_to_jl_vector(y)
     jl_locationcov, jl_logscalecov, jl_shapecov = (
@@ -94,6 +84,8 @@ def gevfit(
         jl_variable_fit_parameters(shapecov),
     )
     nparams = 3 + len(locationcov) + len(scalecov) + len(shapecov)
+    shape_pos = 2 + len(locationcov) + len(scalecov)
+
     try:
         jl_model = Extremes.gevfit(
             jl_y,
@@ -103,6 +95,9 @@ def gevfit(
         )
         if return_type == "param":
             cint = param_cint(jl_model, confidence_level=confidence_level)
+
+            cint = change_sign_param(cint, shape_pos, len(shapecov) + 1)
+
         elif return_type == "returnlevel":
             cint = return_level_cint(
                 jl_model, confidence_level=confidence_level, return_period=return_period
@@ -149,7 +144,7 @@ def gumbelfit(
     return_type : str
         Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     confidence_level : float
-        The confidence level for the confidence interval of each parameter.
+        The confidence level for the confidence interval.
     return_period : float
         Return period used to compute the return level.
     main_dim_length : int
@@ -323,6 +318,7 @@ def gevfitpwm(
 
         if return_type == "param":
             cint = param_cint(jl_model, confidence_level=confidence_level)
+            cint = change_sign_param(cint, 2, 1)
         elif return_type == "returnlevel":
             cint = return_level_cint(
                 jl_model, confidence_level=confidence_level, return_period=return_period
@@ -539,6 +535,7 @@ def gevfitbayes(
         jl_variable_fit_parameters(shapecov),
     )
     nparams = 3 + len(locationcov) + len(scalecov) + len(shapecov)
+    shape_pos = 2 + len(locationcov) + len(scalecov)
     try:
         jl_model = Extremes.gevfitbayes(
             jl_y,
@@ -552,6 +549,7 @@ def gevfitbayes(
             cint = param_cint(
                 jl_model, confidence_level=confidence_level, bayesian=True
             )
+            cint = change_sign_param(cint, shape_pos, len(shapecov) + 1)
         elif return_type == "returnlevel":
             cint = return_level_cint(
                 jl_model,
@@ -982,13 +980,6 @@ def _fitfunc_param_cint(
                 confidence_level=confidence_level,
             )
 
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]
-            num_shape_covariates = len(shapecov_data)
-            params = np.roll(params, 1 + num_shape_covariates, axis=1)
-            # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfit(
                 arr_pruned,
@@ -996,10 +987,7 @@ def _fitfunc_param_cint(
                 scalecov=scalecov_data_pruned,
                 confidence_level=confidence_level,
             )
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
+
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfit(
                 arr_pruned,
@@ -1007,39 +995,16 @@ def _fitfunc_param_cint(
                 shapecov=shapecov_data_pruned,
                 confidence_level=confidence_level,
             )
-            params = [
-                exponentiate_logscale(
-                    params_, locationcov_data, scalecov_data, pareto=True
-                )
-                for params_ in param_list
-            ]
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
     elif method == "PWM":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
             param_list = gevfitpwm(arr_pruned, confidence_level=confidence_level)
-
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
-            params = np.roll(params, 1, axis=1)  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitpwm(arr_pruned, confidence_level=confidence_level)
-
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitpwm(arr_pruned, confidence_level=confidence_level)
-            params = [
-                exponentiate_logscale(
-                    params_, locationcov_data, scalecov_data, pareto=True
-                )
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
 
@@ -1054,14 +1019,6 @@ def _fitfunc_param_cint(
                 warmup=warmup,
                 confidence_level=confidence_level,
             )
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]
-            num_shape_covariates = len(shapecov_data)
-            params = np.roll(
-                params, 1 + num_shape_covariates, axis=1
-            )  # to have [shape, loc, scale]
         elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
             param_list = gumbelfitbayes(
                 arr_pruned,
@@ -1071,10 +1028,6 @@ def _fitfunc_param_cint(
                 warmup=warmup,
                 confidence_level=confidence_level,
             )
-            params = [
-                exponentiate_logscale(params_, locationcov_data, scalecov_data)
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
         elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             param_list = gpfitbayes(
                 arr_pruned,
@@ -1084,16 +1037,25 @@ def _fitfunc_param_cint(
                 warmup=warmup,
                 confidence_level=confidence_level,
             )
-            params = [
-                exponentiate_logscale(
-                    params_, locationcov_data, scalecov_data, pareto=True
-                )
-                for params_ in param_list
-            ]  # because Extremes.jl gives us log(scale)
         else:
             raise ValueError(f"Fitting distribution not recognized: {dist}")
     else:
         raise ValueError(f"Fitting method not recognized: {method}")
+
+    params = [
+        exponentiate_logscale(
+            params_,
+            dist=dist,
+            n_loccov=n_loccov,
+            n_scalecov=n_scalecov,
+        )
+        for params_ in param_list
+    ]  # because Extremes.jl gives log(scale)
+
+    if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+        params = np.roll(params, 1 + n_shapecov, axis=1)  # to have [shape, loc, scale]
+    else:
+        pass
 
     return tuple(params)
 

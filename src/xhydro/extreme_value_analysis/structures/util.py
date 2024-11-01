@@ -32,6 +32,18 @@ __all__ = [
     "return_level_cint",
 ]
 
+METHOD_NAMES = {
+    "ML": "maximum likelihood",
+    "PWM": "probability weighted moments",
+    "BAYES": "bayesian",
+}
+
+DIST_NAMES = {
+    "genextreme": "<class 'scipy.stats._continuous_distns.genextreme_gen'>",
+    "gumbel_r": "<class 'scipy.stats._continuous_distns.gumbel_r_gen'>",
+    "genpareto": "<class 'scipy.stats._continuous_distns.genpareto_gen'>",
+}
+
 
 def jl_variable_fit_parameters(covariate_list: list[list]):
     r"""
@@ -262,40 +274,68 @@ def remove_nan(mask: np.array, covariates: list[list]) -> list[list]:
 
 def exponentiate_logscale(
     params: np.ndarray,
-    locationcov_data: list[list],
-    logscalecov_data: list[list],
-    pareto: bool = False,
+    dist: str,
+    n_loccov: int,
+    n_scalecov: int,
 ) -> np.ndarray:
     r"""
-    Exponentiate logscale parameter as well as all its covariates to obtain actual scale parameter.
+    Exponentiate the logscale parameter along with covariates to obtain actual scale parameter.
 
     Parameters
     ----------
     params : np.ndarray
         The fitted parameters, including covariates.
-    locationcov_data : list[list]
-        List of covariate data lists for the location parameter.
-        This is needed to keep track of the index of the logscale parameter in params.
-    logscalecov_data : list[list]
-        List of covariate data lists for the scale parameter.
-    pareto : bool
-        Boolean value indicating whether we are dealing with the parameters of a pareto distribution.
+    dist : str or rv_continuous
+        The univariate distribution to fit, either as a string or as a distribution object.
+        Supported distributions include genextreme, gumbel_r, genpareto.
+    n_loccov : int
+        Number of covariates for the location parameter.
+    n_scalecov : int
+        Number of covariates for the scale parameter.
 
     Returns
     -------
     np.ndarray
-        Updated parameter list with logscale parameter and its covariates having been exponentiated.
+        Updated list with the exponential of the logscale parameter and covariates.
     """
-    scale_param_index = 1 + len(locationcov_data)
-
-    if pareto:
+    if dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
         scale_param_index = 0
+    else:
+        scale_param_index = 1 + n_loccov
 
-    for index in range(
-        scale_param_index, scale_param_index + len(logscalecov_data) + 1
-    ):
+    shape_param_index = scale_param_index + n_scalecov + 1
+
+    for index in range(scale_param_index, shape_param_index):
         params[index] = np.exp(params[index])
+
     return params
+
+
+def change_sign_param(param_list, pos, n):
+    """
+    Change the sign of given parameter.
+
+    Parameters
+    ----------
+    param_list : list[np.array]
+        A list containing three numpy arrays of the parameters and their confidence intervals
+        [params, lim_inf, lim_sup].
+    pos : int
+        The starting position for the parameters to change.
+    n : int
+        The number of parameters to change starting from the given position.
+
+    Returns
+    -------
+    list[np.array]
+        The modified param_list with signs changed for the specified parameters.
+    """
+    param_list_c = [arr.copy() for arr in param_list]
+    param_list_c[0][pos:] = -param_list[0][pos : pos + n]
+    param_list_c[1][pos:] = -param_list[2][pos : pos + n]
+    param_list_c[2][pos:] = -param_list[1][pos : pos + n]
+
+    return param_list_c
 
 
 def _create_nan_mask(*nested_lists) -> list:
