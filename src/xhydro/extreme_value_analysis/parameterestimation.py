@@ -1259,7 +1259,41 @@ def _fitfunc_return_level(
     nobs_pareto=None,
     nobsperblock_pareto=None,
 ):
+    r"""Fit a univariate distribution to an array using specified covariate data.
 
+    Parameters
+    ----------
+    arg : list
+        Input list containing the data to be fitted and the covariates.
+    dist : str or rv_continuous
+        The univariate distribution to fit, either as a string or as a distribution object.
+        Supported distributions include genextreme, gumbel_r, genpareto.
+    method : str
+        The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+        or Bayesian inference (BAYES).
+    locationcov_data : list[list]
+        Nested list containing the data for the location covariates. Each inner list corresponds to a specific
+        covariate.
+    scalecov_data : list[list]
+        Nested list containing the data for the scale covariates. Each inner list corresponds to a specific
+        covariate.
+    shapecov_data : list[list]
+        Nested list containing the data for the shape covariates. Each inner list corresponds to a specific
+        covariate.
+    niter : int
+        The number of iterations for the Bayesian inference algorithm used for parameter estimation (default: 5000).
+    warmup : int
+        The number of warmup iterations for the Bayesian inference algorithm used for parameter estimation (default: 2000).
+    confidence_level : float, optional
+        The confidence level for the confidence interval of each parameter (default: 0.95).
+    param_type : str
+        The type of parameter to be estimated (e.g., "location", "scale", "shape").
+
+    Returns
+    -------
+    params : list
+        A list of fitted distribution parameters.
+    """
     arr = arg[0]
 
     locationcov_data = arg[1 : n_loccov + 1]
