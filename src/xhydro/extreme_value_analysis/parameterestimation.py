@@ -108,7 +108,7 @@ def gevfit(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -177,7 +177,7 @@ def gumbelfit(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -263,7 +263,7 @@ def gpfit(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -329,7 +329,7 @@ def gevfitpwm(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -390,7 +390,7 @@ def gumbelfitpwm(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -468,7 +468,7 @@ def gpfitpwm(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -563,7 +563,7 @@ def gevfitbayes(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -649,7 +649,7 @@ def gumbelfitbayes(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -751,7 +751,7 @@ def gpfitbayes(
         warnings.warn(
             "There was an error in fitting the data to a genextreme distribution. "
             "Returned parameters are numpy.nan.",
-            RuntimeWarning,
+            UserWarning,
         )
 
         if return_type == "param":
@@ -966,9 +966,20 @@ def _fitfunc_param_cint(
     shapecov_data_pruned = remove_nan(nan_mask, shapecov_data)
     arr_pruned = remove_nan(nan_mask, [arr])[0]
 
-    # Return NaNs if fitting data contains fewer points than number of params for the given distribution
-    if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
-        return np.array([np.nan] * nparams)
+    # Sanity check
+    if len(arr_pruned) <= nparams:
+        warnings.warn(
+            "The fitting data contains fewer entries than the number of parameters for the given distribution. "
+            "Returned parameters are numpy.nan.",
+            UserWarning,
+        )
+        return tuple(
+            [
+                np.array([np.nan] * nparams),
+                np.array([np.nan] * nparams),
+                np.array([np.nan] * nparams),
+            ]
+        )
 
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
@@ -1060,6 +1071,9 @@ def _fitfunc_param_cint(
     return tuple(params)
 
 
+#
+
+
 def return_level(
     ds: xr.Dataset,
     locationcov: list[str] = [],
@@ -1148,6 +1162,8 @@ def return_level(
 
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
     return_level_dim = ["return_level"] if stationary else ds[dim].values
+
+    dist_params = get_params(dist, shapecov, locationcov, scalecov)
     dist = get_dist(dist)
 
     # Covariates
@@ -1172,6 +1188,7 @@ def return_level(
             output_dtypes=[float, float, float],
             kwargs=dict(
                 dist=dist,
+                nparams=len(dist_params),
                 method=method,
                 main_dim_length=len(return_level_dim),
                 n_loccov=len(locationcov),
@@ -1229,6 +1246,7 @@ def _fitfunc_return_level(
     *arg,
     dist,
     method,
+    nparams,
     main_dim_length,
     n_loccov: int,
     n_scalecov: int,
@@ -1261,9 +1279,20 @@ def _fitfunc_return_level(
         locationcov_data_pruned or scalecov_data_pruned or shapecov_data_pruned
     )
 
-    # Return NaNs if fitting data contains fewer points than number of params for the given distribution
-    # if len(arr_pruned) <= nparams:  # TODO: sanity check with Jonathan
-    #     return np.array([np.nan] * nparams)
+    # Sanity check
+    if len(arr_pruned) <= nparams:
+        warnings.warn(
+            "The fitting data contains fewer entries than the number of parameters for the given distribution. "
+            "Returned parameters are numpy.nan.",
+            UserWarning,
+        )
+        return tuple(
+            [
+                np.array([np.nan] * main_dim_length),
+                np.array([np.nan] * main_dim_length),
+                np.array([np.nan] * main_dim_length),
+            ]
+        )
 
     if method == "ML":
         if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
