@@ -24,13 +24,19 @@ class TestGevfit:
     def test_gevfit(self, genextreme_data):
         param_cint = parameterestimation.gevfit(self.y(genextreme_data))
         test_params = param_cint["params"]
-        true_params = [0.0009, np.log(1.014), -0.0060]  # Values taken from tests in Extremes.jl
+        true_params = [
+            0.0009,
+            np.log(1.014),
+            -0.0060,
+        ]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, rtol=0.05)
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gevfitpwm(self, genextreme_data):
         param_cint = parameterestimation.gevfitpwm(self.y(genextreme_data))
@@ -45,7 +51,9 @@ class TestGevfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gevfitbayes(self, genextreme_data):
         param_cint = parameterestimation.gevfitbayes(
@@ -58,7 +66,9 @@ class TestGevfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
 
 @pytest.mark.skipif(not parameterestimation, reason="Julia not installed")
@@ -70,13 +80,18 @@ class TestGumbelfit:
     def test_gumbelfit(self, genextreme_data):
         param_cint = parameterestimation.gumbelfit(self.y(genextreme_data))
         test_params = param_cint["params"]
-        true_params = [-0.0023, np.log(1.0125)]  # Values taken from tests in Extremes.jl
+        true_params = [
+            -0.0023,
+            np.log(1.0125),
+        ]  # Values taken from tests in Extremes.jl
         for test, true in zip(test_params, true_params):
             np.testing.assert_allclose(test, true, atol=0.0001)
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gumbelfitpwm(self, genextreme_data):
         param_cint = parameterestimation.gumbelfitpwm(self.y(genextreme_data))
@@ -87,7 +102,9 @@ class TestGumbelfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gumbelfitbayes(self, genextreme_data):
         param_cint = parameterestimation.gumbelfitbayes(
@@ -100,7 +117,9 @@ class TestGumbelfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
 
 # FIXME: When ran locally, these tests only necessitate a very small atol, but in order to move on with the pipeline
@@ -125,8 +144,9 @@ class TestGpfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
-
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gpfitpwm(self, genpareto_data):
         param_cint = parameterestimation.gpfitpwm(self.y(genpareto_data))
@@ -139,7 +159,9 @@ class TestGpfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
 
     def test_gpfitbayes(self, genpareto_data):
         param_cint = parameterestimation.gpfitbayes(
@@ -154,4 +176,6 @@ class TestGpfit:
         test_params_lower = param_cint["cint_lower"]
         test_params_upper = param_cint["cint_upper"]
         for i in range(len(test_params)):
-            np.testing.assert_(test_params_lower[i] < test_params[i] < test_params_upper[i])
+            np.testing.assert_(
+                test_params_lower[i] < test_params[i] < test_params_upper[i]
+            )
