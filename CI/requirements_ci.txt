@@ -12,9 +12,9 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==0.26.1 \
-    --hash=sha256:af1cada726cf6f9a723d18941c68c325d5196453a180b3a42f8e0b38567d734d \
-    --hash=sha256:be09c48111eeba56f8c870b69718013f52b5b6c6e65bc3bda5bc928181901c48
+bump-my-version==0.28.0 \
+    --hash=sha256:cc84ace477022a4cc8c401ef5c035f2f752df45488be90ccb764a47f7de0e395 \
+    --hash=sha256:ff3cb51bb15509ae8ebb8e8efa3eaa7c02209677f45457c8b007ef2f5bef7179
     # via -r CI/requirements_ci.in
 cachetools==5.5.0 \
     --hash=sha256:02134e8439cdc2ffb62023ce1debca2944c3f289d66bb17ead3ab3dede74b292 \
@@ -205,13 +205,13 @@ filelock==3.16.1 \
     # via
     #   tox
     #   virtualenv
-flit==3.9.0 \
-    --hash=sha256:076c3aaba5ac24cf0ad3251f910900d95a08218e6bcb26f21fef1036cc4679ca \
-    --hash=sha256:d75edf5eb324da20d53570a6a6f87f51e606eee8384925cd66a90611140844c7
+flit==3.10.0 \
+    --hash=sha256:b2d44935aeea65c90c8ad66e3d7d8937cfbc139011c86d6a1ba2b06a2c044f35 \
+    --hash=sha256:dadca58d5097db62884d25d70b572f104954927daadc8cee449739215b7237fd
     # via -r CI/requirements_ci.in
-flit-core==3.9.0 \
-    --hash=sha256:72ad266176c4a3fcfab5f2930d76896059851240570ce9a98733b658cb786eba \
-    --hash=sha256:7aada352fb0c7f5538c4fafeddf314d3a6a92ee8e2b1de70482329e42de70301
+flit-core==3.10.0 \
+    --hash=sha256:6d904233178b3c924f665947ac7d286f2ac799fb69087e39e56ceb4084724a97 \
+    --hash=sha256:ca888c3ae0a5a4dae39f2db64f181b8b45143a6650c4b9ce6d171e45a6fa290a
     # via flit
 idna==3.7 \
     --hash=sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc \
@@ -393,9 +393,9 @@ tomlkit==0.13.0 \
     --hash=sha256:08ad192699734149f5b97b45f1f18dad7eb1b6d16bc72ad0c2335772650d7b72 \
     --hash=sha256:7075d3042d03b80f603482d69bf0c8f345c2b30e41699fd8883227f89972b264
     # via bump-my-version
-tox==4.21.0 \
-    --hash=sha256:693ac51378255d34ad7aab6dd2ce9ab6a1cf1924eb930183fde850ad503b681d \
-    --hash=sha256:e64dd9847ff3a7ec90368be412d7efe61a39caf043222ffbe9ad638ea435f6f6
+tox==4.23.2 \
+    --hash=sha256:452bc32bb031f2282881a2118923176445bac783ab97c874b8770ab4c3b76c38 \
+    --hash=sha256:86075e00e555df6e82e74cfc333917f91ecb47ffbc868dcafbd2672e332f4a2c
     # via -r CI/requirements_ci.in
 typing-extensions==4.12.2 \
     --hash=sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d \
