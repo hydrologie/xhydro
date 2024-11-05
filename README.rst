@@ -1,6 +1,6 @@
-======
-xHydro
-======
+======================================
+xHydro |logo| |logo-light| |logo-dark|
+======================================
 
 +----------------------------+-----------------------------------------------------+
 | Versions                   | |pypi| |versions|                                   |
@@ -22,7 +22,7 @@ Hydrological analysis library built with xarray
 Features
 --------
 
-* Easily find and extract geospacial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
+* Easily find and extract geospatial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
 * Calibrate and execute Hydrotel and Raven-emulated hydrological models.
 * Perform optimal interpolation on hydrological data (daily streamflow and indices).
 * Compute hydrological indicators (e.g. n-day peak flow, annual maximum series, low flow, average flow, etc.) over custom date ranges.
@@ -33,6 +33,8 @@ Credits
 -------
 
 This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pypackage`_ project template.
+
+This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou-a), with inputs from the `xHydro` team.
 
 .. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage
@@ -61,6 +63,20 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
         :alt: License
+
+.. |logo| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/xhydro-logo-small-light.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt: xHydro
+
+.. |logo-light| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-light-inline
+
+.. |logo-dark| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-dark-inline
 
 .. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/hydrologie/xhydro

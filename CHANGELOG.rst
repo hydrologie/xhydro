@@ -4,7 +4,7 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -25,6 +25,7 @@ Internal changes
 * Tests can now be run using the `pytest-xdist` plugin for distributed testing. See the `pytest-xdist documentation <https://pytest-xdist.readthedocs.io/en/stable/>`_ for more information. (:pull:`212`).
 * Several tests reliant on online servers and services have been marked as `online` to prevent them from running in contexts where internet access is limited. (:pull:`212`).
 * Many function docstrings and type hints have been updated for accuracy and precision. (:pull:`212`).
+* The `xHydro` project now has a set of logos for use in documentation, the readme, and other materials. (:pull:`217`).
 
 v0.4.0 (2024-10-04)
 -------------------
