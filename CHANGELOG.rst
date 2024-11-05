@@ -12,6 +12,11 @@ New features and enhancements
 * In ``xhydro.cc.sampled_indicators``, the `delta_type` argument can now be a dictionary or None, in which case the attribute `delta_kind` is used. (:pull:`220`).
 * In ``xhydro.cc.sampled_indicators``, weights along a `time` or `horizon` dimension will no longer reduce that dimension. (:pull:`220`).
 
+Bug fixes
+^^^^^^^^^
+* Fixed a bug in `xhydro.modelling.format_input` where the function would fail if the input data was a `dask` array. (:pull:`214`).
+* The `executable` parameter in the Hydrotel model class is now always required. (:pull:`214`).
+
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
