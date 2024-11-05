@@ -9,6 +9,8 @@ Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * A `periods` parameter was added to ``frequency_analysis.local.fit`` to compute multiple separate periods with a single call. (:pull:`219`).
+* In ``xhydro.cc.sampled_indicators``, the `delta_type` argument can now be a dictionary or None, in which case the attribute `delta_kind` is used. (:pull:`220`).
+* In ``xhydro.cc.sampled_indicators``, weights along a `time` or `horizon` dimension will no longer reduce that dimension. (:pull:`220`).
 
 Bug fixes
 ^^^^^^^^^
@@ -20,6 +22,7 @@ Breaking changes
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
 * The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
 * Many core dependencies have been updated to more modern versions. (:pull:`218`).
+* The `delta_type` argument in ``xhydro.cc.sampled_indicators`` has been renamed to `delta_kind` and is no longer positional. (:pull:`220`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
