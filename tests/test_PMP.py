@@ -4,7 +4,7 @@ import pytest
 import xarray as xr
 from pint.errors import DimensionalityError
 
-from xhydro import pmp
+from xhydro.indicators import pmp
 
 
 class TestPMP:
