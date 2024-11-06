@@ -397,8 +397,8 @@ def surface_properties(
     return output_dataset
 
 
-def _merge_stac_dataset(catalog, bbox_of_interest, year):
-    search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
+def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
+    search = catalog.search(collections=[collection], bbox=bbox_of_interest)
     items = search.item_collection()
 
     # The STAC metadata contains some information we'll want to use when creating
@@ -435,15 +435,17 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year):
             raise TypeError(f"Expected year argument {year} to be a digit.")
 
     merged = merged.sel(time=year).min("time")
+    merged.attrs["year"] = year
+    merged.attrs["collection"] = collection
     return merged, item
 
 
 def _count_pixels_from_bbox(
-    gdf, idx, catalog, unique_id, values_to_classes, year, pbar
+    gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection
 ):
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
-    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
     epsg = item.properties["proj:epsg"]
 
     # Mask with polygon
@@ -463,15 +465,21 @@ def _count_pixels_from_bbox(
     df.columns = column_name
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
-
-    return df.T
+    ds = xr.DataArray(data=df.T).rename({"dim_0": "id", "dim_1": "land_use"})
+    # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
+    ds.attrs = merged.attrs
+    ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
+        "spatial_resolution"
+    ]
+    return ds
+    # return df.T
 
 
 def land_use_classification(
     gdf: gpd.GeoDataFrame,
     unique_id: str | None = None,
     output_format: str = "geopandas",
-    collection="io-lulc-9-class",
+    collection="io-lulc-annual-v02",
     year: str | int = "latest",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """Calculate land use classification.
@@ -518,15 +526,14 @@ def land_use_classification(
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
-    output_dataset = pd.concat(
-        [
-            _count_pixels_from_bbox(
-                gdf, idx, catalog, unique_id, values_to_classes, year, pbar
-            )
-            for idx in pbar
-        ],
-        axis=0,
-    ).fillna(0)
+    liste = [
+        _count_pixels_from_bbox(
+            gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection.id
+        )
+        for idx in pbar
+    ]
+    # output_dataset = pd.concat(liste, axis=0).fillna(0)
+    output_dataset = xr.concat(liste, dim="id").fillna(0)
 
     if unique_id is not None:
         output_dataset.index.name = unique_id
@@ -543,7 +550,7 @@ def land_use_plot(
     gdf: gpd.GeoDataFrame,
     idx: int = 0,
     unique_id: str | None = None,
-    collection: str = "io-lulc-9-class",
+    collection: str = "io-lulc-annual-v02",
     year: str | int = "latest",
 ) -> None:
     """Plot a land use map for a specific year and watershed.
