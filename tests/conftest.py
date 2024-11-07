@@ -11,7 +11,7 @@ import pooch
 import pytest
 import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
-from xclim.testing.utils import open_dataset
+from xclim.testing.utils import nimbus as _nimbus
 
 from xhydro.testing.helpers import (
     TESTDATA_BRANCH,
@@ -28,11 +28,17 @@ def threadsafe_data_dir(tmp_path_factory) -> Path:
     yield data_dir
 
 
+@pytest.fixture(autouse=True, scope="session")
+def nimbus(threadsafe_data_dir, worker_id) -> pooch.Pooch:
+    kwargs = {}
+    if worker_id != "master":
+        kwargs["cache_dir"] = threadsafe_data_dir
+    return _nimbus(**kwargs)
 @pytest.fixture
-def era5_example():
+def era5_example(nimbus):
     # Prepare a dataset with the required fields
-    ds = open_dataset("ERA5/daily_surface_cancities_1990-1993.nc")[
-        ["huss", "pr", "snw"]
+    file = nimbus.fetch("ERA5/daily_surface_cancities_1990-1993")
+    ds = xr.open_dataset(file)[huss", "pr", "snw"]
     ]
     ds = ds.rename({"huss": "hus"})
 
