@@ -272,7 +272,7 @@ class TestLandClassification:
 
         for unique_id in ["Station", None]:
             df = xh.gis.land_use_classification(
-                self.gdf, unique_id=unique_id, year=year
+                self.gdf, unique_id=unique_id, year=year, collection="io-lulc-9-class"
             )
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
@@ -288,6 +288,7 @@ class TestLandClassification:
                 df_expected = land_classification_data_latest
             elif year == "2018":
                 df_expected = land_classification_data_2018
+
             else:
                 raise ValueError(f"Invalid year argument {year}.")
 
@@ -297,7 +298,11 @@ class TestLandClassification:
             ds_expected = df_expected.to_xarray()
 
             ds_classification = xh.gis.land_use_classification(
-                self.gdf, unique_id=unique_id, year=year, output_format="xarray"
+                self.gdf,
+                unique_id=unique_id,
+                year=year,
+                output_format="xarray",
+                collection="io-lulc-9-class",
             )
 
             for var in ds_classification:
@@ -305,6 +310,18 @@ class TestLandClassification:
 
             for var in ds_expected:
                 ds_expected[var].attrs = {"units": "percent"}
+            if year == "latest":
+                ds_expected.attrs = {
+                    "year": "2022",
+                    "collection": "io-lulc-9-class",
+                    "spatial_resolution": 10,
+                }
+            elif year == "2018":
+                ds_expected.attrs = {
+                    "year": "2018",
+                    "collection": "io-lulc-9-class",
+                    "spatial_resolution": 10,
+                }
 
             xr.testing.assert_equal(ds_classification, ds_expected)
 
@@ -325,12 +342,16 @@ class TestLandClassification:
             TypeError,
             match="Expected year argument foo to be a digit.",
         ):
-            xh.gis.land_use_classification(self.gdf, unique_id="Station", year="foo")
+            xh.gis.land_use_classification(
+                self.gdf, unique_id="Station", year="foo", collection="io-lulc-9-class"
+            )
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
         ):
-            xh.gis.land_use_classification(self.gdf, unique_id="Station", year=None)
+            xh.gis.land_use_classification(
+                self.gdf, unique_id="Station", year=None, collection="io-lulc-9-class"
+            )
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
