@@ -82,7 +82,7 @@ def test_publish_release_notes(tmp_path):
 
 @pytest.mark.parametrize("latest", [True, False])
 @pytest.mark.requires_docs
-def test_changelog_latest(self, tmpdir, latest):
+def test_changelog_latest(tmpdir, latest):
     out = xhu.publish_release_notes(
         "md",
         changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
