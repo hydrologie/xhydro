@@ -27,6 +27,8 @@ from shapely import Point
 from tqdm.auto import tqdm
 from xrspatial import aspect, slope
 
+from xhydro.utils import update_history
+
 __all__ = [
     "land_use_classification",
     "land_use_plot",
@@ -465,7 +467,9 @@ def _count_pixels_from_bbox(
     df.columns = column_name
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
-    ds = xr.DataArray(data=df.T).rename({"dim_0": "id", "dim_1": "land_use"})
+
+    ds = xr.Dataset(df.T).rename({"dim_0": unique_id})
+
     # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
     ds.attrs = merged.attrs
     ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
@@ -523,6 +527,8 @@ def land_use_classification(
         v: "_".join(("pct", k.lower().replace(" ", "_")))
         for k, v in class_names.items()
     }
+    if unique_id is None:
+        unique_id = "id"  # FIXME
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
@@ -533,16 +539,19 @@ def land_use_classification(
         for idx in pbar
     ]
     # output_dataset = pd.concat(liste, axis=0).fillna(0)
-    output_dataset = xr.concat(liste, dim="id").fillna(0)
-
-    if unique_id is not None:
-        output_dataset.index.name = unique_id
+    output_dataset = xr.concat(liste, dim=unique_id).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
         # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
-        output_dataset = output_dataset.to_xarray()
+        # output_dataset = output_dataset.to_xarray()
         for var in output_dataset:
             output_dataset[var].attrs = {"units": "percent"}
+            output_dataset[var].attrs["history"] = update_history(
+                "Calculated land_use_classification"
+            )
+    else:
+        return output_dataset.to_dataframe()
+
     return output_dataset
 
 
