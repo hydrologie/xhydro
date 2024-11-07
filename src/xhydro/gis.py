@@ -605,7 +605,7 @@ def land_use_plot(
 
     bbox_of_interest = gdf.total_bounds
 
-    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
 
     epsg = ProjectionExtension.ext(item).epsg
 
