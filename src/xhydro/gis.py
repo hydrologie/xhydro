@@ -462,13 +462,15 @@ def _count_pixels_from_bbox(
 
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
+        dim_name = unique_id
     else:
         column_name = [idx]
+        dim_name = "id"
     df.columns = column_name
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
 
-    ds = xr.Dataset(df.T).rename({"dim_0": column_name})
+    ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
 
     # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
     ds.attrs = merged.attrs
@@ -527,8 +529,10 @@ def land_use_classification(
         v: "_".join(("pct", k.lower().replace(" ", "_")))
         for k, v in class_names.items()
     }
-    # if unique_id is None:
-    #     unique_id = "id"  # FIXME
+    if unique_id is None:
+        dim_name = "index"
+    else:
+        dim_name = unique_id
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
@@ -539,7 +543,7 @@ def land_use_classification(
         for idx in pbar
     ]
     # output_dataset = pd.concat(liste, axis=0).fillna(0)
-    output_dataset = xr.concat(liste, dim=unique_id).fillna(0)
+    output_dataset = xr.concat(liste, dim=dim_name).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
         # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
