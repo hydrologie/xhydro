@@ -51,6 +51,8 @@ class RavenpyModel(HydrologicalModel):
     meteo_station_properties : dict
         The properties of the weather stations providing the meteorological data. Used to adjust weather according to
         differences between station and catchment elevations (adiabatic gradients, etc.).
+    hydro_station_properties : dict
+        Optional arguments to observation data like station indexes.
     workdir : str or  os.PathLike
         Path to save the .rv files and model outputs.
     rain_snow_fraction : str
@@ -78,6 +80,7 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
+        hydro_station_properties={},
         workdir: str | os.PathLike | None = None,
         rain_snow_fraction="RAINSNOW_DINGMAN",
         evaporation="PET_PRIESTLEY_TAYLOR",
@@ -106,7 +109,9 @@ class RavenpyModel(HydrologicalModel):
             StartDate=start_date,
             EndDate=end_date,
             ObservationData=[
-                rc.ObservationData.from_nc(qobs_path, alt_names=alt_names_flow)
+                rc.ObservationData.from_nc(
+                    qobs_path, alt_names=alt_names_flow, **hydro_station_properties
+                )
             ],
             Gauge=[
                 rc.Gauge.from_nc(
