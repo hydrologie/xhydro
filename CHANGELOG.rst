@@ -21,7 +21,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
 * The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
-* Many core dependencies have been updated to more modern versions. (:pull:`218`).
+* Many core dependencies have been updated to more modern versions. (:pull:`218`, :pull:`228`).
 * The `delta_type` argument in ``xhydro.cc.sampled_indicators`` has been renamed to `delta_kind` and is no longer positional. (:pull:`220`).
 * The ``xhydro.pmp`` module has been moved to ``xhydro.indicators.pmp``. (:pull:`226`).
 
@@ -33,6 +33,7 @@ Internal changes
 * Many function docstrings and type hints have been updated for accuracy and precision. (:pull:`212`).
 * The `xHydro` project now has a set of logos for use in documentation, the readme, and other materials. (:pull:`217`).
 * ``xhydro.indicators`` is now a package with submodules for different types of indicators. Previous functions have been moved to a `generic` submodule and are imported at the top level for backwards compatibility. (:pull:`226`).
+* ``xh.testing.utils.publish_release_notes`` now has a `latest` parameter to print only the latest release notes. (:pull:`228`).
 
 v0.4.0 (2024-10-04)
 -------------------

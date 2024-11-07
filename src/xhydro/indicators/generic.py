@@ -122,7 +122,7 @@ def get_yearly_op(
             ds[input_var] = ds[input_var].interpolate_na(dim="time", method="linear")
 
     # Add the variable to xclim to avoid raising an error
-    if input_var not in xc.core.utils.VARIABLES:
+    if input_var not in xc.core.VARIABLES:
         attrs = {
             "long_name": None,
             "units": None,
@@ -132,7 +132,7 @@ def get_yearly_op(
         attrs.update(ds[input_var].attrs)
         attrs["canonical_units"] = attrs["units"]
         attrs.pop("units")
-        xc.core.utils.VARIABLES[input_var] = attrs
+        xc.core.VARIABLES[input_var] = attrs
 
     # FIXME: This should be handled by xclim once it supports rolling stats (Issue #1480)
     # rolling window
