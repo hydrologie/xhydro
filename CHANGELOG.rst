@@ -2,7 +2,7 @@
 Changelog
 =========
 
-v0.5.0 (unreleased)
+v0.4.1 (2024-11-07)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`).
 
