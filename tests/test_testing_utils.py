@@ -78,3 +78,17 @@ def test_publish_release_notes(tmp_path):
     with Path(temp_rst_filename).open() as f:
         changelog_rst = f.read()
     assert changelog_rst.startswith("=========\nChangelog\n=========")
+
+
+@pytest.mark.parametrize("latest", [True, False])
+@pytest.mark.requires_docs
+def test_changelog_latest(self, tmpdir, latest):
+    out = xhu.publish_release_notes(
+        "md",
+        changes=Path(__file__).parent.parent.joinpath("CHANGELOG.rst"),
+        latest=latest,
+    )
+    if latest:
+        assert len(out.split("\n\n## v0.")) == 2
+    else:
+        assert len(out.split("\n\n## v0.")) > 2
