@@ -29,17 +29,29 @@ def threadsafe_data_dir(tmp_path_factory) -> Path:
 
 
 @pytest.fixture(autouse=True, scope="session")
+def deveraux(threadsafe_data_dir, worker_id) -> pooch.Pooch:
+    return _deveraux(
+        repo=TESTDATA_REPO_URL,
+        branch=TESTDATA_BRANCH,
+        cache_dir=(
+            TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir
+        ),
+    )
+
+
+@pytest.fixture(autouse=True, scope="session")
 def nimbus(threadsafe_data_dir, worker_id) -> pooch.Pooch:
     kwargs = {}
     if worker_id != "master":
         kwargs["cache_dir"] = threadsafe_data_dir
     return _nimbus(**kwargs)
+
+
 @pytest.fixture
 def era5_example(nimbus):
     # Prepare a dataset with the required fields
     file = nimbus.fetch("ERA5/daily_surface_cancities_1990-1993")
     ds = xr.open_dataset(file)["huss", "pr", "snw"]
-    ]
     ds = ds.rename({"huss": "hus"})
 
     # Fake Geopotential field
@@ -86,17 +98,6 @@ def era5_example(nimbus):
         },
     )
     return ds
-
-
-@pytest.fixture(autouse=True, scope="session")
-def deveraux(threadsafe_data_dir, worker_id) -> pooch.Pooch:
-    return _deveraux(
-        repo=TESTDATA_REPO_URL,
-        branch=TESTDATA_BRANCH,
-        cache_dir=(
-            TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir
-        ),
-    )
 
 
 @pytest.fixture(scope="session")
