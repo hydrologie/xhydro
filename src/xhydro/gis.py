@@ -468,7 +468,7 @@ def _count_pixels_from_bbox(
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
 
-    ds = xr.Dataset(df.T).rename({"dim_0": unique_id})
+    ds = xr.Dataset(df.T).rename({"dim_0": column_name})
 
     # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
     ds.attrs = merged.attrs
@@ -527,8 +527,8 @@ def land_use_classification(
         v: "_".join(("pct", k.lower().replace(" ", "_")))
         for k, v in class_names.items()
     }
-    if unique_id is None:
-        unique_id = "id"  # FIXME
+    # if unique_id is None:
+    #     unique_id = "id"  # FIXME
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
