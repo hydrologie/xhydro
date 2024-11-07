@@ -465,7 +465,7 @@ def _count_pixels_from_bbox(
         dim_name = unique_id
     else:
         column_name = [idx]
-        dim_name = "id"
+        dim_name = "index"
     df.columns = column_name
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
@@ -553,10 +553,14 @@ def land_use_classification(
             output_dataset[var].attrs["history"] = update_history(
                 "Calculated land_use_classification"
             )
+        return output_dataset
     else:
-        return output_dataset.to_dataframe()
-
-    return output_dataset
+        if unique_id is None:
+            df = output_dataset.to_dataframe()
+            df.index.name = None
+            return df
+        else:
+            return output_dataset.to_dataframe()
 
 
 def land_use_plot(
