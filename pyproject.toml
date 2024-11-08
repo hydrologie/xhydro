@@ -41,11 +41,10 @@ dependencies = [
   "haversine >=2.8.0",
   "importlib-metadata <8.0", # Required for xesmf >=8.4.0,<8.6 to work on Windows
   "leafmap",
-  "numpy >=1.23,<2.0.0",
-  "pandas >=2.2.0",
+  "numpy >=1.24",
+  "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
-  "pydantic >=2.0,<2.5.3",
   "pystac",
   "pystac-client",
   "pyyaml >=6.0.2",
@@ -58,9 +57,9 @@ dependencies = [
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
-  "xclim >=0.48.2,<0.53",
+  "xclim >=0.53.2,<0.54",
   "xdatasets >=0.3.6",
-  "xscen >=0.8.3",
+  "xscen >=0.10.1,<0.11",
   "xvec"
 ]
 
@@ -124,7 +123,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.4.1-dev.10"
+current_version = "0.4.1"
 commit = true
 commit_args = "--no-verify"
 tag = false
