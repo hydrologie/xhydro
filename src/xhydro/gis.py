@@ -540,7 +540,6 @@ def land_use_classification(
         )
         for idx in pbar
     ]
-    # output_dataset = pd.concat(liste, axis=0).fillna(0)
     output_dataset = xr.concat(liste, dim=dim_name).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
