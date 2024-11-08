@@ -252,8 +252,8 @@ class TestLandClassification:
                 "042103": 0.00435748819373681616,
             },
             "pct_water": {"031501": 0.0, "042103": 0.08474178698663342724},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019464135652118243},
             "pct_bare_ground": {"031501": 0.0, "042103": 5.16290070347964e-07},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019464135652118243},
         }
 
         df = pd.DataFrame.from_dict(data)
