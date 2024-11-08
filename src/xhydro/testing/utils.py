@@ -160,6 +160,7 @@ def publish_release_notes(
     style: str = "md",
     file: os.PathLike | StringIO | TextIO | None = None,
     changes: str | os.PathLike | None = None,
+    latest: bool = True,
 ) -> str | None:
     """Format release history in Markdown or ReStructuredText.
 
@@ -172,6 +173,8 @@ def publish_release_notes(
     changes : {str, os.PathLike}, optional
         If provided, manually points to the file where the changelog can be found.
         Assumes a relative path otherwise.
+    latest : bool
+        Whether to return the release notes of the latest version or all the content of the changelog.
 
     Returns
     -------
@@ -211,6 +214,10 @@ def publish_release_notes(
 
     for search, replacement in hyperlink_replacements.items():
         changes = re.sub(search, replacement, changes)
+
+    if latest:
+        changes_split = changes.split("\n\nv0.")
+        changes = changes_split[0] + "\n\nv0." + changes_split[1]
 
     if style == "md":
         changes = changes.replace("=========\nChangelog\n=========", "# Changelog")
