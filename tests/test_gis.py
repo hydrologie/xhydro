@@ -214,19 +214,21 @@ class TestLandClassification:
     def land_classification_data_latest(self):
         data = {
             "pct_built_area": {
-                "031501": 0.015321084992280073,
-                "042103": 1.291553583975092e-05,
+                "031501": 0.015439853092995422,
+                "042103": 1.6177088870902873e-05,
             },
-            "pct_crops": {"031501": 0.7241017020382433, "042103": 0.0},
-            "pct_trees": {"031501": 0.25554784070456893, "042103": 0.8904406091999945},
+            "pct_crops": {"031501": 0.71674721580163903, "042103": 0.0},
+            "pct_trees": {
+                "031501": 0.259403235973944102,
+                "042103": 0.909267010940358666,
+            },
             "pct_rangeland": {
-                "031501": 0.005029372264907681,
-                "042103": 0.02405165525507322,
+                "031501": 0.008409695131421471,
+                "042103": 0.004853126661270862,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08536996982930828},
-            "pct_snow/ice": {"031501": 0.0, "042103": 3.444142890600245e-07},
-            "pct_bare_ground": {"031501": 0.0, "042103": 1.1193464394450798e-05},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00011331230110074807},
+            "pct_water": {"031501": 0.0, "042103": 0.085443597288926421},
+            "pct_bare_ground": {"031501": 0.0, "042103": 3.614030492435748e-06},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.000416473990080691},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -237,18 +239,21 @@ class TestLandClassification:
     def land_classification_data_2018(self):
         data = {
             "pct_built_area": {
-                "031501": 0.0157641813680258,
-                "042103": 3.857440037472275e-05,
+                "031501": 0.01585554144549914529,
+                "042103": 3.8721755276097304e-05,
             },
-            "pct_crops": {"031501": 0.7236266296353819, "042103": 0.0},
-            "pct_trees": {"031501": 0.2563609453940817, "042103": 0.9106845922823646},
+            "pct_crops": {"031501": 0.72329773335647784549, "042103": 0.0},
+            "pct_trees": {
+                "031501": 0.25655280155677573362,
+                "042103": 0.91066684541776210526,
+            },
             "pct_rangeland": {
-                "031501": 0.004248243602510575,
-                "042103": 0.004328943199195448,
+                "031501": 0.00429392364124724785,
+                "042103": 0.00435748819373681616,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08475932329480486},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.0001883946161158334},
-            "pct_bare_ground": {"031501": 0.0, "042103": 1.7220714453001225e-07},
+            "pct_water": {"031501": 0.0, "042103": 0.08474178698663342724},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019464135652118243},
+            "pct_bare_ground": {"031501": 0.0, "042103": 5.16290070347964e-07},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -272,7 +277,7 @@ class TestLandClassification:
 
         for unique_id in ["Station", None]:
             df = xh.gis.land_use_classification(
-                self.gdf, unique_id=unique_id, year=year, collection="io-lulc-9-class"
+                self.gdf, unique_id=unique_id, year=year
             )
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
@@ -302,7 +307,6 @@ class TestLandClassification:
                 unique_id=unique_id,
                 year=year,
                 output_format="xarray",
-                collection="io-lulc-9-class",
             )
 
             for var in ds_classification:
@@ -312,14 +316,14 @@ class TestLandClassification:
                 ds_expected[var].attrs = {"units": "percent"}
             if year == "latest":
                 ds_expected.attrs = {
-                    "year": "2022",
-                    "collection": "io-lulc-9-class",
+                    "year": "2023",
+                    "collection": "io-lulc-annual-v02",
                     "spatial_resolution": 10,
                 }
             elif year == "2018":
                 ds_expected.attrs = {
                     "year": "2018",
-                    "collection": "io-lulc-9-class",
+                    "collection": "io-lulc-annual-v02",
                     "spatial_resolution": 10,
                 }
 
@@ -342,16 +346,12 @@ class TestLandClassification:
             TypeError,
             match="Expected year argument foo to be a digit.",
         ):
-            xh.gis.land_use_classification(
-                self.gdf, unique_id="Station", year="foo", collection="io-lulc-9-class"
-            )
+            xh.gis.land_use_classification(self.gdf, unique_id="Station", year="foo")
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
         ):
-            xh.gis.land_use_classification(
-                self.gdf, unique_id="Station", year=None, collection="io-lulc-9-class"
-            )
+            xh.gis.land_use_classification(self.gdf, unique_id="Station", year=None)
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
