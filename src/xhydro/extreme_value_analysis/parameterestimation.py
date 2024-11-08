@@ -39,727 +39,392 @@ warnings.simplefilter("always", UserWarning)
 __all__ = ["fit", "return_level"]
 
 
-# Maximum likelihood estimation
-def gevfit(
+# def extremefit(
+#     y: list[float],
+#     dist: str,
+#     method: str,
+#     location_cov: list[list] = (),
+#     scale_cov: list[list] = (),
+#     shape_cov: list[list] = (),
+#     return_type: str = "param",
+#     confidence_level: float = 0.95,
+#     return_period: float = 100,
+#     main_dim_length: int = 1,
+#     niter: int = 5000,
+#     warmup: int = 2000,
+#     threshold_pareto=None,
+#     nobs_pareto=None,
+#     nobsperblock_pareto=None,
+# ) -> list:
+#     r"""
+#     Fit a univariate distribution to an array using specified covariate data.
+
+#     Parameters
+#     ----------
+#     y : list[float]
+#         Data to be fitted.
+#     dist : str or rv_continuous
+#         The univariate distribution to fit, either as a string or as a distribution object.
+#         Supported distributions include genextreme, gumbel_r, genpareto.
+#     method : str
+#         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+#         or Bayesian inference (BAYES).
+#     location_cov : list[list]
+#         List of data lists to be used as covariates for the location parameter.
+#     scale_cov : list[list]
+#         List of data lists to be used as covariates for the scale parameter.
+#     shape_cov : list[list]
+#         List of data lists to be used as covariates for the shape parameter.
+#     return_type : str
+#         Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
+#     confidence_level : float
+#         The confidence level for the confidence interval of each parameter.
+#     return_period : float
+#         Return period used to compute the return level.
+#     main_dim_length : bool
+#         Length of the dimension used to compute the return level.
+#     niter : int
+#         Required when when method=BAYES. The number of iterations of the bayesian inference algorithm
+#         for parameter estimation (default: 5000).
+#     warmup : int
+#         Required when when method=BAYES. The number of warmup iterations of the bayesian inference
+#         algorithm for parameter estimation (default: 2000).
+#     threshold_pareto : float
+#         Required when when dist=genpareto and return_type=returnlevel. Threshold.
+#     nobs_pareto : int,
+#         Required when when dist=genpareto and return_type=returnlevel. Number of total observation.
+#     nobsperblock_pareto : int,
+#         Required when dist=genpareto and return_type=returnlevel. Number of observation per block.
+
+#     Returns
+#     -------
+#     List
+#         ssss
+#     """
+#     jl_y = py_list_to_jl_vector(y)
+#     locationcov, logscalecov, shapecov = (
+#         jl_variable_fit_parameters(location_cov),
+#         jl_variable_fit_parameters(scale_cov),
+#         jl_variable_fit_parameters(shape_cov),
+#     )
+
+#     if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+#         nparams = 3 + len(location_cov) + len(scale_cov) + len(shape_cov)
+#         if method == "ML":
+#             distm ="gevfit"
+#         elif method == "PWM":
+#             distm ="gevfitpwm"
+#         elif method == "BAYES":
+#             distm ="gevfitbayes"
+#     elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
+#         nparams = 2 + len(location_cov) + len(scale_cov)
+#         if method == "ML":
+#             distm ="gumbelfit"
+#         elif method == "PWM":
+#             distm ="gumbelfitpwm"
+#         elif method == "BAYES":
+#             distm ="gumbelfitbayes"
+#     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
+#         nparams = 2 + len(scale_cov) + len(shape_cov)
+#         if method == "ML":
+#             distm ="gpfit"
+#         elif method == "PWM":
+#             distm ="gpfitpwm"
+#         elif method == "BAYES":
+#             distm ="gpfitbayes"
+#     else:
+#         raise ValueError(f"Fitting distribution {dist} or method {method} not recognized")
+
+
+#     args_per_func = {"gevfit": ["locationcov", "logscalecov", "shapecov"],
+#                      "gevfitpwm": [],
+#                      "gevfitbayes": ["locationcov", "logscalecov", "shapecov", "niter", "warmup"],
+#                      "gumbelfit": ["locationcov", "logscalecov"],
+#                      "gumbelfitpwm": [],
+#                      "gumbelfitbayes": ["locationcov", "logscalecov", "niter", "warmup"],
+#                      "gpfit": ["logscalecov", "shapecov"],
+#                      "gpfitpwm": [],
+#                      "gpfitbayes": ["logscalecov", "shapecov", "niter", "warmup"]}
+#     args =  {k: locals()[k] for k in args_per_func.get(distm)}
+
+#     try:
+#         jl_model = getattr(Extremes, distm)(jl_y, **args)
+#         if return_type == "param":
+#             cint = param_cint(jl_model, confidence_level=confidence_level, method=method)
+#         elif return_type == "returnlevel":
+#             cint = return_level_cint(
+#                 jl_model,
+#                 confidence_level=confidence_level,
+#                 return_period=return_period,
+#                 dist=dist,
+#                 threshold_pareto=threshold_pareto,
+#                 nobs_pareto=nobs_pareto,
+#                 nobsperblock_pareto=nobsperblock_pareto,
+#                 method=method
+#             )
+
+#         return cint
+
+#     except JuliaError:
+#         warnings.warn(
+#             "There was an error in fitting the data to a genextreme distribution. "
+#             "Returned parameters are numpy.nan.",
+#             UserWarning,
+#         )
+
+#         if return_type == "param":
+#             empty_param = np.repeat(np.nan, nparams)
+#             return [empty_param, empty_param, empty_param]
+#         elif return_type == "returnlevel":
+#             empty_returnlevel = np.repeat(np.nan, main_dim_length)
+#             return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
+#         else:
+#             raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
+
+
+def extremefit_param(
     y: list[float],
-    locationcov: list[list] = (),
-    scalecov: list[list] = (),
-    shapecov: list[list] = (),
-    return_type: str = "param",
+    dist: str,
+    method: str,
+    location_cov: list[list] = (),
+    scale_cov: list[list] = (),
+    shape_cov: list[list] = (),
     confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
+    niter: int = 5000,
+    warmup: int = 2000,
 ) -> list:
     r"""
-    Fit an array to a Genextreme distribution using the maximum likelihood algorithm from Extremes.jl.
+    Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
     ----------
     y : list[float]
         Data to be fitted.
-    locationcov : list[list]
+    dist : str or rv_continuous
+        The univariate distribution to fit, either as a string or as a distribution object.
+        Supported distributions include genextreme, gumbel_r, genpareto.
+    method : str
+        The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+        or Bayesian inference (BAYES).
+    location_cov : list[list]
         List of data lists to be used as covariates for the location parameter.
-    scalecov : list[list]
+    scale_cov : list[list]
         List of data lists to be used as covariates for the scale parameter.
-    shapecov : list[list]
+    shape_cov : list[list]
         List of data lists to be used as covariates for the shape parameter.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     confidence_level : float
-        The confidence level for the confidence interval.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : int
-        Length of the dimension used to compute the return level.
+        The confidence level for the confidence interval of each parameter.
+    niter : int
+        Required when when method=BAYES. The number of iterations of the bayesian inference algorithm
+        for parameter estimation (default: 5000).
+    warmup : int
+        Required when when method=BAYES. The number of warmup iterations of the bayesian inference
+        algorithm for parameter estimation (default: 2000).
 
     Returns
     -------
     List
-        List containing the estimated parameters or return level and the lower and upper bounds for the confidence interval.
+        List containing the estimated parameters and their corresponding lower and upper bounds for the confidence interval.
     """
     jl_y = py_list_to_jl_vector(y)
-    jl_locationcov, jl_logscalecov, jl_shapecov = (
-        jl_variable_fit_parameters(locationcov),
-        jl_variable_fit_parameters(scalecov),
-        jl_variable_fit_parameters(shapecov),
+    locationcov, logscalecov, shapecov = (
+        jl_variable_fit_parameters(location_cov),
+        jl_variable_fit_parameters(scale_cov),
+        jl_variable_fit_parameters(shape_cov),
     )
-    nparams = 3 + len(locationcov) + len(scalecov) + len(shapecov)
-    shape_pos = 2 + len(locationcov) + len(scalecov)
 
-    try:
-        jl_model = Extremes.gevfit(
-            jl_y,
-            locationcov=jl_locationcov,
-            logscalecov=jl_logscalecov,
-            shapecov=jl_shapecov,
-        )
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-
-            cint = change_sign_param(cint, shape_pos, len(shapecov) + 1)
-
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
-            )
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-        else:
-            raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
-
-
-def gumbelfit(
-    y: list[float],
-    locationcov: list[list] = (),
-    scalecov: list[list] = (),
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-) -> list:
-    r"""
-    Fit an array to a Gumbel distribution using the maximum likelihood algorithm from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    locationcov : list[list]
-        List of data lists to be used as covariates for the location parameter.
-    scalecov : list[list]
-        List of data lists to be used as covariates for the scale parameter.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : int
-        Length of the dimension used to compute the return level.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    jl_y = py_list_to_jl_vector(y)
-    jl_locationcov, jl_logscalecov = jl_variable_fit_parameters(
-        locationcov
-    ), jl_variable_fit_parameters(scalecov)
-    nparams = 2 + len(locationcov) + len(scalecov)
-    try:
-        jl_model = Extremes.gumbelfit(
-            jl_y, locationcov=jl_locationcov, logscalecov=jl_logscalecov
-        )
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
-            )
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-        else:
-            raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
-
-
-def gpfit(
-    y: list[float],
-    scalecov: list[list] = (),
-    shapecov: list[list] = (),
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
-) -> list:
-    r"""
-    Fit an array to a Pareto distribution using the maximum likelihood algorithm from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    scalecov : list[list]
-        List of data lists to be used as covariates for the scale parameter.
-    shapecov : list[list]
-        List of data lists to be used as covariates for the shape parameter.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : bool
-        Length of the dimension used to compute the return level.
-    threshold_pareto : float
-        Threshold.
-    nobs_pareto : int,
-        Number of total observation.
-    nobsperblock_pareto : int,
-        Number of observation per block.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    jl_y = py_list_to_jl_vector(y)
-    jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(
-        scalecov
-    ), jl_variable_fit_parameters(shapecov)
-    nparams = 2 + len(scalecov) + len(shapecov)
-    try:
-
-        jl_model = Extremes.gpfit(
-            jl_y, logscalecov=jl_logscalecov, shapecov=jl_shapecov
-        )
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model,
-                confidence_level=confidence_level,
-                return_period=return_period,
-                pareto=True,
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-            )
-
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-        else:
-            raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
-
-
-# Probability weighted moment estimation
-def gevfitpwm(
-    y: list[float],
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-) -> list:
-    r"""
-    Fit an array to a Genextreme distribution using the probability weighted moment algorithm from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : int
-        Length of the dimension used to compute the return level.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    if return_type not in ["param", "returnlevel"]:
+    if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+        nparams = 3 + len(location_cov) + len(scale_cov) + len(shape_cov)
+        if method == "ML":
+            distm = "gevfit"
+        elif method == "PWM":
+            distm = "gevfitpwm"
+        elif method == "BAYES":
+            distm = "gevfitbayes"
+    elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
+        nparams = 2 + len(location_cov) + len(scale_cov)
+        if method == "ML":
+            distm = "gumbelfit"
+        elif method == "PWM":
+            distm = "gumbelfitpwm"
+        elif method == "BAYES":
+            distm = "gumbelfitbayes"
+    elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
+        nparams = 2 + len(scale_cov) + len(shape_cov)
+        if method == "ML":
+            distm = "gpfit"
+        elif method == "PWM":
+            distm = "gpfitpwm"
+        elif method == "BAYES":
+            distm = "gpfitbayes"
+    else:
         raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
+            f"Fitting distribution {dist} or method {method} not recognized"
         )
 
-    jl_y = py_list_to_jl_vector(y)
-    nparams = 3
-    try:
-        jl_model = Extremes.gevfitpwm(jl_y)
+    args_per_func = {
+        "gevfit": ["locationcov", "logscalecov", "shapecov"],
+        "gevfitpwm": [],
+        "gevfitbayes": ["locationcov", "logscalecov", "shapecov", "niter", "warmup"],
+        "gumbelfit": ["locationcov", "logscalecov"],
+        "gumbelfitpwm": [],
+        "gumbelfitbayes": ["locationcov", "logscalecov", "niter", "warmup"],
+        "gpfit": ["logscalecov", "shapecov"],
+        "gpfitpwm": [],
+        "gpfitbayes": ["logscalecov", "shapecov", "niter", "warmup"],
+    }
+    args = {k: locals()[k] for k in args_per_func.get(distm)}
 
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-            cint = change_sign_param(cint, 2, 1)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
-            )
+    try:
+        jl_model = getattr(Extremes, distm)(jl_y, **args)
+
+        cint = param_cint(jl_model, confidence_level=confidence_level, method=method)
+
         return cint
 
     except JuliaError:
         warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
+            f"There was an error in fitting the data to a {dist} distribution using {method}. "
             "Returned parameters are numpy.nan.",
             UserWarning,
         )
 
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
+        empty_param = np.repeat(np.nan, nparams)
+        return [empty_param, empty_param, empty_param]
 
 
-def gumbelfitpwm(
+def extremefit_rtnlv(
     y: list[float],
-    return_type: str = "param",
+    dist: str,
+    method: str,
+    location_cov: list[list] = (),
+    scale_cov: list[list] = (),
+    shape_cov: list[list] = (),
     confidence_level: float = 0.95,
     return_period: float = 100,
     main_dim_length: int = 1,
-) -> list:
-    r"""
-    Fit an array to a Gumbel distribution using the probability weighted moment algorithm from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : int
-        Length of the dimension used to compute the return level.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    if return_type not in ["param", "returnlevel"]:
-        raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
-        )
-
-    jl_y = py_list_to_jl_vector(y)
-    nparams = 2
-    try:
-        jl_model = Extremes.gumbelfitpwm(jl_y)
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model, confidence_level=confidence_level, return_period=return_period
-            )
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-
-
-def gpfitpwm(
-    y: list[float],
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
-) -> list:
-    r"""
-    Fit an array to a Pareto distribution using the probability weighted moment algorithm from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : bool
-        Length of the dimension used to compute the return level.
-    threshold_pareto : float
-        Threshold.
-    nobs_pareto : int,
-        Number of total observation.
-    nobsperblock_pareto : int,
-        Number of observation per block.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    if return_type not in ["param", "returnlevel"]:
-        raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
-        )
-
-    jl_y = py_list_to_jl_vector(y)
-    nparams = 2
-    try:
-        jl_model = Extremes.gpfitpwm(jl_y)
-
-        if return_type == "param":
-            cint = param_cint(jl_model, confidence_level=confidence_level)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model,
-                confidence_level=confidence_level,
-                return_period=return_period,
-                pareto=True,
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-            )
-
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-
-
-# Bayesian estimation
-def gevfitbayes(
-    y: list[float],
-    locationcov: list[list] = (),
-    scalecov: list[list] = (),
-    shapecov: list[list] = (),
     niter: int = 5000,
     warmup: int = 2000,
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
+    threshold_pareto=None,
+    nobs_pareto=None,
+    nobsperblock_pareto=None,
 ) -> list:
     r"""
-    Fit an array to a Genextreme distribution using bayesian inference from Extremes.jl.
+    Fit a univariate distribution to an array using the specified covariate data to compute the return level.
 
     Parameters
     ----------
     y : list[float]
         Data to be fitted.
-    locationcov : list[list]
+    dist : str or rv_continuous
+        The univariate distribution to fit, either as a string or as a distribution object.
+        Supported distributions include genextreme, gumbel_r, genpareto.
+    method : str
+        The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+        or Bayesian inference (BAYES).
+    location_cov : list[list]
         List of data lists to be used as covariates for the location parameter.
-    scalecov : list[list]
+    scale_cov : list[list]
         List of data lists to be used as covariates for the scale parameter.
-    shapecov : list[list]
+    shape_cov : list[list]
         List of data lists to be used as covariates for the shape parameter.
-    niter : int
-        The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
-    warmup : int
-        The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
     return_period : float
         Return period used to compute the return level.
     main_dim_length : bool
         Length of the dimension used to compute the return level.
+    niter : int
+        Required when when method=BAYES. The number of iterations of the bayesian inference algorithm
+        for parameter estimation (default: 5000).
+    warmup : int
+        Required when when method=BAYES. The number of warmup iterations of the bayesian inference
+        algorithm for parameter estimation (default: 2000).
+    threshold_pareto : float
+        Required when when dist=genpareto and return_type=returnlevel. Threshold.
+    nobs_pareto : int,
+        Required when when dist=genpareto and return_type=returnlevel. Number of total observation.
+    nobsperblock_pareto : int,
+        Required when dist=genpareto and return_type=returnlevel. Number of observation per block.
 
     Returns
     -------
     List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
+        List containing return level along with the lower and upper bounds for the confidence interval.
     """
-    if return_type not in ["param", "returnlevel"]:
-        raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
-        )
     jl_y = py_list_to_jl_vector(y)
-    jl_locationcov, jl_logscalecov, jl_shapecov = (
-        jl_variable_fit_parameters(locationcov),
-        jl_variable_fit_parameters(scalecov),
-        jl_variable_fit_parameters(shapecov),
+    locationcov, logscalecov, shapecov = (
+        jl_variable_fit_parameters(location_cov),
+        jl_variable_fit_parameters(scale_cov),
+        jl_variable_fit_parameters(shape_cov),
     )
-    nparams = 3 + len(locationcov) + len(scalecov) + len(shapecov)
-    shape_pos = 2 + len(locationcov) + len(scalecov)
-    try:
-        jl_model = Extremes.gevfitbayes(
-            jl_y,
-            locationcov=jl_locationcov,
-            logscalecov=jl_logscalecov,
-            shapecov=jl_shapecov,
-            niter=niter,
-            warmup=warmup,
-        )
-        if return_type == "param":
-            cint = param_cint(
-                jl_model, confidence_level=confidence_level, bayesian=True
-            )
-            cint = change_sign_param(cint, shape_pos, len(shapecov) + 1)
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model,
-                confidence_level=confidence_level,
-                return_period=return_period,
-                bayesian=True,
-            )
-        return cint
 
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-
-
-def gumbelfitbayes(
-    y: list[float],
-    locationcov: list[list] = (),
-    scalecov: list[list] = (),
-    niter: int = 5000,
-    warmup: int = 2000,
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-) -> list:
-    r"""
-    Fit an array to a Gumbel distribution using bayesian inference from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    locationcov : list[list]
-        List of data lists to be used as covariates for the location parameter.
-    scalecov : list[list]
-        List of data lists to be used as covariates for the scale parameter.
-    niter : int
-        The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
-    warmup : int
-        The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : bool
-        Length of the dimension used to compute the return level.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    if return_type not in ["param", "returnlevel"]:
+    if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+        nparams = 3 + len(location_cov) + len(scale_cov) + len(shape_cov)
+        if method == "ML":
+            distm = "gevfit"
+        elif method == "PWM":
+            distm = "gevfitpwm"
+        elif method == "BAYES":
+            distm = "gevfitbayes"
+    elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
+        nparams = 2 + len(location_cov) + len(scale_cov)
+        if method == "ML":
+            distm = "gumbelfit"
+        elif method == "PWM":
+            distm = "gumbelfitpwm"
+        elif method == "BAYES":
+            distm = "gumbelfitbayes"
+    elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
+        nparams = 2 + len(scale_cov) + len(shape_cov)
+        if method == "ML":
+            distm = "gpfit"
+        elif method == "PWM":
+            distm = "gpfitpwm"
+        elif method == "BAYES":
+            distm = "gpfitbayes"
+    else:
         raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
+            f"Fitting distribution {dist} or method {method} not recognized"
         )
-    jl_y = py_list_to_jl_vector(y)
-    jl_locationcov, jl_logscalecov = jl_variable_fit_parameters(
-        locationcov
-    ), jl_variable_fit_parameters(scalecov)
-    nparams = 2 + len(locationcov) + len(scalecov)
+
+    args_per_func = {
+        "gevfit": ["locationcov", "logscalecov", "shapecov"],
+        "gevfitpwm": [],
+        "gevfitbayes": ["locationcov", "logscalecov", "shapecov", "niter", "warmup"],
+        "gumbelfit": ["locationcov", "logscalecov"],
+        "gumbelfitpwm": [],
+        "gumbelfitbayes": ["locationcov", "logscalecov", "niter", "warmup"],
+        "gpfit": ["logscalecov", "shapecov"],
+        "gpfitpwm": [],
+        "gpfitbayes": ["logscalecov", "shapecov", "niter", "warmup"],
+    }
+    args = {k: locals()[k] for k in args_per_func.get(distm)}
+
     try:
-        jl_model = Extremes.gumbelfitbayes(
-            jl_y,
-            locationcov=jl_locationcov,
-            logscalecov=jl_logscalecov,
-            niter=niter,
-            warmup=warmup,
+        jl_model = getattr(Extremes, distm)(jl_y, **args)
+        cint = return_level_cint(
+            jl_model,
+            confidence_level=confidence_level,
+            return_period=return_period,
+            dist=dist,
+            threshold_pareto=threshold_pareto,
+            nobs_pareto=nobs_pareto,
+            nobsperblock_pareto=nobsperblock_pareto,
+            method=method,
         )
-        if return_type == "param":
-            cint = param_cint(
-                jl_model, confidence_level=confidence_level, bayesian=True
-            )
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model,
-                confidence_level=confidence_level,
-                return_period=return_period,
-                bayesian=True,
-            )
-        return cint
-
-    except JuliaError:
-        warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
-        )
-
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
-
-
-def gpfitbayes(
-    y: list[float],
-    scalecov: list[list] = (),
-    shapecov: list[list] = (),
-    niter: int = 5000,
-    warmup: int = 2000,
-    return_type: str = "param",
-    confidence_level: float = 0.95,
-    return_period: float = 100,
-    main_dim_length: int = 1,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
-) -> list:
-    r"""
-    Fit an array to a Pareto distribution using bayesian inference from Extremes.jl.
-
-    Parameters
-    ----------
-    y : list[float]
-        Data to be fitted.
-    scalecov : list[list]
-        List of data lists to be used as covariates for the scale parameter.
-    shapecov : list[list]
-        List of data lists to be used as covariates for the shape parameter.
-    niter : int
-        The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
-    warmup : int
-        The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
-    return_type : str
-        Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
-    return_period : float
-        Return period used to compute the return level.
-    main_dim_length : bool
-        Length of the dimension used to compute the return level.
-    threshold_pareto : float
-        Threshold.
-    nobs_pareto : int,
-        Number of total observation.
-    nobsperblock_pareto : int,
-        Number of observation per block.
-
-    Returns
-    -------
-    List
-        List containing the estimated parameters and the lower and upper bounds for the confidence interval
-        of each parameter.
-    """
-    if return_type not in ["param", "returnlevel"]:
-        raise ValueError(
-            f"{return_type} is an invalid return_type. Must be 'param' or 'returnlevel'."
-        )
-    jl_y = py_list_to_jl_vector(y)
-    jl_logscalecov, jl_shapecov = jl_variable_fit_parameters(
-        scalecov
-    ), jl_variable_fit_parameters(shapecov)
-    nparams = 2 + len(scalecov) + len(shapecov)
-    try:
-        jl_model = Extremes.gpfitbayes(
-            jl_y,
-            logscalecov=jl_logscalecov,
-            shapecov=jl_shapecov,
-            niter=niter,
-            warmup=warmup,
-        )
-        if return_type == "param":
-            cint = param_cint(
-                jl_model, confidence_level=confidence_level, bayesian=True
-            )
-        elif return_type == "returnlevel":
-            cint = return_level_cint(
-                jl_model,
-                confidence_level=confidence_level,
-                return_period=return_period,
-                pareto=True,
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-                bayesian=True,
-            )
-        else:
-            raise ValueError("Invalid return_type. Must be 'param' or 'returnlevel'.")
 
         return cint
 
     except JuliaError:
         warnings.warn(
-            "There was an error in fitting the data to a genextreme distribution. "
+            f"There was an error in fitting the data to a {dist} distribution using {method}. "
             "Returned parameters are numpy.nan.",
             UserWarning,
         )
 
-        if return_type == "param":
-            empty_param = np.repeat(np.nan, nparams)
-            return [empty_param, empty_param, empty_param]
-        elif return_type == "returnlevel":
-            empty_returnlevel = np.repeat(np.nan, main_dim_length)
-            return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
+        empty_returnlevel = np.repeat(np.nan, main_dim_length)
+        return [empty_returnlevel, empty_returnlevel, empty_returnlevel]
 
 
 def fit(
@@ -775,7 +440,7 @@ def fit(
     warmup: int = 2000,
     confidence_level: float = 0.95,
 ) -> xr.Dataset:
-    r"""Fit an array to a univariate distribution along the time dimension.
+    r"""Fit an array to a univariate distribution along a given dimension.
 
     Parameters
     ----------
@@ -981,77 +646,21 @@ def _fitfunc_param_cint(
             ]
         )
 
-    if method == "ML":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            param_list = gevfit(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                confidence_level=confidence_level,
-            )
+    param_list = extremefit_param(
+        arr_pruned,
+        dist=dist,
+        method=method,
+        location_cov=locationcov_data_pruned,
+        scale_cov=scalecov_data_pruned,
+        shape_cov=shapecov_data_pruned,
+        niter=niter,
+        warmup=warmup,
+        confidence_level=confidence_level,
+    )
 
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            param_list = gumbelfit(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                confidence_level=confidence_level,
-            )
-
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            param_list = gpfit(
-                arr_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                confidence_level=confidence_level,
-            )
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-
-    elif method == "PWM":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            param_list = gevfitpwm(arr_pruned, confidence_level=confidence_level)
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            param_list = gumbelfitpwm(arr_pruned, confidence_level=confidence_level)
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            param_list = gpfitpwm(arr_pruned, confidence_level=confidence_level)
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-
-    elif method == "BAYES":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            param_list = gevfitbayes(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-            )
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            param_list = gumbelfitbayes(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-            )
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            param_list = gpfitbayes(
-                arr_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-            )
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-    else:
-        raise ValueError(f"Fitting method not recognized: {method}")
+    if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
+        shape_pos = 2 + n_loccov + n_scalecov
+        param_list = change_sign_param(param_list, shape_pos, n_shapecov + 1)
 
     params = [
         exponentiate_logscale(
@@ -1328,121 +937,23 @@ def _fitfunc_return_level(
             ]
         )
 
-    if method == "ML":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            return_level_list = gevfit(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            return_level_list = gumbelfit(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            return_level_list = gpfit(
-                arr_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-            )
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-
-    elif method == "PWM":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            return_level_list = gevfitpwm(
-                arr_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            return_level_list = gumbelfitpwm(
-                arr_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            return_level_list = gpfitpwm(
-                arr_pruned,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-            )
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-
-    elif method == "BAYES":
-        if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-            return_level_list = gevfitbayes(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-            return_level_list = gumbelfitbayes(
-                arr_pruned,
-                locationcov=locationcov_data_pruned,
-                scalecov=scalecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-            )
-        elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            return_level_list = gpfitbayes(
-                arr_pruned,
-                scalecov=scalecov_data_pruned,
-                shapecov=shapecov_data_pruned,
-                niter=niter,
-                warmup=warmup,
-                confidence_level=confidence_level,
-                main_dim_length=main_dim_length,
-                return_period=return_period,
-                return_type="returnlevel",
-                threshold_pareto=threshold_pareto,
-                nobs_pareto=nobs_pareto,
-                nobsperblock_pareto=nobsperblock_pareto,
-            )
-
-        else:
-            raise ValueError(f"Fitting distribution not recognized: {dist}")
-    else:
-        raise ValueError(f"Fitting method not recognized: {method}")
+    return_level_list = extremefit_rtnlv(
+        arr_pruned,
+        dist=dist,
+        method=method,
+        location_cov=locationcov_data_pruned,
+        scale_cov=scalecov_data_pruned,
+        shape_cov=shapecov_data_pruned,
+        niter=niter,
+        warmup=warmup,
+        confidence_level=confidence_level,
+        main_dim_length=main_dim_length,
+        return_period=return_period,
+        return_type="returnlevel",
+        threshold_pareto=threshold_pareto,
+        nobs_pareto=nobs_pareto,
+        nobsperblock_pareto=nobsperblock_pareto,
+    )
 
     if not stationary:
         return_level_list = _recover_nan(nan_mask, return_level_list)

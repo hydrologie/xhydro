@@ -76,7 +76,7 @@ def jl_variable_fit_parameters(covariate_list: list[list]):
 
 def param_cint(
     jl_model,
-    bayesian: bool = False,
+    method: str,
     confidence_level: float = 0.95,
 ) -> list:
     r"""
@@ -86,9 +86,9 @@ def param_cint(
     ----------
     jl_model : Julia.Extremes.AbstractExtremeValueModel
         The fitted Julia model from which parameters and confidence intervals are to be extracted.
-    bayesian : bool
-        If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
-        Defaults to False.
+    method : str
+        The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+        or Bayesian inference (BAYES).
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
         Defaults to 0.95.
@@ -99,7 +99,7 @@ def param_cint(
         A list containing NumPy arrays for the estimated parameters, and upper bounds for the confidence interval
         of each parameter.
     """
-    if bayesian:
+    if method == "BAYES":
         jl_params_sims = jl_model.sim.value
 
         py_params_sims = [
@@ -126,13 +126,13 @@ def param_cint(
 
 def return_level_cint(
     jl_model,
+    dist: str,
+    method,
     confidence_level: float = 0.95,
     return_period: float = 100,
-    pareto: bool = False,
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
-    bayesian: bool = False,
 ) -> dict[str, list[float]]:
     r"""
     Return a list of retun level and confidence intervals for a given Julia fitted model.
@@ -141,23 +141,23 @@ def return_level_cint(
     ----------
     jl_model : Julia.Extremes.AbstractExtremeValueModel
         The fitted Julia model from which parameters and confidence intervals are to be extracted.
+    dist : str or rv_continuous
+        The univariate distribution to fit, either as a string or as a distribution object.
+        Supported distributions include genextreme, gumbel_r, genpareto.
+    method : str
+        The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
+        or Bayesian inference (BAYES).
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
         Defaults to 0.95.
     return_period : float
         Return period used to compute the return level.
-    pareto : bool
-        If True, the return level parameters and confidence intervals will be based on the Pareto distribution.
-        Defaults to False.
     threshold_pareto : float
-        Threshold.
+        Required when when dist=genpareto and return_type=returnlevel. Threshold.
     nobs_pareto : int,
-        Number of total observation.
+        Required when when dist=genpareto and return_type=returnlevel. Number of total observation.
     nobsperblock_pareto : int,
-        Number of observation per block.
-    bayesian : bool
-        If True, the function will calculate parameters and confidence intervals based on Bayesian simulations.
-        Defaults to False.
+        Required when dist=genpareto and return_type=returnlevel. Number of observation per block.
 
     Returns
     -------
@@ -166,7 +166,7 @@ def return_level_cint(
         of each parameter.
     """
     try:
-        if pareto:
+        if dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
             if (
                 threshold_pareto is None
                 or nobs_pareto is None
@@ -186,7 +186,7 @@ def return_level_cint(
         else:
             jl_return_level = Extremes.returnlevel(jl_model, return_period)
 
-        if bayesian:
+        if method == "BAYES":
             py_return_level_m = np.array(jl_vector_to_py_list(jl_return_level.value))
             shp = jl_return_level.value.shape
             py_return_level = np.mean(np.reshape(py_return_level_m, shp[::-1]), axis=1)
