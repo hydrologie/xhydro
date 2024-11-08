@@ -4,7 +4,7 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`)
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
