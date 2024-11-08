@@ -2,6 +2,15 @@
 Changelog
 =========
 
+v0.5.0 (unreleased)
+-------------------
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+land_use_classification default collection has been changed to io-lulc-annual-v02 as previous one will be deprecated december 2024.
+Also added some collection, year, resolution and history attributes to xarray output of land_use_classification
+
 v0.4.1 (2024-11-07)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`).
