@@ -472,13 +472,11 @@ def _count_pixels_from_bbox(
 
     ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
 
-    # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
     ds.attrs = merged.attrs
     ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
         "spatial_resolution"
     ]
     return ds
-    # return df.T
 
 
 def land_use_classification(
