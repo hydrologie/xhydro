@@ -472,13 +472,11 @@ def _count_pixels_from_bbox(
 
     ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
 
-    # ds = ds.assign_coords({'raster:bands': merged['raster:bands'].values})
     ds.attrs = merged.attrs
     ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
         "spatial_resolution"
     ]
     return ds
-    # return df.T
 
 
 def land_use_classification(
@@ -542,12 +540,10 @@ def land_use_classification(
         )
         for idx in pbar
     ]
-    # output_dataset = pd.concat(liste, axis=0).fillna(0)
     output_dataset = xr.concat(liste, dim=dim_name).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
         # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
-        # output_dataset = output_dataset.to_xarray()
         for var in output_dataset:
             output_dataset[var].attrs = {"units": "percent"}
             output_dataset[var].attrs["history"] = update_history(
