@@ -544,7 +544,6 @@ def land_use_classification(
 
     if output_format in ("xarray", "xr.Dataset"):
         # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
-        # output_dataset = output_dataset.to_xarray()
         for var in output_dataset:
             output_dataset[var].attrs = {"units": "percent"}
             output_dataset[var].attrs["history"] = update_history(
