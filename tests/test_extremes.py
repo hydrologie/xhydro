@@ -962,7 +962,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -989,7 +989,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -1018,7 +1018,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert (
             (p["Exceedance_lower"] < p["Exceedance"])
             & (p["Exceedance"] < p["Exceedance_upper"])
@@ -1052,7 +1052,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -1088,7 +1088,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -1167,8 +1167,8 @@ class Testfit:
 
         with pytest.warns(
             UserWarning,
-            match="The fitting data contains fewer entries than the number of parameters for the given \
-            distribution. Returned parameters are numpy.nan",
+            match="The fitting data contains fewer entries than the number of parameters for the given distribution. "
+            "Returned parameters are numpy.nan",
         ):
             p = fit(
                 data_fre.isel(Year=slice(1, 2)),
@@ -1182,7 +1182,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert np.isnan(p.to_array().values).all()
         np.testing.assert_array_equal(
             p.coords["dparams"].values,
@@ -1206,8 +1206,8 @@ class Testfit:
 
         with pytest.warns(
             UserWarning,
-            match="The fitting data contains fewer entries than the number of parameters for the\
-                  given distribution. Returned parameters are numpy.nan",
+            match="The fitting data contains fewer entries than the number of parameters for the given distribution. "
+            "Returned parameters are numpy.nan",
         ):
             p = return_level(
                 data_fre.isel(Year=slice(0, 5)),
@@ -1221,7 +1221,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["return_level"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert np.isnan(p.to_array().values).all()
         np.testing.assert_array_equal(
             p.coords["return_level"].values, np.array([1897, 1898, 1899, 1900, 1901])
@@ -1246,7 +1246,7 @@ class TestRtnlv:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["return_level"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert p.to_array().shape[1] == 1
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -1276,7 +1276,7 @@ class TestRtnlv:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["return_level"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -1317,7 +1317,7 @@ class TestRtnlv:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["return_level"]
-        assert p.attrs["estimator"] == "Maximum likelihood"
+        assert p.attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
         np.testing.assert_array_equal(
             p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
@@ -1654,8 +1654,8 @@ class TestError:
     def test_confinc_error_stat_param(self):
         with pytest.warns(
             UserWarning,
-            match="There was an error in fitting the data to a genpareto distribution\
-                  using ML. Returned parameters are numpy.nan",
+            match="There was an error in fitting the data to a genpareto distribution using ML. "
+            "Returned parameters are numpy.nan",
         ):
             lis = [1, -1, 1, -1, 1, -1]
             p = extremefit_param(lis, dist="genpareto", method="ML")
@@ -1671,8 +1671,8 @@ class TestError:
     def test_confinc_error_nostat(self):
         with pytest.warns(
             UserWarning,
-            match="There was an error in fitting the data to a genpareto distribution\
-                  using ML. Returned parameters are numpy.nan",
+            match="There was an error in fitting the data to a genpareto distribution using ML. "
+            "Returned parameters are numpy.nan",
         ):
             lis = [1, -1, 1, -1, 1, -1]
             lis_cov = [2, -2, 2, -2, 2, -2]
@@ -1691,8 +1691,8 @@ class TestError:
     def test_confinc_error_stat_rtnlv(self):
         with pytest.warns(
             UserWarning,
-            match="There was an error in fitting the data to a genextreme distribution\
-                  using ML. Returned parameters are numpy.nan.",
+            match="There was an error in fitting the data to a genextreme distribution using ML. "
+            "Returned parameters are numpy.nan.",
         ):
             lis = [1, -1, 1, -1, 1, -1]
             p = extremefit_rtnlv(lis, dist="genextreme", method="ML")
@@ -1703,8 +1703,8 @@ class TestError:
     def test_confinc_error_nostat_rtnlv(self):
         with pytest.warns(
             UserWarning,
-            match="There was an error in fitting the data to a gumbel_r distribution\
-                  using BAYES. Returned parameters are numpy.nan",
+            match="There was an error in fitting the data to a gumbel_r distribution using BAYES. "
+            "Returned parameters are numpy.nan",
         ):
             lis = [1, -1, 1, -1, 1, -1]
             lis_cov = [2, -2, 2, -2, 2, -2, -1]

@@ -552,16 +552,9 @@ def fit(
     )
     attrs = dict(
         long_name=f"{dist.name} parameters",
-        description=f"Parameters of the {dist.name} distribution",
-        method=method,
-        estimator=METHOD_NAMES[method].capitalize(),
-        scipy_dist=dist.name,
-        units="",
-        history=update_history(
-            f"Estimate distribution parameters by {METHOD_NAMES[method]} method along dimension {dim}.",
-            new_name="fit",
-            data=ds,
-        ),
+        dist=dist.name,
+        method=METHOD_NAMES[method].capitalize(),
+        confidence_level=confidence_level,
     )
     out.attrs.update(attrs)
     return out
@@ -835,17 +828,11 @@ def return_level(
         ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
     )
     attrs = dict(
-        long_name=f"{dist.name} parameters",
-        description=f"Parameters of the {dist.name} distribution",
-        method=method,
-        estimator=METHOD_NAMES[method].capitalize(),
-        scipy_dist=dist.name,
-        units="",
-        history=update_history(
-            f"Estimate distribution parameters by {METHOD_NAMES[method]} method along dimension {dim}.",
-            new_name="fit",
-            data=ds,
-        ),
+        long_name=f"Return level estimation",
+        dist=dist.name,
+        method=METHOD_NAMES[method].capitalize(),
+        return_period=return_period,
+        confidence_level=confidence_level,
     )
     out.attrs.update(attrs)
     return out
