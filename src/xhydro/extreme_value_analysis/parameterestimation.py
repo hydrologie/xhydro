@@ -495,7 +495,7 @@ def fit(
         ds,
         vars,
     )
-    dist_params = get_params(dist, shapecov, locationcov, scalecov)
+    dist_params = _get_params(dist, shapecov, locationcov, scalecov)
     dist = get_dist(dist)
 
     # Covariates
@@ -772,7 +772,7 @@ def return_level(
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
     return_level_dim = ["return_level"] if stationary else ds[dim].values
 
-    dist_params = get_params(dist, shapecov, locationcov, scalecov)
+    dist_params = _get_params(dist, shapecov, locationcov, scalecov)
     dist = get_dist(dist)
 
     # Covariates
@@ -949,7 +949,6 @@ def _fitfunc_return_level(
         confidence_level=confidence_level,
         main_dim_length=main_dim_length,
         return_period=return_period,
-        return_type="returnlevel",
         threshold_pareto=threshold_pareto,
         nobs_pareto=nobs_pareto,
         nobsperblock_pareto=nobsperblock_pareto,
@@ -961,7 +960,7 @@ def _fitfunc_return_level(
     return tuple(return_level_list)
 
 
-def get_params(
+def _get_params(
     dist: str, shapecov: list[str], locationcov: list[str], scalecov: list[str]
 ) -> list:
     r"""Return a list of parameter names based on the specified distribution and covariates.
@@ -1011,8 +1010,6 @@ def get_params(
         new_param_names = insert_covariates(param_names, scalecov, "scale")
         new_param_names = insert_covariates(new_param_names, shapecov, "shape")
         return new_param_names
-    else:
-        raise ValueError(f"Unknown distribution: {dist}")
 
 
 def _check_fit_params(
@@ -1064,10 +1061,10 @@ def _check_fit_params(
     """
     # Method and distribution names have to be among the recognized ones
     if method not in METHOD_NAMES:
-        raise ValueError(f"Fitting method not recognized: {method}")
+        raise ValueError(f"Unrecognized method: {method}")
 
     if dist not in DIST_NAMES.keys() and str(type(dist)) not in DIST_NAMES.values():
-        raise ValueError(f"Fitting distribution not recognized: {dist}")
+        raise ValueError(f"Unrecognized distribution: {dist}")
 
     # PWM estimation does not work in non-stationary context
     if method == "PWM" and (
@@ -1116,8 +1113,8 @@ def _check_fit_params(
     for var in vars:
         if var not in ds.data_vars:
             raise ValueError(
-                f"Given variable {var} is not in the given dataset's data variables. "
-                f"Dataset's variables are:\n{ds.data_vars}"
+                f"{var} is not a variable in the Dataset. "
+                f"Dataset's variables are: {list(ds.data_vars)}"
             )
 
     # Return period has to be strictly positive

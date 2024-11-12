@@ -121,7 +121,9 @@ def param_cint(
         return [params, cint_lower, cint_upper]
 
     except JuliaError:
-        warnings.warn(f"There was an error in computing confidence interval.")
+        warnings.warn(
+            f"There was an error in computing confidence interval.", UserWarning
+        )
 
 
 def return_level_cint(
