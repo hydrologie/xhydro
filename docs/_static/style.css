@@ -1,0 +1,66 @@
+@import url("styles/furo.css");
+
+/* extend furo for inline ".only-dark" elements */
+body .only-dark-inline,
+body .only-light-inline {
+  display: none !important;
+}
+
+@media not print {
+  body[data-theme="dark"] .only-dark-inline,
+  body[data-theme="light"] .only-light-inline {
+    display: inline !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) .only-dark-inline{
+      display: inline !important;
+    }
+  }
+  @media (prefers-color-scheme: light) {
+    body:not([data-theme="dark"]) .only-light-inline{
+      display: inline !important;
+    }
+  }
+}
+
+@media print {
+  .only-light-inline{
+    display: inline !important;
+  }
+  .only-dark-inline{
+    display: none !important;
+  }
+}
+
+img.xhydro-logo-small.only-dark-inline {
+    width: 125px;
+    height: 125px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    border-image-width: 0;
+    background-image: url("xhydro-logo-small-transparent.png");
+}
+
+img.xhydro-logo-small.only-light-inline {
+    width: 125px;
+    height: 125px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    border-image-width: 0;
+    background-image: url("xhydro-logo-small-light.png");
+}
+
+img.xhydro-logo-small.no-theme {
+  display: none;
+  width: 0;
+}
+
+button.copybtn.copybtn svg {
+  stroke: var(--color-copybutton);
+}

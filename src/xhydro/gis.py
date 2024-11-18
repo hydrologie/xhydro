@@ -27,6 +27,8 @@ from shapely import Point
 from tqdm.auto import tqdm
 from xrspatial import aspect, slope
 
+from xhydro.utils import update_history
+
 __all__ = [
     "land_use_classification",
     "land_use_plot",
@@ -397,8 +399,8 @@ def surface_properties(
     return output_dataset
 
 
-def _merge_stac_dataset(catalog, bbox_of_interest, year):
-    search = catalog.search(collections=["io-lulc-9-class"], bbox=bbox_of_interest)
+def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
+    search = catalog.search(collections=[collection], bbox=bbox_of_interest)
     items = search.item_collection()
 
     # The STAC metadata contains some information we'll want to use when creating
@@ -435,15 +437,17 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year):
             raise TypeError(f"Expected year argument {year} to be a digit.")
 
     merged = merged.sel(time=year).min("time")
+    merged.attrs["year"] = year
+    merged.attrs["collection"] = collection
     return merged, item
 
 
 def _count_pixels_from_bbox(
-    gdf, idx, catalog, unique_id, values_to_classes, year, pbar
+    gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection
 ):
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
-    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
     epsg = item.properties["proj:epsg"]
 
     # Mask with polygon
@@ -458,20 +462,28 @@ def _count_pixels_from_bbox(
 
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
+        dim_name = unique_id
     else:
         column_name = [idx]
+        dim_name = "index"
     df.columns = column_name
 
     pbar.set_description(f"Spatial operations: processing site {column_name[0]}")
 
-    return df.T
+    ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
+
+    ds.attrs = merged.attrs
+    ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
+        "spatial_resolution"
+    ]
+    return ds
 
 
 def land_use_classification(
     gdf: gpd.GeoDataFrame,
     unique_id: str | None = None,
     output_format: str = "geopandas",
-    collection="io-lulc-9-class",
+    collection="io-lulc-annual-v02",
     year: str | int = "latest",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """Calculate land use classification.
@@ -515,35 +527,43 @@ def land_use_classification(
         v: "_".join(("pct", k.lower().replace(" ", "_")))
         for k, v in class_names.items()
     }
+    if unique_id is None:
+        dim_name = "index"
+    else:
+        dim_name = unique_id
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
-    output_dataset = pd.concat(
-        [
-            _count_pixels_from_bbox(
-                gdf, idx, catalog, unique_id, values_to_classes, year, pbar
-            )
-            for idx in pbar
-        ],
-        axis=0,
-    ).fillna(0)
-
-    if unique_id is not None:
-        output_dataset.index.name = unique_id
+    liste = [
+        _count_pixels_from_bbox(
+            gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection.id
+        )
+        for idx in pbar
+    ]
+    output_dataset = xr.concat(liste, dim=dim_name).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
         # TODO : Determine if cf-compliant names exist for physiographical data (area, perimeter, etc.)
-        output_dataset = output_dataset.to_xarray()
         for var in output_dataset:
             output_dataset[var].attrs = {"units": "percent"}
-    return output_dataset
+            output_dataset[var].attrs["history"] = update_history(
+                "Calculated land_use_classification"
+            )
+        return output_dataset
+    else:
+        if unique_id is None:
+            df = output_dataset.to_dataframe()
+            df.index.name = None
+            return df
+        else:
+            return output_dataset.to_dataframe()
 
 
 def land_use_plot(
     gdf: gpd.GeoDataFrame,
     idx: int = 0,
     unique_id: str | None = None,
-    collection: str = "io-lulc-9-class",
+    collection: str = "io-lulc-annual-v02",
     year: str | int = "latest",
 ) -> None:
     """Plot a land use map for a specific year and watershed.
@@ -589,7 +609,7 @@ def land_use_plot(
 
     bbox_of_interest = gdf.total_bounds
 
-    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year)
+    merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
 
     epsg = ProjectionExtension.ext(item).epsg
 

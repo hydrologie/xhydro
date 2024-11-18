@@ -11,7 +11,7 @@ import pooch
 import pytest
 import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
-from xclim.testing.utils import open_dataset as _open_dataset
+from xclim.testing.utils import nimbus as _nimbus
 
 from xhydro.testing.helpers import (
     TESTDATA_BRANCH,
@@ -28,26 +28,30 @@ def threadsafe_data_dir(tmp_path_factory) -> Path:
     yield data_dir
 
 
-@pytest.fixture(scope="session")
-def open_dataset(threadsafe_data_dir):
-    # FIXME: This is a temporary fix against the latest xclim-testdata release. It should be removed once xclim itself is updated.
-    def _open_session_scoped_file(
-        file: str | PathLike, branch: str = "v2023.12.14", **xr_kwargs
-    ):
-        xr_kwargs.setdefault("engine", "h5netcdf")
-        return _open_dataset(
-            file, cache_dir=threadsafe_data_dir, branch=branch, **xr_kwargs
-        )
+@pytest.fixture(autouse=True, scope="session")
+def deveraux(threadsafe_data_dir, worker_id) -> pooch.Pooch:
+    return _deveraux(
+        repo=TESTDATA_REPO_URL,
+        branch=TESTDATA_BRANCH,
+        cache_dir=(
+            TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir
+        ),
+    )
 
-    return _open_session_scoped_file
+
+@pytest.fixture(autouse=True, scope="session")
+def nimbus(threadsafe_data_dir, worker_id) -> pooch.Pooch:
+    kwargs = {}
+    if worker_id != "master":
+        kwargs["cache_dir"] = threadsafe_data_dir
+    return _nimbus(**kwargs)
 
 
 @pytest.fixture
-def era5_example(open_dataset):
+def era5_example(nimbus):
     # Prepare a dataset with the required fields
-    ds = open_dataset("ERA5/daily_surface_cancities_1990-1993.nc")[
-        ["huss", "pr", "snw"]
-    ]
+    file = nimbus.fetch("ERA5/daily_surface_cancities_1990-1993.nc")
+    ds = xr.open_dataset(file)[["huss", "pr", "snw"]]
     ds = ds.rename({"huss": "hus"})
 
     # Fake Geopotential field
@@ -94,17 +98,6 @@ def era5_example(open_dataset):
         },
     )
     return ds
-
-
-@pytest.fixture(autouse=True, scope="session")
-def deveraux(threadsafe_data_dir, worker_id) -> pooch.Pooch:
-    return _deveraux(
-        repo=TESTDATA_REPO_URL,
-        branch=TESTDATA_BRANCH,
-        cache_dir=(
-            TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir
-        ),
-    )
 
 
 @pytest.fixture(scope="session")

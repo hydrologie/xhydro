@@ -218,10 +218,25 @@ def format_input(
         if not all(
             v in ds for v in ["lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"]
         ):
+            missing = {
+                "lon",
+                "lat",
+                "orog",
+                "time",
+                "tasmax",
+                "tasmin",
+                "pr",
+            }.difference(ds.variables)
             raise ValueError(
                 f"The dataset is missing the following required variables for Hydrotel: "
-                f"{set(ds.variables).difference(['lon', 'lat', 'orog', 'time', 'tasmax', 'tasmin', 'pr'])}."
+                f"{missing}."
             )
+
+        # Remove unused variables
+        ds = ds.drop_vars(
+            set(ds.data_vars) - {"lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"}
+        )
+
         # Convert units
         if _is_rate(ds["pr"].attrs.get("units", "")):
             ds["pr"] = xc.units.rate2amount(ds["pr"])
@@ -285,6 +300,8 @@ def format_input(
             mask = ~ds.pr.isnull().all(
                 dim="time"
             )  # FIXME: The mask can be written as an argument once we drop xscen <=0.9.1.
+            if xc.core.utils.uses_dask(mask):
+                mask = mask.compute()
             ds = xs.utils.stack_drop_nans(ds, mask=mask, new_dim="station")
 
             # Add station ID

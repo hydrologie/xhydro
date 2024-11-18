@@ -144,19 +144,31 @@ todo_include_todos = True
 #
 html_theme = "furo"
 
-# Theme options are theme-specific and customize the look and feel of a
-# theme further.  For a list of options available for each theme, see the
-# documentation.
+# Theme options are theme-specific and customize the look and feel of a theme further.
+# For a list of options available for each theme, see the documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "light_logo": "xhydro-logo-light.png",
+    "dark_logo": "xhydro-logo-transparent.png",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 if not os.path.exists("_static"):
     os.makedirs("_static")
-html_static_path = ["_static"]
+html_static_path = ["_static", "logos"]
 
+html_sidebars = {
+    "**": [
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
+    ]
+}
 
 # -- Options for HTMLHelp output ---------------------------------------
 
@@ -218,3 +230,7 @@ texinfo_documents = [
         "hydrology",
     ),
 ]
+
+
+def setup(app):
+    app.add_css_file("style.css")

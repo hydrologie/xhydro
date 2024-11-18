@@ -4,17 +4,35 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+land_use_classification default collection has been changed to io-lulc-annual-v02 as previous one will be deprecated december 2024. (:pull:`227`).
+Also added some collection, year, resolution and history attributes to xarray output of land_use_classification. (:pull:`227`).
+
+v0.4.1 (2024-11-07)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * A `periods` parameter was added to ``frequency_analysis.local.fit`` to compute multiple separate periods with a single call. (:pull:`219`).
+* In ``xhydro.cc.sampled_indicators``, the `delta_type` argument can now be a dictionary or None, in which case the attribute `delta_kind` is used. (:pull:`220`).
+* In ``xhydro.cc.sampled_indicators``, weights along a `time` or `horizon` dimension will no longer reduce that dimension. (:pull:`220`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a bug in `xhydro.modelling.format_input` where the function would fail if the input data was a `dask` array. (:pull:`214`).
+* The `executable` parameter in the Hydrotel model class is now always required. (:pull:`214`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The `xhydro` testing utilities have been rewritten to use `pooch` for downloading and caching testing datasets from `hydrologie/xhydro-testdata`. (:pull:`212`).
 * The `xhydro` testing utilities now require `pytest-xdist` as a development dependency. (:pull:`212`).
-* Many core dependencies have been updated to more modern versions. (:pull:`218`).
+* Many core dependencies have been updated to more modern versions. (:pull:`218`, :pull:`228`).
+* The `delta_type` argument in ``xhydro.cc.sampled_indicators`` has been renamed to `delta_kind` and is no longer positional. (:pull:`220`).
+* The ``xhydro.pmp`` module has been moved to ``xhydro.indicators.pmp``. (:pull:`226`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -22,6 +40,9 @@ Internal changes
 * Tests can now be run using the `pytest-xdist` plugin for distributed testing. See the `pytest-xdist documentation <https://pytest-xdist.readthedocs.io/en/stable/>`_ for more information. (:pull:`212`).
 * Several tests reliant on online servers and services have been marked as `online` to prevent them from running in contexts where internet access is limited. (:pull:`212`).
 * Many function docstrings and type hints have been updated for accuracy and precision. (:pull:`212`).
+* The `xHydro` project now has a set of logos for use in documentation, the readme, and other materials. (:pull:`217`).
+* ``xhydro.indicators`` is now a package with submodules for different types of indicators. Previous functions have been moved to a `generic` submodule and are imported at the top level for backwards compatibility. (:pull:`226`).
+* ``xh.testing.utils.publish_release_notes`` now has a `latest` parameter to print only the latest release notes. (:pull:`228`).
 
 v0.4.0 (2024-10-04)
 -------------------
