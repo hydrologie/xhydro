@@ -7,12 +7,7 @@ import pytest
 import xarray as xr
 
 try:
-    from xhydro.extreme_value_analysis.parameterestimation import (
-        extremefit_param,
-        extremefit_rtnlv,
-        fit,
-        return_level,
-    )
+    from xhydro.extreme_value_analysis.parameterestimation import fit, return_level
 except ImportError:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
@@ -1364,233 +1359,262 @@ class TestRtnlv:
 class TestGEV:
 
     def test_ml_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="ML"
-        )
+        p = fit(data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"])
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 3)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p,
-            [
-                np.array([1.48234111, -1.95707289, -0.21742419]),
-                np.array([1.44956045, -2.11659759, -0.3424303]),
-                np.array([1.51512177, -1.79754818, -0.09241807]),
-            ],
+            p.to_array().values,
+            np.array(
+                [
+                    [0.21742419, 1.48234111, 0.14127133],
+                    [0.09241807, 1.44956045, 0.12044072],
+                    [0.3424303, 1.51512177, 0.16570467],
+                ]
+            ),
         )
 
     def test_pwm_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="PWM"
+        p = fit(
+            data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 3)
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p[0], np.array([1.4807491, -1.9727151, -0.19631625])
+            p.to_array().values[0], np.array([0.19631625, 1.4807491, 0.13907873])
         )
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
 
     def test_bayes_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="BAYES"
+        p = fit(
+            data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 3)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
     def test_ml_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="ML"
+        p = return_level(
+            data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p, [np.array([1.89310525]), np.array([1.81018661]), np.array([1.9760239])]
+            p.to_array().values, np.array([[1.89310525], [1.81018661], [1.9760239]])
         )
 
     def test_pwm_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="PWM"
+        p = return_level(
+            data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        np.testing.assert_array_almost_equal(p[0], np.array([1.90204717]))
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        np.testing.assert_array_almost_equal(
+            p.to_array().values[0], np.array([1.90204717])
+        )
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
     def test_bayes_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="genextreme", method="BAYES"
+        p = return_level(
+            data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
 
 class TestGumbel:
 
     def test_ml_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="ML"
-        )
+        p = fit(data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"])
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p,
-            [
-                np.array([1.4662802, -1.97031864]),
-                np.array([1.43506132, -2.12279295]),
-                np.array([1.49749908, -1.81784432]),
-            ],
+            p.to_array().values,
+            np.array(
+                [
+                    [1.4662802, 0.13941243],
+                    [1.43506132, 0.11969685],
+                    [1.49749908, 0.1623754],
+                ]
+            ),
         )
 
     def test_pwm_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="PWM"
-        )
+        p = fit(data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"])
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
-        np.testing.assert_array_almost_equal(p[0], np.array([1.46903519, -2.12428244]))
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
+        np.testing.assert_array_almost_equal(
+            p.to_array().values[0], np.array([1.46903519, 0.1195187])
+        )
 
     def test_bayes_param(self, data_fre):
-        p = extremefit_param(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="BAYES"
+        p = fit(
+            data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
     def test_ml_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="ML"
+        p = return_level(
+            data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p, [np.array([2.10759817]), np.array([1.99555233]), np.array([2.21964401])]
+            p.to_array().values, np.array([[2.10759817], [1.99555233], [2.21964401]])
         )
 
     def test_pwm_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="PWM"
+        p = return_level(
+            data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        np.testing.assert_array_almost_equal(p[0], np.array([2.01883904]))
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        np.testing.assert_array_almost_equal(
+            p.to_array().values[0], np.array([2.01883904])
+        )
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
     def test_bayes_rtnlv(self, data_fre):
-        p = extremefit_rtnlv(
-            list(data_fre["SeaLevel"].values), dist="gumbel_r", method="BAYES"
+        p = return_level(
+            data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["SeaLevel_lower"] < p["SeaLevel"])
+            & (p["SeaLevel"] < p["SeaLevel_upper"])
+        ).values.all()
 
 
 class TestPareto:
 
     def test_ml_param(self, data_rain):
-        p = extremefit_param(
-            list(data_rain["Exceedance"].values), dist="genpareto", method="ML"
+        p = fit(
+            data_rain, dist="genpareto", method="ML", dim="Date", vars=["Exceedance"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p,
-            [
-                np.array([2.0068965, 0.1844927]),
-                np.array([1.75439402, -0.01385753]),
-                np.array([2.25939898, 0.38284292]),
-            ],
+            p.to_array().values,
+            np.array(
+                [
+                    [7.44019083, 0.1844927],
+                    [5.77994415, -0.01385753],
+                    [9.57733124, 0.38284292],
+                ]
+            ),
         )
 
     def test_pwm_param(self, data_rain):
-        p = extremefit_param(
-            list(data_rain["Exceedance"].values), dist="genpareto", method="PWM"
+        p = fit(
+            data_rain, dist="genpareto", method="PWM", dim="Date", vars=["Exceedance"]
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
-        np.testing.assert_array_almost_equal(p[0], np.array([1.98773995, 0.19651587]))
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
+        np.testing.assert_array_almost_equal(
+            p.to_array().values[0], np.array([7.29901897, 0.19651587])
+        )
 
     def test_bayes_param(self, data_rain):
-        p = extremefit_param(
-            list(data_rain["Exceedance"].values), dist="genpareto", method="BAYES"
+        p = p = fit(
+            data_rain, dist="genpareto", method="BAYES", vars=["Exceedance"], dim="Date"
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 2)
-        assert ((p[1] < p[0]) & (p[0] < p[2])).all()
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
 
     def test_ml_rtnlv(self, data_rain):
-        p = extremefit_rtnlv(
-            list(data_rain["Exceedance"].values),
+        p = return_level(
+            data_rain,
             dist="genpareto",
             method="ML",
+            dim="Date",
+            vars=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
         np.testing.assert_array_almost_equal(
-            p,
-            [
-                np.array([106.32558691]),
-                np.array([65.48163774]),
-                np.array([147.16953608]),
-            ],
+            p.to_array().values,
+            np.array([[106.32558691], [65.48163774], [147.16953608]]),
         )
 
     def test_pwm_rtnlv(self, data_rain):
-        p = extremefit_rtnlv(
-            list(data_rain["Exceedance"].values),
+        p = return_level(
+            data_rain,
             dist="genpareto",
             method="PWM",
+            dim="Date",
+            vars=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
         )
-
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        np.testing.assert_array_almost_equal(p[0], np.array([107.99657119]))
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        np.testing.assert_array_almost_equal(
+            p.to_array().values[0], np.array([107.99657119])
+        )
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
 
     def test_bayes_rtnlv(self, data_rain):
-        p = extremefit_rtnlv(
-            list(data_rain["Exceedance"].values),
+        p = return_level(
+            data_rain,
             dist="genpareto",
             method="BAYES",
+            dim="Date",
+            vars=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
         )
 
-        assert isinstance(p, list)
-        assert np.shape(p) == (3, 1)
-        assert (p[1] < p[0]) & (p[0] < p[2])
+        assert (
+            (p["Exceedance_lower"] < p["Exceedance"])
+            & (p["Exceedance"] < p["Exceedance_upper"])
+        ).values.all()
 
 
 class TestError:
@@ -1615,109 +1639,134 @@ class TestError:
 
     def test_extremefit_rtnlv_error(self, data_rain):
 
-        with pytest.raises(
-            ValueError, match="Fitting distribution XXX or method YYY not recognized"
-        ):
-            extremefit_rtnlv(
-                list(data_rain["Exceedance"].values),
+        with pytest.raises(ValueError, match="Unrecognized distribution: XXX"):
+            return_level(
+                data_rain,
                 dist="XXX",
-                method="YYY",
+                method="BAYES",
+                dim="Date",
+                vars=["Exceedance"],
                 threshold_pareto=30,
                 nobs_pareto=17531,
                 nobsperblock_pareto=365,
             )
 
     def test_extremefit_param_error(self, data_fre):
-        with pytest.raises(
-            ValueError, match="Fitting distribution FFF or method AAA not recognized"
-        ):
-            extremefit_rtnlv(
-                list(data_fre["SeaLevel"].values), dist="FFF", method="AAA"
-            )
-
-    def test_extremefit_param_error(self, data_fre):
-        with pytest.raises(
-            ValueError, match="Fitting distribution WWW or method SSS not recognized"
-        ):
-            extremefit_param(
-                list(data_fre["SeaLevel"].values), dist="WWW", method="SSS"
+        with pytest.raises(ValueError, match="Unrecognized method: YYY"):
+            return_level(
+                data_rain,
+                dist="genpareto",
+                method="YYY",
+                dim="Date",
+                vars=["Exceedance"],
+                threshold_pareto=30,
+                nobs_pareto=17531,
+                nobsperblock_pareto=365,
             )
 
     def test_confinc_error(self, data_fre):
         with pytest.warns(
             UserWarning, match="There was an error in computing confidence interval."
         ):
-            extremefit_param(
-                list(data_fre["SeaLevel"].values), dist="genpareto", method="ML"
+            p = fit(
+                data_fre, dist="genpareto", method="ML", vars=["SeaLevel"], dim="Year"
             )
 
-    def test_confinc_error_stat_param(self):
-        with pytest.warns(
-            UserWarning,
-            match="There was an error in fitting the data to a genpareto distribution using ML. "
-            "Returned parameters are numpy.nan",
-        ):
-            lis = [1, -1, 1, -1, 1, -1]
-            p = extremefit_param(lis, dist="genpareto", method="ML")
-            np.testing.assert_array_equal(
-                p,
-                [
-                    np.array([np.nan, np.nan]),
-                    np.array([np.nan, np.nan]),
-                    np.array([np.nan, np.nan]),
-                ],
-            )
+        np.testing.assert_array_almost_equal(
+            p.to_array().values,
+            np.array([[2.87959631, -1.49978975], [np.nan, np.nan], [np.nan, np.nan]]),
+        )
 
     def test_confinc_error_nostat(self):
+        dataset = xr.Dataset(
+            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
+            coords={"pos": [0, 1, 2, 3, 4, -5]},
+        )
         with pytest.warns(
             UserWarning,
             match="There was an error in fitting the data to a genpareto distribution using ML. "
             "Returned parameters are numpy.nan",
         ):
-            lis = [1, -1, 1, -1, 1, -1]
-            lis_cov = [2, -2, 2, -2, 2, -2]
-            p = extremefit_param(
-                lis, scale_cov=[lis_cov], dist="genpareto", method="ML"
-            )
-            np.testing.assert_array_equal(
-                p,
-                [
-                    np.array([np.nan, np.nan, np.nan]),
-                    np.array([np.nan, np.nan, np.nan]),
-                    np.array([np.nan, np.nan, np.nan]),
-                ],
-            )
 
-    def test_confinc_error_stat_rtnlv(self):
-        with pytest.warns(
-            UserWarning,
-            match="There was an error in fitting the data to a genextreme distribution using ML. "
-            "Returned parameters are numpy.nan.",
-        ):
-            lis = [1, -1, 1, -1, 1, -1]
-            p = extremefit_rtnlv(lis, dist="genextreme", method="ML")
+            p = fit(
+                dataset,
+                dist="genpareto",
+                method="ML",
+                dim="pos",
+                scalecov=["n2"],
+                vars=["n"],
+            )
             np.testing.assert_array_equal(
-                p, [np.array([np.nan]), np.array([np.nan]), np.array([np.nan])]
+                p.to_array().values,
+                np.array(
+                    [
+                        [np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan],
+                    ]
+                ),
             )
 
     def test_confinc_error_nostat_rtnlv(self):
+        dataset = xr.Dataset(
+            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
+            coords={"pos": [0, 1, 2, 3, 4, -5]},
+        )
         with pytest.warns(
             UserWarning,
-            match="There was an error in fitting the data to a gumbel_r distribution using BAYES. "
+            match="There was an error in fitting the data to a genpareto distribution using BAYES. "
             "Returned parameters are numpy.nan",
         ):
-            lis = [1, -1, 1, -1, 1, -1]
-            lis_cov = [2, -2, 2, -2, 2, -2, -1]
-            p = extremefit_param(
-                lis, scale_cov=[lis_cov], dist="gumbel_r", method="BAYES"
+
+            p = fit(
+                dataset,
+                dist="genpareto",
+                method="BAYES",
+                dim="pos",
+                scalecov=["n2"],
+                vars=["n"],
             )
+
             np.testing.assert_array_equal(
-                p,
-                [
-                    np.array([np.nan, np.nan, np.nan]),
-                    np.array([np.nan, np.nan, np.nan]),
-                    np.array([np.nan, np.nan, np.nan]),
-                ],
+                p.to_array().values,
+                np.array(
+                    [
+                        [np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan],
+                    ]
+                ),
+            )
+
+    def test_rtnlv_error_nostat_rtnlv(self):
+        dataset = xr.Dataset(
+            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
+            coords={"pos": [0, 1, 2, 3, 4, -5]},
+        )
+        with pytest.warns(
+            UserWarning,
+            match="There was an error in fitting the data to a genextreme distribution using BAYES. "
+            "Returned parameters are numpy.nan",
+        ):
+
+            p = return_level(
+                dataset,
+                dist="genextreme",
+                method="BAYES",
+                dim="pos",
+                scalecov=["n2"],
+                vars=["n"],
+            )
+
+            np.testing.assert_array_equal(
+                p.to_array().values,
+                np.array(
+                    [
+                        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                    ]
+                ),
             )
 
     def test_dist_error(self, data_fre):

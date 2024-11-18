@@ -22,14 +22,15 @@ except ImportError as e:
     raise ImportError(JULIA_WARNING) from e
 
 __all__ = [
-    "_create_nan_mask",
-    "_recover_nan",
+    "create_nan_mask",
     "exponentiate_logscale",
     "insert_covariates",
     "jl_variable_fit_parameters",
     "param_cint",
+    "recover_nan",
     "remove_nan",
     "return_level_cint",
+    "return_nan",
 ]
 
 METHOD_NAMES = {
@@ -85,7 +86,7 @@ def param_cint(
     Parameters
     ----------
     jl_model : Julia.Extremes.AbstractExtremeValueModel
-        The fitted Julia model from which parameters and confidence intervals are to be extracted.
+        Fitted Julia model.
     method : str
         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
         or Bayesian inference (BAYES).
@@ -125,6 +126,12 @@ def param_cint(
             f"There was an error in computing confidence interval.", UserWarning
         )
 
+        return [
+            params,
+            np.array([np.nan] * len(params)),
+            np.array([np.nan] * len(params)),
+        ]
+
 
 def return_level_cint(
     jl_model,
@@ -142,24 +149,24 @@ def return_level_cint(
     Parameters
     ----------
     jl_model : Julia.Extremes.AbstractExtremeValueModel
-        The fitted Julia model from which parameters and confidence intervals are to be extracted.
+        Fitted Julia model.
     dist : str or rv_continuous
-        The univariate distribution to fit, either as a string or as a distribution object.
+        Distribution, either as a string or as a distribution object.
         Supported distributions include genextreme, gumbel_r, genpareto.
     method : str
         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
         or Bayesian inference (BAYES).
     confidence_level : float
-        The confidence level for the confidence interval of each parameter.
+        The confidence level (between 0 and 1) for the confidence interval of the return level.
         Defaults to 0.95.
     return_period : float
         Return period used to compute the return level.
     threshold_pareto : float
-        Required when when dist=genpareto and return_type=returnlevel. Threshold.
+        Threshold. Required when when dist=genpareto.
     nobs_pareto : int,
-        Required when when dist=genpareto and return_type=returnlevel. Number of total observation.
+        Number of total observation. Required when when dist=genpareto.
     nobsperblock_pareto : int,
-        Required when dist=genpareto and return_type=returnlevel. Number of observation per block.
+        Number of observation per block. Required when dist=genpareto.
 
     Returns
     -------
@@ -340,24 +347,26 @@ def change_sign_param(param_list, pos, n):
     return param_list_c
 
 
-def _create_nan_mask(*nested_lists) -> list:
+def create_nan_mask(*nested_lists) -> list:
     """
     Create a mask indicating NaN positions across multiple nested lists.
 
     Parameters
     ----------
-    nested_lists:
+    *nested_lists : tuple of list of lists # noqa: RST213
         Any number of nested lists (lists of lists).
 
     Returns
     -------
+    mask :
         A single list mask with True where NaNs are present for all the nested lists.
+        Example: np.array([True, False, True, True, False]).
 
     Notes
     -----
     This function is useful when the fitting data and covariates contains NaNs and needs to be pruned.
     To ensure that the covariate data remains aligned with the fitting data, the function returns a mask
-    with True values where ther is at leat one NaN.
+    with True values where there is at least one NaN either in the data or in the covariates.
 
     Examples
     --------
@@ -374,20 +383,22 @@ def _create_nan_mask(*nested_lists) -> list:
     return mask
 
 
-def _recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
+def recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
     """
     Recover the original length of lists by filling NaN in masked positions.
 
     Parameters
     ----------
-    mask:
+    mask : np.ndarray
         A masked array indicating positions of valid data.
-    lists:
+        Example: np.array([True, False, True, True, False]).
+    lists : list[list[float]]
         A list of arrays to be recovered.
 
     Returns
     -------
-    A list of lists with NaNs filled in the original masked positions.
+    list[list[float]]
+        A list of lists with NaNs filled in the original masked positions.
     """
     reco_list = []
     for lst in lists:
@@ -400,3 +411,20 @@ def _recover_nan(mask, lists: list[list[float]]) -> list[list[float]]:
             reco_list.append(recovered)
 
     return reco_list
+
+
+def return_nan(length):
+    """
+    Return a list of three lists, each containing NaN values of the specified length.
+
+    Parameters
+    ----------
+    length : int
+        The length of each list.
+
+    Returns
+    -------
+    list[list[float]
+        A list containing three lists, each of which contains NaN values of the given length.
+    """
+    return [np.array([np.nan] * length) for _ in range(3)]
