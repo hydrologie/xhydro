@@ -8,9 +8,9 @@ JULIA_WARNING = (
 
 try:
     from .julia_import import Extremes, jl
-    from .parameterestimation import fit
+    from .parameterestimation import fit, return_level
 
-    __all__ = ["Extremes", "fit", "jl"]
+    __all__ = ["Extremes", "fit", "jl", "return_level"]
 
 except ImportError:
     warnings.warn(JULIA_WARNING)

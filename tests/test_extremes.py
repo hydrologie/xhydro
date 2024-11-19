@@ -12,7 +12,7 @@ except ImportError:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 
     warnings.warn(JULIA_WARNING)
-    parameterestimation = None
+    fit = None
 
 
 # pytest -n0 --cov=src\xhydro --cov-report=html tests/test_extremes.py
@@ -950,6 +950,7 @@ def data_rain():
     return ds
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class Testfit:
 
     def test_stationary_grv(self, data_fre):
@@ -1226,6 +1227,7 @@ class Testfit:
         )
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class TestRtnlv:
 
     def test_stationary(self, data_fre):
@@ -1356,6 +1358,7 @@ class TestRtnlv:
         )
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class TestGEV:
 
     def test_ml_param(self, data_fre):
@@ -1436,6 +1439,7 @@ class TestGEV:
         ).values.all()
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class TestGumbel:
 
     def test_ml_param(self, data_fre):
@@ -1514,6 +1518,7 @@ class TestGumbel:
         ).values.all()
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class TestPareto:
 
     def test_ml_param(self, data_rain):
@@ -1617,6 +1622,7 @@ class TestPareto:
         ).values.all()
 
 
+@pytest.mark.skipif(not fit, reason="Julia not installed")
 class TestError:
 
     def test_non_stationary_cov_pwm(self, data_fre):
