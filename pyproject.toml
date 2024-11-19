@@ -60,8 +60,7 @@ dependencies = [
   "xclim >=0.53.2,<0.54",
   "xdatasets >=0.3.6",
   "xscen >=0.10.1,<0.11",
-  "xvec",
-  "juliacall >=0.9.23"
+  "xvec"
 ]
 
 [project.optional-dependencies]
@@ -86,8 +85,7 @@ dev = [
   "blackdoc ==0.3.9",
   "isort ==5.13.2",
   "pre-commit >=3.5.0",
-  "ruff >=0.5.7",
-  "juliacall >=0.9.23"
+  "ruff >=0.5.7"
 ]
 docs = [
   # Documentation and examples
@@ -107,7 +105,7 @@ docs = [
   "xagg"
 ]
 julia = [
-  "juliacall >=0.9.20"
+  "juliacall >=0.9.23"
 ]
 all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]"]
 
