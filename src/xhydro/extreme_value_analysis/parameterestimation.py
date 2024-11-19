@@ -118,17 +118,37 @@ def _fit_model(
         )
 
     args_per_func = {
-        "gevfit": ["locationcov", "logscalecov", "shapecov"],
-        "gevfitpwm": [],
-        "gevfitbayes": ["locationcov", "logscalecov", "shapecov", "niter", "warmup"],
-        "gumbelfit": ["locationcov", "logscalecov"],
-        "gumbelfitpwm": [],
-        "gumbelfitbayes": ["locationcov", "logscalecov", "niter", "warmup"],
-        "gpfit": ["logscalecov", "shapecov"],
-        "gpfitpwm": [],
-        "gpfitbayes": ["logscalecov", "shapecov", "niter", "warmup"],
+        "gevfit": {
+            "locationcov": locationcov,
+            "logscalecov": logscalecov,
+            "shapecov": shapecov,
+        },
+        "gevfitpwm": {},
+        "gevfitbayes": {
+            "locationcov": locationcov,
+            "logscalecov": logscalecov,
+            "shapecov": shapecov,
+            "niter": niter,
+            "warmup": warmup,
+        },
+        "gumbelfit": {"locationcov": locationcov, "logscalecov": logscalecov},
+        "gumbelfitpwm": {},
+        "gumbelfitbayes": {
+            "locationcov": locationcov,
+            "logscalecov": logscalecov,
+            "niter": niter,
+            "warmup": warmup,
+        },
+        "gpfit": {"logscalecov": logscalecov, "shapecov": shapecov},
+        "gpfitpwm": {},
+        "gpfitbayes": {
+            "logscalecov": logscalecov,
+            "shapecov": shapecov,
+            "niter": niter,
+            "warmup": warmup,
+        },
     }
-    args = {k: locals()[k] for k in args_per_func.get(distm)}
+    args = args_per_func.get(distm)
 
     try:
         return getattr(Extremes, distm)(jl_y, **args)
