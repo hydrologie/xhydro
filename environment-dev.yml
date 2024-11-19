@@ -71,4 +71,4 @@ dependencies:
   # Notebooks
   - hvplot
   - xagg
-  - juliacall >=0.9.20
+  - pyjuliacall >=0.9.20
