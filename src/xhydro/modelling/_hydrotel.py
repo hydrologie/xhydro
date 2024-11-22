@@ -217,7 +217,7 @@ class Hydrotel(HydrologicalModel):
                 )
 
         if simulation_config is not None:
-            simulation_config = deepcopy(_fix_os_paths(_fix_dates(simulation_config)))
+            simulation_config = deepcopy(_fix_os_paths(simulation_config))
             _overwrite_csv(self.config_files["simulation"], simulation_config)
 
             # Also update class attributes to reflect the changes
@@ -596,45 +596,7 @@ def _fix_os_paths(d: dict):
     }
 
 
-def _fix_dates(d: dict):
-    """Convert dates to the formatting required by HYDROTEL."""
-    # Reformat dates
-    for key in ["DATE DEBUT", "DATE FIN"]:
-        if len(d.get(key, "")) > 0:
-            d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
 
-    for key in [
-        "LECTURE ETAT FONTE NEIGE",
-        "LECTURE ETAT TEMPERATURE DU SOL",
-        "LECTURE ETAT BILAN VERTICAL",
-        "LECTURE ETAT RUISSELEMENT SURFACE",
-        "LECTURE ETAT ACHEMINEMENT RIVIERE",
-    ]:
-        if len(d.get(key, "")) > 0:
-            # If only a date is provided, add the path to the file
-            if ".csv" not in d[key]:
-                warnings.warn(
-                    f"The path to the file was not provided for '{key}'. Assuming it is in the 'etat' folder."
-                )
-                d[key] = (
-                    Path("etat")
-                    / f"{'_'.join(key.split(' ')[2:]).lower()}_{d[key]}.csv"
-                )
-            d[key] = str(d[key]).replace(
-                Path(d[key]).stem.split("_")[-1],
-                pd.to_datetime(Path(d[key]).stem.split("_")[-1]).strftime("%Y%m%d%H"),
-            )
-    for key in [
-        "ECRITURE ETAT FONTE NEIGE",
-        "ECRITURE ETAT TEMPERATURE DU SOL",
-        "ECRITURE ETAT BILAN VERTICAL",
-        "ECRITURE ETAT RUISSELEMENT SURFACE",
-        "ECRITURE ETAT ACHEMINEMENT RIVIERE",
-    ]:
-        if len(d.get(key, "")) > 0:
-            d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H")
-
-    return d
 
 
 def _read_csv(file: str | os.PathLike) -> dict:
