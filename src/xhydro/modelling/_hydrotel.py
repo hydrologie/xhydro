@@ -596,9 +596,6 @@ def _fix_os_paths(d: dict):
     }
 
 
-
-
-
 def _read_csv(file: str | os.PathLike) -> dict:
     """Read a CSV file and return the content as a dictionary.
 
