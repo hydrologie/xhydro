@@ -80,7 +80,7 @@ class RavenpyModel(HydrologicalModel):
         data_type,
         alt_names_meteo,
         meteo_station_properties,
-        hydro_station_properties={},
+        hydro_station_properties: dict | None = None,
         workdir: str | os.PathLike | None = None,
         rain_snow_fraction="RAINSNOW_DINGMAN",
         evaporation="PET_PRIESTLEY_TAYLOR",
@@ -88,6 +88,8 @@ class RavenpyModel(HydrologicalModel):
     ):
         if workdir is None:
             workdir = tempfile.mkdtemp(prefix=model_name)
+        if hydro_station_properties is None:  
+            hydro_station_properties = {}  
         self.workdir = workdir
 
         self.model_simulations = None
