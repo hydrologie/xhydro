@@ -88,8 +88,8 @@ class RavenpyModel(HydrologicalModel):
     ):
         if workdir is None:
             workdir = tempfile.mkdtemp(prefix=model_name)
-        if hydro_station_properties is None:  
-            hydro_station_properties = {}  
+        if hydro_station_properties is None:
+            hydro_station_properties = {}
         self.workdir = workdir
 
         self.model_simulations = None
