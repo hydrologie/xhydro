@@ -11,6 +11,7 @@ Internal changes
 * land_use_classification default collection has been changed to io-lulc-annual-v02 as previous one will be deprecated december 2024. (:pull:`227`).
 * Also added some collection, year, resolution and history attributes to xarray output of land_use_classification. (:pull:`227`).
 * Added a downloader agent to fix an issue related to ``pooch`` in recent ReadTheDocs builds. (:pull:`231`).
+* Updated uncertainities.calc_q_iter to allow for ungaged catchments. (:pull:`235`).
 
 v0.4.1 (2024-11-07)
 -------------------
