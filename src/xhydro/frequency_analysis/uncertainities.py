@@ -182,7 +182,7 @@ def calc_q_iter(
     Parameters
     ----------
     bv : str
-        The basin identifier or all to proceed on all bv (needed for ungauged)
+        The basin identifier or 'all' to proceed on all bv (needed for ungauged)
     var : str
         The variable name.
     ds_groups : xarray.Dataset
