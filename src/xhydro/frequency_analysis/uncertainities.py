@@ -174,6 +174,7 @@ def calc_q_iter(
     ds_moments_iter: xr.Dataset,
     return_periods: np.array,
     small_regions_threshold: int | None = 5,
+    l1: xr.DataArray | None = None,
 ) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
@@ -181,7 +182,7 @@ def calc_q_iter(
     Parameters
     ----------
     bv : str
-        The basin identifier.
+        The basin identifier or all to proceed on all bv (needed for ungauged)
     var : str
         The variable name.
     ds_groups : xarray.Dataset
@@ -192,14 +193,20 @@ def calc_q_iter(
         The return periods to calculate quantiles for.
     small_regions_threshold : int, optional
         The threshold for removing small regions. Default is 5.
+    l1: xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If None, values are taken from ds_moments_iter.
 
     Returns
     -------
     xarray.DataArray
         Quantiles for each bootstrap sample and group.
     """
-    # We select groups for only one id
-    ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", how="all")
+    # We select groups for all or one id
+    if id =='all':
+        ds_temp = ds_groups[[var]].dropna("group_id", how="all")
+    else:
+        ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it
@@ -221,7 +228,7 @@ def calc_q_iter(
         .dropna(dim="id", how="all")
     )
     # With obs and moments  of same dims, we calculate
-    qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods)
+    qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods, l1=l1)
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
     return (
