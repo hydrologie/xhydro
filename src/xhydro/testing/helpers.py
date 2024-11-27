@@ -148,7 +148,7 @@ def load_registry(
         urlretrieve(remote_registry, registry_file)  # noqa: S310
 
     else:
-        registry_file = Path(str(ilr.files("xclim").joinpath("testing/registry.txt")))
+        registry_file = Path(str(ilr.files("xhydro").joinpath("testing/registry.txt")))
 
     if not registry_file.exists():
         raise FileNotFoundError(f"Registry file not found: {registry_file}")
