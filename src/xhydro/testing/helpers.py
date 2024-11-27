@@ -32,7 +32,7 @@ default_testdata_version = "v2024.10.16"
 """Default version of the testing data to use when fetching datasets."""
 
 default_testdata_repo_url = (
-    "https://raw.githubusercontent.com/hydrologie/xhydro-testdata"
+    "https://raw.githubusercontent.com/hydrologie/xhydro-testdata/"
 )
 """Default URL of the testing data repository to use when fetching datasets."""
 
@@ -52,13 +52,13 @@ When running tests locally, this can be set for both `pytest` and `tox` by expor
 
 .. code-block:: console
 
-    $ export XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata"
+    $ export XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata/"
 
 or setting the variable at runtime:
 
 .. code-block:: console
 
-    $ env XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata" pytest
+    $ env XHYDRO_TESTDATA_REPO_URL="https://github.com/my_username/xhydro-testdata/" pytest
 """
 
 TESTDATA_BRANCH = os.getenv("XHYDRO_TESTDATA_BRANCH", default_testdata_version)
