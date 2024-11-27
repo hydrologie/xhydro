@@ -4,14 +4,16 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`).
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* land_use_classification default collection has been changed to io-lulc-annual-v02 as previous one will be deprecated december 2024. (:pull:`227`).
-* Also added some collection, year, resolution and history attributes to xarray output of land_use_classification. (:pull:`227`).
-* Added a downloader agent to fix an issue related to ``pooch`` in recent ReadTheDocs builds. (:pull:`231`).
-* Updated uncertainities.calc_q_iter to allow for ungaged catchments. (:pull:`235`).
+* `"land_use_classification"` default collection has been changed to `"io-lulc-annual-v02"`, as the previous one will be deprecated in December 2024. (:pull:`227`).
+* Added some collection, year, resolution and history attributes to `xarray` output of `"land_use_classification"`. (:pull:`227`).
+* Added a "User-Agent" to fix an issue related to `pooch` calls in the notebooks for recent ReadTheDocs builds. (:pull:`231`).
+* Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "User-Agent" by default. (:pull:`234`).
+* Fixed the URL joining logic of the ``load_registry()`` and ``devereaux()`` functions in the `xhydro.testing.helpers` module. (:pull:`234`).
+* Updated ``uncertainities.calc_q_iter()`` to allow for ungaged catchments. (:pull:`235`).
 
 v0.4.1 (2024-11-07)
 -------------------
