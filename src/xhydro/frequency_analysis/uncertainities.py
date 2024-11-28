@@ -16,7 +16,6 @@ Functions:
 """
 
 from itertools import combinations
-from typing import Optional
 
 import numpy as np
 import xarray as xr
@@ -182,7 +181,7 @@ def calc_q_iter(
     Parameters
     ----------
     bv : str
-        The basin identifier or 'all' to proceed on all bv (needed for ungauged)
+        The basin identifier or 'all' to proceed on all bv (needed for ungauged).
     var : str
         The variable name.
     ds_groups : xarray.Dataset
@@ -193,9 +192,9 @@ def calc_q_iter(
         The return periods to calculate quantiles for.
     small_regions_threshold : int, optional
         The threshold for removing small regions. Default is 5.
-    l1: xr.DataArray, optional
+    l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
-        If None, values are taken from ds_moments_iter.
+        If `None`, values are taken from ds_moments_iter.
 
     Returns
     -------
