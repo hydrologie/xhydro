@@ -1,7 +1,6 @@
 """Pytest configuration for xHydro tests."""
 
 # noqa: D100
-from os import PathLike
 from os.path import commonpath
 from pathlib import Path
 
