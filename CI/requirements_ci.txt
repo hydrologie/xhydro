@@ -209,9 +209,9 @@ flit==3.10.0 \
     --hash=sha256:b2d44935aeea65c90c8ad66e3d7d8937cfbc139011c86d6a1ba2b06a2c044f35 \
     --hash=sha256:dadca58d5097db62884d25d70b572f104954927daadc8cee449739215b7237fd
     # via -r CI/requirements_ci.in
-flit-core==3.10.0 \
-    --hash=sha256:6d904233178b3c924f665947ac7d286f2ac799fb69087e39e56ceb4084724a97 \
-    --hash=sha256:ca888c3ae0a5a4dae39f2db64f181b8b45143a6650c4b9ce6d171e45a6fa290a
+flit-core==3.10.1 \
+    --hash=sha256:66e5b87874a0d6e39691f0e22f09306736b633548670ad3c09ec9db03c5662f7 \
+    --hash=sha256:cb31a76e8b31ad3351bb89e531f64ef2b05d1e65bd939183250bf81ddf4922a8
     # via flit
 idna==3.7 \
     --hash=sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc \
