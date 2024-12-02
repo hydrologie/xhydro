@@ -202,7 +202,7 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group.
     """
     # We select groups for all or one id
-    if id == "all":
+    if bv == "all":
         ds_temp = ds_groups[[var]].dropna("group_id", how="all")
     else:
         ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", how="all")
