@@ -85,11 +85,6 @@ repos:
     hooks:
       - id: yamllint
         args: [ '--config-file=.yamllint.yaml' ]
-  - repo: https://github.com/numpy/numpydoc
-    rev: v1.8.0
-    hooks:
-      - id: numpydoc-validation
-        exclude: ^docs/|^tests/
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.29.3
     hooks:
