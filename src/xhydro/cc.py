@@ -33,11 +33,13 @@ def weighted_random_sampling(
     Parameters
     ----------
     ds : xr.Dataset
-        Dataset to sample from. See Notes for more information on special cases for 'percentile', 'quantile', 'time', and 'horizon' dimensions.
+        Dataset to sample from.
     weights : xr.DataArray, optional
-        Weights to use when sampling the dataset for dimensions other than 'percentile'/'quantile'.
+        Weights to use when sampling the dataset, for dimensions other than 'percentile' or 'quantile'.
+        See Notes for more information on special cases for 'percentile', 'quantile', 'time', and 'horizon' dimensions.
     include_dims : list of str, optional
-        List of dimensions to include when sampling the dataset, in addition to the 'percentile'/'quantile' dimensions and those with weights.
+        List of dimensions to include when sampling the dataset, in addition to the 'percentile' or 'quantile' dimensions and those with weights.
+        These dimensions will be sampled uniformly.
     n : int
         Number of samples to generate.
     seed : int, optional
