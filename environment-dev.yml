@@ -62,9 +62,6 @@ dependencies:
   - sphinx-intl
   - sphinxcontrib-napoleon
   # Testing
-  - pytest >=8.3.2
-  - pytest-cov >=5.0.0
-  - pytest-xdist >=3.2.0
   - tox >=4.17.1
   # Packaging
   - flit >=3.9.0,<4.0
