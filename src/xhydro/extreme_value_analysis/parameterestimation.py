@@ -89,7 +89,6 @@ def _fit_model(
     )
 
     if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-        nparams = 3 + len(location_cov) + len(scale_cov) + len(shape_cov)
         if method == "ML":
             distm = "gevfit"
         elif method == "PWM":
@@ -97,7 +96,6 @@ def _fit_model(
         elif method == "BAYES":
             distm = "gevfitbayes"
     elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-        nparams = 2 + len(location_cov) + len(scale_cov)
         if method == "ML":
             distm = "gumbelfit"
         elif method == "PWM":
@@ -105,7 +103,6 @@ def _fit_model(
         elif method == "BAYES":
             distm = "gumbelfitbayes"
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-        nparams = 2 + len(scale_cov) + len(shape_cov)
         if method == "ML":
             distm = "gpfit"
         elif method == "PWM":
