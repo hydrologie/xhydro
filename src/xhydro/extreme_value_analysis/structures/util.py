@@ -348,7 +348,7 @@ def change_sign_param(param_list, pos, n):
 
 
 def create_nan_mask(*nested_lists) -> list:
-    """
+    r"""
     Create a mask indicating NaN positions across multiple nested lists.
 
     Parameters
