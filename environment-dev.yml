@@ -7,7 +7,7 @@ dependencies:
   # Main packages
   - cartopy >=0.23.0
   - geopandas >=1.0
-  - haversine >=2.8.0
+  - haversine >=2.8.1
   - importlib-metadata <8.0  # Required for xesmf >=8.4.0,<8.6 to work on Windows
   - leafmap
   - numpy >=1.24
@@ -68,3 +68,4 @@ dependencies:
   # Notebooks
   - hvplot
   - xagg
+  - pyjuliacall >=0.9.20
