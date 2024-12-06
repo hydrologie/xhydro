@@ -353,7 +353,7 @@ def create_nan_mask(*nested_lists) -> list:
 
     Parameters
     ----------
-    *nested_lists : tuple of list of lists # noqa: RST213
+    \*nested_lists : tuple of list of lists # noqa: RST213
         Any number of nested lists (lists of lists).
 
     Returns
