@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.17.0
+    rev: v3.19.0
     hooks:
       - id: pyupgrade
         args: [ '--py310-plus' ]
@@ -21,7 +21,7 @@ repos:
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.23.1
+    rev: v0.24.2
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/pre-commit/pygrep-hooks
@@ -42,7 +42,7 @@ repos:
       - id: isort
         exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.8.2
     hooks:
       - id: ruff
         args: [ '--fix' ]
@@ -65,18 +65,18 @@ repos:
         additional_dependencies: [ 'black==24.10.0' ]
       - id: blackdoc-autoupdate-black
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
       - id: nbstripout
         files: '.ipynb'
         exclude: "docs/notebooks/extreme_value_analysis.ipynb"
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.8.7
+    rev: 1.9.1
     hooks:
       - id: nbqa-pyupgrade
         args: [ '--py310-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.17.0' ]
+        additional_dependencies: [ 'pyupgrade==3.19.0' ]
       - id: nbqa-black
         additional_dependencies: [ 'black==24.10.0' ]
       - id: nbqa-isort
@@ -92,7 +92,7 @@ repos:
       - id: numpydoc-validation
         exclude: ^docs/|^tests/
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.3
+    rev: 0.30.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs

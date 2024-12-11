@@ -183,7 +183,6 @@ jobs:
             files.pythonhosted.org:443
             github.com:443
             objects.githubusercontent.com:443
-            planetarycomputer.microsoft.com:443
             pkg.julialang.org:443
             pypi.org:443
             raw.githubusercontent.com:443
@@ -265,14 +264,15 @@ jobs:
             185.125.188.59:443
             ai4edataeuwest.blob.core.windows.net:443
             api.github.com:443
+            api.ipify.org:443
             cdn.proj.org:443
             conda.anaconda.org:443
             elevationeuwest.blob.core.windows.net:443
             files.pythonhosted.org:443
             github.com:443
             objects.githubusercontent.com:443
-            planetarycomputer.microsoft.com:443
             pkg.julialang.org:443
+            planetarycomputer.microsoft.com:443
             pypi.org:443
             raw.githubusercontent.com:443
             s3.us-east-2.wasabisys.com:443
