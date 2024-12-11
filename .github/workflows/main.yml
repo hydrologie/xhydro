@@ -92,6 +92,10 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            185.125.188.54:443
+            185.125.188.55:443
+            185.125.188.58:443
+            185.125.188.59:443
             ai4edataeuwest.blob.core.windows.net:443
             api.github.com:443
             cdn.proj.org:443
@@ -166,6 +170,10 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            185.125.188.54:443
+            185.125.188.55:443
+            185.125.188.58:443
+            185.125.188.59:443
             ai4edataeuwest.blob.core.windows.net:443
             api.github.com:443
             cdn.proj.org:443
@@ -251,6 +259,10 @@ jobs:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            185.125.188.54:443
+            185.125.188.55:443
+            185.125.188.58:443
+            185.125.188.59:443
             ai4edataeuwest.blob.core.windows.net:443
             api.github.com:443
             cdn.proj.org:443
