@@ -106,6 +106,7 @@ jobs:
             raw.githubusercontent.com:443
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
+            us-east.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
@@ -178,6 +179,7 @@ jobs:
             raw.githubusercontent.com:443
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
+            us-east.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
@@ -259,6 +261,7 @@ jobs:
             raw.githubusercontent.com:443
             s3.us-east-2.wasabisys.com:443
             s3.wasabisys.com:443
+            us-east.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
