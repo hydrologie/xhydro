@@ -30,6 +30,9 @@ dependencies:
   - xdatasets >=0.3.6
   - xscen >=0.10.1,<0.11
   - xvec
+  # Julia
+  - julia >=1.6.0
+  - pyjuliacall >=0.9.20
   # Dev tools and testing
   - pip >=24.2.0
   - blackdoc ==0.3.9
@@ -68,4 +71,3 @@ dependencies:
   # Notebooks
   - hvplot
   - xagg
-  - pyjuliacall >=0.9.20

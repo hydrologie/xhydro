@@ -31,4 +31,6 @@ dependencies:
   - xdatasets >=0.3.6
   - xscen >=0.10.1,<0.11
   - xvec
+  # Julia
+  - julia >=1.6.0
   - pyjuliacall >=0.9.20
