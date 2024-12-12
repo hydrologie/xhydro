@@ -9,7 +9,9 @@ import numpy as np
 import pooch
 import pytest
 import xarray as xr
+from packaging.version import Version
 from raven_hydro import __raven_version__
+from ravenpy import __version__ as __ravenpy_version__
 
 from xhydro.modelling import hydrological_model
 from xhydro.modelling.calibration import perform_calibration
@@ -511,6 +513,10 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
+    @pytest.mark.skipif(
+        Version(__ravenpy_version__) < Version("0.15.0"),
+        reason="Blended model is broken on earlier versions of RavenPy.",
+    )
     def test_ravenpy_blended_calibration(self):
         """Test for Blended ravenpy model"""
         bounds_low = [
@@ -607,7 +613,7 @@ class TestRavenpyModelCalibration:
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "Blended"})
 
-        if __raven_version__ == "3.8.1":
+        if Version(__raven_version__) == Version("3.8.1"):
             warnings.warn("Blended model does not work with RavenHydroFramework v3.8.1")
             with pytest.raises(OSError):
                 perform_calibration(

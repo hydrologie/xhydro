@@ -38,7 +38,7 @@ dependencies = [
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy >=0.23.0",
   "geopandas >=1.0",
-  "haversine >=2.8.0",
+  "haversine >=2.8.1",
   "importlib-metadata <8.0", # Required for xesmf >=8.4.0,<8.6 to work on Windows
   "leafmap",
   "numpy >=1.24",
@@ -78,6 +78,7 @@ dev = [
   "coveralls >=4.0.1",
   "mypy",
   "numpydoc >=1.8.0",
+  "packaging >=23.0",
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
   "pytest-xdist[psutil] >=3.2",
@@ -104,7 +105,10 @@ docs = [
   "sphinxcontrib-napoleon",
   "xagg"
 ]
-all = ["xhydro[dev]", "xhydro[docs]"]
+julia = [
+  "juliacall >=0.9.20"
+]
+all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]"]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
@@ -250,7 +254,8 @@ override_SS05 = [
   # override SS05 to allow docstrings starting with these words
   '^Process ',
   '^Assess ',
-  '^Access '
+  '^Access ',
+  "^Decompress "
 ]
 
 [tool.pytest.ini_options]
@@ -267,7 +272,8 @@ filterwarnings = ["ignore::UserWarning"]
 testpaths = "tests"
 markers = [
   "online: mark tests that require access to the internet",
-  "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')"
+  "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')",
+  "requires_julia: mark tests that can only be executed if juliacall is installed"
 ]
 
 [tool.ruff]

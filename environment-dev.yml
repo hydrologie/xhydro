@@ -7,7 +7,7 @@ dependencies:
   # Main packages
   - cartopy >=0.23.0
   - geopandas >=1.0
-  - haversine >=2.8.0
+  - haversine >=2.8.1
   - importlib-metadata <8.0  # Required for xesmf >=8.4.0,<8.6 to work on Windows
   - leafmap
   - numpy >=1.24
@@ -30,6 +30,9 @@ dependencies:
   - xdatasets >=0.3.6
   - xscen >=0.10.1,<0.11
   - xvec
+  # Julia
+  # - julia >=1.6.0  # Works locally, breaks remotely
+  - pyjuliacall >=0.9.20
   # Dev tools and testing
   - pip >=24.2.0
   - blackdoc ==0.3.9
@@ -48,6 +51,7 @@ dependencies:
   - nbval >=0.11.0
   - numpydoc >=1.8.0
   - pandoc
+  - packaging >=23.0
   - pre-commit >=3.5.0
   - pytest >=8.3.2
   - pytest-cov >=5.0.0

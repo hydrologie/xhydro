@@ -12,3 +12,4 @@ Usage
     regional_frequency_analysis
     climate_change
     pmp
+    extreme_value_analysis
