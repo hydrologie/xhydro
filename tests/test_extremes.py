@@ -944,6 +944,7 @@ def data_rain():
     return ds
 
 
+@pytest.mark.requires_julia
 class Testfit:
 
     def test_stationary_grv(self, data_fre):
@@ -1220,6 +1221,7 @@ class Testfit:
         )
 
 
+@pytest.mark.requires_julia
 class TestRtnlv:
 
     def test_stationary(self, data_fre):
@@ -1350,6 +1352,7 @@ class TestRtnlv:
         )
 
 
+@pytest.mark.requires_julia
 class TestGEV:
 
     def test_ml_param(self, data_fre):
@@ -1430,6 +1433,7 @@ class TestGEV:
         ).values.all()
 
 
+@pytest.mark.requires_julia
 class TestGumbel:
 
     def test_ml_param(self, data_fre):
@@ -1508,6 +1512,7 @@ class TestGumbel:
         ).values.all()
 
 
+@pytest.mark.requires_julia
 class TestPareto:
 
     def test_ml_param(self, data_rain):
@@ -1611,6 +1616,7 @@ class TestPareto:
         ).values.all()
 
 
+@pytest.mark.requires_julia
 class TestError:
 
     def test_non_stationary_cov_pwm(self, data_fre):

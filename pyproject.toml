@@ -272,7 +272,8 @@ filterwarnings = ["ignore::UserWarning"]
 testpaths = "tests"
 markers = [
   "online: mark tests that require access to the internet",
-  "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')"
+  "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')",
+  "requires_julia: mark tests that can only be executed if juliacall is installed"
 ]
 
 [tool.ruff]
