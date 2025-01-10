@@ -216,6 +216,12 @@ def fit(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    if any(var.chunks for var in ds.variables.values()):
+        warnings.warn(
+            "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
+            UserWarning,
+        )
+
     vars = vars or ds.data_vars
     method = method.upper()
     _check_fit_params(
@@ -477,6 +483,12 @@ def return_level(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    if any(var.chunks for var in ds.variables.values()):
+        warnings.warn(
+            "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
+            UserWarning,
+        )
+
     vars = vars or ds.data_vars
     method = method.upper()
     _check_fit_params(
