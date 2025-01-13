@@ -53,6 +53,7 @@ dependencies:
   - pandoc
   - packaging >=23.0
   - pre-commit >=3.5.0
+  - pygments <2.19  # FIXME: temporary fix for sphinx-codeautolink
   - pytest >=8.3.2
   - pytest-cov >=5.0.0
   - pytest-xdist >=3.2
@@ -61,7 +62,7 @@ dependencies:
   - watchdog >=4.0.0
   - sphinx >=7.0.0
   - sphinx-autoapi
-  - sphinx-codeautolink
+  - sphinx-codeautolink >=0.15.2,!=0.16.0  # FIXME: temporary fix for sphinx-codeautolink
   - sphinx-copybutton
   - sphinx-intl
   - sphinxcontrib-napoleon

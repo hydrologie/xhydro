@@ -97,9 +97,10 @@ docs = [
   "jupyter_client",
   "nbsphinx",
   "nbval",
+  "pygments <2.19.0", # FIXME: temporary fix for sphinx-codeautolink
   "sphinx >=7.0.0",
   "sphinx-autoapi",
-  "sphinx-codeautolink",
+  "sphinx-codeautolink >=0.15.2,!=0.16.0", # FIXME: temporary fix for sphinx-codeautolink
   "sphinx-copybutton",
   "sphinx-intl",
   "sphinxcontrib-napoleon",
