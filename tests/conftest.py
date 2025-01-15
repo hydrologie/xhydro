@@ -203,30 +203,27 @@ def corrected_oi_data(deveraux):
 
 
 @pytest.fixture(scope="session")
-def genextreme_data(threadsafe_data_dir, deveraux):
+def data_fre(threadsafe_data_dir, deveraux):
     extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
 
-    ge = deveraux.fetch(
-        "extreme_value_analysis/genextreme.zip",
+    paths_sea = deveraux.fetch(
+        "extreme_value_analysis/sea-levels_fremantle.zarr.zip",
         processor=pooch.Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
     )
 
-    mappings = dict()
-    mappings["gev_nonstationary"] = pd.read_csv(ge[0])
-    mappings["gev_stationary"] = pd.read_csv(ge[1])
-    return mappings
+    ds_sea = xr.open_zarr(Path(paths_sea[0]).parents[0]).compute()
+
+    return ds_sea
 
 
 @pytest.fixture(scope="session")
-def genpareto_data(threadsafe_data_dir, deveraux):
-    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
+def data_rain(threadsafe_data_dir, deveraux):
 
-    gp = deveraux.fetch(
-        "extreme_value_analysis/genpareto.zip",
-        processor=pooch.Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
+    paths_rain = deveraux.fetch(
+        "extreme_value_analysis/rainfall_excedance.zarr.zip",
+        pooch.Unzip(),
     )
 
-    mappings = dict()
-    mappings["gp_nonstationary"] = pd.read_csv(gp[0])
-    mappings["gp_stationary"] = pd.read_csv(gp[1])
-    return mappings
+    ds_rain = xr.open_zarr(Path(paths_rain[0]).parents[0]).compute()
+
+    return ds_rain
