@@ -7,8 +7,8 @@ dependencies:
   # Main packages
   - cartopy >=0.23.0
   - dask <= 2024.10.0
-  - dask_geopandas <= 0.4.2
-  - intake_xarray <= 0.7.0
+  - dask-geopandas <= 0.4.2
+  - intake-xarray <= 0.7.0
   - questionary <= 2.0.1
   - geopandas >=1.0
   - haversine >=2.8.1
