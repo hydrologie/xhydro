@@ -45,6 +45,7 @@ dependencies = [
   "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
+  "dask <= 2024.10.0",
   "pystac",
   "pystac-client",
   "pyyaml >=6.0.2",

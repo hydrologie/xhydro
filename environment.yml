@@ -7,6 +7,7 @@ dependencies:
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
+  - dask <= 2024.10.0
   - geopandas >=1.0
   - haversine >=2.8.1
   - importlib-metadata <8.0  # Required for xesmf >=8.4.0,<8.6 to work on Windows
