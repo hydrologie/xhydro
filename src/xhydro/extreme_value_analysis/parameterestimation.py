@@ -169,9 +169,9 @@ def fit(
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
+    confidence_level: float = 0.95,
     niter: int = 5000,
     warmup: int = 2000,
-    confidence_level: float = 0.95,
 ) -> xr.Dataset:
     r"""Fit an array to a univariate distribution along a given dimension.
 
@@ -181,29 +181,25 @@ def fit(
         Xarray Dataset containing the data to be fitted.
     locationcov : list[str]
         List of names of the covariates for the location parameter.
-        Have to be names of data variables / coordinates in the original data.
     scalecov : list[str]
         List of names of the covariates for the scale parameter.
-        Have to be names of data variables / coordinates in the original data.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-        Have to be names of data variables / coordinates in the original data.
     vars : list[str]
         List of variables to be fitted.
-    dist : {"genextreme", "gumbel_r", "genpareto"} or rv_continuous distribution object
-        Name of the univariate distributionor the distribution object itself.
+    dist : str or rv_continuous distribution object
+        Name of the univariate distribution or the distribution object itself.
         Supported distributions are genextreme, gumbel_r, genpareto.
     method : {"ML", "PWM", "BAYES}
         Fitting method, either maximum likelihood (ML), probability weighted moments (PWM) or bayesian (BAYES).
-        The PWM method is usually more robust to outliers.
     dim : str
-        The dimension upon which to perform the indexing (default: "time").
+        Specifies the dimension along which the fit will be performed (default: "time").
+    confidence_level : float
+        The confidence level for the confidence interval of each parameter.
     niter : int
         The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
     warmup : int
         The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
-    confidence_level : float
-        The confidence level for the confidence interval of each parameter.
 
     Returns
     -------
@@ -424,15 +420,15 @@ def return_level(
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
-    niter: int = 5000,
-    warmup: int = 2000,
     confidence_level: float = 0.95,
     return_period: float = 100,
+    niter: int = 5000,
+    warmup: int = 2000,
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
 ) -> xr.Dataset:
-    r"""Compute the return level corresponding to a return period from a given distribution.
+    r"""Compute the return level associated with a return period based on a given distribution.
 
     Parameters
     ----------
@@ -440,37 +436,33 @@ def return_level(
         Xarray Dataset containing the data for return level calculations.
     locationcov : list[str]
         List of names of the covariates for the location parameter.
-        Have to be names of data variables / coordinates in the original data.
     scalecov : list[str]
         List of names of the covariates for the scale parameter.
-        Have to be names of data variables / coordinates in the original data.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-        Have to be names of data variables / coordinates in the original data.
     vars : list[str]
         List of variables to be fitted.
-    dist : {"genextreme", "gumbel_r", "genpareto"} or rv_continuous distribution object
-        Name of the univariate distributionor the distribution object itself.
+    dist : str or rv_continuous distribution object
+        Name of the univariate distribution or the distribution object itself.
         Supported distributions are genextreme, gumbel_r, genpareto.
     method : {"ML", "PWM", "BAYES}
         Fitting method, either maximum likelihood (ML), probability weighted moments (PWM) or bayesian (BAYES).
-        The PWM method is usually more robust to outliers.
     dim : str
-        The dimension upon which to perform the indexing (default: "time").
-    niter : int
-        The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
-    warmup : int
-        The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
+        Specifies the dimension along which the fit will be performed (default: "time").
     confidence_level : float
         The confidence level for the confidence interval of each parameter.
     return_period : float
         Return period used to compute the return level.
+    niter : int
+        The number of iterations of the bayesian inference algorithm for parameter estimation (default: 5000).
+    warmup : int
+        The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
     threshold_pareto : float
-        Threshold for when the pareto function is used.
+        The value above which the Pareto distribution is applied.
     nobs_pareto : int,
-        Number of total observation for when the pareto function is used..
-    nobsperblock_pareto : int,
-        Number of observation per block for when the pareto function is used..
+        The total number of observations used when applying the Pareto distribution.
+    nobsperblock_pareto : int
+        The number of observations per block when applying the Pareto distribution.
 
     Returns
     -------
