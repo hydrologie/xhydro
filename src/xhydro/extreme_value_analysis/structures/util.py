@@ -1,12 +1,11 @@
 """Utility functions for parameter estimation."""
+import math
+import warnings
+from copy import deepcopy
 
+import numpy as np
+import xarray as xr
 try:
-    import math
-    import warnings
-    from copy import deepcopy
-
-    import numpy as np
-    import xarray as xr
     from juliacall import JuliaError
     from juliacall import convert as jl_convert
 
