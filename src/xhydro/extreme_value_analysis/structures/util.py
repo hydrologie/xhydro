@@ -204,7 +204,6 @@ def return_level_cint(
             py_return_level = np.array(jl_vector_to_py_list(jl_return_level.value))
 
     except JuliaError:
-        warnings.warn(f"There was an error in computing return level.")
         raise ValueError(
             f"There was an error in computing confidence interval for the return level."
         )
@@ -218,10 +217,6 @@ def return_level_cint(
         return [py_return_level, cint_lower, cint_upper]
 
     except JuliaError:
-        warnings.warn(
-            f"There was an error in computing confidence interval for the return level."
-        )
-
         raise ValueError(
             f"There was an error in computing confidence interval for the return level."
         )
