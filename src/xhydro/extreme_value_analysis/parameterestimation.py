@@ -408,9 +408,6 @@ def _fitfunc_param_cint(
     return tuple(params)
 
 
-#
-
-
 def return_level(
     ds: xr.Dataset,
     locationcov: list[str] = [],
