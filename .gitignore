@@ -68,6 +68,7 @@ instance/
 docs/_build/
 docs/apidoc/modules.rst
 docs/apidoc/xhydro*.rst
+docs/notebooks/_data/*
 
 # PyBuilder
 target/
@@ -111,3 +112,4 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+.VSCodeCounter/

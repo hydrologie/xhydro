@@ -28,7 +28,7 @@ __all__ = [
     "populate_testing_data",
 ]
 
-default_testdata_version = "v2024.10.16"
+default_testdata_version = "v2025.1.14"
 """Default version of the testing data to use when fetching datasets."""
 
 default_testdata_repo_url = (
