@@ -4,7 +4,6 @@ import logging
 import re
 import time
 from pathlib import Path
-from typing import Union
 
 import deep_translator
 

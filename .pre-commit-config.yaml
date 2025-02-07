@@ -69,13 +69,14 @@ repos:
     hooks:
       - id: nbstripout
         files: '.ipynb'
+        exclude: "docs/notebooks/extreme_value_analysis.ipynb"
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1
     hooks:
       - id: nbqa-pyupgrade
         args: [ '--py310-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.17.0' ]
+        additional_dependencies: [ 'pyupgrade==3.19.0' ]
       - id: nbqa-black
         additional_dependencies: [ 'black==24.10.0' ]
       - id: nbqa-isort
