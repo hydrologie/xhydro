@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import numpy as np
 import scipy.stats
 import xarray as xr
-from xclim.core.formatting import prefix_attrs, update_history
+from xclim.core.formatting import prefix_attrs
 from xclim.indices.stats import get_dist
 
 try:
@@ -50,7 +51,7 @@ def _fit_model(
     shape_cov: list[list] | None = None,
     niter: int = 5000,
     warmup: int = 2000,
-) -> list:
+) -> Any | None:
     r"""
     Fit a distribution using the specified covariate data.
 
@@ -71,10 +72,10 @@ def _fit_model(
     shape_cov : list[list]
         List of data lists to be used as covariates for the shape parameter.l.
     niter : int
-        Required when when method=BAYES. The number of iterations of the bayesian inference algorithm
+        Required when method=BAYES. The number of iterations of the bayesian inference algorithm
         for parameter estimation (default: 5000).
     warmup : int
-        Required when when method=BAYES. The number of warmup iterations of the bayesian inference
+        Required when method=BAYES. The number of warmup iterations of the bayesian inference
         algorithm for parameter estimation (default: 2000).
 
     Returns
@@ -100,6 +101,8 @@ def _fit_model(
             distm = "gevfitpwm"
         elif method == "BAYES":
             distm = "gevfitbayes"
+        else:
+            raise ValueError(f"Fitting method {method} not recognized")
     elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
         if method == "ML":
             distm = "gumbelfit"
@@ -107,6 +110,8 @@ def _fit_model(
             distm = "gumbelfitpwm"
         elif method == "BAYES":
             distm = "gumbelfitbayes"
+        else:
+            raise ValueError(f"Fitting method {method} not recognized")
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
         if method == "ML":
             distm = "gpfit"
@@ -114,6 +119,8 @@ def _fit_model(
             distm = "gpfitpwm"
         elif method == "BAYES":
             distm = "gpfitbayes"
+        else:
+            raise ValueError(f"Fitting method {method} not recognized")
     else:
         raise ValueError(
             f"Fitting distribution {dist} or method {method} not recognized"
@@ -162,8 +169,6 @@ def _fit_model(
             UserWarning,
         )
 
-        return None
-
 
 def fit(
     ds: xr.Dataset,
@@ -178,7 +183,8 @@ def fit(
     niter: int = 5000,
     warmup: int = 2000,
 ) -> xr.Dataset:
-    r"""Fit an array to a univariate distribution along a given dimension.
+    r"""
+    Fit an array to a univariate distribution along a given dimension.
 
     Parameters
     ----------
@@ -315,8 +321,9 @@ def _fitfunc_param_cint(
     niter: int = 5000,
     warmup: int = 2000,
     confidence_level: float = 0.95,
-):
-    r"""Fit a univariate distribution to an array using specified covariate data.
+) -> tuple:
+    r"""
+    Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
     ----------
@@ -601,7 +608,7 @@ def _fitfunc_return_level(
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
-):
+) -> tuple:
     r"""Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
@@ -634,8 +641,8 @@ def _fitfunc_return_level(
 
     Returns
     -------
-    params : list
-        A list of fitted distribution parameters.
+    tuple
+        A tuple of fitted distribution parameters.
     """
     arr = arg[0]
 
@@ -698,7 +705,7 @@ def _fitfunc_return_level(
 
 def _get_params(
     dist: str, shapecov: list[str], locationcov: list[str], scalecov: list[str]
-) -> list:
+) -> list[str]:
     r"""Return a list of parameter names based on the specified distribution and covariates.
 
     Parameters
@@ -714,8 +721,8 @@ def _get_params(
 
     Returns
     -------
-    list
-        A one-dimensional list of parameter names corresponding to the distribution and covariates.
+    list of str
+        A one-dimensional tuple of parameter names corresponding to the distribution and covariates.
 
     Examples
     --------
@@ -741,11 +748,15 @@ def _get_params(
         new_param_names = insert_covariates(param_names, locationcov, "loc")
         new_param_names = insert_covariates(new_param_names, scalecov, "scale")
         return new_param_names
+
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
         param_names = ["scale", "shape"]
         new_param_names = insert_covariates(param_names, scalecov, "scale")
         new_param_names = insert_covariates(new_param_names, shapecov, "shape")
         return new_param_names
+
+    else:
+        raise ValueError(f"Unrecognized distribution: {dist}")
 
 
 def _check_fit_params(
@@ -762,7 +773,7 @@ def _check_fit_params(
     threshold_pareto=None,
     nobs_pareto=None,
     nobsperblock_pareto=None,
-):
+) -> None:
     r"""Validate the parameters for fitting a univariate distribution. This function is called at the start of fit()
         to make sure that the parameters it is called with are valid.
 
