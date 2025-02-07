@@ -45,9 +45,9 @@ def _fit_model(
     y: list[float],
     dist: str,
     method: str,
-    location_cov: list[list] = (),
-    scale_cov: list[list] = (),
-    shape_cov: list[list] = (),
+    location_cov: list[list] | None = None,
+    scale_cov: list[list] | None = None,
+    shape_cov: list[list] | None = None,
     niter: int = 5000,
     warmup: int = 2000,
 ) -> list:
@@ -82,6 +82,10 @@ def _fit_model(
     Julia.Extremes.AbstractExtremeValueModel
         Fitted Julia model.
     """
+    location_cov = location_cov or []
+    scale_cov = scale_cov or []
+    shape_cov = shape_cov or []
+
     jl_y = py_list_to_jl_vector(y)
     locationcov, logscalecov, shapecov = (
         jl_variable_fit_parameters(location_cov),
@@ -163,10 +167,10 @@ def _fit_model(
 
 def fit(
     ds: xr.Dataset,
-    locationcov: list[str] = [],
-    scalecov: list[str] = [],
-    shapecov: list[str] = [],
-    vars: list[str] = [],
+    locationcov: list[str] | None = None,
+    scalecov: list[str] | None = None,
+    shapecov: list[str] | None = None,
+    variables: list[str] | None = None,
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
@@ -186,7 +190,7 @@ def fit(
         List of names of the covariates for the scale parameter.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-    vars : list[str]
+    variables : list[str]
         List of variables to be fitted.
     dist : str or rv_continuous distribution object
         Name of the univariate distribution or the distribution object itself.
@@ -213,13 +217,17 @@ def fit(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    locationcov = locationcov or []
+    scalecov = scalecov or []
+    shapecov = shapecov or []
+
     if any(var.chunks for var in ds.variables.values()):
         warnings.warn(
             "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
             UserWarning,
         )
 
-    vars = vars or ds.data_vars
+    variables = variables or ds.data_vars
     method = method.upper()
     _check_fit_params(
         dist,
@@ -229,7 +237,7 @@ def fit(
         shapecov,
         confidence_level,
         ds,
-        vars,
+        variables,
     )
     dist_params = _get_params(dist, shapecov, locationcov, scalecov)
 
@@ -242,7 +250,7 @@ def fit(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
-    for data_var in vars:
+    for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
             _fitfunc_param_cint,
@@ -411,10 +419,10 @@ def _fitfunc_param_cint(
 
 def return_level(
     ds: xr.Dataset,
-    locationcov: list[str] = [],
-    scalecov: list[str] = [],
-    shapecov: list[str] = [],
-    vars: list[str] = [],
+    locationcov: list[str] | None = None,
+    scalecov: list[str] | None = None,
+    shapecov: list[str] | None = None,
+    variables: list[str] | None = None,
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
@@ -438,7 +446,7 @@ def return_level(
         List of names of the covariates for the scale parameter.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-    vars : list[str]
+    variables : list[str]
         List of variables to be fitted.
     dist : str or rv_continuous distribution object
         Name of the univariate distribution or the distribution object itself.
@@ -473,13 +481,17 @@ def return_level(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    locationcov = locationcov or []
+    scalecov = scalecov or []
+    shapecov = shapecov or []
+
     if any(var.chunks for var in ds.variables.values()):
         warnings.warn(
             "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
             UserWarning,
         )
 
-    vars = vars or ds.data_vars
+    variables = variables or ds.data_vars
     method = method.upper()
     _check_fit_params(
         dist,
@@ -489,7 +501,7 @@ def return_level(
         shapecov,
         confidence_level,
         ds,
-        vars,
+        variables,
         return_period=return_period,
         return_type="returnlevel",
         threshold_pareto=threshold_pareto,
@@ -511,7 +523,7 @@ def return_level(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
-    for data_var in vars:
+    for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
             _fitfunc_return_level,
