@@ -1,4 +1,3 @@
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -10,7 +9,9 @@ class Testfit:
     def test_stationary_grv(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = evap.fit(data_fre, dist="genextreme", method="ml", vars=["SeaLevel"], dim="Year")
+        p = evap.fit(
+            data_fre, dist="genextreme", method="ml", vars=["SeaLevel"], dim="Year"
+        )
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
@@ -39,7 +40,9 @@ class Testfit:
     def test_stationary_gumbel(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = evap.fit(data_fre, dist="gumbel_r", method="ml", vars=["SeaLevel"], dim="Year")
+        p = evap.fit(
+            data_fre, dist="gumbel_r", method="ml", vars=["SeaLevel"], dim="Year"
+        )
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
@@ -434,7 +437,9 @@ class TestGEV:
     def test_ml_param(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = evap.fit(data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"])
+        p = evap.fit(
+            data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"]
+        )
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -527,7 +532,9 @@ class TestGumbel:
     def test_ml_param(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = evap.fit(data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"])
+        p = evap.fit(
+            data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"]
+        )
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -547,7 +554,9 @@ class TestGumbel:
     def test_pwm_param(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = evap.fit(data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"])
+        p = evap.fit(
+            data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"]
+        )
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -742,7 +751,9 @@ class TestError:
             ValueError,
             match="Probability weighted moment parameter estimation cannot have covariates \\['Year', 'SOI', 'Year2', 'SOI2', 'Year3', 'SOI3'\\]",
         ):
-            evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+            evap = pytest.importorskip(
+                "xhydro.extreme_value_analysis.parameterestimation"
+            )
 
             evap.return_level(
                 data_fre,
