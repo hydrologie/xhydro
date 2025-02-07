@@ -963,7 +963,7 @@ class TestError:
 
         with pytest.raises(
             ValueError,
-            match="XXXX is not a variable in the Dataset. Dataset's variables are: \\['SOI', 'SeaLevel'\\]",
+            match="XXXX is not a variable in the Dataset. Dataset variables are: \\['SOI', 'SeaLevel'\\]",
         ):
             evap.fit(data_fre, dist="genextreme", variables=["XXXX"], dim="Year")
 
