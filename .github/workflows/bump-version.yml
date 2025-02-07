@@ -44,7 +44,7 @@ jobs:
       actions: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
           disable-sudo: true
           egress-policy: block
@@ -55,7 +55,7 @@ jobs:
             pypi.org:443
       - name: Generate App Token
         id: token_generator
-        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        uses: actions/create-github-app-token@67e27a7eb7db372a1c61a7f9bdab8699e9ee57f7 # v1.11.3
         with:
           app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
@@ -64,7 +64,7 @@ jobs:
         with:
           token: ${{ steps.token_generator.outputs.token }}
       - name: Set up Python3
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
           python-version: "3.x"
       - name: Import GPG Key
