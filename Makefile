@@ -80,6 +80,9 @@ test-notebooks: ## run tests on notebooks and compare outputs
 test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
 
+test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'
+
 test-all: ## run tests on every Python version with tox
 	python -m tox
 

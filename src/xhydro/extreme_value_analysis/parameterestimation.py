@@ -7,11 +7,12 @@ import warnings
 import numpy as np
 import scipy.stats
 import xarray as xr
-from juliacall import JuliaError
+
 from xclim.core.formatting import prefix_attrs, update_history
 from xclim.indices.stats import get_dist
 
 try:
+    from juliacall import JuliaError
     from xhydro.extreme_value_analysis import Extremes, jl
     from xhydro.extreme_value_analysis.structures.conversions import (
         py_list_to_jl_vector,

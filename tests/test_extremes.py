@@ -1,21 +1,16 @@
-import os
-import warnings
 
 import numpy as np
-import pandas as pd
 import pytest
 import xarray as xr
-
-from xhydro.extreme_value_analysis.parameterestimation import fit, return_level
-
-# pytest -n0 --cov=src\xhydro --cov-report=html tests/test_extremes.py
 
 
 @pytest.mark.requires_julia
 class Testfit:
 
     def test_stationary_grv(self, data_fre):
-        p = fit(data_fre, dist="genextreme", method="ml", vars=["SeaLevel"], dim="Year")
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(data_fre, dist="genextreme", method="ml", vars=["SeaLevel"], dim="Year")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
@@ -42,7 +37,9 @@ class Testfit:
         )
 
     def test_stationary_gumbel(self, data_fre):
-        p = fit(data_fre, dist="gumbel_r", method="ml", vars=["SeaLevel"], dim="Year")
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(data_fre, dist="gumbel_r", method="ml", vars=["SeaLevel"], dim="Year")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
@@ -69,7 +66,9 @@ class Testfit:
         )
 
     def test_stationary_pareto(self, data_rain):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_rain, dist="genpareto", method="ml", vars=["Exceedance"], dim="Date"
         )
 
@@ -98,7 +97,9 @@ class Testfit:
         )
 
     def test_non_stationary_cov(self, data_fre):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_fre,
             dist="genextreme",
             method="ml",
@@ -133,7 +134,9 @@ class Testfit:
         )
 
     def test_non_stationary_cov2(self, data_fre):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_fre,
             dist="genextreme",
             method="ml",
@@ -203,13 +206,14 @@ class Testfit:
         )
 
     def test_non_stationary_cov_pwm(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.raises(
             ValueError,
             match="Probability weighted moment parameter estimation cannot have covariates \\['Year', 'SOI', 'Year2', 'SOI2', 'Year3', 'SOI3'\\]",
         ):
 
-            fit(
+            evap.fit(
                 data_fre,
                 dist="genextreme",
                 method="pwm",
@@ -221,13 +225,14 @@ class Testfit:
             )
 
     def test_fewer_entries_than_param_param(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.warns(
             UserWarning,
             match="The fitting data contains fewer entries than the number of parameters for the given distribution. "
             "Returned parameters are numpy.nan",
         ):
-            p = fit(
+            p = evap.fit(
                 data_fre.isel(Year=slice(1, 2)),
                 dist="genextreme",
                 method="ml",
@@ -260,13 +265,14 @@ class Testfit:
         )
 
     def test_fewer_entries_than_param_rtnlev(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.warns(
             UserWarning,
             match="The fitting data contains fewer entries than the number of parameters for the given distribution. "
             "Returned parameters are numpy.nan",
         ):
-            p = return_level(
+            p = evap.return_level(
                 data_fre.isel(Year=slice(0, 5)),
                 dist="genextreme",
                 method="ml",
@@ -292,8 +298,9 @@ class Testfit:
 class TestRtnlv:
 
     def test_stationary(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = return_level(
+        p = evap.return_level(
             data_fre,
             dist="genextreme",
             method="ml",
@@ -311,7 +318,7 @@ class TestRtnlv:
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
         np.testing.assert_array_equal(
-            p.coords["return_level"].values, np.array(["return_level"])
+            p.coords["evap.return_level"].values, np.array(["evap.return_level"])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -321,8 +328,9 @@ class TestRtnlv:
         )
 
     def test_non_stationary_cov(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-        p = return_level(
+        p = evap.return_level(
             data_fre,
             dist="genextreme",
             method="ml",
@@ -341,7 +349,7 @@ class TestRtnlv:
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
         np.testing.assert_array_equal(
-            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["evap.return_level"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -358,12 +366,13 @@ class TestRtnlv:
         )
 
     def test_recover_nan(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         data_fre_nan = data_fre.copy(deep=True)
         data_fre_nan["SeaLevel"].isel(Year=slice(1, 3))[:] = np.nan
         data_fre_nan["SOI"].isel(Year=slice(5, 6))[:] = np.nan
 
-        p = return_level(
+        p = evap.return_level(
             data_fre_nan,
             dist="genextreme",
             method="ml",
@@ -423,7 +432,9 @@ class TestRtnlv:
 class TestGEV:
 
     def test_ml_param(self, data_fre):
-        p = fit(data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"])
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"])
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -441,7 +452,9 @@ class TestGEV:
         )
 
     def test_pwm_param(self, data_fre):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
@@ -454,7 +467,9 @@ class TestGEV:
         )
 
     def test_bayes_param(self, data_fre):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
@@ -464,7 +479,9 @@ class TestGEV:
         ).values.all()
 
     def test_ml_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"]
         )
 
@@ -477,7 +494,9 @@ class TestGEV:
         )
 
     def test_pwm_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
@@ -490,7 +509,9 @@ class TestGEV:
         ).values.all()
 
     def test_bayes_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
@@ -504,7 +525,9 @@ class TestGEV:
 class TestGumbel:
 
     def test_ml_param(self, data_fre):
-        p = fit(data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"])
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"])
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -522,7 +545,9 @@ class TestGumbel:
         )
 
     def test_pwm_param(self, data_fre):
-        p = fit(data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"])
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"])
 
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
@@ -533,7 +558,9 @@ class TestGumbel:
         )
 
     def test_bayes_param(self, data_fre):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
@@ -543,7 +570,9 @@ class TestGumbel:
         ).values.all()
 
     def test_ml_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"]
         )
 
@@ -556,7 +585,9 @@ class TestGumbel:
         )
 
     def test_pwm_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"]
         )
 
@@ -569,7 +600,9 @@ class TestGumbel:
         ).values.all()
 
     def test_bayes_rtnlv(self, data_fre):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
         )
 
@@ -583,7 +616,9 @@ class TestGumbel:
 class TestPareto:
 
     def test_ml_param(self, data_rain):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_rain, dist="genpareto", method="ML", dim="Date", vars=["Exceedance"]
         )
 
@@ -603,7 +638,9 @@ class TestPareto:
         )
 
     def test_pwm_param(self, data_rain):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_rain, dist="genpareto", method="PWM", dim="Date", vars=["Exceedance"]
         )
 
@@ -616,7 +653,9 @@ class TestPareto:
         )
 
     def test_bayes_param(self, data_rain):
-        p = fit(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.fit(
             data_rain, dist="genpareto", method="BAYES", vars=["Exceedance"], dim="Date"
         )
 
@@ -626,7 +665,9 @@ class TestPareto:
         ).values.all()
 
     def test_ml_rtnlv(self, data_rain):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_rain,
             dist="genpareto",
             method="ML",
@@ -647,7 +688,9 @@ class TestPareto:
         )
 
     def test_pwm_rtnlv(self, data_rain):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_rain,
             dist="genpareto",
             method="PWM",
@@ -666,7 +709,9 @@ class TestPareto:
         ).values.all()
 
     def test_bayes_rtnlv(self, data_rain):
-        p = return_level(
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
+        p = evap.return_level(
             data_rain,
             dist="genpareto",
             method="BAYES",
@@ -686,14 +731,20 @@ class TestPareto:
 @pytest.mark.requires_julia
 class TestError:
 
+    dataset = xr.Dataset(
+        {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
+        coords={"pos": [0, 1, 2, 3, 4, -5]},
+    )
+
     def test_non_stationary_cov_pwm(self, data_fre):
 
         with pytest.raises(
             ValueError,
             match="Probability weighted moment parameter estimation cannot have covariates \\['Year', 'SOI', 'Year2', 'SOI2', 'Year3', 'SOI3'\\]",
         ):
+            evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
-            return_level(
+            evap.return_level(
                 data_fre,
                 dist="genextreme",
                 method="pwm",
@@ -705,9 +756,10 @@ class TestError:
             )
 
     def test_extremefit_rtnlv_error(self, data_rain):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.raises(ValueError, match="Unrecognized distribution: XXX"):
-            return_level(
+            evap.return_level(
                 data_rain,
                 dist="XXX",
                 method="BAYES",
@@ -719,8 +771,10 @@ class TestError:
             )
 
     def test_extremefit_param_error(self, data_rain):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(ValueError, match="Unrecognized method: YYY"):
-            return_level(
+            evap.return_level(
                 data_rain,
                 dist="genpareto",
                 method="YYY",
@@ -732,10 +786,12 @@ class TestError:
             )
 
     def test_confinc_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.warns(
             UserWarning, match="There was an error in computing confidence interval."
         ):
-            p = fit(
+            p = evap.fit(
                 data_fre, dist="genpareto", method="ML", vars=["SeaLevel"], dim="Year"
             )
 
@@ -745,18 +801,16 @@ class TestError:
         )
 
     def test_confinc_error_nostat(self):
-        dataset = xr.Dataset(
-            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
-            coords={"pos": [0, 1, 2, 3, 4, -5]},
-        )
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.warns(
             UserWarning,
             match="There was an error in fitting the data to a genpareto distribution using ML. "
             "Returned parameters are numpy.nan",
         ):
 
-            p = fit(
-                dataset,
+            p = evap.fit(
+                self.dataset,
                 dist="genpareto",
                 method="ML",
                 dim="pos",
@@ -775,18 +829,16 @@ class TestError:
             )
 
     def test_confinc_error_nostat_rtnlv(self):
-        dataset = xr.Dataset(
-            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
-            coords={"pos": [0, 1, 2, 3, 4, -5]},
-        )
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.warns(
             UserWarning,
             match="There was an error in fitting the data to a genpareto distribution using BAYES. "
             "Returned parameters are numpy.nan",
         ):
 
-            p = fit(
-                dataset,
+            p = evap.fit(
+                self.dataset,
                 dist="genpareto",
                 method="BAYES",
                 dim="pos",
@@ -806,18 +858,16 @@ class TestError:
             )
 
     def test_rtnlv_error_nostat_rtnlv(self):
-        dataset = xr.Dataset(
-            {"n": ("pos", [1, -1, 1, -1, 1, -1]), "n2": ("pos", [2, -2, 2, -2, 2, -2])},
-            coords={"pos": [0, 1, 2, 3, 4, -5]},
-        )
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.warns(
             UserWarning,
             match="There was an error in fitting the data to a genextreme distribution using BAYES. "
             "Returned parameters are numpy.nan",
         ):
 
-            p = return_level(
-                dataset,
+            p = evap.return_level(
+                self.dataset,
                 dist="genextreme",
                 method="BAYES",
                 dim="pos",
@@ -837,28 +887,36 @@ class TestError:
             )
 
     def test_dist_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(ValueError, match="Unrecognized distribution: XXX"):
-            fit(data_fre, dist="XXX", method="ml", vars=["SeaLevel"], dim="Year")
+            evap.fit(data_fre, dist="XXX", method="ml", vars=["SeaLevel"], dim="Year")
 
     def test_method_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(ValueError, match="Unrecognized method: YYY"):
-            fit(
+            evap.fit(
                 data_fre, dist="genextreme", method="YYY", vars=["SeaLevel"], dim="Year"
             )
 
     def test_vars_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="XXXX is not a variable in the Dataset. Dataset's variables are: \\['SOI', 'SeaLevel'\\]",
         ):
-            fit(data_fre, dist="genextreme", vars=["XXXX"], dim="Year")
+            evap.fit(data_fre, dist="genextreme", vars=["XXXX"], dim="Year")
 
     def test_conflev_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="Confidence level must be strictly smaller than 1 and strictly larger than 0",
         ):
-            fit(
+            evap.fit(
                 data_fre,
                 dist="genextreme",
                 vars=["SeaLevel"],
@@ -867,11 +925,13 @@ class TestError:
             )
 
     def test_gumbel_cov_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="Gumbel distribution has no shape parameter and thus cannot have shape covariates \\['Year'\\]",
         ):
-            fit(
+            evap.fit(
                 data_fre,
                 dist="gumbel_r",
                 method="ml",
@@ -881,11 +941,13 @@ class TestError:
             )
 
     def test_pareto_cov_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="Pareto distribution has no location parameter and thus cannot have location covariates \\['Year'\\]",
         ):
-            return_level(
+            evap.return_level(
                 data_fre,
                 dist="genpareto",
                 method="ml",
@@ -895,11 +957,13 @@ class TestError:
             )
 
     def test_rtmper_error(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="Return period has to be strictly larger than 0. Current return period value is -1",
         ):
-            return_level(
+            evap.return_level(
                 data_fre,
                 dist="genextreme",
                 vars=["SeaLevel"],
@@ -908,11 +972,13 @@ class TestError:
             )
 
     def test_para_pareto_error(self, data_rain):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
+
         with pytest.raises(
             ValueError,
             match="'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'.",
         ):
-            return_level(
+            evap.return_level(
                 data_rain,
                 dist="genpareto",
                 method="ml",
