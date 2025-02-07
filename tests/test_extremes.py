@@ -321,7 +321,7 @@ class TestRtnlv:
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
         np.testing.assert_array_equal(
-            p.coords["evap.return_level"].values, np.array(["evap.return_level"])
+            p.coords["return_level"].values, np.array(["return_level"])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -352,7 +352,7 @@ class TestRtnlv:
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
         np.testing.assert_array_equal(
-            p.coords["evap.return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
