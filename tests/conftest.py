@@ -21,7 +21,7 @@ from xhydro.testing.helpers import deveraux as _deveraux
 
 
 @pytest.fixture(autouse=True, scope="session")
-def threadsafe_data_dir(tmp_path_factory) -> Path:
+def threadsafe_data_dir(tmp_path_factory):
     data_dir = Path(tmp_path_factory.getbasetemp().joinpath("data"))
     data_dir.mkdir(exist_ok=True)
     yield data_dir
@@ -204,11 +204,9 @@ def corrected_oi_data(deveraux):
 
 @pytest.fixture(scope="session")
 def data_fre(threadsafe_data_dir, deveraux):
-    extremes_data_folder = threadsafe_data_dir.joinpath("extremes_value_analysis")
-
     paths_sea = deveraux.fetch(
         "extreme_value_analysis/sea-levels_fremantle.zarr.zip",
-        processor=pooch.Unzip(extract_dir=extremes_data_folder.absolute().as_posix()),
+        processor=pooch.Unzip(),
     )
 
     ds_sea = xr.open_zarr(Path(paths_sea[0]).parents[0]).compute()
@@ -218,10 +216,9 @@ def data_fre(threadsafe_data_dir, deveraux):
 
 @pytest.fixture(scope="session")
 def data_rain(threadsafe_data_dir, deveraux):
-
     paths_rain = deveraux.fetch(
         "extreme_value_analysis/rainfall_excedance.zarr.zip",
-        pooch.Unzip(),
+        processor=pooch.Unzip(),
     )
 
     ds_rain = xr.open_zarr(Path(paths_rain[0]).parents[0]).compute()
