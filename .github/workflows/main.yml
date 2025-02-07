@@ -198,6 +198,7 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
       - name: Install PyJuliaCall
+        if: ${{ matrix.julia == true }}
         run: |
           micromamba install -c conda-forge "pyjuliacall>=0.9.20"
       - name: Install xHydro

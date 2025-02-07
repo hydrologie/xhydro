@@ -746,15 +746,12 @@ class TestError:
     )
 
     def test_non_stationary_cov_pwm(self, data_fre):
+        evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.raises(
             ValueError,
             match="Probability weighted moment parameter estimation cannot have covariates \\['Year', 'SOI', 'Year2', 'SOI2', 'Year3', 'SOI3'\\]",
         ):
-            evap = pytest.importorskip(
-                "xhydro.extreme_value_analysis.parameterestimation"
-            )
-
             evap.return_level(
                 data_fre,
                 dist="genextreme",
