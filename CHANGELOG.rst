@@ -13,6 +13,7 @@ Internal changes
 * Added a "User-Agent" to fix an issue related to `pooch` calls in the notebooks for recent ReadTheDocs builds. (:pull:`231`).
 * Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "User-Agent" by default. (:pull:`234`).
 * Fixed the URL joining logic of the ``load_registry()`` and ``devereaux()`` functions in the `xhydro.testing.helpers` module. (:pull:`234`).
+* Pinned pystack to 1.12.0 (:pull:`248`).
 
 v0.4.1 (2024-11-07)
 -------------------
