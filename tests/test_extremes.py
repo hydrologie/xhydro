@@ -10,7 +10,7 @@ class Testfit:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="genextreme", method="ml", vars=["SeaLevel"], dim="Year"
+            data_fre, dist="genextreme", method="ml", variables=["SeaLevel"], dim="Year"
         )
 
         assert isinstance(p, xr.Dataset)
@@ -41,7 +41,7 @@ class Testfit:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="gumbel_r", method="ml", vars=["SeaLevel"], dim="Year"
+            data_fre, dist="gumbel_r", method="ml", variables=["SeaLevel"], dim="Year"
         )
 
         assert isinstance(p, xr.Dataset)
@@ -72,7 +72,11 @@ class Testfit:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_rain, dist="genpareto", method="ml", vars=["Exceedance"], dim="Date"
+            data_rain,
+            dist="genpareto",
+            method="ml",
+            variables=["Exceedance"],
+            dim="Date",
         )
 
         assert isinstance(p, xr.Dataset)
@@ -106,7 +110,7 @@ class Testfit:
             data_fre,
             dist="genextreme",
             method="ml",
-            vars=["SeaLevel"],
+            variables=["SeaLevel"],
             dim="Year",
             locationcov=["Year"],
         )
@@ -143,7 +147,7 @@ class Testfit:
             data_fre,
             dist="genextreme",
             method="ml",
-            vars=["SeaLevel"],
+            variables=["SeaLevel"],
             dim="Year",
             locationcov=["Year", "SOI"],
             scalecov=["Year", "SOI"],
@@ -220,7 +224,7 @@ class Testfit:
                 data_fre,
                 dist="genextreme",
                 method="pwm",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year2", "SOI2"],
@@ -239,7 +243,7 @@ class Testfit:
                 data_fre.isel(Year=slice(1, 2)),
                 dist="genextreme",
                 method="ml",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year", "SOI"],
@@ -279,7 +283,7 @@ class Testfit:
                 data_fre.isel(Year=slice(0, 5)),
                 dist="genextreme",
                 method="ml",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year", "SOI"],
@@ -307,7 +311,7 @@ class TestRtnlv:
             data_fre,
             dist="genextreme",
             method="ml",
-            vars=["SeaLevel"],
+            variables=["SeaLevel"],
             dim="Year",
             return_period=100,
         )
@@ -337,7 +341,7 @@ class TestRtnlv:
             data_fre,
             dist="genextreme",
             method="ml",
-            vars=["SeaLevel"],
+            variables=["SeaLevel"],
             dim="Year",
             locationcov=["Year", "SOI"],
             return_period=100,
@@ -379,7 +383,7 @@ class TestRtnlv:
             data_fre_nan,
             dist="genextreme",
             method="ml",
-            vars=["SeaLevel"],
+            variables=["SeaLevel"],
             dim="Year",
             locationcov=["Year", "SOI"],
             return_period=100,
@@ -438,7 +442,7 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="genextreme", method="ML", dim="Year", variables=["SeaLevel"]
         )
 
         assert (
@@ -460,7 +464,11 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="genextreme",
+            method="PWM",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         assert (
@@ -475,7 +483,11 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="genextreme",
+            method="BAYES",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         assert (
@@ -487,7 +499,7 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="genextreme", method="ML", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="genextreme", method="ML", dim="Year", variables=["SeaLevel"]
         )
 
         assert (
@@ -502,7 +514,11 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="genextreme", method="PWM", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="genextreme",
+            method="PWM",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         np.testing.assert_array_almost_equal(
@@ -517,7 +533,11 @@ class TestGEV:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="genextreme", method="BAYES", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="genextreme",
+            method="BAYES",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         assert (
@@ -533,7 +553,7 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="gumbel_r", method="ML", dim="Year", variables=["SeaLevel"]
         )
 
         assert (
@@ -555,7 +575,7 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="gumbel_r", method="PWM", dim="Year", variables=["SeaLevel"]
         )
 
         assert (
@@ -570,7 +590,11 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="gumbel_r",
+            method="BAYES",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         assert (
@@ -582,7 +606,7 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="gumbel_r", method="ML", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="gumbel_r", method="ML", dim="Year", variables=["SeaLevel"]
         )
 
         assert (
@@ -597,7 +621,7 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="gumbel_r", method="PWM", dim="Year", vars=["SeaLevel"]
+            data_fre, dist="gumbel_r", method="PWM", dim="Year", variables=["SeaLevel"]
         )
 
         np.testing.assert_array_almost_equal(
@@ -612,7 +636,11 @@ class TestGumbel:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
-            data_fre, dist="gumbel_r", method="BAYES", dim="Year", vars=["SeaLevel"]
+            data_fre,
+            dist="gumbel_r",
+            method="BAYES",
+            dim="Year",
+            variables=["SeaLevel"],
         )
 
         assert (
@@ -628,7 +656,11 @@ class TestPareto:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_rain, dist="genpareto", method="ML", dim="Date", vars=["Exceedance"]
+            data_rain,
+            dist="genpareto",
+            method="ML",
+            dim="Date",
+            variables=["Exceedance"],
         )
 
         assert (
@@ -650,7 +682,11 @@ class TestPareto:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_rain, dist="genpareto", method="PWM", dim="Date", vars=["Exceedance"]
+            data_rain,
+            dist="genpareto",
+            method="PWM",
+            dim="Date",
+            variables=["Exceedance"],
         )
 
         assert (
@@ -665,7 +701,11 @@ class TestPareto:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
-            data_rain, dist="genpareto", method="BAYES", vars=["Exceedance"], dim="Date"
+            data_rain,
+            dist="genpareto",
+            method="BAYES",
+            variables=["Exceedance"],
+            dim="Date",
         )
 
         assert (
@@ -681,7 +721,7 @@ class TestPareto:
             dist="genpareto",
             method="ML",
             dim="Date",
-            vars=["Exceedance"],
+            variables=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
@@ -704,7 +744,7 @@ class TestPareto:
             dist="genpareto",
             method="PWM",
             dim="Date",
-            vars=["Exceedance"],
+            variables=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
@@ -725,7 +765,7 @@ class TestPareto:
             dist="genpareto",
             method="BAYES",
             dim="Date",
-            vars=["Exceedance"],
+            variables=["Exceedance"],
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
@@ -756,7 +796,7 @@ class TestError:
                 data_fre,
                 dist="genextreme",
                 method="pwm",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year2", "SOI2"],
@@ -772,7 +812,7 @@ class TestError:
                 dist="XXX",
                 method="BAYES",
                 dim="Date",
-                vars=["Exceedance"],
+                variables=["Exceedance"],
                 threshold_pareto=30,
                 nobs_pareto=17531,
                 nobsperblock_pareto=365,
@@ -787,7 +827,7 @@ class TestError:
                 dist="genpareto",
                 method="YYY",
                 dim="Date",
-                vars=["Exceedance"],
+                variables=["Exceedance"],
                 threshold_pareto=30,
                 nobs_pareto=17531,
                 nobsperblock_pareto=365,
@@ -800,7 +840,11 @@ class TestError:
             UserWarning, match="There was an error in computing confidence interval."
         ):
             p = evap.fit(
-                data_fre, dist="genpareto", method="ML", vars=["SeaLevel"], dim="Year"
+                data_fre,
+                dist="genpareto",
+                method="ML",
+                variables=["SeaLevel"],
+                dim="Year",
             )
 
         np.testing.assert_array_almost_equal(
@@ -823,7 +867,7 @@ class TestError:
                 method="ML",
                 dim="pos",
                 scalecov=["n2"],
-                vars=["n"],
+                variables=["n"],
             )
             np.testing.assert_array_equal(
                 p.to_array().values,
@@ -851,7 +895,7 @@ class TestError:
                 method="BAYES",
                 dim="pos",
                 scalecov=["n2"],
-                vars=["n"],
+                variables=["n"],
             )
 
             np.testing.assert_array_equal(
@@ -880,7 +924,7 @@ class TestError:
                 method="BAYES",
                 dim="pos",
                 scalecov=["n2"],
-                vars=["n"],
+                variables=["n"],
             )
 
             np.testing.assert_array_equal(
@@ -898,14 +942,20 @@ class TestError:
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.raises(ValueError, match="Unrecognized distribution: XXX"):
-            evap.fit(data_fre, dist="XXX", method="ml", vars=["SeaLevel"], dim="Year")
+            evap.fit(
+                data_fre, dist="XXX", method="ml", variables=["SeaLevel"], dim="Year"
+            )
 
     def test_method_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         with pytest.raises(ValueError, match="Unrecognized method: YYY"):
             evap.fit(
-                data_fre, dist="genextreme", method="YYY", vars=["SeaLevel"], dim="Year"
+                data_fre,
+                dist="genextreme",
+                method="YYY",
+                variables=["SeaLevel"],
+                dim="Year",
             )
 
     def test_vars_error(self, data_fre):
@@ -915,7 +965,7 @@ class TestError:
             ValueError,
             match="XXXX is not a variable in the Dataset. Dataset's variables are: \\['SOI', 'SeaLevel'\\]",
         ):
-            evap.fit(data_fre, dist="genextreme", vars=["XXXX"], dim="Year")
+            evap.fit(data_fre, dist="genextreme", variables=["XXXX"], dim="Year")
 
     def test_conflev_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -927,7 +977,7 @@ class TestError:
             evap.fit(
                 data_fre,
                 dist="genextreme",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 confidence_level=2,
             )
@@ -943,7 +993,7 @@ class TestError:
                 data_fre,
                 dist="gumbel_r",
                 method="ml",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 shapecov=["Year"],
             )
@@ -959,7 +1009,7 @@ class TestError:
                 data_fre,
                 dist="genpareto",
                 method="ml",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year"],
             )
@@ -974,7 +1024,7 @@ class TestError:
             evap.return_level(
                 data_fre,
                 dist="genextreme",
-                vars=["SeaLevel"],
+                variables=["SeaLevel"],
                 dim="Year",
                 return_period=-1,
             )
@@ -990,6 +1040,6 @@ class TestError:
                 data_rain,
                 dist="genpareto",
                 method="ml",
-                vars=["Exceedance"],
+                variables=["Exceedance"],
                 dim="Date",
             )
