@@ -143,7 +143,7 @@ def return_level_cint(
     nobsperblock_pareto: int | None = None,
 ) -> dict[str, list[float]]:
     r"""
-    Return a list of retun level and confidence intervals for a given Julia fitted model.
+    Return a list of return levels and confidence intervals for a given Julia fitted model.
 
     Parameters
     ----------

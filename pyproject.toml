@@ -166,7 +166,8 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "astroid,socio-economic"
+ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic"
+skip = "*.po"
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]

@@ -71,7 +71,7 @@ lint: lint/flake8 lint/black ## check style
 test: ## run tests quickly with the default Python
 	python -m pytest
 
-test-distributed: ## run tests quickly with the default Python and distibuted workers
+test-distributed: ## run tests quickly with the default Python and distributed workers
 	python -m pytest --num-processes=logical
 
 test-notebooks: ## run tests on notebooks and compare outputs
