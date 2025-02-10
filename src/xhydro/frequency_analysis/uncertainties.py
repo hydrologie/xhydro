@@ -7,8 +7,8 @@ for generating bootstrap samples from observed data and fitted distributions,
 calculating L-moments, and estimating quantiles with uncertainty bounds.
 
 Functions:
-    boostrap_obs: Generate bootstrap samples from observed data.
-    boostrap_dist: Generate bootstrap samples from a fitted distribution.
+    bootstrap_obs: Generate bootstrap samples from observed data.
+    bootstrap_dist: Generate bootstrap samples from a fitted distribution.
     fit_boot_dist: Fit distributions to bootstrap samples.
     calc_moments_iter: Calculate L-moments for each bootstrap sample.
     calc_q_iter: Calculate quantiles for each bootstrap sample and group.
@@ -26,8 +26,17 @@ import xhydro.frequency_analysis as xhfa
 
 from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
 
+__all__ = [
+    "bootstrap_dist",
+    "bootstrap_obs",
+    "calc_moments_iter",
+    "calc_q_iter",
+    "fit_boot_dist",
+    "generate_combinations",
+]
 
-def boostrap_obs(
+
+def bootstrap_obs(
     obs: xr.DataArray, n_samples: int, seed: int | None = None
 ) -> xr.DataArray:
     """
@@ -67,7 +76,7 @@ def boostrap_obs(
     ).assign_coords(samples=range(n_samples))
 
 
-def boostrap_dist(
+def bootstrap_dist(
     ds_obs: xr.Dataset, ds_params: xr.Dataset, n_samples: int
 ) -> xr.Dataset:
     """

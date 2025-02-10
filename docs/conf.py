@@ -17,10 +17,10 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 import warnings
-from pathlib import Path
-
 import os
 import sys
+from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, os.path.abspath(".."))
 if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
@@ -178,7 +178,7 @@ htmlhelp_basename = "xhydrodoc"
 
 # -- Options for LaTeX output ------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, Any] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
