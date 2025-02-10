@@ -93,5 +93,6 @@ jobs:
       - name: Push Changes
         uses: ad-m/github-push-action@d91a481090679876dfc4178fef17f286781251df # v0.8.0
         with:
-          force: false
           branch: ${{ github.ref }}
+          force: false
+          github_token: '${{ steps.token_generator.outputs.token }}'
