@@ -20,7 +20,11 @@ Internal changes
 * Added a "User-Agent" to fix an issue related to `pooch` calls in the notebooks for recent ReadTheDocs builds. (:pull:`231`).
 * Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "User-Agent" by default. (:pull:`234`).
 * Fixed the URL joining logic of the ``load_registry()`` and ``devereaux()`` functions in the `xhydro.testing.helpers` module. (:pull:`234`).
-* Updated ``uncertainities.calc_q_iter()`` to allow for ungaged catchments. (:pull:`235`).
+* Updated ``uncertainties.calc_q_iter()`` to allow for ungaged catchments. (:pull:`235`).
+* Updated the cookiecutter template. (:pull:`252`):
+    * GitHub Actions versions and Python dependencies updated.
+    * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
+    * Added an advanced CodeQL workflow for security scanning.
 
 v0.4.1 (2024-11-07)
 -------------------
@@ -64,7 +68,7 @@ New features and enhancements
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
 * Regional frequency analysis functions as well as Resampling function for uncertainties have been added to the ``xhydro.frequency_analysis`` module. (:pull:`186`).
 * New function ``xhydro.modelling.format_input`` to format CF-compliant input data for hydrological models (currently only supports Hydrotel). (:pull:`185`).
-* `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation from climate change scenarios. (:pull:`176`).
+* `xhydro` now has a `pmp` module to compute the Probable Maximum Precipitation from climate change scenarios. (:pull:`176`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
