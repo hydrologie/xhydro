@@ -8,8 +8,14 @@ import warnings
 from types import ModuleType
 from typing import cast
 
-import juliapkg
-from juliacall import Main as jl  # noqa: N813
+try:
+    import juliapkg
+    from juliacall import Main as jl  # noqa: N813
+
+except (ImportError, ModuleNotFoundError) as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
 
 __all__ = ["Extremes", "jl"]
 

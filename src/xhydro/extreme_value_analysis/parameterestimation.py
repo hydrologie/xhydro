@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import numpy as np
 import scipy.stats
 import xarray as xr
-from juliacall import JuliaError
-from xclim.core.formatting import prefix_attrs, update_history
+from xclim.core.formatting import prefix_attrs
 from xclim.indices.stats import get_dist
 
 try:
+    from juliacall import JuliaError
+
     from xhydro.extreme_value_analysis import Extremes, jl
     from xhydro.extreme_value_analysis.structures.conversions import (
         py_list_to_jl_vector,
@@ -44,12 +46,12 @@ def _fit_model(
     y: list[float],
     dist: str,
     method: str,
-    location_cov: list[list] = (),
-    scale_cov: list[list] = (),
-    shape_cov: list[list] = (),
+    location_cov: list[list] | None = None,
+    scale_cov: list[list] | None = None,
+    shape_cov: list[list] | None = None,
     niter: int = 5000,
     warmup: int = 2000,
-) -> list:
+) -> Any | None:
     r"""
     Fit a distribution using the specified covariate data.
 
@@ -60,7 +62,7 @@ def _fit_model(
     dist : str or rv_continuous
         Distribution, either as a string or as a distribution object.
         Supported distributions include genextreme, gumbel_r, genpareto.
-    method : str
+    method : {"ML", "PWM", "BAYES}
         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
         or Bayesian inference (BAYES).
     location_cov : list[list]
@@ -70,10 +72,10 @@ def _fit_model(
     shape_cov : list[list]
         List of data lists to be used as covariates for the shape parameter.l.
     niter : int
-        Required when when method=BAYES. The number of iterations of the bayesian inference algorithm
+        Required when method=BAYES. The number of iterations of the bayesian inference algorithm
         for parameter estimation (default: 5000).
     warmup : int
-        Required when when method=BAYES. The number of warmup iterations of the bayesian inference
+        Required when method=BAYES. The number of warmup iterations of the bayesian inference
         algorithm for parameter estimation (default: 2000).
 
     Returns
@@ -81,6 +83,10 @@ def _fit_model(
     Julia.Extremes.AbstractExtremeValueModel
         Fitted Julia model.
     """
+    location_cov = location_cov or []
+    scale_cov = scale_cov or []
+    shape_cov = shape_cov or []
+
     jl_y = py_list_to_jl_vector(y)
     locationcov, logscalecov, shapecov = (
         jl_variable_fit_parameters(location_cov),
@@ -88,28 +94,18 @@ def _fit_model(
         jl_variable_fit_parameters(shape_cov),
     )
 
-    if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
-        if method == "ML":
-            distm = "gevfit"
-        elif method == "PWM":
-            distm = "gevfitpwm"
-        elif method == "BAYES":
-            distm = "gevfitbayes"
-    elif dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]:
-        if method == "ML":
-            distm = "gumbelfit"
-        elif method == "PWM":
-            distm = "gumbelfitpwm"
-        elif method == "BAYES":
-            distm = "gumbelfitbayes"
-    elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-        if method == "ML":
-            distm = "gpfit"
-        elif method == "PWM":
-            distm = "gpfitpwm"
-        elif method == "BAYES":
-            distm = "gpfitbayes"
-    else:
+    dist_methods = {
+        "genextreme": {"ML": "gevfit", "PWM": "gevfitpwm", "BAYES": "gevfitbayes"},
+        "gumbel_r": {
+            "ML": "gumbelfit",
+            "PWM": "gumbelfitpwm",
+            "BAYES": "gumbelfitbayes",
+        },
+        "genpareto": {"ML": "gpfit", "PWM": "gpfitpwm", "BAYES": "gpfitbayes"},
+    }
+
+    distm = dist_methods.get(dist, {}).get(method)
+    if not distm:
         raise ValueError(
             f"Fitting distribution {dist} or method {method} not recognized"
         )
@@ -157,15 +153,13 @@ def _fit_model(
             UserWarning,
         )
 
-        return None
-
 
 def fit(
     ds: xr.Dataset,
-    locationcov: list[str] = [],
-    scalecov: list[str] = [],
-    shapecov: list[str] = [],
-    vars: list[str] = [],
+    locationcov: list[str] | None = None,
+    scalecov: list[str] | None = None,
+    shapecov: list[str] | None = None,
+    variables: list[str] | None = None,
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
@@ -173,7 +167,8 @@ def fit(
     niter: int = 5000,
     warmup: int = 2000,
 ) -> xr.Dataset:
-    r"""Fit an array to a univariate distribution along a given dimension.
+    r"""
+    Fit an array to a univariate distribution along a given dimension.
 
     Parameters
     ----------
@@ -185,7 +180,7 @@ def fit(
         List of names of the covariates for the scale parameter.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-    vars : list[str]
+    variables : list[str]
         List of variables to be fitted.
     dist : str or rv_continuous distribution object
         Name of the univariate distribution or the distribution object itself.
@@ -212,13 +207,17 @@ def fit(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    locationcov = locationcov or []
+    scalecov = scalecov or []
+    shapecov = shapecov or []
+
     if any(var.chunks for var in ds.variables.values()):
         warnings.warn(
             "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
             UserWarning,
         )
 
-    vars = vars or ds.data_vars
+    variables = variables or ds.data_vars
     method = method.upper()
     _check_fit_params(
         dist,
@@ -228,7 +227,7 @@ def fit(
         shapecov,
         confidence_level,
         ds,
-        vars,
+        variables,
     )
     dist_params = _get_params(dist, shapecov, locationcov, scalecov)
 
@@ -241,7 +240,7 @@ def fit(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
-    for data_var in vars:
+    for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
             _fitfunc_param_cint,
@@ -270,10 +269,10 @@ def fit(
         result_upper = xr.merge([result_upper, results[2]])
 
     cint_lower_data = result_lower.rename(
-        {var: var + "_lower" for var in result_lower.data_vars}
+        {var: f"{var}_lower" for var in result_lower.data_vars}
     )
     cint_upper_data = result_upper.rename(
-        {var: var + "_upper" for var in result_upper.data_vars}
+        {var: f"{var}_upper" for var in result_upper.data_vars}
     )
     data = xr.merge([result_params, cint_lower_data, cint_upper_data])
 
@@ -297,17 +296,18 @@ def fit(
 
 def _fitfunc_param_cint(
     *arg,
-    dist,
-    nparams,
-    method,
+    dist: str | scipy.stats.rv_continuous,
+    nparams: int,
+    method: str,
     n_loccov: int,
     n_scalecov: int,
     n_shapecov: int,
     niter: int = 5000,
     warmup: int = 2000,
     confidence_level: float = 0.95,
-):
-    r"""Fit a univariate distribution to an array using specified covariate data.
+) -> tuple:
+    r"""
+    Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
     ----------
@@ -318,16 +318,14 @@ def _fitfunc_param_cint(
         Supported distributions include genextreme, gumbel_r, genpareto.
     nparams : int
         The number of parameters for the distribution.
-    method : str
+    method : {"ML", "PWM", "BAYES}
         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
         or Bayesian inference (BAYES).
-    locationcov_data : list[list]
-        Nested list containing the data for the location covariates. Each inner list corresponds to a specific
-        covariate.
-    scalecov_data : list[list]
-        Nested list containing the data for the scale covariates. Each inner list corresponds to a specific
-        covariate.
-    shapecov_data : list[list]
+    n_loccov : list[list]
+        Nested list containing the data for the location covariates. Each inner list corresponds to a specific covariate.
+    n_scalecov : list[list]
+        Nested list containing the data for the scale covariates. Each inner list corresponds to a specific covariate.
+    n_shapecov : list[list]
         Nested list containing the data for the shape covariates. Each inner list corresponds to a specific
         covariate.
     niter : int
@@ -341,7 +339,7 @@ def _fitfunc_param_cint(
 
     Returns
     -------
-    params : list
+    tuple
         A list of fitted distribution parameters.
     """
     arr = arg[0]
@@ -410,10 +408,10 @@ def _fitfunc_param_cint(
 
 def return_level(
     ds: xr.Dataset,
-    locationcov: list[str] = [],
-    scalecov: list[str] = [],
-    shapecov: list[str] = [],
-    vars: list[str] = [],
+    locationcov: list[str] | None = None,
+    scalecov: list[str] | None = None,
+    shapecov: list[str] | None = None,
+    variables: list[str] | None = None,
     dist: str | scipy.stats.rv_continuous = "genextreme",
     method: str = "ML",
     dim: str = "time",
@@ -421,11 +419,12 @@ def return_level(
     return_period: float = 100,
     niter: int = 5000,
     warmup: int = 2000,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
+    threshold_pareto: float | None = None,
+    nobs_pareto: int | None = None,
+    nobsperblock_pareto: int | None = None,
 ) -> xr.Dataset:
-    r"""Compute the return level associated with a return period based on a given distribution.
+    r"""
+    Compute the return level associated with a return period based on a given distribution.
 
     Parameters
     ----------
@@ -437,7 +436,7 @@ def return_level(
         List of names of the covariates for the scale parameter.
     shapecov : list[str]
         List of names of the covariates for the shape parameter.
-    vars : list[str]
+    variables : list[str]
         List of variables to be fitted.
     dist : str or rv_continuous distribution object
         Name of the univariate distribution or the distribution object itself.
@@ -456,7 +455,7 @@ def return_level(
         The number of warmup iterations of the bayesian inference algorithm for parameter estimation (default: 2000).
     threshold_pareto : float
         The value above which the Pareto distribution is applied.
-    nobs_pareto : int,
+    nobs_pareto : int
         The total number of observations used when applying the Pareto distribution.
     nobsperblock_pareto : int
         The number of observations per block when applying the Pareto distribution.
@@ -472,13 +471,17 @@ def return_level(
     contains NaNs or has less valid values than the number of parameters for that distribution,
     the distribution parameters will be returned as NaNs.
     """
+    locationcov = locationcov or []
+    scalecov = scalecov or []
+    shapecov = shapecov or []
+
     if any(var.chunks for var in ds.variables.values()):
         warnings.warn(
             "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
             UserWarning,
         )
 
-    vars = vars or ds.data_vars
+    variables = variables or ds.data_vars
     method = method.upper()
     _check_fit_params(
         dist,
@@ -488,7 +491,7 @@ def return_level(
         shapecov,
         confidence_level,
         ds,
-        vars,
+        variables,
         return_period=return_period,
         return_type="returnlevel",
         threshold_pareto=threshold_pareto,
@@ -510,7 +513,7 @@ def return_level(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
-    for data_var in vars:
+    for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
             _fitfunc_return_level,
@@ -546,10 +549,10 @@ def return_level(
         result_upper = xr.merge([result_upper, results[2]])
 
     cint_lower_data = result_lower.rename(
-        {var: var + "_lower" for var in result_lower.data_vars}
+        {var: f"{var}_lower" for var in result_lower.data_vars}
     )
     cint_upper_data = result_upper.rename(
-        {var: var + "_upper" for var in result_upper.data_vars}
+        {var: f"{var}_upper" for var in result_upper.data_vars}
     )
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
 
@@ -574,10 +577,10 @@ def return_level(
 
 def _fitfunc_return_level(
     *arg,
-    dist,
-    method,
-    nparams,
-    main_dim_length,
+    dist: str | scipy.stats.rv_continuous,
+    method: str,
+    nparams: int,
+    main_dim_length: int,
     n_loccov: int,
     n_scalecov: int,
     n_shapecov: int,
@@ -585,11 +588,12 @@ def _fitfunc_return_level(
     warmup: int,
     confidence_level: float = 0.95,
     return_period: float = 100,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
-):
-    r"""Fit a univariate distribution to an array using specified covariate data.
+    threshold_pareto: float | None = None,
+    nobs_pareto: int | None = None,
+    nobsperblock_pareto: int | None = None,
+) -> tuple:
+    r"""
+    Fit a univariate distribution to an array using specified covariate data.
 
     Parameters
     ----------
@@ -598,16 +602,20 @@ def _fitfunc_return_level(
     dist : str or rv_continuous
         The univariate distribution to fit, either as a string or as a distribution object.
         Supported distributions include genextreme, gumbel_r, genpareto.
-    method : str
+    method : {"ML", "PWM", "BAYES}
         The fitting method, which can be maximum likelihood (ML), probability weighted moments (PWM),
         or Bayesian inference (BAYES).
-    locationcov_data : list[list]
+    nparams : int
+        The number of parameters for the distribution.
+    main_dim_length : int
+        The length of the main dimension.
+    n_loccov : list[list]
         Nested list containing the data for the location covariates. Each inner list corresponds to a specific
         covariate.
-    scalecov_data : list[list]
+    n_scalecov : list[list]
         Nested list containing the data for the scale covariates. Each inner list corresponds to a specific
         covariate.
-    shapecov_data : list[list]
+    n_shapecov : list[list]
         Nested list containing the data for the shape covariates. Each inner list corresponds to a specific
         covariate.
     niter : int
@@ -616,13 +624,19 @@ def _fitfunc_return_level(
         The number of warmup iterations for the Bayesian inference algorithm used for parameter estimation (default: 2000).
     confidence_level : float, optional
         The confidence level for the confidence interval of each parameter (default: 0.95).
-    param_type : str
-        The type of parameter to be estimated (e.g., "location", "scale", "shape").
+    return_period : float
+        The return period used to compute the return level.
+    threshold_pareto : float
+        The value above which the Pareto distribution is applied.
+    nobs_pareto : int
+        The total number of observations used when applying the Pareto distribution.
+    nobsperblock_pareto : int
+        The number of observations per block when applying the Pareto distribution.
 
     Returns
     -------
-    params : list
-        A list of fitted distribution parameters.
+    tuple
+        A tuple of fitted distribution parameters.
     """
     arr = arg[0]
 
@@ -685,7 +699,7 @@ def _fitfunc_return_level(
 
 def _get_params(
     dist: str, shapecov: list[str], locationcov: list[str], scalecov: list[str]
-) -> list:
+) -> list[str]:
     r"""Return a list of parameter names based on the specified distribution and covariates.
 
     Parameters
@@ -701,8 +715,8 @@ def _get_params(
 
     Returns
     -------
-    list
-        A one-dimensional list of parameter names corresponding to the distribution and covariates.
+    list of str
+        A one-dimensional tuple of parameter names corresponding to the distribution and covariates.
 
     Examples
     --------
@@ -728,11 +742,15 @@ def _get_params(
         new_param_names = insert_covariates(param_names, locationcov, "loc")
         new_param_names = insert_covariates(new_param_names, scalecov, "scale")
         return new_param_names
+
     elif dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
         param_names = ["scale", "shape"]
         new_param_names = insert_covariates(param_names, scalecov, "scale")
         new_param_names = insert_covariates(new_param_names, shapecov, "shape")
         return new_param_names
+
+    else:
+        raise ValueError(f"Unrecognized distribution: {dist}")
 
 
 def _check_fit_params(
@@ -743,13 +761,13 @@ def _check_fit_params(
     shapecov: list[str],
     confidence_level: float,
     ds: xr.Dataset,
-    vars: list[str],
+    variables: list[str],
     return_period: float = 1,
-    return_type=None,
-    threshold_pareto=None,
-    nobs_pareto=None,
-    nobsperblock_pareto=None,
-):
+    return_type: str | None = None,
+    threshold_pareto: float | None = None,
+    nobs_pareto: int | None = None,
+    nobsperblock_pareto: int | None = None,
+) -> None:
     r"""Validate the parameters for fitting a univariate distribution. This function is called at the start of fit()
         to make sure that the parameters it is called with are valid.
 
@@ -771,9 +789,9 @@ def _check_fit_params(
         Specifies whether to return the estimated parameters ('param') or the return level ('returnlevel').
     threshold_pareto : float
         Threshold used to compute the returnlevel with the pareto distribution .
-    nobs_pareto : int,
+    nobs_pareto : int
         Number of total observation used to compute the returnlevel with the pareto distribution .
-    nobsperblock_pareto : int,
+    nobsperblock_pareto : int
         Number of observation per block used to compute the returnlevel with the pareto distribution
 
     Raises
@@ -832,12 +850,12 @@ def _check_fit_params(
             f"Confidence level must be strictly smaller than 1 and strictly larger than 0"
         )
 
-    # Vars has to contain data variables present in the Dataset
-    for var in vars:
+    # Must contain data variables present in the Dataset
+    for var in variables:
         if var not in ds.data_vars:
             raise ValueError(
                 f"{var} is not a variable in the Dataset. "
-                f"Dataset's variables are: {list(ds.data_vars)}"
+                f"Dataset variables are: {list(ds.data_vars)}"
             )
 
     # Return period has to be strictly positive

@@ -6,6 +6,13 @@ v0.5.0 (unreleased)
 -------------------
 Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`).
 
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a new module `xhydro.extreme_value_analysis` that wraps the `Extremes.jl` package for Julia. (:pull:`175`).
+  * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
+  * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
+  * You can use `pip install xhydro[julia]` to install the required dependencies.
+
 Internal changes
 ^^^^^^^^^^^^^^^^
 * `"land_use_classification"` default collection has been changed to `"io-lulc-annual-v02"`, as the previous one will be deprecated in December 2024. (:pull:`227`).
@@ -13,6 +20,7 @@ Internal changes
 * Added a "User-Agent" to fix an issue related to `pooch` calls in the notebooks for recent ReadTheDocs builds. (:pull:`231`).
 * Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "User-Agent" by default. (:pull:`234`).
 * Fixed the URL joining logic of the ``load_registry()`` and ``devereaux()`` functions in the `xhydro.testing.helpers` module. (:pull:`234`).
+* Updated ``uncertainities.calc_q_iter()`` to allow for ungaged catchments. (:pull:`235`).
 
 v0.4.1 (2024-11-07)
 -------------------
