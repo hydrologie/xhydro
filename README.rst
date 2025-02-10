@@ -7,9 +7,9 @@ xHydro |logo| |logo-light| |logo-dark|
 +----------------------------+-----------------------------------------------------+
 | Documentation and Support  | |docs|                                              |
 +----------------------------+-----------------------------------------------------+
-| Open Source                | |license| |ossf|                                    |
+| Open Source                | |license| |ossf-score|                              |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |black| |ruff| |pre-commit|                         |
+| Coding Standards           | |black| |isort| |ruff| |pre-commit|                 |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
 +----------------------------+-----------------------------------------------------+
@@ -60,6 +60,10 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
         :target: https://xhydro.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
+.. |isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+        :target: https://pycqa.github.io/isort/
+        :alt: Isort
+
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
         :alt: License
@@ -78,7 +82,12 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
         :alt:
         :class: xhydro-logo-small only-dark-inline
 
-.. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
+..
+    .. |ossf-bp| image:: https://bestpractices.coreinfrastructure.org/projects/9945/badge
+            :target: https://bestpractices.coreinfrastructure.org/projects/9945
+            :alt: Open Source Security Foundation Best Practices
+
+.. |ossf-score| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/hydrologie/xhydro
         :alt: OpenSSF Scorecard
 
