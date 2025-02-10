@@ -5,7 +5,7 @@ import re
 import shutil
 from io import StringIO
 from pathlib import Path
-from typing import Optional, TextIO, Union
+from typing import TextIO
 
 import numpy as np
 import pandas as pd
@@ -41,7 +41,7 @@ def fake_hydrotel_project(
     Notes
     -----
     Uses the directory structure specified in xhydro/testing/data/hydrotel_structure.yml.
-    Most files are fake, except for the projet.csv, simulation.csv and output.csv files, which are filled with
+    Most files are fake, except for the project.csv, simulation.csv and output.csv files, which are filled with
     default options taken from xhydro/modelling/data/hydrotel_defaults/.
     """
     project_dir = Path(project_dir)
@@ -52,14 +52,14 @@ def fake_hydrotel_project(
         .joinpath("hydrotel_structure.yml")
         .open() as f
     ):
-        struc = yaml.safe_load(f)["structure"]
+        struct = yaml.safe_load(f)["structure"]
 
     default_csv = (
         Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults"
     )
 
     project_dir.mkdir(exist_ok=True, parents=True)
-    for k, v in struc.items():
+    for k, v in struct.items():
         if k != "_main":
             project_dir.joinpath(k).mkdir(exist_ok=True, parents=True)
             for file in v:
@@ -67,7 +67,7 @@ def fake_hydrotel_project(
                     shutil.copy(default_csv / file, project_dir / k / file)
                 elif file is not None and Path(file).suffix not in [".nc", ".config"]:
                     (project_dir / k / file).touch()
-    for file in struc["_main"]:
+    for file in struct["_main"]:
         if file in ["SLNO.csv"]:
             shutil.copy(default_csv / "project.csv", project_dir / file)
         elif file is not None:
