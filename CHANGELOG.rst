@@ -6,6 +6,13 @@ v0.5.0 (unreleased)
 -------------------
 Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
 
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a new module `xhydro.extreme_value_analysis` that wraps the `Extremes.jl` package for Julia. (:pull:`175`).
+  * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
+  * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
+  * You can use `pip install xhydro[julia]` to install the required dependencies.
+
 Internal changes
 ^^^^^^^^^^^^^^^^
 * `"land_use_classification"` default collection has been changed to `"io-lulc-annual-v02"`, as the previous one will be deprecated in December 2024. (:pull:`227`).
