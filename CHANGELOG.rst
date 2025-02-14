@@ -4,7 +4,11 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a configuration for the Raven HBVEC model in `xhydro.modelling.format_input`. (:pull:`257`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^

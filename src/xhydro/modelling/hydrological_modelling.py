@@ -115,7 +115,7 @@ def get_hydrological_model_inputs(
     return all_config, model.__doc__
 
 
-def format_input(
+def format_input(  # noqa: C901
     ds: xr.Dataset,
     model: str,
     convert_calendar_missing: float | str | dict = np.nan,
@@ -331,6 +331,110 @@ def format_input(
             with Path(save_as).with_suffix(".nc.config").open("w") as f:
                 for k, v in cfg.items():
                     f.write(f"{k}; {v}\n")
+            ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
+
+    elif model == "HBVEC":
+        if not all(
+            v in ds
+            for v in [
+                "rlon",
+                "rlat",
+                "lon",
+                "lat",
+                "orog",
+                "time",
+                "tasmax",
+                "tasmin",
+                "pr",
+            ]
+        ):
+            missing = {
+                "rlon",
+                "rlat",
+                "lon",
+                "lat",
+                "orog",
+                "time",
+                "tasmax",
+                "tasmin",
+                "pr",
+            }.difference(ds.variables)
+            raise ValueError(
+                f"The dataset is missing the following required variables for Raven HBVEC: "
+                f"{missing}."
+            )
+
+        # Remove unused variables
+        ds = ds.drop_vars(
+            set(ds.data_vars)
+            - {"rlon", "rlat", "lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"}
+        )
+
+        # Convert units
+        if _is_rate(ds["pr"].attrs.get("units", "")):
+            ds["pr"] = xc.units.rate2amount(ds["pr"])
+        ds["pr"] = xc.units.convert_units_to(ds["pr"], "mm", context="hydro")
+        ds["tasmax"] = xc.units.convert_units_to(ds["tasmax"], "degC")
+        ds["tasmin"] = xc.units.convert_units_to(ds["tasmin"], "degC")
+        ds = xs.utils.change_units(ds, {"tasmin": "degC", "tasmax": "degC"})
+        ds["orog"] = xc.units.convert_units_to(ds["orog"], "m")
+
+        # Ensure that longitude is in the range [-180, 180]
+        # This tries guessing if lons are wrapped around at 180+ but without much information, this might not be true
+        if np.min(ds["lon"]) >= -180 and np.max(ds["lon"]) <= 180:
+            pass
+        elif np.min(ds["lon"]) >= 0 and np.max(ds["lon"]) <= 360:
+            warnings.warn(
+                "Longitude values appear to be in the range [0, 360]. They will be converted to [-180, 180]."
+            )
+            with xr.set_options(keep_attrs=True):
+                ds["lon"] = ds["lon"] - 180
+
+        # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
+        # Raven is faster with gridded inputs than with stations when there are a lot of stations
+        ds = ds.transpose("rlon", "rlat", "time")
+
+        # Convert calendar
+        # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
+        if Version(xs.__version__) > Version("0.9.10"):
+            convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
+        else:
+            convert_calendar_kwargs = {"target": "default"}
+        if isinstance(convert_calendar_missing, dict):
+            missing_by_var = convert_calendar_missing
+        else:
+            missing_by_var = None
+            convert_calendar_kwargs["missing"] = convert_calendar_missing
+            if (
+                ds.time.dt.calendar
+                not in ["standard", "gregorian", "proleptic_gregorian"]
+                and convert_calendar_missing is np.nan
+            ):
+                warnings.warn(
+                    f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
+                    f"NaNs will need to be filled manually before running Raven HBVEC."
+                )
+        ds = xs.utils.clean_up(
+            ds,
+            convert_calendar_kwargs=convert_calendar_kwargs,
+            missing_by_var=missing_by_var,
+        )
+
+        new_time = (
+            (ds["time"].values - np.datetime64("1970-01-01 00:00:00"))
+            .astype("timedelta64[D]")
+            .astype(int)
+        )
+        ds["time"] = xr.DataArray(
+            new_time,
+            dims="time",
+            coords={"time": new_time},
+            attrs={"units": "days since 1970-01-01 00:00:00"},
+        )
+
+        out = ds
+        if save_as:
+            Path(save_as).parent.mkdir(parents=True, exist_ok=True)
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
     else:
