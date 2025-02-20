@@ -129,7 +129,7 @@ def scale_dataset(
             jj[number_training_days + number_valid_days]
         )  # From this index...
         test_idx[i, 1] = int(jj[total_number_days - 1])  # to this index.
-        all_idx[i, 0] = int(0)
+        all_idx[i, 0] = 0
         all_idx[i, 1] = int(jj[total_number_days - 1])
 
     # Get watershed numbers list
@@ -252,7 +252,7 @@ def scale_dataset_local(
         jj[number_training_days + number_valid_days]
     )  # From this index...
     test_idx[1] = int(jj[total_number_days - 1])  # to this index.
-    all_idx[0] = int(0)
+    all_idx[0] = 0
     all_idx[1] = arr_qobs.shape[0]
 
     dynamic_data = arr_dynamic[train_idx[0] : train_idx[1], 1:]

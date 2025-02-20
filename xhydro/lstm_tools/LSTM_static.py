@@ -288,7 +288,7 @@ def _nse_scaled_loss(data, y_pred):
     q_stds = data[:, 1]
     y_pred = y_pred[:, 0]
 
-    eps = float(0.1)
+    eps = 0.1
     squared_error = (y_pred - y_true) ** 2
     weights = 1 / (q_stds + eps) ** 2
     scaled_loss = weights * squared_error
