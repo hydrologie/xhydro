@@ -7,7 +7,6 @@ import subprocess  # noqa: S404
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
