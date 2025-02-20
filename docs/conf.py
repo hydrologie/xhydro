@@ -17,10 +17,10 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 import warnings
-from pathlib import Path
-
 import os
 import sys
+from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, os.path.abspath(".."))
 if os.environ.get("READTHEDOCS") and "ESMFMKFILE" not in os.environ:
@@ -62,13 +62,14 @@ autodoc_default_options = {
     "special-members": False,
 }
 
-autodoc_mock_imports = ["esmpy", "xesmf"]
+autodoc_mock_imports = ["esmpy", "juliacall", "juliapkg", "xesmf"]
 
 # For styling class attributes
 napoleon_use_ivar = True
 
 # For external documentation links
 intersphinx_mapping = {
+    "pooch": ("https://www.fatiando.org/pooch/latest/", None),
     "xclim": ("https://xclim.readthedocs.io/en/latest/", None),
     "xscen": ("https://xscen.readthedocs.io/en/latest/", None),
 }
@@ -177,7 +178,7 @@ htmlhelp_basename = "xhydrodoc"
 
 # -- Options for LaTeX output ------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, Any] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

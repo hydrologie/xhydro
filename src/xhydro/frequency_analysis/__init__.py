@@ -1,3 +1,3 @@
 """Frequency analysis module."""
 
-from . import local, regional, uncertainities
+from . import local, regional, uncertainties
