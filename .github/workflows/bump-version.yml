@@ -1,8 +1,3 @@
-# This workflow requires a personal access token named `BUMP_VERSION_TOKEN` with the following privileges:
-# - Contents: Read and Write
-# - Metadata: Read-Only
-# - Pull Requests: Read and Write
-
 name: "Bump Patch Version"
 
 on:
@@ -12,14 +7,19 @@ on:
     paths-ignore:
       - .cruft.json
       - .editorconfig
-      - .github/**.yml
+      - .github/*/*.md
+      - .github/*/*.yml
       - .gitignore
       - .pre-commit-config.yaml
       - .readthedocs.yml
       - .yamllint.yaml
       - .zenodo.json
       - AUTHORS.rst
-      - CHANGES.rst
+      - CHANGELOG.rst
+      - CI/**/*.in
+      - CI/**/*.py
+      - CI/**/*.txt
+      - CODE_OF_CONDUCT.md
       - CONTRIBUTING.rst
       - Makefile
       - docs/*.py
@@ -30,7 +30,7 @@ on:
       - pyproject.toml
       - tests/**.py
       - tox.ini
-      - xhydro/__init__.py
+      - src/xhydro/__init__.py
   workflow_dispatch:
 
 permissions:
@@ -38,51 +38,61 @@ permissions:
 
 jobs:
   bump_patch_version:
+    name: Bumpversion Patch
     runs-on: ubuntu-latest
     permissions:
       actions: read
-      contents: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
+            api.github.com:443
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
-      - uses: actions/checkout@v4.1.1
+      - name: Generate App Token
+        id: token_generator
+        uses: actions/create-github-app-token@67e27a7eb7db372a1c61a7f9bdab8699e9ee57f7 # v1.11.3
+        with:
+          app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
+          private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5.1.0
+          token: ${{ steps.token_generator.outputs.token }}
+      - name: Set up Python3
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
-          python-version: "3.9"
-      - name: Config Commit Bot
+          python-version: "3.x"
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5 # v6.2.0
+        with:
+          gpg_private_key: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          trust_level: 5
+      - name: Install CI libraries
         run: |
-          git config --local user.email "bumpversion[bot]@hydrologie.com"
-          git config --local user.name "bumpversion[bot]"
-      - name: Install bump-my-version
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Conditional Bump
         run: |
-          python -m pip install "bump-my-version>=0.18.3"
-      - name: Current Version
-        run: |
-          bump-my-version show current_version
-          CURRENT_VERSION="$(grep -E '__version__' xhydro/__init__.py | cut -d ' ' -f3)"
-          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
-      - name: Conditional Bump Version
-        run: |
-          if [[ ${{ env.CURRENT_VERSION }} =~ -dev(\.\d+)? ]]; then
+          CURRENT_VERSION=$(bump-my-version show current_version)
+          if [[ ${CURRENT_VERSION} =~ -dev(\.\d+)? ]]; then
             echo "Development version (ends in 'dev(\.\d+)?'), bumping 'build' version"
             bump-my-version bump build
           else
             echo "Version is stable, bumping 'patch' version"
             bump-my-version bump patch
           fi
-          bump-my-version show-bump
+          echo "new_version=$(bump-my-version show current_version)"
       - name: Push Changes
-        uses: ad-m/github-push-action@v0.8.0
+        uses: ad-m/github-push-action@d91a481090679876dfc4178fef17f286781251df # v0.8.0
         with:
-          force: false
-          github_token: ${{ secrets.BUMP_VERSION_TOKEN }}
           branch: ${{ github.ref }}
+          force: false
+          github_token: '${{ steps.token_generator.outputs.token }}'

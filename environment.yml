@@ -2,29 +2,39 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.13
+  - python >=3.10,<3.13
+  - pip >=24.2.0
   # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
-  - cartopy
-  - geopandas
-  - haversine
-  - intake <2.0.0 # This should be set by xdatasets once on conda-forge
+  - cartopy >=0.23.0
+  - dask <=2024.10.0
+  - dask-geopandas <=0.4.2
+  - intake-xarray <=0.7.0
+  - questionary <=2.0.1
+  - geopandas >=1.0
+  - haversine >=2.8.1
+  - importlib-metadata <8.0  # Required for xesmf >=8.4.0,<8.6 to work on Windows
   - leafmap
-  - numpy
+  - numpy >=1.24
+  - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
-  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
-  - pystac
+  - pystac <1.12.0 # Temporary pin until support can be added for pystac 1.13.0
   - pystac-client
-  - rasterio
-  - spotpy
-  - stackstac
-  - statsmodels
+  - pyyaml >=6.0.2
+  - rasterio <=1.3.11  # temporary pin until https://github.com/xarray-contrib/xvec/issues/85 is addressed.
+  - ravenpy >=0.15.0,<=0.16.0
+  - rioxarray >=0.15.0
+  - spotpy >=1.6.2
+  - stackstac >=0.5.1
+  - statsmodels >=0.14.0
   - tensorflow>=2.10
   - tqdm
   - xarray >=2023.11.0
-  - xclim >=0.48.2
-  - xscen >=0.8.3
-  - pip >=23.3.0
-  - pip:
-    - xdatasets >=0.3.5
+  - xarray-spatial >=0.3.7
+  - xclim >=0.53.2,<0.54
+  - xdatasets >=0.3.6
+  - xscen >=0.10.1,<0.11
+  - xvec
+  # Julia
+  # - pyjuliacall >=0.9.20

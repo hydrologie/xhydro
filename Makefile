@@ -27,7 +27,7 @@ LOCALES := docs/locales
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-docs clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
 clean-build: ## remove build artifacts
 	rm -fr build/
@@ -37,6 +37,8 @@ clean-build: ## remove build artifacts
 	find . -name '*.egg' -exec rm -f {} +
 
 clean-docs: ## remove docs artifacts
+	rm -fr docs/notebooks/_data/
+	rm -fr docs/notebooks/.ipynb_checkpoints/
 	rm -f docs/apidoc/xhydro*.rst
 	rm -f docs/apidoc/modules.rst
 	rm -f docs/locales/fr/LC_MESSAGES/*.mo
@@ -55,18 +57,22 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	ruff xhydro tests
-	flake8 --config=.flake8 xhydro tests
+	python -m ruff check src/xhydro tests
+	python -m flake8 --config=.flake8 src/xhydro tests
+	python -m numpydoc lint src/xhydro/**.py
 
 lint/black: ## check style with black
-	black --check xhydro tests
-	blackdoc --check xhydro docs
-	isort --check xhydro tests
+	python -m black --check src/xhydro tests
+	python -m blackdoc --check src/xhydro docs
+	python -m isort --check src/xhydro tests
 
 lint: lint/flake8 lint/black ## check style
 
 test: ## run tests quickly with the default Python
 	python -m pytest
+
+test-distributed: ## run tests quickly with the default Python and distributed workers
+	python -m pytest --num-processes=logical
 
 test-notebooks: ## run tests on notebooks and compare outputs
 	pytest --no-cov --nbval --rootdir=tests/ docs/notebooks
@@ -74,19 +80,22 @@ test-notebooks: ## run tests on notebooks and compare outputs
 test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
 
+test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'
+
 test-all: ## run tests on every Python version with tox
-	tox
+	python -m tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source xhydro -m pytest
-	coverage report -m
-	coverage html
+	python -m coverage run --source src/xhydro -m pytest
+	python -m coverage report -m
+	python -m coverage html
 	$(BROWSER) htmlcov/index.html
 
 autodoc: clean-docs ## create sphinx-apidoc files:
-	sphinx-apidoc -o docs/apidoc --private --module-first xhydro
+	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
-initialize-translations: clean-docs ## initialize translations, ignoring autodoc-generated files
+initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files
 	${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
 
@@ -118,7 +127,8 @@ install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
 	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
 
 install: install-esmpy ## install the package to the active Python's site-packages
-	python -m flit install
+	python -m pip install .
 
 dev: install-esmpy ## install the package to the active Python's site-packages
-	python -m flit install --symlink
+	python -m pip install --editable .[all]
+	pre-commit install

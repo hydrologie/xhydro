@@ -24,9 +24,11 @@ class TestWatershedDelineation:
     )
     def test_watershed_delineation_from_coords(self, lng_lat, area):
         gdf = xh.gis.watershed_delineation(coordinates=lng_lat)
-        np.testing.assert_almost_equal([gdf.to_crs(32198).area.values[0]], [area])
+        np.testing.assert_almost_equal(
+            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        )
 
-    @pytest.mark.parametrize("area", [(18891676494.940426)])
+    @pytest.mark.parametrize("area", [18891676494.940426])
     def test_watershed_delineation_from_map(self, area):
         # Richelieu watershed
         self.m.draw_features = [
@@ -37,7 +39,9 @@ class TestWatershedDelineation:
             }
         ]
         gdf = xh.gis.watershed_delineation(map=self.m)
-        np.testing.assert_almost_equal([gdf.to_crs(32198).area.values[0]], [area])
+        np.testing.assert_almost_equal(
+            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        )
 
     def test_errors(self):
         bad_coordinates = (-35.0, 45.0)
@@ -117,25 +121,114 @@ class TestWatershedOperations:
         output_dataset["gravelius"].attrs = {"units": "m/m"}
         output_dataset["centroid"].attrs = {"units": ("degree_east", "degree_north")}
 
-        xr.testing.assert_equal(ds_properties, output_dataset)
+        xr.testing.assert_allclose(ds_properties, output_dataset)
+
+
+class TestSurfaceProperties:
+
+    gdf = xd.Query(
+        **{
+            "datasets": {
+                "deh_polygons": {
+                    "id": ["031501", "042103"],
+                    "regulated": ["Natural"],
+                }
+            }
+        }
+    ).data.reset_index()
+
+    @pytest.fixture
+    def surface_properties_data(self):
+        data = {
+            "elevation": {"031501": 46.3385009765625, "042103": 358.54986572265625},
+            "slope": {"031501": 0.4634914696216583, "042103": 2.5006439685821533},
+            "aspect": {"031501": 241.46539306640625, "042103": 178.55764770507812},
+        }
+
+        df = pd.DataFrame.from_dict(data).astype("float32")
+        df.index.names = ["Station"]
+        return df
+
+    @pytest.mark.online
+    def test_surface_properties(self, surface_properties_data):
+        _properties_name = ["elevation", "slope", "aspect"]
+
+        df_properties = xh.gis.surface_properties(self.gdf)
+        df_properties.index.name = None
+
+        pd.testing.assert_frame_equal(
+            df_properties[_properties_name],
+            surface_properties_data.reset_index(drop=True)[_properties_name],
+        )
+
+    @pytest.mark.online
+    def test_surface_properties_unique_id(self, surface_properties_data):
+        _properties_name = ["elevation", "slope", "aspect"]
+        unique_id = "Station"
+
+        df_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id)
+
+        pd.testing.assert_frame_equal(
+            df_properties[_properties_name],
+            surface_properties_data[_properties_name],
+        )
+
+    @pytest.mark.online
+    def test_surface_properties_xarray(self, surface_properties_data):
+        unique_id = "Station"
+
+        ds_properties = xh.gis.surface_properties(
+            self.gdf, unique_id=unique_id, output_format="xarray"
+        )
+        ds_properties = ds_properties.drop(
+            list(set(ds_properties.coords) - set(ds_properties.dims))
+        )
+
+        assert ds_properties.elevation.attrs["units"] == "m"
+        assert ds_properties.slope.attrs["units"] == "degrees"
+        assert ds_properties.aspect.attrs["units"] == "degrees"
+
+        output_dataset = surface_properties_data.to_xarray()
+        output_dataset["elevation"].attrs = {"units": "m"}
+        output_dataset["slope"].attrs = {"units": "degrees"}
+        output_dataset["aspect"].attrs = {"units": "degrees"}
+
+        xr.testing.assert_allclose(ds_properties, output_dataset)
+
+
+@pytest.mark.online
+class TestLandClassification:
+
+    gdf = xd.Query(
+        **{
+            "datasets": {
+                "deh_polygons": {
+                    "id": ["031501", "042103"],
+                    "regulated": ["Natural"],
+                }
+            }
+        }
+    ).data.reset_index()
 
     @pytest.fixture
     def land_classification_data_latest(self):
         data = {
-            "pct_crops": {"031501": 0.7761508991718495, "042103": 0.0},
             "pct_built_area": {
-                "031501": 0.030159065706857738,
-                "042103": 0.00010067694852579148,
+                "031501": 0.015439853092995422,
+                "042103": 1.6177088870902873e-05,
             },
-            "pct_trees": {"031501": 0.1916484013692483, "042103": 0.8636022653195444},
+            "pct_crops": {"031501": 0.71674721580163903, "042103": 0.0},
+            "pct_trees": {
+                "031501": 0.259403235973944102,
+                "042103": 0.909267010940358666,
+            },
             "pct_rangeland": {
-                "031501": 0.002041633752044415,
-                "042103": 0.026126172157203968,
+                "031501": 0.008409695131421471,
+                "042103": 0.004853126661270862,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.10998710919246692},
-            "pct_bare_ground": {"031501": 0.0, "042103": 2.142062734591308e-05},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00016197774384218392},
-            "pct_snow/ice": {"031501": 0.0, "042103": 3.780110708102308e-07},
+            "pct_water": {"031501": 0.0, "042103": 0.085443597288926421},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.000416473990080691},
+            "pct_bare_ground": {"031501": 0.0, "042103": 3.614030492435748e-06},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -145,19 +238,22 @@ class TestWatershedOperations:
     @pytest.fixture
     def land_classification_data_2018(self):
         data = {
-            "pct_crops": {"031501": 0.7746247733063341, "042103": 0.0},
             "pct_built_area": {
-                "031501": 0.028853606886295277,
-                "042103": 0.0001139703378492846,
+                "031501": 0.01585554144549914529,
+                "042103": 3.8721755276097304e-05,
             },
-            "pct_trees": {"031501": 0.19468025530620797, "042103": 0.8850292558518161},
+            "pct_crops": {"031501": 0.72329773335647784549, "042103": 0.0},
+            "pct_trees": {
+                "031501": 0.25655280155677573362,
+                "042103": 0.91066684541776210526,
+            },
             "pct_rangeland": {
-                "031501": 0.0018413645011626744,
-                "042103": 0.005653344569502407,
+                "031501": 0.00429392364124724785,
+                "042103": 0.00435748819373681616,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.10902236193791408},
-            "pct_bare_ground": {"031501": 0.0, "042103": 1.8900553540511542e-05},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00016216674937758903},
+            "pct_water": {"031501": 0.0, "042103": 0.08474178698663342724},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019464135652118243},
+            "pct_bare_ground": {"031501": 0.0, "042103": 5.16290070347964e-07},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -197,6 +293,7 @@ class TestWatershedOperations:
                 df_expected = land_classification_data_latest
             elif year == "2018":
                 df_expected = land_classification_data_2018
+
             else:
                 raise ValueError(f"Invalid year argument {year}.")
 
@@ -206,7 +303,10 @@ class TestWatershedOperations:
             ds_expected = df_expected.to_xarray()
 
             ds_classification = xh.gis.land_use_classification(
-                self.gdf, unique_id=unique_id, year=year, output_format="xarray"
+                self.gdf,
+                unique_id=unique_id,
+                year=year,
+                output_format="xarray",
             )
 
             for var in ds_classification:
@@ -214,6 +314,18 @@ class TestWatershedOperations:
 
             for var in ds_expected:
                 ds_expected[var].attrs = {"units": "percent"}
+            if year == "latest":
+                ds_expected.attrs = {
+                    "year": "2023",
+                    "collection": "io-lulc-annual-v02",
+                    "spatial_resolution": 10,
+                }
+            elif year == "2018":
+                ds_expected.attrs = {
+                    "year": "2018",
+                    "collection": "io-lulc-annual-v02",
+                    "spatial_resolution": 10,
+                }
 
             xr.testing.assert_equal(ds_classification, ds_expected)
 

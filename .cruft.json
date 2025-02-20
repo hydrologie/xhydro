@@ -1,17 +1,17 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-  "commit": "f391bbd6ee14ab2478c64a1f78b74bd9903cae81",
+  "commit": "2b31b0f76a180ad93e5a49fe5744306fefb48c9c",
   "checkout": null,
   "context": {
     "cookiecutter": {
       "full_name": "Thomas-Charles Fortier Filion",
       "email": "tcff_hydro@outlook.com",
-      "github_username": "TC-FF",
+      "github_username": "hydrologie",
       "project_name": "xHydro",
       "project_slug": "xhydro",
       "project_short_description": "Hydrological analysis library built with xarray.",
       "pypi_username": "TC-FF",
-      "version": "0.3.6-dev.1",
+      "version": "0.4.2-dev.4",
       "use_pytest": "y",
       "use_black": "y",
       "use_conda": "y",
@@ -22,7 +22,9 @@
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
       "generated_with_cruft": "y",
-      "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage"
+      "__gh_slug": "https://github.com/hydrologie/xHydro",
+      "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
+      "_commit": "2b31b0f76a180ad93e5a49fe5744306fefb48c9c"
     }
   },
   "directory": null

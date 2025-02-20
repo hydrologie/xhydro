@@ -1,15 +1,15 @@
-======
-xHydro
-======
+======================================
+xHydro |logo| |logo-light| |logo-dark|
+======================================
 
 +----------------------------+-----------------------------------------------------+
 | Versions                   | |pypi| |versions|                                   |
 +----------------------------+-----------------------------------------------------+
 | Documentation and Support  | |docs|                                              |
 +----------------------------+-----------------------------------------------------+
-| Open Source                | |license| |ossf|                                    |
+| Open Source                | |license| |ossf-score|                              |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |black| |ruff| |pre-commit|                         |
+| Coding Standards           | |black| |isort| |ruff| |pre-commit|                 |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
 +----------------------------+-----------------------------------------------------+
@@ -22,12 +22,19 @@ Hydrological analysis library built with xarray
 Features
 --------
 
-* TODO
+* Easily find and extract geospatial data from the Planetary Computer API and watershed boundaries from the HydroSHEDS API over any area of interest.
+* Calibrate and execute Hydrotel and Raven-emulated hydrological models.
+* Perform optimal interpolation on hydrological data (daily streamflow and indices).
+* Compute hydrological indicators (e.g. n-day peak flow, annual maximum series, low flow, average flow, etc.) over custom date ranges.
+* Perform frequency analysis on hydrological indicators using a variety of methods (e.g. Gumbel, GEV, etc.).
+* Perform climate change impact analysis of hydrological data.
 
 Credits
 -------
 
 This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pypackage`_ project template.
+
+This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou-a), with inputs from the `xHydro` team.
 
 .. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage
@@ -53,11 +60,34 @@ This package was created with Cookiecutter_ and the `Ouranosinc/cookiecutter-pyp
         :target: https://xhydro.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
+.. |isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+        :target: https://pycqa.github.io/isort/
+        :alt: Isort
+
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
         :alt: License
 
-.. |ossf| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
+.. |logo| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/xhydro-logo-small-light.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt: xHydro
+
+.. |logo-light| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-light-inline
+
+.. |logo-dark| image:: https://raw.githubusercontent.com/hydrologie/xhydro/main/docs/logos/empty.png
+        :target: https://github.com/hydrologie/xhydro
+        :alt:
+        :class: xhydro-logo-small only-dark-inline
+
+..
+    .. |ossf-bp| image:: https://bestpractices.coreinfrastructure.org/projects/9945/badge
+            :target: https://bestpractices.coreinfrastructure.org/projects/9945
+            :alt: Open Source Security Foundation Best Practices
+
+.. |ossf-score| image:: https://api.securityscorecards.dev/projects/github.com/hydrologie/xhydro/badge
         :target: https://securityscorecards.dev/viewer/?uri=github.com/hydrologie/xhydro
         :alt: OpenSSF Scorecard
 

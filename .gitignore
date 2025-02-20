@@ -68,12 +68,16 @@ instance/
 docs/_build/
 docs/apidoc/modules.rst
 docs/apidoc/xhydro*.rst
+docs/notebooks/_data/*
 
 # PyBuilder
 target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# Dask worker cache
+dask-worker-space/
 
 # pyenv
 .python-version
@@ -108,3 +112,4 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+.VSCodeCounter/
