@@ -319,8 +319,8 @@ msgstr "Incertitudes de l'analyse fréquentielle locale"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:485
 msgid ""
-"To add some uncertainities, we will work with only one catchment and two "
-"distributions as uncertainities can be intensive in computation. We "
+"To add some uncertainties, we will work with only one catchment and two "
+"distributions as uncertainties can be intensive in computation. We "
 "select the station 023401, and distribution 'genextreme' and 'pearson3'."
 msgstr ""
 "Pour ajouter l'incertitude, nous travaillerons avec un seul "
@@ -342,7 +342,7 @@ msgid "Bootstraping the observations"
 msgstr "Rééchantillonnage des observations"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:514
-msgid "A way to get uncertainities is to bootstrap the observations 200 times."
+msgid "A way to get uncertainties is to bootstrap the observations 200 times."
 msgstr ""
 "Une façon d’obtenir des incertitudes est de rééchantillonner les observations "
 "200 fois."
@@ -365,10 +365,10 @@ msgstr "Incertitudes de l'analyse fréquentielle régionale"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:642
 msgid ""
-"For the regional analysis, we again use ``boostrap_obs`` to resample the "
+"For the regional analysis, we again use ``bootstrap_obs`` to resample the "
 "observations, but, this time, it's much faster as no fit is involved."
 msgstr ""
-"Pour l'analyse régionale, nous utilisons à nouveau ``boostrap_obs`` pour "
+"Pour l'analyse régionale, nous utilisons à nouveau ``bootstrap_obs`` pour "
 "rééchantillonner les observations, mais, cette fois, c'est beaucoup plus "
 "rapide, car aucun ajustement n'est impliqué."
 

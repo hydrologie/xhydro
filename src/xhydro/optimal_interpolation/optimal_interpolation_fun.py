@@ -161,7 +161,7 @@ def optimal_interpolation(
 
 
 def loop_optimal_interpolation_stations_cross_validation(
-    args: tuple[int, dict]
+    args: tuple[int, dict],
 ) -> ndarray[Any, dtype[floating[Any]]]:
     """Apply optimal interpolation to a single validation site (station) for the selected time range.
 

@@ -184,7 +184,7 @@ class SpotSetup:
         algorithm : str
             The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
         take_negative : bool
-            Wether to take the negative of the objective function value in optimization to ensure convergence
+            Whether to take the negative of the objective function value in optimization to ensure convergence
             in the right direction.
         mask : np.ndarray, optional
             A vector indicating which values to preserve/remove from the objective function computation. 0=remove, 1=preserve.
