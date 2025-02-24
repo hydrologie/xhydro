@@ -99,8 +99,7 @@ docs = [
   "jupyter_client",
   "nbsphinx >=0.9.5",
   "nbval",
-  "sphinx >=7.1.0,<8.2.0",
-  "sphinx-autoapi",
+  "sphinx >=7.1.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton",
   "sphinx-intl",
