@@ -587,7 +587,7 @@ class TestSampledIndicators:
         with pytest.raises(ValueError, match="DataArray has more than one dimension"):
             xh.cc._perc_or_quantile(da)
 
-        # Test 2: DataArray/Datset with no percentile or quantile dimension
+        # Test 2: DataArray/Dataset with no percentile or quantile dimension
         da = xr.DataArray(
             np.linspace(0, 1, 101),
             dims="foo",
