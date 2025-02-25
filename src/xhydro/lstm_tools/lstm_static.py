@@ -22,13 +22,13 @@ __all__ = [
 ]
 
 
-def get_list_of_LSTM_models(model_structure):
+def get_list_of_LSTM_models(model_structure):  # noqa: N802
     """Create a training generator to manage the GPU memory during training.
 
     Parameters
     ----------
     model_structure : str
-        The name of the LSTM model to use for training. Must correspond to one of the models present in LSTM_static.py.
+        The name of the LSTM model to use for training. Must correspond to one of the models present in lstm_static.py.
         The "model_structure_dict" must be updated when new models are added.
 
     Returns
@@ -44,7 +44,8 @@ def get_list_of_LSTM_models(model_structure):
             "dummy_local_lstm": _dummy_local_lstm,
             "dummy_regional_lstm": _dummy_regional_lstm,
         }
-    except Exception:
+    # FIXME: What kinds of exceptions are possible here?
+    except Exception:  # noqa: BLE001
         raise ValueError(
             "The LSTM model structure desired is not present in the available model dictionary."
         )
@@ -321,7 +322,7 @@ def _simple_regional_lstm(
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
     checkpoint_path : str
-        Sting containing the path of the file where the trained model will be saved.
+        String containing the path of the file where the trained model will be saved.
 
     Returns
     -------
@@ -399,7 +400,7 @@ def _simple_local_lstm(
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
     checkpoint_path : str
-        Sting containing the path of the file where the trained model will be saved.
+        String containing the path of the file where the trained model will be saved.
 
     Returns
     -------
@@ -475,7 +476,7 @@ def _dummy_regional_lstm(
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
     checkpoint_path : str
-        Sting containing the path of the file where the trained model will be saved.
+        String containing the path of the file where the trained model will be saved.
 
     Returns
     -------
@@ -547,7 +548,7 @@ def _dummy_local_lstm(
         Name of the objective function used for training. For a regional model, it is highly recommended to use the
         scaled nse_loss variable that uses the standard deviation of streamflow as inputs.
     checkpoint_path : str
-        Sting containing the path of the file where the trained model will be saved.
+        String containing the path of the file where the trained model will be saved.
 
     Returns
     -------

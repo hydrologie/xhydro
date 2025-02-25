@@ -168,7 +168,7 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic"
+ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic,statics"
 skip = "*.po"
 
 [tool.coverage.paths]
