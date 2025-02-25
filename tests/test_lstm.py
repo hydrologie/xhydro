@@ -3,17 +3,24 @@
 import os
 
 import pooch
+import pytest
 
-from xhydro.lstm_tools.lstm_controller import (
-    control_local_lstm_training,
-    control_regional_lstm_training,
-)
+try:
+    from xhydro.lstm_tools.lstm_controller import (
+        control_local_lstm_training,
+        control_regional_lstm_training,
+    )
+
+    has_lstm = True
+except ImportError:
+    has_lstm = False
 
 
+@pytest.mark.skipif(not has_lstm, reason="xhydro lstm module not available.")
 class TestLstmModels:
     """Test suite for the LSTM models."""
 
-    # Set Github URL for getting files for tests
+    # Set GitHub URL for getting files for tests
     GITHUB_URL = "https://github.com/hydrologie/xhydro-testdata"
     BRANCH_OR_COMMIT_HASH = "main"
 

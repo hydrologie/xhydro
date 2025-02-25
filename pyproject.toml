@@ -58,7 +58,6 @@ dependencies = [
   "spotpy >=1.6.2",
   "stackstac >=0.5.1",
   "statsmodels >=0.14.0",
-  "tensorflow>=2.10",
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
@@ -109,7 +108,10 @@ docs = [
 julia = [
   "juliacall >=0.9.20"
 ]
-all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]"]
+lstm = [
+  "tensorflow>=2.10"
+]
+all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[lstm]"]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
