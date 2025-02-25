@@ -30,6 +30,7 @@ Internal changes
     * GitHub Actions versions and Python dependencies updated.
     * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
     * Added an advanced CodeQL workflow for security scanning.
+* Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
 
 v0.4.1 (2024-11-07)
