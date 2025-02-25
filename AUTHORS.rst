@@ -22,3 +22,4 @@ Contributors
 * Richard Arsenault `@richardarsenault <https://github.com/richardarsenault>`_
 * Francis Gravel `@mayetea <https://github.com/mayetea>`_
 * Louise Arnal `@lou-a <https://github.com/lou-a>`_
+* Essi Parent `@essicolo <https://github.com/essicolo>`_
