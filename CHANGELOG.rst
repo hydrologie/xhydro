@@ -25,6 +25,7 @@ Internal changes
     * GitHub Actions versions and Python dependencies updated.
     * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
     * Added an advanced CodeQL workflow for security scanning.
+* Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
 * Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`232`).
 
 v0.4.1 (2024-11-07)
