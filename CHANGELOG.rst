@@ -4,7 +4,14 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a new module `xhydro.extreme_value_analysis` that wraps the `Extremes.jl` package for Julia. (:pull:`175`).
+  * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
+  * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
+  * You can use `pip install xhydro[julia]` to install the required dependencies.
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -13,6 +20,12 @@ Internal changes
 * Added a "User-Agent" to fix an issue related to `pooch` calls in the notebooks for recent ReadTheDocs builds. (:pull:`231`).
 * Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "User-Agent" by default. (:pull:`234`).
 * Fixed the URL joining logic of the ``load_registry()`` and ``devereaux()`` functions in the `xhydro.testing.helpers` module. (:pull:`234`).
+* Updated ``uncertainties.calc_q_iter()`` to allow for ungaged catchments. (:pull:`235`).
+* Updated the cookiecutter template. (:pull:`252`):
+    * GitHub Actions versions and Python dependencies updated.
+    * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
+    * Added an advanced CodeQL workflow for security scanning.
+* Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
 
 v0.4.1 (2024-11-07)
 -------------------
@@ -49,14 +62,14 @@ Internal changes
 
 v0.4.0 (2024-10-04)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Julián Ospina (:user:`ospinajulian`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * `xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). (:pull:`161`).
 * Regional frequency analysis functions as well as Resampling function for uncertainties have been added to the ``xhydro.frequency_analysis`` module. (:pull:`186`).
 * New function ``xhydro.modelling.format_input`` to format CF-compliant input data for hydrological models (currently only supports Hydrotel). (:pull:`185`).
-* `xhydro` now has a `pmp` module to compute the Problable Maximum Precipitation from climate change scenarios. (:pull:`176`).
+* `xhydro` now has a `pmp` module to compute the Probable Maximum Precipitation from climate change scenarios. (:pull:`176`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
