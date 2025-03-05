@@ -80,6 +80,9 @@ test-notebooks: ## run tests on notebooks and compare outputs
 test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
 
+test-notebooks-onlyextremes: ## run tests exclusively on the Julia notebook
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks/extreme_value_analysis.ipynb
+
 test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'
 
