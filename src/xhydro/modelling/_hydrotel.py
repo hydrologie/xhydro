@@ -594,6 +594,7 @@ def _fix_os_paths(d: dict):
         for k, v in d.items()
     }
 
+
 def _fix_dates(d: dict):
     """Convert dates to the formatting required by HYDROTEL."""
     # Reformat dates
@@ -601,6 +602,7 @@ def _fix_dates(d: dict):
         if len(d.get(key, "")) > 0:
             d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
     return d
+
 
 def _read_csv(file: str | os.PathLike) -> dict:
     """Read a CSV file and return the content as a dictionary.
