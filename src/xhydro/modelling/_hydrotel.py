@@ -59,7 +59,7 @@ class Hydrotel(HydrologicalModel):
         project_config: dict | None = None,
         simulation_config: dict | None = None,
         output_config: dict | None = None,
-        use_defaults: bool = True,
+        use_defaults: bool = False,
     ):
         """Initialize the Hydrotel simulation."""
         project_config = project_config or dict()
