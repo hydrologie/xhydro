@@ -216,7 +216,7 @@ class Hydrotel(HydrologicalModel):
                 )
 
         if simulation_config is not None:
-            simulation_config = deepcopy(_fix_os_paths(simulation_config))
+            simulation_config = deepcopy(_fix_os_paths(_fix_dates(simulation_config)))
             _overwrite_csv(self.config_files["simulation"], simulation_config)
 
             # Also update class attributes to reflect the changes
@@ -594,6 +594,13 @@ def _fix_os_paths(d: dict):
         for k, v in d.items()
     }
 
+def _fix_dates(d: dict):
+    """Convert dates to the formatting required by HYDROTEL."""
+    # Reformat dates
+    for key in ["DATE DEBUT", "DATE FIN"]:
+        if len(d.get(key, "")) > 0:
+            d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
+    return d
 
 def _read_csv(file: str | os.PathLike) -> dict:
     """Read a CSV file and return the content as a dictionary.
