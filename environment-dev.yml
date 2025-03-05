@@ -18,6 +18,7 @@ dependencies:
   - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
+  - pydantic >=2.0,<2.5.3  # FIXME: Remove pin once our dependencies (xclim, xscen) support pydantic 2.5.3
   - pystac <1.12.0 # Temporary pin until support can be added for pystac 1.13.0
   - pystac-client
   - pyyaml >=6.0.2
@@ -37,6 +38,8 @@ dependencies:
   # Julia
   # - julia >=1.6.0  # Works locally, breaks remotely
   # - pyjuliacall >=0.9.20
+  # LSTM
+  # - tensorflow >=2.10
   # Dev tools and testing
   - pip >=25.0
   - black ==25.1.0

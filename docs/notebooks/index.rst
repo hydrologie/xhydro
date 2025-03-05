@@ -7,6 +7,8 @@ Usage
 
     gis
     hydrological_modelling
+    local_frequency_analysis
+    lstm
     optimal_interpolation
     local_frequency_analysis
     regional_frequency_analysis

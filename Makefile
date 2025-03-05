@@ -75,13 +75,10 @@ test-distributed: ## run tests quickly with the default Python and distributed w
 	python -m pytest --num-processes=logical
 
 test-notebooks: ## run tests on notebooks and compare outputs
-	pytest --no-cov --nbval --rootdir=tests/ docs/notebooks
+	pytest --no-cov --nbval --rootdir=tests/ docs/notebooks $(ARGS)
 
 test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
-	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
-
-test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
-	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks $(ARGS)
 
 test-all: ## run tests on every Python version with tox
 	python -m tox

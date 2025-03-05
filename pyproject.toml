@@ -108,7 +108,10 @@ docs = [
 julia = [
   "juliacall >=0.9.20"
 ]
-all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]"]
+lstm = [
+  "tensorflow>=2.10"
+]
+all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[lstm]"]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
@@ -165,7 +168,7 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic"
+ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic,statics"
 skip = "*.po"
 
 [tool.coverage.paths]

@@ -37,3 +37,5 @@ dependencies:
   - xvec
   # Julia
   # - pyjuliacall >=0.9.20
+  # LSTM
+  # - tensorflow >=2.10
