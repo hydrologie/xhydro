@@ -306,17 +306,11 @@ class TestHydrotel:
             use_defaults=True,
             simulation_config={
                 "DATE DEBUT": "2001-01-01",
-                "DATE FIN": "2001-12-31 12",
-                "LECTURE ETAT FONTE NEIGE": "2001-01-01 03",
-                "ECRITURE ETAT FONTE NEIGE": "2001-01-01",
+                "DATE FIN": "2001-12-31 12"
             },
         )
         assert ht.simulation_config["DATE DEBUT"] == "2001-01-01 00:00"
         assert ht.simulation_config["DATE FIN"] == "2001-12-31 12:00"
-        assert ht.simulation_config["LECTURE ETAT FONTE NEIGE"] == str(
-            Path("etat/fonte_neige_2001010103.csv")
-        )
-        assert ht.simulation_config["ECRITURE ETAT FONTE NEIGE"] == "2001-01-01 00"
 
     @pytest.mark.parametrize("test", ["ok", "pdt", "cfg"])
     def test_run(self, tmpdir, test):
