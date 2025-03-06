@@ -32,6 +32,7 @@ Internal changes
     * Added an advanced CodeQL workflow for security scanning.
 * Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
+* Reduced the number of tests performed on Notebooks. (:pull:`267`).
 
 v0.4.1 (2024-11-07)
 -------------------
