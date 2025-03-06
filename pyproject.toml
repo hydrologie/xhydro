@@ -48,7 +48,7 @@ dependencies = [
   "dask <=2024.10.0",
   "dask-geopandas <=0.4.2",
   "intake-xarray <=0.7.0",
-  "questionary <=2.0.1",
+  "questionary <=2.1.0",
   "pystac <1.12.0", # Temporary pin until it is fixed.
   "pystac-client",
   "pyyaml >=6.0.2",
@@ -61,7 +61,7 @@ dependencies = [
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
-  "xclim >=0.53.2,<0.54",
+  "xclim >=0.53.2,<0.56",
   "xdatasets >=0.3.6",
   "xscen >=0.10.1,<0.11",
   "xvec"
@@ -127,7 +127,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.4.2-dev.4"
+current_version = "0.4.2-dev.5"
 commit = true
 commit_args = "--no-verify"
 tag = false

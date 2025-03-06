@@ -14,6 +14,11 @@ New features and enhancements
   * You can use `pip install xhydro[julia]` to install the required dependencies.
 * Added a configuration for the Raven HBVEC model in `xhydro.modelling.format_input`. (:pull:`257`).
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
+  * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
+
 Internal changes
 ^^^^^^^^^^^^^^^^
 * `"land_use_classification"` default collection has been changed to `"io-lulc-annual-v02"`, as the previous one will be deprecated in December 2024. (:pull:`227`).
@@ -27,6 +32,8 @@ Internal changes
     * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
     * Added an advanced CodeQL workflow for security scanning.
 * Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
+* The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
+* Reduced the number of tests performed on Notebooks. (:pull:`267`).
 
 v0.4.1 (2024-11-07)
 -------------------
