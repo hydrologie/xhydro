@@ -4,7 +4,7 @@ Changelog
 
 v0.5.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`).
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -17,6 +17,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
   * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
+* The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -33,6 +34,7 @@ Internal changes
 * Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
 * Reduced the number of tests performed on Notebooks. (:pull:`267`).
+* Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`233`).
 
 v0.4.1 (2024-11-07)
 -------------------
