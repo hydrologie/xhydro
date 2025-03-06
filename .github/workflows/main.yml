@@ -243,10 +243,6 @@ jobs:
         os: [ 'ubuntu-latest' ]
         python-version: [ "3.12" ]
         julia: [ true, false ]
-        # include:
-        #   - os: 'ubuntu-latest'
-        #     python-version: "3.12"
-        #     julia: true
     defaults:
       run:
         shell: bash -l {0}
