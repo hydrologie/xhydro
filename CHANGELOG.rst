@@ -13,6 +13,12 @@ New features and enhancements
   * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
   * You can use `pip install xhydro[julia]` to install the required dependencies.
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
+  * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
+* The default `use_defaults` argument of Hydrotel has been changed from True to False. (:pull:`233`).
+
 Internal changes
 ^^^^^^^^^^^^^^^^
 * `"land_use_classification"` default collection has been changed to `"io-lulc-annual-v02"`, as the previous one will be deprecated in December 2024. (:pull:`227`).
@@ -26,7 +32,9 @@ Internal changes
     * Added pre-commit hooks for `vulture` (find dead code), `codespell` (spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` (workflow security).
     * Added an advanced CodeQL workflow for security scanning.
 * Adjusted a handful of dependency pins to handle the latest version of `sphinx`. (:pull:`258`).
-* Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`232`).
+* The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
+* Reduced the number of tests performed on Notebooks. (:pull:`267`).
+* Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`233`).
 
 v0.4.1 (2024-11-07)
 -------------------
