@@ -304,10 +304,7 @@ class TestHydrotel:
             "SLNO.csv",
             executable="command",
             use_defaults=True,
-            simulation_config={
-                "DATE DEBUT": "2001-01-01",
-                "DATE FIN": "2001-12-31 12"
-            },
+            simulation_config={"DATE DEBUT": "2001-01-01", "DATE FIN": "2001-12-31 12"},
         )
         assert ht.simulation_config["DATE DEBUT"] == "2001-01-01 00:00"
         assert ht.simulation_config["DATE FIN"] == "2001-12-31 12:00"
