@@ -17,7 +17,7 @@ Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
   * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
-* The default `use_defaults` argument of Hydrotel has been changed from True to False. (:pull:`233`).
+* The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
