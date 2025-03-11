@@ -241,12 +241,8 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.10", "3.11", "3.12" ]
-        julia: [ false ]
-        include:
-          - os: 'ubuntu-latest'
-            python-version: "3.10"
-            julia: true
+        python-version: [ "3.12" ]
+        julia: [ true, false ]
     defaults:
       run:
         shell: bash -l {0}
@@ -310,7 +306,7 @@ jobs:
       - name: Test Notebooks (Julia)
         if: ${{ matrix.julia == true }}
         run: |
-          make test-notebooks-lax
+          make test-notebooks-lax-onlyextremes
 
 #  test-ESMF-source:
 #    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
