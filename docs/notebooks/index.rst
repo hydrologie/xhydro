@@ -13,3 +13,12 @@ Usage
     climate_change
     pmp
     extreme_value_analysis
+
+Examples
+=====
+
+.. toctree::
+    :maxdepth: 1
+    :numbered:
+
+    use_case

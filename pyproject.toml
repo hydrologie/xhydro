@@ -166,7 +166,7 @@ values = [
 
 [tool.codespell]
 ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic"
-skip = "*.po"
+skip = ["*.po", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
