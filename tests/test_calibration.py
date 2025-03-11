@@ -26,10 +26,10 @@ def test_spotpy_calibration():
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
         "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "qobs": np.array([120, 130, 140, 150, 160, 170]),
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
+    qobs = np.array([120, 130, 140, 150, 160, 170])
 
     mask = np.array([0, 0, 0, 0, 1, 1])
 
@@ -38,6 +38,7 @@ def test_spotpy_calibration():
         "mae",
         bounds_low=bounds_low,
         bounds_high=bounds_high,
+        qobs=qobs,
         evaluations=1000,
         algorithm="DDS",
         mask=mask,
@@ -49,7 +50,7 @@ def test_spotpy_calibration():
 
     # Test that the objective function is calculated correctly
     objfun = get_objective_function(
-        model_config["qobs"],
+        qobs,
         best_simulation,
         obj_func="mae",
         mask=mask,
@@ -68,6 +69,7 @@ def test_spotpy_calibration():
         "mae",
         bounds_low=bounds_low,
         bounds_high=bounds_high,
+        qobs=qobs,
         evaluations=10,
         algorithm="SCEUA",
     )
@@ -80,6 +82,7 @@ def test_spotpy_calibration():
         "nse",
         bounds_low=bounds_low,
         bounds_high=bounds_high,
+        qobs=qobs,
         evaluations=10,
         algorithm="SCEUA",
     )
@@ -91,6 +94,7 @@ def test_spotpy_calibration():
         "nse",
         bounds_low=bounds_low,
         bounds_high=bounds_high,
+        qobs=qobs,
         evaluations=10,
         algorithm="SCEUA",
         transform="inv",
@@ -108,16 +112,17 @@ def test_calibration_failure_mode_unknown_optimizer():
     model_config = {
         "precip": np.array([10, 11, 12, 13, 14, 15]),
         "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "qobs": np.array([120, 130, 140, 150, 160, 170]),
         "drainage_area": np.array([10]),
         "model_name": "Dummy",
     }
+    qobs = np.array([120, 130, 140, 150, 160, 170])
     with pytest.raises(NotImplementedError):
         best_parameters_transform, best_simulation, best_objfun = perform_calibration(
             model_config,
             "nse",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=qobs,
             evaluations=10,
             algorithm="OTHER",
         )
@@ -162,6 +167,9 @@ class TestRavenpyModelCalibration:
         url=f"{GITHUB_URL}/raw/{BRANCH_OR_COMMIT_HASH}/data/ravenpy/Debit_Riviere_Rouge.nc",
         known_hash="md5:5b0feedc34333244b1d9e9c251323478",
     )
+    start_date = dt.datetime(1985, 1, 1)
+    end_date = dt.datetime(1986, 12, 31)
+    qobs = xr.open_dataset(qobs_path).qobs.sel(time=slice(start_date, end_date)).values
 
     # List of types of data provided to Raven in the meteo file
     data_type = ["TEMP_MAX", "TEMP_MIN", "PRECIP"]
@@ -170,15 +178,8 @@ class TestRavenpyModelCalibration:
     alt_names_meteo = {"TEMP_MIN": "tmin", "TEMP_MAX": "tmax", "PRECIP": "pr"}
     alt_names_flow = "qobs"
 
-    start_date = dt.datetime(1985, 1, 1)
-    end_date = dt.datetime(1986, 12, 31)
-
     model_config = {
         "meteo_file": meteo_file,
-        "qobs_path": qobs_path,
-        "qobs": xr.open_dataset(qobs_path)
-        .qobs.sel(time=slice(start_date, end_date))
-        .values,
         "drainage_area": np.array([100.0]),
         "elevation": np.array([250.5]),
         "latitude": np.array([46.0]),
@@ -187,7 +188,6 @@ class TestRavenpyModelCalibration:
         "end_date": end_date,
         "data_type": data_type,
         "alt_names_meteo": alt_names_meteo,
-        "alt_names_flow": alt_names_flow,
     }
 
     # Station properties. Using the same as for the catchment, but could be different.
@@ -214,6 +214,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -283,6 +284,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -304,6 +306,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -372,6 +375,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -440,6 +444,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -505,6 +510,7 @@ class TestRavenpyModelCalibration:
             "mae",
             bounds_low=bounds_low,
             bounds_high=bounds_high,
+            qobs=self.qobs,
             evaluations=8,
             algorithm="DDS",
             sampler_kwargs=dict(trials=1),
@@ -621,6 +627,7 @@ class TestRavenpyModelCalibration:
                     "mae",
                     bounds_low=bounds_low,
                     bounds_high=bounds_high,
+                    qobs=self.qobs,
                     evaluations=8,
                     algorithm="DDS",
                     sampler_kwargs=dict(trials=1),
@@ -631,6 +638,7 @@ class TestRavenpyModelCalibration:
                 "mae",
                 bounds_low=bounds_low,
                 bounds_high=bounds_high,
+                qobs=self.qobs,
                 evaluations=8,
                 algorithm="DDS",
                 sampler_kwargs=dict(trials=1),
