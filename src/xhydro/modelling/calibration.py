@@ -94,6 +94,7 @@ class SpotSetup:
         within these bounds. The size must be equal to the number of parameters to calibrate.
     qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
         Observed streamflow dataset (or path to it), used to compute the objective function.
+        If using a dataset, it must contain a "streamflow" variable.
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
@@ -167,6 +168,7 @@ class SpotSetup:
             within these bounds. The size must be equal to the number of parameters to calibrate.
         qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
             Observed streamflow dataset (or path to it), used to compute the objective function.
+            If using a dataset, it must contain a "streamflow" variable.
         obj_func : str
             The objective function used for calibrating. Can be any one of these:
 
@@ -383,6 +385,7 @@ def perform_calibration(
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
     qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
         Observed streamflow dataset (or path to it), used to compute the objective function.
+        If using a dataset, it must contain a "streamflow" variable.
     algorithm : str
         The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
     mask : np.array, optional
