@@ -11,7 +11,6 @@ Welcome to xHydro's documentation!
    notebooks/index
    notebooks/use_case
    planification
-   apidoc/modules
    contributing
    releasing
    authors
@@ -22,6 +21,12 @@ Welcome to xHydro's documentation!
    :caption: All Modules
 
    apidoc/modules
+
+Documentation and Support
+-------------------------
+- `GitHub Repository <https://github.com/hydrologie/xhydro>`_
+- `PyPI Package <https://pypi.org/project/xhydro/>`_
+- `Conda Package <https://anaconda.org/conda-forge/xhydro>`_
 
 .. Indices and tables
 .. ==================

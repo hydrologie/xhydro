@@ -4,6 +4,7 @@
 - [ ] This PR addresses an already opened issue (for bug fixes / features)
   - This PR fixes #xyz
 - [ ] (If applicable) Documentation has been added / updated (for bug fixes / features).
+  - [ ] (If applicable) ``make-initialize-translations`` has been run and translations have been updated.
 - [ ] (If applicable) Tests have been added.
 - [ ] CHANGELOG.rst has been updated (with summary of main changes).
   - [ ] Link to issue (:issue:`number`) and pull request (:pull:`number`) has been added.

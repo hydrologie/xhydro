@@ -17,7 +17,8 @@ xHydro |logo| |logo-light| |logo-dark|
 Hydrological analysis library built with xarray
 
 * Free software: Apache-2.0
-* Documentation: https://xhydro.readthedocs.io.
+* Documentation: https://xhydro.readthedocs.io/en/latest/
+* Version française: https://xhydro.readthedocs.io/fr/latest/
 
 Features
 --------
@@ -26,8 +27,8 @@ Features
 * Calibrate and execute Hydrotel and Raven-emulated hydrological models.
 * Perform optimal interpolation on hydrological data (daily streamflow and indices).
 * Compute hydrological indicators (e.g. n-day peak flow, annual maximum series, low flow, average flow, etc.) over custom date ranges.
-* Perform frequency analysis on hydrological indicators using a variety of methods (e.g. Gumbel, GEV, etc.).
-* Perform climate change impact analysis of hydrological data.
+* Perform frequency analyses on hydrological indicators using a variety of methods (e.g. Gumbel, GEV, etc.).
+* Perform climate change impact analyses of hydrological data.
 
 Credits
 -------

@@ -66,9 +66,9 @@ Get Started!
 
     Alternatively, you can use the `mamba <https://mamba.readthedocs.io/en/latest/index.html>`_ package manager, which is a drop-in replacement for ``conda``. If you are already using `mamba`, replace the following commands with ``mamba`` instead of ``conda``.
 
-Ready to contribute? Here's how to set up ``xhydro`` for local development.
+Ready to contribute? Here's how to set up ``xHydro`` for local development.
 
-#. First, clone the ``xhydro`` repo locally.
+#. First, clone the ``xHydro`` repo locally.
 
     * If you are not a ``xHydro`` collaborator, first fork the ``xHydro`` repo on GitHub, then clone your fork locally.
 
@@ -94,20 +94,10 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     .. code-block:: console
 
-        python -m pip install -e .[dev]
+        python -m pip install -e .[all]
         pre-commit install
 
-    This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone.
-
-    On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, ``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
-
-    You can also run the hooks manually with:
-
-        .. code-block:: console
-
-            pre-commit run -a
-
-    If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
+    This installs ``xHydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone. It also installs all the libraries necessary to run the ``Extremes.jl`` hooks of the ``extreme_value_analysis`` module.
 
 #. Create a branch for local development:
 
@@ -115,7 +105,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
         git checkout -b name-of-your-bugfix-or-feature
 
-    Now you can make your changes locally.
+    You can now make your changes locally.
 
 #. When you're done making changes, we **strongly** suggest running the tests in your environment or with the help of ``tox``:
 
@@ -123,7 +113,7 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
         make lint
         python -m pytest
-        # Or, to run multiple build tests
+        # Or, to run the tests on multiple builds of Python
         python -m tox
 
     .. note::
@@ -142,7 +132,13 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
         git commit -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
-    If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files to be committed, and re-committing your changes (or, if need be, you can skip them with `git commit --no-verify`).
+    On commit, ``pre-commit`` will check that multiple standards checks are passing, perform automatic fixes if possible, and warn of violations that require manual intervention. If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files to be committed, and re-committing your changes. If need be, you can skip them with `git commit --no-verify`, but note that those checks are also performed on GitHub and a branch that fails to pass them will not be able to be merged.
+
+    You can always run the hooks manually with:
+
+    .. code-block:: console
+
+        pre-commit run -a
 
 #. Submit a `Pull Request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_ through the GitHub website.
 
@@ -179,36 +175,36 @@ Ready to contribute? Here's how to set up ``xhydro`` for local development.
 
     See the previous step for more information on resolving conflicts.
 
-#. To prevent unnecessary testing of branches that are not ready for review, the `xhydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might be required after the Pull Request is approved to ensure that the tests pass and the documentation can be built.
+#. To prevent unnecessary testing of branches that are not ready for review, the `xHydro` repository is set up to run tests only when a Pull Request has been "approved" by a maintainer. Similarly, the notebooks within documentation will only be rebuilt when the Pull Request is "approved", or if the Pull Request makes explicit changes to them. As such, additional changes to the Pull Request might be required after the Pull Request is approved to ensure that the tests pass and the documentation can be built.
 
 #. Once your Pull Request has been accepted and merged to the `main` branch, several automated workflows will be triggered:
 
-    - The ``bump-version.yml`` workflow will automatically bump the patch version when pull requests are pushed to the `main` branch on GitHub. **It is not recommended to manually bump the version in your branch when merging (non-release) pull requests (this will cause the version to be bumped twice).**
-    - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xhydro` documentation website.
+    - The ``bump-version.yml`` workflow will automatically bump the library's version. **It is not recommended to manually bump the version in your branch when merging (non-release) pull requests. This would cause the version to be bumped twice.**
+    - `ReadTheDocs` will automatically build the documentation and publish it to the `latest` branch of `xHydro` documentation website.
     - If your branch is not a fork (i.e. you are a maintainer), your branch will be automatically deleted.
 
-You will have contributed to ``xhydro``!
+You will have contributed to ``xHydro``!
 
 .. warning::
 
-    If your Pull Request relies on modifications to the testing data of `xhydro`, you will need to update the testing data repository as well. As a preliminary testing measure, the branch of the testing data can be modified at testing time (from `main`) by setting the ``XHYDRO_TESTDATA_BRANCH`` environment variable to the branch name of the ``xhydro-testdata`` repository.
+    If your Pull Request relies on modifications to the testing data of `xHydro`, you will need to update the testing data repository as well. As a preliminary testing measure, the branch of the testing data can be modified at testing time (from `main`) by setting the ``XHYDRO_TESTDATA_BRANCH`` environment variable to the branch name of the ``xhydro-testdata`` repository.
 
     Be sure to consult the ReadMe found at https://github.com/hydrologie/xhydro-testdata as well.
 
 Pull Request Guidelines
 -----------------------
 
-Before you submit a pull request, check that it meets these guidelines:
+Before you submit a Pull Request, check that it meets these guidelines:
 
-#. The pull request should include tests and should aim to provide `code coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new lines of code. You can use the `--cov-report html --cov xhydro` flags during the call to ``pytest`` to generate an HTML report and analyse the current test coverage.
+#. The Pull Request should include tests and should aim to provide `code coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new lines of code. You can use the `--cov-report html --cov xhydro` flags during the call to ``pytest`` to generate an HTML report and analyse the current test coverage.
 
 #. All functions should be documented with `docstrings` following the `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ format.
 
-#. If the pull request adds functionality, either update the documentation or create a new notebook that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
+#. If the Pull Request adds a functionality, either update the documentation or create a new notebook that demonstrates the feature. Library-defining features should also be listed in ``README.rst``.
 
 #. The ChangeLog should be updated with a brief description of the changes made in the Pull Request. If this is your first contribution to the project, please add your name and information to the `AUTHORS.rst` and `.zenodo.json` files.
 
-#. The pull request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.ini` files for the supported versions. We aim to follow the support and drop schedule of Python versions as recommended by the NumPy NEP calendar: https://numpy.org/neps/nep-0029-deprecation_policy.html
+#. The Pull Request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.ini` files for the supported versions. We aim to follow the support and drop schedule of Python versions as recommended by the NumPy NEP calendar: https://numpy.org/neps/nep-0029-deprecation_policy.html
 
 Tips
 ----
@@ -226,19 +222,6 @@ You can also directly call a specific test class or test function using:
     python -m pytest tests/test_xhydro.py::TestClassName::test_function_name
 
 For more information on running tests, see the `pytest documentation <https://docs.pytest.org/en/latest/usage.html>`_.
-
-To run specific code style checks:
-
-.. code-block:: console
-
-    python -m black --check src/xhydro tests
-    python -m isort --check src/xhydro tests
-    python -m blackdoc --check src/xhydro docs
-    python -m ruff check src/xhydro tests
-    python -m flake8 src/xhydro tests
-    validate-docstrings src/xhydro/**.py
-
-To get ``black``, ``isort``, ``blackdoc``, ``ruff``, ``flake8`` (with the ``flake8-rst-docstrings`` plugin), and ``numpydoc`` (for ``validate-docstrings``), simply install them with ``pip`` (or ``conda``) into your environment.
 
 Translations
 ------------

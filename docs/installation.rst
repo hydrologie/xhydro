@@ -2,7 +2,7 @@
 Installation
 ============
 
-We strongly recommend installing `xhydro` in an Anaconda Python environment. Furthermore, due to the complexity of some packages, the default dependency solver can take a long time to resolve the environment. If `mamba` is not already your default solver, consider running the following commands in order to speed up the process:
+We strongly recommend installing `xHydro` in an Anaconda Python environment. Furthermore, due to the complexity of some packages, the default dependency solver can take a long time to resolve the environment. If `mamba` is not already your default solver, consider running the following commands in order to speed up the process:
 
     .. code-block:: console
 
@@ -16,27 +16,37 @@ If you don't have `pip`_ installed, this `Python installation guide`_ can guide 
 
 Stable release
 --------------
-Due to the complexity of the install process of some dependencies, `xhydro` should not be installed directly from `PyPI` unless you are sure that all requirements are met.
-
-Until the library is available on `Conda-Forge` for a more streamlined installation, we recommend following the instructions below, but replacing the first step with files from the latest release on `PyPI`_.
-
-.. _PyPI: https://pypi.org/project/xhydro/
-
-To create a working environment and install xHydro, copy the `environment-dev.yml` file from the root of the repository and run the following commands:
+Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we highly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
 
     .. code-block:: console
 
-     conda env create -f environment-dev.yml
-     conda activate xhydro
-     python -m pip install xhydro --no-deps
+     conda install -c conda-forge xhydro
 
-This is the preferred method to install xHydro, as it will always install the most recent stable release.
+Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional.
 
-If for some reason you wish to install the `PyPI` version of `xhydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
+    .. code-block:: console
+
+     pip install xhydro
+
+Either of those will install the latest stable release of `xHydro` with all its dependencies, with two exception:
+
+If you wish to use the `extreme_value_analysis` module, which relies on the `Extremes.jl`_ Julia package, you will need to install the `julia` extra:
+
+    .. code-block:: console
+
+     pip install xhydro[julia]
+
+.. _Extremes.jl: https://github.com/jojal5/Extremes.jl
+
+If you wish to use the `frequency_analysis.regional` module, you will need to install the `lmoments3` library yourself. This library is available on both `PyPI` or `conda-forge`, but has a restricted license.
+
+    .. code-block:: console
+
+     conda install -c conda-forge lmoments3
 
 From sources
 ------------
-`xHydro` is still under active development and the latest features might not yet be available on `PyPI`.
+`xHydro` is still under active development and the latest features might not yet be available on `PyPI` or `conda-forge`. If you want to use the latest features, or if you want to contribute to the development of `xHydro`, you can install it from the sources.
 
 The sources for xHydro can be downloaded from the `Github repo`_.
 
@@ -66,7 +76,7 @@ The sources for xHydro can be downloaded from the `Github repo`_.
 
     .. code-block:: console
 
-        python -m pip install -e .[dev]
+        python -m pip install -e .[all]
 
         Even if you do not intend to contribute to `xHydro`, we favor using `environment-dev.yml` over `environment.yml` because it includes additional packages that are used to run all the examples provided in the documentation.
         If for some reason you wish to install the `PyPI` version of `xHydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
