@@ -522,6 +522,15 @@ def execute_interpolation(
             discharge=flow_quantiles,
         )
 
+    # FIXME: This is a quick and dirty fix to remove the "station" dimension from the dataset. It should be managed earlier.
+    if "station" in ds.dims:
+        ds = ds.assign_coords({"station_id": ds.station.values})
+        ds = ds.drop_dims("station")
+    # FIXME: This is an even dirtier fix to re-add the time dimension to the dataset. It gets dropped??
+    if "time" not in ds.coords and "time_bnds" in ds:
+        ds = ds.assign_coords({"time": ds.time_bnds.sel(nbnds=1).values})
+        ds = ds.drop_vars("time_bnds")
+
     return ds
 
 
