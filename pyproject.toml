@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.9,<4"]
+requires = ["flit_core >=3.10.1,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -48,7 +48,7 @@ dependencies = [
   "dask <=2024.10.0",
   "dask-geopandas <=0.4.2",
   "intake-xarray <=0.7.0",
-  "questionary <=2.0.1",
+  "questionary <=2.1.0",
   "pystac <1.12.0", # Temporary pin until it is fixed.
   "pystac-client",
   "pyyaml >=6.0.2",
@@ -61,7 +61,7 @@ dependencies = [
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
-  "xclim >=0.53.2,<0.54",
+  "xclim >=0.53.2,<0.56",
   "xdatasets >=0.3.6",
   "xscen >=0.10.1,<0.11",
   "xvec"
@@ -70,27 +70,25 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "pip >=24.2.0",
-  "bump-my-version >=0.26.0",
-  "watchdog >=4.0.0",
-  "flake8 >=7.1.1",
-  "flake8-alphabetize >=0.0.21",
-  "flake8-rst-docstrings >=0.3.0",
-  "flit >=3.9.0,<4.0",
-  "tox >=4.18.0",
+  "black ==25.1.0",
+  "blackdoc ==0.3.9",
+  "bump-my-version >=0.32.1",
   "coverage >=7.5.0",
-  "coveralls >=4.0.1",
-  "mypy",
+  "flake8 >=7.1.1",
+  "flake8-rst-docstrings >=0.3.0",
+  "flit >=3.10.1,<4.0",
+  "isort ==6.0.0",
+  "mypy >=1.14.1",
   "numpydoc >=1.8.0",
   "packaging >=23.0",
+  "pip >=25.0",
+  "pre-commit >=3.5.0",
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
   "pytest-xdist[psutil] >=3.2",
-  "black ==24.8.0",
-  "blackdoc ==0.3.9",
-  "isort ==5.13.2",
-  "pre-commit >=3.5.0",
-  "ruff >=0.5.7"
+  "ruff >=0.9.0",
+  "tox >=4.24.1",
+  "watchdog >=4.0.0"
 ]
 docs = [
   # Documentation and examples
@@ -99,14 +97,12 @@ docs = [
   "ipykernel",
   "ipython >=8.5.0",
   "jupyter_client",
-  "nbsphinx",
+  "nbsphinx >=0.9.5",
   "nbval",
-  "sphinx >=7.0.0",
-  "sphinx-autoapi",
+  "sphinx >=7.1.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton",
   "sphinx-intl",
-  "sphinxcontrib-napoleon",
   "xagg"
 ]
 julia = [
@@ -131,7 +127,7 @@ target-version = [
 ]
 
 [tool.bumpversion]
-current_version = "0.4.2-dev.2"
+current_version = "0.4.2-dev.7"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -167,6 +163,10 @@ values = [
   "dev",
   "release"
 ]
+
+[tool.codespell]
+ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic"
+skip = ["*.po", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
@@ -208,6 +208,7 @@ exclude = [
   ".pre-commit-config.yaml",
   ".readthedocs.yml",
   ".yamllint.yaml",
+  ".zizmor.yml",
   "Makefile",
   "docs/_*",
   "docs/apidoc/modules.rst",
@@ -347,3 +348,11 @@ max-doc-length = 180
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.vulture]
+exclude = []
+ignore_decorators = ["@pytest.fixture"]
+ignore_names = []
+min_confidence = 90
+paths = ["src/xhydro", "tests"]
+sort_by_size = true

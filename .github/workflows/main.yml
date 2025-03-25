@@ -42,10 +42,10 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.12"  # FIXME: This will be adjusted in cookiecutter
+          - "3.x"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -55,8 +55,10 @@ jobs:
             pypi.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -64,10 +66,11 @@ jobs:
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt
       - name: Environment Caching
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
-          path: .tox
-          key: ${{ matrix.os }}-Python${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
+          path: |
+            .tox
+          key: ${{ hashFiles('pyproject.toml', 'tox.ini') }}-lint
       - name: Run linting suite
         run: |
           python -m tox -e lint
@@ -87,7 +90,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -115,8 +118,10 @@ jobs:
             us-west.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@617811f69075e3fd3ae68ca64220ad065877f246 # v2.0.0
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
         with:
           cache-downloads: true
           cache-environment: true
@@ -161,7 +166,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -189,8 +194,10 @@ jobs:
             us-west.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@617811f69075e3fd3ae68ca64220ad065877f246 # v2.0.0
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
         with:
           cache-downloads: true
           cache-environment: true
@@ -234,18 +241,14 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.10", "3.11", "3.12" ]
-        julia: [ false ]
-        include:
-          - os: 'ubuntu-latest'
-            python-version: "3.10"
-            julia: true
+        python-version: [ "3.12" ]
+        julia: [ true, false ]
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -274,8 +277,10 @@ jobs:
             us-west.pkg.julialang.org:443
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@617811f69075e3fd3ae68ca64220ad065877f246 # v2.0.0
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
         with:
           cache-downloads: true
           cache-environment: true
@@ -301,7 +306,7 @@ jobs:
       - name: Test Notebooks (Julia)
         if: ${{ matrix.julia == true }}
         run: |
-          make test-notebooks-lax
+          make test-notebooks-lax-onlyextremes
 
 #  test-ESMF-source:
 #    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
@@ -358,11 +363,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           disable-sudo: true
           egress-policy: audit
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@cfd0633edbd2411b532b808ba7a8b5e04f76d2c8 # v2.3.4
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           parallel-finished: true

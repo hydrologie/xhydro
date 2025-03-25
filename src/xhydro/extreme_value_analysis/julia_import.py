@@ -1,4 +1,4 @@
-"""Load and install Julia dependancies into python environment."""
+"""Load and install Julia dependencies into python environment."""
 
 import contextlib
 import io
@@ -80,14 +80,14 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
     return expected_output in output
 
 
-# It was not necessary to add a dependancy dictionary as we only need Extremes.jl, however this mechanism is more
-# scalable in case we need to add many other julia dependancies in the future
+# It was not necessary to add a dependency dictionary as we only need Extremes.jl, however this mechanism is more
+# scalable in case we need to add many other julia dependencies in the future
 deps = {
     "Extremes": "fe3fe864-1b39-11e9-20b8-1f96fa57382d",
 }
-for dependancy, uuid in deps.items():
-    if not check_function_output(juliapkg.deps.status, dependancy):
-        juliapkg.add(dependancy, uuid)
+for dependency, uuid in deps.items():
+    if not check_function_output(juliapkg.deps.status, dependency):
+        juliapkg.add(dependency, uuid)
 juliapkg.resolve()
 jl = cast(ModuleType, jl)
 jl_version = (

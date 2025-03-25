@@ -138,7 +138,7 @@ def get_objective_function(
         qsim = qsim["streamflow"]
 
     if isinstance(qobs, xr.Dataset):
-        qobs = qobs["qobs"]
+        qobs = qobs["streamflow"]
 
     # Basic error checking
     if qobs.shape[0] != qsim.shape[0]:

@@ -4,9 +4,9 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.uncertainities import (
-    boostrap_dist,
-    boostrap_obs,
+from xhydro.frequency_analysis.uncertainties import (
+    bootstrap_dist,
+    bootstrap_obs,
     calc_moments_iter,
     calc_q_iter,
     fit_boot_dist,
@@ -14,16 +14,16 @@ from xhydro.frequency_analysis.uncertainities import (
 )
 
 
-def test_boostrap_obs():
+def test_bootstrap_obs():
     time = pd.date_range("2020-01-01", periods=5)
     data = xr.DataArray(np.array([1, 2, 3, 4, 5]), coords={"time": time})
     n_samples = 1000
-    result = boostrap_obs(data, n_samples)
+    result = bootstrap_obs(data, n_samples)
     assert result.shape == (n_samples, len(data))
     assert np.all(np.isin(result, data))
 
 
-def test_boostrap_dist():
+def test_bootstrap_dist():
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
         variable="streamflow",
@@ -33,7 +33,7 @@ def test_boostrap_dist():
     )
     params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     n_samples = 1000
-    result = boostrap_dist(ds, params, n_samples)
+    result = bootstrap_dist(ds, params, n_samples)
     assert len(result.samples) == n_samples
     assert "samples" in result.coords
 
@@ -48,7 +48,7 @@ def test_fit_boot_dist():
     )
     params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     n_samples = 1000
-    bo = boostrap_dist(ds, params, n_samples)
+    bo = bootstrap_dist(ds, params, n_samples)
 
     result = fit_boot_dist(bo)
     assert isinstance(result, xr.Dataset)
@@ -65,7 +65,7 @@ def test_calc_moments_iter():
         as_dataset=True,
     )
     n_samples = 1000
-    bo = boostrap_obs(ds, n_samples).assign_coords(id="S1").expand_dims("id")
+    bo = bootstrap_obs(ds, n_samples).assign_coords(id="S1").expand_dims("id")
     result = calc_moments_iter(bo)
     assert isinstance(result, xr.Dataset)
     assert "l1" in result.lmom and "l2" in result.lmom
@@ -82,7 +82,7 @@ def test_calc_q_iter():
     )
 
     n_samples = 1000
-    bo = boostrap_obs(ds, n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
+    bo = bootstrap_obs(ds, n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
     ds_moments_iter = calc_moments_iter(bo)
     time = pd.date_range("2020-01-01", periods=54)
     data = np.array(

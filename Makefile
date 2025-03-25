@@ -71,7 +71,7 @@ lint: lint/flake8 lint/black ## check style
 test: ## run tests quickly with the default Python
 	python -m pytest
 
-test-distributed: ## run tests quickly with the default Python and distibuted workers
+test-distributed: ## run tests quickly with the default Python and distributed workers
 	python -m pytest --num-processes=logical
 
 test-notebooks: ## run tests on notebooks and compare outputs
@@ -79,6 +79,9 @@ test-notebooks: ## run tests on notebooks and compare outputs
 
 test-notebooks-lax: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks
+
+test-notebooks-lax-onlyextremes: ## run tests exclusively on the Julia notebook
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks/extreme_value_analysis.ipynb
 
 test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'

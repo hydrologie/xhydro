@@ -9,6 +9,7 @@ Welcome to xHydro's documentation!
    readme
    installation
    notebooks/index
+   notebooks/use_case
    planification
    apidoc/modules
    contributing

@@ -35,54 +35,68 @@ class TestSampledIndicators:
             with pytest.raises(
                 KeyError, match="argument is None, but the variables within the"
             ):
-                xh.cc.sampled_indicators(
-                    ds, deltas, delta_kind=delta_kind, n=10, seed=42
+                ds_dist = xh.cc.weighted_random_sampling(ds, n=10, seed=42)
+                deltas_dist = xh.cc.weighted_random_sampling(
+                    deltas, n=10, seed=42, include_dims=["realization"]
                 )
+
+                xh.cc.sampled_indicators(ds_dist, deltas_dist, delta_kind=delta_kind)
             deltas["QMOYAN"].attrs["delta_kind"] = "absolute"
 
         if delta_kind in ["absolute", "percentage"] or delta_kind is None:
+            ds_dist = xh.cc.weighted_random_sampling(ds, n=10, seed=42)
+            deltas_dist = xh.cc.weighted_random_sampling(
+                deltas, n=10, seed=42, include_dims=["realization"]
+            )
             out = xh.cc.sampled_indicators(
-                ds, deltas, delta_kind=delta_kind, n=10, seed=42, return_dist=True
+                ds_dist, deltas_dist, delta_kind=delta_kind, percentiles=ds.percentile
             )
 
             np.testing.assert_array_equal(
-                out[0]["percentile"], [1, 10, 20, 50, 80, 90, 99]
+                out[1]["percentile"], [1, 10, 20, 50, 80, 90, 99]
             )
             assert all(
-                chosen in np.arange(1, 8) for chosen in np.unique(out[1].QMOYAN.values)
+                chosen in np.arange(1, 8) for chosen in np.unique(ds_dist.QMOYAN.values)
             )
             assert all(
                 chosen in np.arange(-10, 55, 5)
-                for chosen in np.unique(out[2].QMOYAN.values)
+                for chosen in np.unique(deltas_dist.QMOYAN.values)
             )
 
             if delta_kind == "absolute" or delta_kind is None:
                 assert (
-                    np.min(out[3].QMOYAN) >= 1 - 10
+                    np.min(out[0].QMOYAN) >= 1 - 10
                 )  # Min of historical minus min of deltas
                 assert (
-                    np.max(out[3].QMOYAN) <= 7 + 50
+                    np.max(out[0].QMOYAN) <= 7 + 50
                 )  # Max of historical plus max of deltas
                 np.testing.assert_array_almost_equal(
-                    out[0]["QMOYAN"].values, [-3.0, -3.0, 14.6, 40.0, 46.2, 51.6, 56.46]
+                    out[1]["QMOYAN"].values, [-3.0, -3.0, 14.6, 40.0, 46.2, 51.6, 56.46]
                 )
             else:
-                assert np.min(out[3].QMOYAN) >= 1 * (
+                assert np.min(out[0].QMOYAN) >= 1 * (
                     1 - 10 / 100
                 )  # Min of historical minus min of deltas
-                assert np.max(out[3].QMOYAN) <= 7 * (
+                assert np.max(out[0].QMOYAN) <= 7 * (
                     1 + 50 / 100
                 )  # Max of historical plus max of deltas
                 np.testing.assert_array_almost_equal(
-                    out[0]["QMOYAN"].values, [1.9, 1.9, 4.06, 6.75, 7.34, 8.88, 10.338]
+                    out[1]["QMOYAN"].values, [1.9, 1.9, 4.06, 6.75, 7.34, 8.88, 10.338]
                 )
 
         else:
             with pytest.raises(
                 ValueError, match=f"Unknown operation '{delta_kind}', expected one"
             ):
+                ds_dist = xh.cc.weighted_random_sampling(ds, n=10, seed=42)
+                deltas_dist = xh.cc.weighted_random_sampling(
+                    deltas, n=10, seed=42, include_dims=["realization"]
+                )
                 xh.cc.sampled_indicators(
-                    ds, deltas, delta_kind=delta_kind, n=10, seed=42
+                    ds_dist,
+                    deltas_dist,
+                    delta_kind=delta_kind,
+                    percentiles=ds.percentile,
                 )
 
     @pytest.mark.parametrize("dk", ["dict", "dict_bad", None])
@@ -110,47 +124,54 @@ class TestSampledIndicators:
             deltas["QMOYAN"].attrs["delta_kind"] = "pct."
             deltas["QMOYABS"].attrs["delta_kind"] = "abs."
 
+        ds_dist = xh.cc.weighted_random_sampling(ds, n=10, seed=42)
+        deltas_dist = xh.cc.weighted_random_sampling(
+            deltas, n=10, seed=42, include_dims=["realization"]
+        )
         if dk == "dict_bad":
             with pytest.raises(
                 ValueError, match="is a dict, it should contain all the variables"
             ):
                 xh.cc.sampled_indicators(
-                    ds, deltas, delta_kind=delta_kind, n=10, seed=42, return_dist=True
+                    ds_dist,
+                    deltas_dist,
+                    delta_kind=delta_kind,
+                    percentiles=ds.percentile,
                 )
         else:
             out = xh.cc.sampled_indicators(
-                ds, deltas, delta_kind=delta_kind, n=10, seed=42, return_dist=True
+                ds_dist, deltas_dist, delta_kind=delta_kind, percentiles=ds.percentile
             )
 
             np.testing.assert_array_equal(
-                out[0]["percentile"], [1, 10, 20, 50, 80, 90, 99]
+                out[1]["percentile"], [1, 10, 20, 50, 80, 90, 99]
             )
             assert all(
-                chosen in np.arange(1, 8) for chosen in np.unique(out[1].QMOYAN.values)
+                chosen in np.arange(1, 8) for chosen in np.unique(ds_dist.QMOYAN.values)
             )
             assert all(
                 chosen in np.arange(-10, 55, 5)
-                for chosen in np.unique(out[2].QMOYAN.values)
+                for chosen in np.unique(deltas_dist.QMOYAN.values)
             )
 
             assert (
-                np.min(out[3].QMOYABS) >= 1 - 10
+                np.min(out[0].QMOYABS) >= 1 - 10
             )  # Min of historical minus min of deltas
             assert (
-                np.max(out[3].QMOYABS) <= 7 + 50
+                np.max(out[0].QMOYABS) <= 7 + 50
             )  # Max of historical plus max of deltas
             np.testing.assert_array_almost_equal(
-                out[0]["QMOYABS"].values, [-3.0, -3.0, 14.6, 40.0, 46.2, 51.6, 56.46]
+                out[1]["QMOYABS"].values, [-3.0, -3.0, 14.6, 40.0, 46.2, 51.6, 56.46]
             )
 
-            assert np.min(out[3].QMOYAN) >= 1 * (
+            assert np.min(out[0].QMOYAN) >= 1 * (
                 1 - 10 / 100
             )  # Min of historical minus min of deltas
-            assert np.max(out[3].QMOYAN) <= 7 * (
+            assert np.max(out[0].QMOYAN) <= 7 * (
                 1 + 50 / 100
             )  # Max of historical plus max of deltas
             np.testing.assert_array_almost_equal(
-                out[0]["QMOYAN"].values, [1.9, 1.9, 4.06, 6.75, 7.34, 8.88, 10.338]
+                out[1]["QMOYAN"].values, [1.9, 1.9, 4.06, 6.75, 7.34, 8.88, 10.338]
             )
 
     def test_sampled_indicators_return(self):
@@ -162,19 +183,24 @@ class TestSampledIndicators:
             coords={"realization": np.arange(13)},
         ).to_dataset(name="QMOYAN")
 
-        out1 = xh.cc.sampled_indicators(
-            ds, deltas, delta_kind="absolute", n=10, seed=42, return_dist=False
+        ds_dist = xh.cc.weighted_random_sampling(ds, n=10, seed=42)
+        deltas_dist = xh.cc.weighted_random_sampling(
+            deltas, n=10, seed=42, include_dims=["realization"]
         )
+        out1 = xh.cc.sampled_indicators(ds_dist, deltas_dist, delta_kind="absolute")
         assert isinstance(out1, xr.Dataset)
 
         out2 = xh.cc.sampled_indicators(
-            ds, deltas, delta_kind="absolute", n=10, seed=42, return_dist=True
+            ds_dist,
+            deltas_dist,
+            delta_kind="absolute",
+            percentiles=[1, 10, 20, 50, 80, 90, 99],
         )
         assert isinstance(out2, tuple)
-        assert len(out2) == 4
+        assert len(out2) == 2
         assert all(isinstance(o, xr.Dataset) for o in out2)
         assert out2[0].equals(out1)
-        for o in out2[1:]:
+        for o in [out2[0], ds_dist, deltas_dist]:
             assert list(o.dims) == ["sample"]
             assert len(o["sample"]) == 10
 
@@ -236,69 +262,83 @@ class TestSampledIndicators:
         )
 
         if weights is None:
+            ds_dist = xh.cc.weighted_random_sampling(
+                ds, n=10, seed=42, include_dims=["foo"]
+            )
+            deltas_dist = xh.cc.weighted_random_sampling(
+                deltas, n=10, seed=42, include_dims=["realization", "platform"]
+            )
             out = xh.cc.sampled_indicators(
-                ds, deltas, delta_kind="percentage", n=10, seed=42, return_dist=True
+                ds_dist, deltas_dist, delta_kind="percentage", percentiles=ds.percentile
             )
             np.testing.assert_array_almost_equal(
-                out[0].QMOYAN.isel(station=0).values, [1.809, 5.5, 11.8, 12.0, 15.8155]
+                out[1].QMOYAN.isel(station=0).values, [1.809, 5.5, 11.8, 12.0, 15.8155]
             )
         elif weights == "ds":
+            ds_dist = xh.cc.weighted_random_sampling(
+                ds, weights=ds_weights, n=10, seed=42
+            )
+            deltas_dist = xh.cc.weighted_random_sampling(
+                deltas, n=10, seed=42, include_dims=["realization", "platform"]
+            )
             out = xh.cc.sampled_indicators(
-                ds,
-                deltas,
+                ds_dist,
+                deltas_dist,
                 delta_kind="percentage",
-                n=10,
-                seed=42,
-                return_dist=True,
-                ds_weights=ds_weights,
+                percentiles=ds.percentile,
             )
             np.testing.assert_array_almost_equal(
-                out[0].QMOYAN.isel(station=0).values,
+                out[1].QMOYAN.isel(station=0).values,
                 [5.427, 8.8, 13.275, 13.5, 15.8155],
             )
         elif weights == "deltas":
+            ds_dist = xh.cc.weighted_random_sampling(
+                ds, n=10, seed=42, include_dims=["foo"]
+            )
+            deltas_dist = xh.cc.weighted_random_sampling(
+                deltas, weights=delta_weights, n=10, seed=42
+            )
             out = xh.cc.sampled_indicators(
-                ds,
-                deltas,
+                ds_dist,
+                deltas_dist,
                 delta_kind="percentage",
-                n=10,
-                seed=42,
-                return_dist=True,
-                delta_weights=delta_weights,
+                percentiles=ds.percentile,
             )
             np.testing.assert_array_almost_equal(
-                out[0].QMOYAN.isel(station=0).values, [2.1, 7.5, 12.0, 12.0, 14.865]
+                out[1].QMOYAN.isel(station=0).values, [2.1, 7.5, 12.0, 12.0, 14.865]
             )
-            assert sum(out[2].QMOYAN.isel(station=0).values == 5) < sum(
-                out[2].QMOYAN.isel(station=0).values == 50
+            assert sum(deltas_dist.QMOYAN.isel(station=0).values == 5) < sum(
+                deltas_dist.QMOYAN.isel(station=0).values == 50
             )  # 50 should be sampled more often
         elif weights == "both":
+            ds_dist = xh.cc.weighted_random_sampling(
+                ds, weights=ds_weights, n=10, seed=42
+            )
+            deltas_dist = xh.cc.weighted_random_sampling(
+                deltas, weights=delta_weights, n=10, seed=42
+            )
             out = xh.cc.sampled_indicators(
-                ds,
-                deltas,
+                ds_dist,
+                deltas_dist,
                 delta_kind="percentage",
-                n=10,
-                seed=42,
-                return_dist=True,
-                ds_weights=ds_weights,
-                delta_weights=delta_weights,
+                percentiles=ds.percentile,
             )
             np.testing.assert_array_almost_equal(
-                out[0].QMOYAN.isel(station=0).values, [6.3, 12.0, 13.5, 13.5, 14.865]
+                out[1].QMOYAN.isel(station=0).values, [6.3, 12.0, 13.5, 13.5, 14.865]
             )
         else:
             raise ValueError(f"Unknown value for 'weights': {weights}")
 
         assert all(
             chosen in expected_out1
-            for chosen in np.unique(out[1].QMOYAN.isel(station=0).values)
+            for chosen in np.unique(ds_dist.QMOYAN.isel(station=0).values)
         )
         assert all(
             chosen in expected_out2
-            for chosen in np.unique(out[2].QMOYAN.isel(station=0).values)
+            for chosen in np.unique(deltas_dist.QMOYAN.isel(station=0).values)
         )
         assert all(
-            "station" in o.dims for o in out
+            "station" in o.dims for o in list(out) + [ds_dist, deltas_dist]
         )  # "station" is a shared dimension, so it should be in all outputs
 
     def test_weighted_time(self):
@@ -348,18 +388,18 @@ class TestSampledIndicators:
             },
         )
 
+        ds_dist = xh.cc.weighted_random_sampling(ds, weights=ds_weights, n=10, seed=42)
+        deltas_dist = xh.cc.weighted_random_sampling(
+            deltas, weights=delta_weights, n=10, seed=42, include_dims=["realization"]
+        )
         out = xh.cc.sampled_indicators(
-            ds,
-            deltas,
+            ds_dist,
+            deltas_dist,
             delta_kind="absolute",
-            n=10,
-            seed=42,
-            return_dist=True,
-            ds_weights=ds_weights,
-            delta_weights=delta_weights,
+            percentiles=ds.percentile,
         )
         np.testing.assert_array_almost_equal(
-            out[0].QMOYAN.isel(station=0, time=0).values,
+            out[1].QMOYAN.isel(station=0, time=0).values,
             [
                 11.0,
                 13.0,
@@ -369,7 +409,7 @@ class TestSampledIndicators:
             ],  # Roughly ds.QMOYAN.isel(station=0, foo=1).values + 5
         )
         np.testing.assert_array_almost_equal(
-            out[0].QMOYAN.isel(station=0, time=1).values,
+            out[1].QMOYAN.isel(station=0, time=1).values,
             [
                 51.0,
                 53.0,
@@ -380,22 +420,30 @@ class TestSampledIndicators:
         )
 
         assert all(
-            "station" in o.dims for o in out
+            "station" in o.dims for o in list(out) + [ds_dist, deltas_dist]
         )  # "station" is a shared dimension, so it should be in all outputs
         assert all(
-            "time" in o.dims for o in [out[0], out[2], out[3]]
+            "time" in o.dims for o in [out[1], deltas_dist, out[0]]
         )  # Time dimension should never be removed
 
         # Check a few attributes
-        assert all(o.QMOYAN.attrs["sampling_kind"] == "absolute" for o in out)
-        assert all(o.QMOYAN.attrs["sampling_n"] == 10 for o in out)
-        assert all(o.QMOYAN.attrs["sampling_seed"] == 42 for o in out)
-        assert out[0].QMOYAN.attrs["long_name"] == "Future percentiles of QMOYAN"
-        assert out[1].QMOYAN.attrs["long_name"] == "Historical distribution of QMOYAN"
-        assert out[2].QMOYAN.attrs["long_name"] == "Future delta distribution of QMOYAN"
-        assert out[3].QMOYAN.attrs["long_name"] == "Future distribution of QMOYAN"
-        assert all(o.QMOYAN.attrs["units"] == "m3/s" for o in [out[0], out[1], out[3]])
-        assert out[2].QMOYAN.attrs["units"] == "%"
+        assert all(o.QMOYAN.attrs["delta_kind"] == "absolute" for o in out)
+        assert all(
+            o.QMOYAN.attrs["sampling_n"] == 10
+            for o in list(out) + [ds_dist, deltas_dist]
+        )
+        assert all(
+            o.QMOYAN.attrs["sampling_seed"] == 42
+            for o in list(out) + [ds_dist, deltas_dist]
+        )
+        assert out[1].QMOYAN.attrs["long_name"] == "Reconstructed percentiles of QMOYAN"
+        assert ds_dist.QMOYAN.attrs["long_name"] == "Sampled distribution of QMOYAN"
+        assert deltas_dist.QMOYAN.attrs["long_name"] == "Sampled distribution of QMOYAN"
+        assert (
+            out[0].QMOYAN.attrs["long_name"] == "Reconstructed distribution of QMOYAN"
+        )
+        assert all(o.QMOYAN.attrs["units"] == "m3/s" for o in [out[1], ds_dist, out[0]])
+        assert deltas_dist.QMOYAN.attrs["units"] == "%"
 
     def test_sampled_indicators_weight_err(self):
         ds = xr.DataArray(
@@ -435,19 +483,6 @@ class TestSampledIndicators:
             },
         )
 
-        with pytest.raises(
-            ValueError,
-            match="is shared between 'ds' and 'deltas', but not between 'ds_weights' and 'delta_weights'.",
-        ):
-            xh.cc.sampled_indicators(
-                ds,
-                deltas,
-                delta_kind="percentage",
-                n=10,
-                seed=42,
-                delta_weights=delta_weights,
-            )
-
         deltas = deltas.rename({"platform": "time", "station": "horizon"})
         delta_weights = delta_weights.rename(
             {"platform": "time", "realization": "horizon"}
@@ -456,7 +491,13 @@ class TestSampledIndicators:
             NotImplementedError,
             match="Weights on multiple time dimensions are not supported.",
         ):
-            xh.cc._weighted_sampling(deltas, delta_weights, n=10, seed=42)
+            xh.cc.weighted_random_sampling(
+                deltas,
+                weights=delta_weights,
+                n=10,
+                seed=42,
+                include_dims=["realization"],
+            )
 
     def test_p_weights(self):
         def _make_da(arr):
@@ -501,22 +542,8 @@ class TestSampledIndicators:
         assert set(out.dims) == set(
             ["station", "sample"] + (["platform"] if weights_ndim == 1 else [])
         )
-        assert list(out["sample"].coords) == ["sample", "percentile"] + (
-            ["platform"] if weights_ndim == 2 else []
-        )
+        assert list(out["sample"].coords) == ["sample"]
         assert len(out["sample"]) == 10
-
-        np.testing.assert_array_equal(
-            out["percentile"],
-            {
-                1: [50, 50, 75, 50, 25, 75, 50, 75, 50, 50],
-                2: [25, 25, 50, 25, 25, 75, 25, 25, 25, 25],
-            }[weights_ndim],
-        )  # With seed=42
-        if weights_ndim == 2:
-            np.testing.assert_array_equal(
-                out["platform"], ["y", "x", "y", "x", "x", "y", "x", "y", "x", "x"]
-            )
 
     def test_weighted_sampling_errors(self):
         ds = xr.DataArray(
@@ -560,7 +587,7 @@ class TestSampledIndicators:
         with pytest.raises(ValueError, match="DataArray has more than one dimension"):
             xh.cc._perc_or_quantile(da)
 
-        # Test 2: DataArray/Datset with no percentile or quantile dimension
+        # Test 2: DataArray/Dataset with no percentile or quantile dimension
         da = xr.DataArray(
             np.linspace(0, 1, 101),
             dims="foo",

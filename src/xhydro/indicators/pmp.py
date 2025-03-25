@@ -3,7 +3,6 @@
 import warnings
 from copy import deepcopy
 from itertools import product
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -448,7 +447,7 @@ def spatial_average_storm_configurations(da, radius):
     Returns
     -------
     xr.DataSet
-        DataSet contaning the spatial averages for all the storm configurations. The y and x coordinates indicate
+        DataSet containing the spatial averages for all the storm configurations. The y and x coordinates indicate
         the location of the storm. This location is determined by n//2, where n is the total number of cells for
         both the rows and columns in the configuration, and // represents floor division.
 

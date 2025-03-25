@@ -7,7 +7,6 @@ import subprocess  # noqa: S404
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
-from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -60,7 +59,7 @@ class Hydrotel(HydrologicalModel):
         project_config: dict | None = None,
         simulation_config: dict | None = None,
         output_config: dict | None = None,
-        use_defaults: bool = True,
+        use_defaults: bool = False,
     ):
         """Initialize the Hydrotel simulation."""
         project_config = project_config or dict()
@@ -602,38 +601,6 @@ def _fix_dates(d: dict):
     for key in ["DATE DEBUT", "DATE FIN"]:
         if len(d.get(key, "")) > 0:
             d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H:%M")
-
-    for key in [
-        "LECTURE ETAT FONTE NEIGE",
-        "LECTURE ETAT TEMPERATURE DU SOL",
-        "LECTURE ETAT BILAN VERTICAL",
-        "LECTURE ETAT RUISSELEMENT SURFACE",
-        "LECTURE ETAT ACHEMINEMENT RIVIERE",
-    ]:
-        if len(d.get(key, "")) > 0:
-            # If only a date is provided, add the path to the file
-            if ".csv" not in d[key]:
-                warnings.warn(
-                    f"The path to the file was not provided for '{key}'. Assuming it is in the 'etat' folder."
-                )
-                d[key] = (
-                    Path("etat")
-                    / f"{'_'.join(key.split(' ')[2:]).lower()}_{d[key]}.csv"
-                )
-            d[key] = str(d[key]).replace(
-                Path(d[key]).stem.split("_")[-1],
-                pd.to_datetime(Path(d[key]).stem.split("_")[-1]).strftime("%Y%m%d%H"),
-            )
-    for key in [
-        "ECRITURE ETAT FONTE NEIGE",
-        "ECRITURE ETAT TEMPERATURE DU SOL",
-        "ECRITURE ETAT BILAN VERTICAL",
-        "ECRITURE ETAT RUISSELEMENT SURFACE",
-        "ECRITURE ETAT ACHEMINEMENT RIVIERE",
-    ]:
-        if len(d.get(key, "")) > 0:
-            d[key] = pd.to_datetime(d[key]).strftime("%Y-%m-%d %H")
-
     return d
 
 

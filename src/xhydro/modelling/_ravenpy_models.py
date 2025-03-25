@@ -36,15 +36,10 @@ class RavenpyModel(HydrologicalModel):
         The first date of the simulation.
     end_date : dt.datetime
         The last date of the simulation.
-    qobs_path : str or os.PathLike
-        The path to the dataset containing the observed streamflow.
-    alt_names_flow : sequence of str
-        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
-        A dictionary that allows users to change the names of flow variables of their dataset to cf-compliant names.
     meteo_file : str or os.PathLike
         The path to the file containing the observed meteorological data.
     data_type : sequence of str
-        # FIXME: This does not acceppt a dict, but a sequence of str. Please update the docstring.
+        # FIXME: This does not accept a dict, but a sequence of str. Please update the docstring.
         The dictionary necessary to tell raven which variables are being fed such that it can adjust its processes internally.
     alt_names_meteo : dict
         A dictionary that allows users to change the names of meteo variables of their dataset to cf-compliant names.
@@ -72,8 +67,6 @@ class RavenpyModel(HydrologicalModel):
         longitude,
         start_date,
         end_date,
-        qobs_path,
-        alt_names_flow,
         meteo_file,
         data_type,
         alt_names_meteo,
@@ -105,15 +98,15 @@ class RavenpyModel(HydrologicalModel):
             params=parameters,
             StartDate=start_date,
             EndDate=end_date,
-            ObservationData=[
-                rc.ObservationData.from_nc(qobs_path, alt_names=alt_names_flow)
-            ],
+            # ObservationData=[  # This is here for reference, but not used in this implementation.
+            #     rc.ObservationData.from_nc(qobs_path, alt_names=alt_names_flow)
+            # ],
             Gauge=[
                 rc.Gauge.from_nc(
-                    meteo_file,  # Chemin d'accès au fichier contenant la météo
-                    data_type=data_type,  # Liste de toutes les variables contenues dans le fichier
+                    meteo_file,  # File path to the meteorological data
+                    data_type=data_type,  # List of all the variables in the file
                     alt_names=alt_names_meteo,
-                    # Mapping entre les noms des variables requises et celles dans le fichier.
+                    # Mapping between the names of the required variables and those in the file.
                     data_kwds=meteo_station_properties,
                 )
             ],
@@ -122,7 +115,6 @@ class RavenpyModel(HydrologicalModel):
             **kwargs,
         )
         self.meteo_file = meteo_file
-        self.qobs = xr.open_dataset(qobs_path)
         self.model_name = model_name
 
     def run(self) -> str | xr.Dataset:
