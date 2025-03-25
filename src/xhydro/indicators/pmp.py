@@ -267,7 +267,7 @@ def precipitable_water_100y(
         pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
         pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
         pw100_m = (
-            pw100_m.interp_like(pw)
+            pw100_m.reindex_like(pw)
             .ffill(dim="time")
             .drop_vars(["month", "year", "stacked_coords"])
         )
