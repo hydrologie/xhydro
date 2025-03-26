@@ -22,7 +22,7 @@ Some of the dependencies of `xHydro` can be difficult to install using `pip`. Fo
 
      conda install -c conda-forge xhydro
 
-Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional. If you are on Windows, installing through `pip` might not currently be possible because of `raven-hydro`. 
+Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional. If you are on Windows, installing through `pip` might not currently be possible because of `raven-hydro`.
 
     .. code-block:: console
 
