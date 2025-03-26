@@ -175,9 +175,8 @@ def calc_moments_iter(ds_samples: xr.Dataset) -> xr.Dataset:
     return xr.concat(ds_mom, dim="samples")
 
 
-def calc_q_iter(
+def _calc_q_iter_da(
     bv: str,
-    var: str,
     ds_groups: xr.Dataset,
     ds_moments_iter: xr.Dataset,
     return_periods: np.array,
@@ -212,9 +211,9 @@ def calc_q_iter(
     """
     # We select groups for all or one id
     if bv == "all":
-        ds_temp = ds_groups[[var]].dropna("group_id", how="all")
+        ds_temp = ds_groups.dropna("group_id", how="all")
     else:
-        ds_temp = ds_groups[[var]].sel(id=bv).dropna("group_id", how="all")
+        ds_temp = ds_groups.sel(id=bv).dropna("group_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it
@@ -222,28 +221,100 @@ def calc_q_iter(
         id_list = ds_groups.sel(group_id=group_id).dropna("id", how="all").id.values
         # We use moments with ressample previously done, and we create ds_moment_group with iterations
         ds_mom.append(
-            ds_moments_iter[[var]]
-            .sel(id=id_list)
+            ds_moments_iter.sel(id=id_list)
             .assign_coords(group_id=group_id)
             .expand_dims("group_id")
         )
 
     # Concat along group_id
     ds_moments_groups = xr.concat(ds_mom, dim="group_id")
-    ds_groups = (
-        ds_groups[[var]]
-        .sel(group_id=ds_moments_groups.group_id.values)
-        .dropna(dim="id", how="all")
+    ds_groups = ds_groups.sel(group_id=ds_moments_groups.group_id.values).dropna(
+        dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
-    qt = calculate_rp_from_afr(ds_groups, ds_moments_groups, return_periods, l1=l1)
+    qt = calculate_rp_from_afr(
+        ds_groups.to_dataset(), ds_moments_groups.to_dataset(), return_periods, l1=l1
+    )
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
-    return (
-        qt.rename({"samples": "obs_samples"})
-        .stack(samples=["group_id", "obs_samples"])
-        .squeeze()
-    )
+    if bv == "all":
+        return (
+            qt.rename({"samples": "obs_samples"})
+            .stack(samples=["group_id", "obs_samples"])
+            .to_dataarray()
+            .squeeze()
+        )
+    else:
+        return (
+            qt.rename({"samples": "obs_samples"})
+            .stack(samples=["group_id", "obs_samples"])
+            .sel(id=bv)
+            .to_dataarray()
+            .squeeze()
+        )
+
+
+def calc_q_iter(
+    bv: str,
+    groups: xr.Dataset,
+    moments_iter: xr.Dataset,
+    return_periods: np.array,
+    small_regions_threshold: int | None = 5,
+    l1: xr.DataArray | None = None,
+) -> xr.DataArray:
+    """
+    Calculate quantiles for each bootstrap sample and group.
+
+    Parameters
+    ----------
+    bv : str
+        The basin identifier or 'all' to proceed on all bv (needed for ungauged).
+    groups : xr.DataArray or xr.Dataset
+        The grouped data.
+    moments_iter : xr.DataArray or xr.Dataset
+        The L-moments for each bootstrap sample.
+    return_periods : array-like
+        The return periods to calculate quantiles for.
+    small_regions_threshold : int, optional
+        The threshold for removing small regions. Default is 5.
+    l1 : xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If `None`, values are taken from ds_moments_iter.
+
+    Returns
+    -------
+    xr.DataArray or xr.Dataset
+        Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
+        and moments_iter are Datasets, otherwise returns a DataArray.
+    """
+    if type(groups) is xr.DataArray and type(moments_iter) is xr.DataArray:
+        ds = False
+    elif type(groups) is xr.Dataset and type(moments_iter) is xr.Dataset:
+        ds = True
+    else:
+        raise TypeError(
+            "groups and moments_iter must be both xr.DataArray or xr.Dataset"
+        )
+
+    if ds:
+        ds = xr.Dataset()
+        groups_var = list(groups.keys())
+        if groups_var != list(moments_iter.keys()):
+            raise Exception("Variables in groups and moments_iter must be the same")
+        for var in groups_var:
+            ds[var] = _calc_q_iter_da(
+                bv,
+                groups[var],
+                moments_iter[var],
+                return_periods,
+                small_regions_threshold,
+                l1,
+            )
+        return ds
+    else:
+        return _calc_q_iter_da(
+            bv, groups, moments_iter, return_periods, small_regions_threshold, l1
+        )
 
 
 def generate_combinations(da: xr.DataArray, n: int) -> list:
