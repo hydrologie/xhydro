@@ -29,7 +29,7 @@ dependencies:
   - stackstac >=0.5.1
   - statsmodels >=0.14.0
   - tqdm
-  - xarray >=2023.11.0
+  - xarray >=2023.11.0,<2025.3
   - xarray-spatial >=0.3.7
   - xclim >=0.53.2,<0.54
   - xdatasets >=0.3.6

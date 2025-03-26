@@ -29,7 +29,7 @@ dependencies:
   - statsmodels >=0.14.0
   - tqdm
   - xarray >=2023.11.0
-  - xarray-spatial >=0.3.7
+  - xarray-spatial >=0.3.7,<2025.3
   - xclim >=0.53.2,<0.54
   - xdatasets >=0.3.6
   - xscen >=0.10.1,<0.11
