@@ -239,6 +239,7 @@ def _moment_l(x: np.array) -> list:
 def calc_h_z(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
+    *,
     kap: object,
     seed: int | None = None,
 ) -> xr.Dataset:
@@ -475,7 +476,7 @@ def _append_ds_vars_names(ds: xr.Dataset, suffix: str) -> xr.Dataset:
 
 
 def mask_h_z(
-    ds: xr.Dataset, thresh_h: float | None = 1, thresh_z: float | None = 1.64
+    ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | None = 1.64
 ) -> xr.DataArray:
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
@@ -520,6 +521,7 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
 def calculate_rp_from_afr(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
+    *,
     rp: np.array,
     l1: xr.DataArray | None = None,
 ) -> xr.DataArray:
@@ -595,7 +597,7 @@ def _calc_gamma(val):
     return math.gamma(val)
 
 
-def remove_small_regions(ds: xr.Dataset, thresh: int = 5) -> xr.Dataset:
+def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
     """
     Remove regions from the dataset that have fewer than the threshold number of stations.
 
@@ -692,7 +694,7 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def group_ds(ds: xr.Dataset, groups: list) -> xr.Dataset:
+def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
     """
     Group a dataset by a list of groups.
 
