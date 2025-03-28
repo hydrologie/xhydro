@@ -152,16 +152,14 @@ class RavenpyModel(HydrologicalModel):
         outputs_path = run(modelname="raven", configdir=workdir, overwrite=True)
         outputs = OutputReader(path=outputs_path)
 
-        qsim = (
-            xr.open_dataset(outputs.files["hydrograph"])
-            .q_sim.to_dataset(name="qsim")
-            .rename({"qsim": "streamflow"})
-        )
+        with xr.open_dataset(outputs.files["hydrograph"]) as ds:
+            qsim = ds.q_sim.to_dataset(name="qsim").rename({"qsim": "streamflow"})
 
-        if "nbasins" in qsim.dims:
-            qsim = qsim.squeeze()
+            if "nbasins" in qsim.dims:
+                qsim = qsim.squeeze()
 
-        self.qsim = qsim
+            self.qsim = qsim
+
         self.model_simulations = outputs
 
         return qsim

@@ -150,6 +150,11 @@ class TestSurfaceProperties:
         return df
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
@@ -162,6 +167,11 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties_unique_id(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
         unique_id = "Station"
@@ -174,6 +184,11 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
@@ -197,6 +212,11 @@ class TestSurfaceProperties:
 
 
 @pytest.mark.online
+@pytest.mark.xfail(
+    reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+    strict=False,
+    raises=APIError,
+)
 class TestLandClassification:
 
     gdf = xd.Query(
@@ -262,7 +282,8 @@ class TestLandClassification:
 
     @pytest.mark.xfail(
         raises=APIError,
-        reason="Test is rate-limited by Microsoft Planetary Computer API.",
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
     )
     @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification(

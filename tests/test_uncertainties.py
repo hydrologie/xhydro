@@ -18,7 +18,7 @@ def test_bootstrap_obs():
     time = pd.date_range("2020-01-01", periods=5)
     data = xr.DataArray(np.array([1, 2, 3, 4, 5]), coords={"time": time})
     n_samples = 1000
-    result = bootstrap_obs(data, n_samples)
+    result = bootstrap_obs(data, n_samples=n_samples)
     assert result.shape == (n_samples, len(data))
     assert np.all(np.isin(result, data))
 
@@ -33,7 +33,7 @@ def test_bootstrap_dist():
     )
     params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     n_samples = 1000
-    result = bootstrap_dist(ds, params, n_samples)
+    result = bootstrap_dist(ds, params, n_samples=n_samples)
     assert len(result.samples) == n_samples
     assert "samples" in result.coords
 
@@ -48,7 +48,7 @@ def test_fit_boot_dist():
     )
     params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     n_samples = 1000
-    bo = bootstrap_dist(ds, params, n_samples)
+    bo = bootstrap_dist(ds, params, n_samples=n_samples)
 
     result = fit_boot_dist(bo)
     assert isinstance(result, xr.Dataset)
@@ -65,7 +65,7 @@ def test_calc_moments_iter():
         as_dataset=True,
     )
     n_samples = 1000
-    bo = bootstrap_obs(ds, n_samples).assign_coords(id="S1").expand_dims("id")
+    bo = bootstrap_obs(ds, n_samples=n_samples).assign_coords(id="S1").expand_dims("id")
     result = calc_moments_iter(bo)
     assert isinstance(result, xr.Dataset)
     assert "l1" in result.lmom and "l2" in result.lmom
@@ -82,7 +82,11 @@ def test_calc_q_iter():
     )
 
     n_samples = 1000
-    bo = bootstrap_obs(ds, n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
+    bo = (
+        bootstrap_obs(ds, n_samples=n_samples, seed=42)
+        .assign_coords(id="S1")
+        .expand_dims("id")
+    )
     ds_moments_iter = calc_moments_iter(bo)
     time = pd.date_range("2020-01-01", periods=54)
     data = np.array(
@@ -281,7 +285,7 @@ def test_calc_q_iter():
         "streamflow",
         ds_groups,
         ds_moments_iter,
-        [100, 1000],
+        return_periods=[100, 1000],
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
@@ -308,7 +312,7 @@ def test_generate_combinations():
         data=df, coords=[station, components], dims=["Station", "components"]
     )
     n_omit = 2
-    result = generate_combinations(da, n_omit)
+    result = generate_combinations(da, n=n_omit)
     assert 16 == len(result)
     assert len(result[0]) == len(station)
     assert len(result[-1]) == len(station) - n_omit
