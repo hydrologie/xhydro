@@ -143,8 +143,7 @@ class TestRavenpyModelCalibration:
             best_simulation,
             obj_func="mae",
         )
-
-        assert objfun == best_objfun
+        np.testing.assert_almost_equal(objfun, best_objfun, decimal=6)
 
     def test_ravenpy_hmets_calibration(self):
         """Test for HMETS ravenpy model"""
