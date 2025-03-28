@@ -2,7 +2,7 @@
 Package Structure
 =================
 
-Here is `xhydro`'s structure as of v0.3.6 (2024-06-10), with the planned or discussed additions for the future.
+Here is `xhydro`'s structure as of v0.5.0 (2024-06-10), with the planned or discussed additions for the future.
 
 Testing data can be found here: https://github.com/hydrologie/xhydro-testdata
 
