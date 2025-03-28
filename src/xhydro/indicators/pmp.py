@@ -13,7 +13,7 @@ from xscen.utils import unstack_dates
 
 
 def major_precipitation_events(
-    da: xr.DataArray, windows: list[int], quantile: float = 0.9
+    da: xr.DataArray, *, windows: list[int], quantile: float = 0.9
 ):
     """
     Get precipitation events that exceed a given quantile for a given time step accumulation. Based on Clavet-Gaumont et al. (2017).
@@ -85,6 +85,7 @@ def _keep_highest_values(da: xr.DataArray, quantile: float) -> xr.DataArray:
 
 
 def precipitable_water(
+    *,
     hus: xr.DataArray,
     zg: xr.DataArray,
     orog: xr.DataArray,
@@ -194,7 +195,12 @@ def precipitable_water(
 
 
 def precipitable_water_100y(
-    pw: xr.DataArray, dist: str, method: str, mf: float = 0.2, rebuild_time: bool = True
+    pw: xr.DataArray,
+    *,
+    dist: str,
+    method: str,
+    mf: float = 0.2,
+    rebuild_time: bool = True,
 ):
     """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
 
@@ -266,7 +272,7 @@ def precipitable_water_100y(
         pw100_m = pw100_m.assign_coords(time=("stacked_coords", time_coord))
         pw100_m = pw100_m.swap_dims({"stacked_coords": "time"}).sortby("time")
         pw100_m = (
-            pw100_m.interp_like(pw)
+            pw100_m.reindex_like(pw)
             .ffill(dim="time")
             .drop_vars(["month", "year", "stacked_coords"])
         )
@@ -278,6 +284,7 @@ def precipitable_water_100y(
 
 def compute_spring_and_summer_mask(
     snw: xr.DataArray,
+    *,
     thresh: str = "1 cm",
     window_wint_start: int = 14,
     window_wint_end: int = 45,
@@ -434,7 +441,7 @@ def compute_spring_and_summer_mask(
     )
 
 
-def spatial_average_storm_configurations(da, radius):
+def spatial_average_storm_configurations(da, *, radius):
     """Compute the spatial average for different storm configurations proposed by Clavet-Gaumont et al. (2017).
 
     Parameters
