@@ -12,12 +12,19 @@ New features and enhancements
   * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
   * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
   * You can use `pip install xhydro[julia]` to install the required dependencies.
+* Multiple improvements to the documentation. (:pull:`274`).
+
+Bug fixes
+^^^^^^^^^
+* Patched the outputs of `xh.optimal_interpolation.execute` to remove a superfluous `station` dimension and to ensure that the `time` dimension has coordinates. (:pull:`274`).
+  * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
   * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
 * The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
+* Multiple functions in the `xhydro.frequency_analysis` and `xhydro.indicators.pmp` modules have been updated to require literal arguments instead of positional arguments. (:pull:`274`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
