@@ -15,7 +15,6 @@ from packaging.version import Version
 
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
-from ._simplemodels import DummyModel
 
 __all__ = ["format_input", "get_hydrological_model_inputs", "hydrological_model"]
 
@@ -33,7 +32,7 @@ def hydrological_model(model_config):
 
     Returns
     -------
-    Hydrotel or DummyModel
+    Hydrotel or RavenpyModel
         An instance of the hydrological model.
     """
     if "model_name" not in model_config:
@@ -45,10 +44,6 @@ def hydrological_model(model_config):
     if model_name == "Hydrotel":
         model_config.pop("model_name")
         return Hydrotel(**model_config)
-
-    elif model_name == "Dummy":
-        model_config.pop("model_name")
-        return DummyModel(**model_config)
 
     elif model_name in [
         "Blended",
@@ -73,7 +68,7 @@ def get_hydrological_model_inputs(
     ----------
     model_name : str
         The name of the hydrological model to use.
-        Currently supported models are: "Hydrotel".
+        Currently supported models are ["Hydrotel", "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"].
     required_only : bool
         If True, only the required inputs will be returned.
 
@@ -84,9 +79,7 @@ def get_hydrological_model_inputs(
     str
         The documentation for the hydrological model.
     """
-    if model_name == "Dummy":
-        model = DummyModel
-    elif model_name == "Hydrotel":
+    if model_name == "Hydrotel":
         model = Hydrotel
     elif model_name in [
         "Blended",
