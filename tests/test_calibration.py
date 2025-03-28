@@ -13,94 +13,8 @@ from packaging.version import Version
 from raven_hydro import __raven_version__
 from ravenpy import __version__ as __ravenpy_version__
 
-from xhydro.modelling import hydrological_model
 from xhydro.modelling.calibration import perform_calibration
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
-
-
-def test_spotpy_calibration():
-    """Make sure the calibration works under possible test cases."""
-    bounds_low = np.array([0, 0, 0])
-    bounds_high = np.array([10, 10, 10])
-
-    model_config = {
-        "precip": np.array([10, 11, 12, 13, 14, 15]),
-        "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "drainage_area": np.array([10]),
-        "model_name": "Dummy",
-    }
-    qobs = np.array([120, 130, 140, 150, 160, 170])
-
-    mask = np.array([0, 0, 0, 0, 1, 1])
-
-    best_parameters, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "mae",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=1000,
-        algorithm="DDS",
-        mask=mask,
-        sampler_kwargs=dict(trials=1),
-    )
-
-    # Test that the results have the same size as expected (number of parameters)
-    assert len(best_parameters) == len(bounds_high)
-
-    # Test that the objective function is calculated correctly
-    objfun = get_objective_function(
-        qobs,
-        best_simulation,
-        obj_func="mae",
-        mask=mask,
-    )
-
-    assert objfun == best_objfun
-
-    # Test dummy model response
-    model_config["parameters"] = [5, 5, 5]
-    qsim = hydrological_model(model_config).run()
-    assert qsim["streamflow"].values[3] == 3500.00
-
-    # Also test to ensure SCEUA and take_minimize is required.
-    best_parameters_sceua, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "mae",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-    )
-
-    assert len(best_parameters_sceua) == len(bounds_high)
-
-    # Also test to ensure SCEUA and take_minimize is required.
-    best_parameters_negative, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "nse",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-    )
-    assert len(best_parameters_negative) == len(bounds_high)
-
-    # Test to see if transform works
-    best_parameters_transform, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "nse",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-        transform="inv",
-        epsilon=0.01,
-    )
-    assert len(best_parameters_transform) == len(bounds_high)
 
 
 def test_calibration_failure_mode_unknown_optimizer():
@@ -222,6 +136,15 @@ class TestRavenpyModelCalibration:
 
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
+
+        # Test that the objective function is calculated correctly
+        objfun = get_objective_function(
+            self.qobs,
+            best_simulation,
+            obj_func="mae",
+        )
+
+        assert objfun == best_objfun
 
     def test_ravenpy_hmets_calibration(self):
         """Test for HMETS ravenpy model"""

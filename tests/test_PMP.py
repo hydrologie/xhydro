@@ -34,10 +34,12 @@ class TestPMP:
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
 
-        precip_agg = pmp.spatial_average_storm_configurations(precip, 3).chunk(
+        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(
             dict(time=-1)
         )
-        result = pmp.major_precipitation_events(precip_agg, [1, 2], quantile=0.9)
+        result = pmp.major_precipitation_events(
+            precip_agg, windows=[1, 2], quantile=0.9
+        )
 
         assert "window" in result.dims
         np.testing.assert_array_equal(
@@ -68,9 +70,9 @@ class TestPMP:
     @pytest.mark.parametrize("beta_func", [True, False])
     def test_precipitable_water(self, era5_example, beta_func):
         result = pmp.precipitable_water(
-            era5_example.hus,
-            era5_example.zg,
-            era5_example.orog,
+            hus=era5_example.hus,
+            zg=era5_example.zg,
+            orog=era5_example.orog,
             windows=[1, 2],
             beta_func=beta_func,
             add_pre_lay=False,
@@ -132,9 +134,9 @@ class TestPMP:
     @pytest.mark.parametrize("add_pre_lay", [True, False])
     def test_precipitable_water_2(self, era5_example, add_pre_lay):
         result = pmp.precipitable_water(
-            era5_example.hus,
-            era5_example.zg,
-            era5_example.orog,
+            hus=era5_example.hus,
+            zg=era5_example.zg,
+            orog=era5_example.orog,
             windows=[1, 2],
             beta_func=True,
             add_pre_lay=add_pre_lay,
@@ -289,7 +291,7 @@ class TestPMP:
         da["some_x"].attrs = {"axis": "X"}
 
         with pytest.raises(ValueError):
-            pmp.spatial_average_storm_configurations(da, 3)
+            pmp.spatial_average_storm_configurations(da, radius=3)
 
     def test_spatial_average_storm_configurations2(self):
         np.random.seed(42)
@@ -308,7 +310,7 @@ class TestPMP:
         da["y"].attrs = {"axis": "Y"}
         da["x"].attrs = {"axis": "X"}
 
-        result = pmp.spatial_average_storm_configurations(da, 10)
+        result = pmp.spatial_average_storm_configurations(da, radius=10)
 
         np.testing.assert_array_equal(
             result.conf,
@@ -393,7 +395,7 @@ class TestPMP:
         da["y"].attrs = {"axis": "Y"}
         da["x"].attrs = {"axis": "X"}
 
-        result = pmp.spatial_average_storm_configurations(da, 3000)
+        result = pmp.spatial_average_storm_configurations(da, radius=3000)
         np.testing.assert_array_almost_equal(
             result[:, 5, :, :].values,
             np.array(
