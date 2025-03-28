@@ -22,7 +22,7 @@ Some of the dependencies of `xHydro` can be difficult to install using `pip`. Fo
 
      conda install -c conda-forge xhydro
 
-Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional.
+Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional. If you are on Windows, installing through `pip` might not currently be possible because of `raven-hydro`.
 
     .. code-block:: console
 
@@ -78,8 +78,7 @@ The sources for xHydro can be downloaded from the `Github repo`_.
 
         python -m pip install -e .[all]
 
-        Even if you do not intend to contribute to `xHydro`, we favor using `environment-dev.yml` over `environment.yml` because it includes additional packages that are used to run all the examples provided in the documentation.
-        If for some reason you wish to install the `PyPI` version of `xHydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
+    Even if you do not intend to contribute to `xHydro`, we favor using `environment-dev.yml` over `environment.yml` because it includes additional packages that are used to run all the examples provided in the documentation. If for some reason you wish to install the `PyPI` version of `xHydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
 
 #. When new changes are made to the `Github repo`_, you can update your local copy using the following commands from the root of the repository:
 
