@@ -500,7 +500,7 @@ def return_level(
     )
 
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
-    return_level_dim = ["return_level"] if stationary else ds[dim].values
+    return_level_dim = ds[dim].values if not stationary else None
 
     dist_params = _get_params(dist, shapecov, locationcov, scalecov)
 
@@ -519,7 +519,7 @@ def return_level(
             _fitfunc_return_level,
             *args,
             input_core_dims=[[dim]] * len(args),
-            output_core_dims=[["return_level"], ["return_level"], ["return_level"]],
+            output_core_dims=[[dim], [dim], [dim]] if not stationary else [[], [], []],
             vectorize=True,
             dask="parallelized",
             keep_attrs=True,
@@ -528,7 +528,7 @@ def return_level(
                 dist=dist,
                 nparams=len(dist_params),
                 method=method,
-                main_dim_length=len(return_level_dim),
+                main_dim_length=len(return_level_dim) if not stationary else None,
                 n_loccov=len(locationcov),
                 n_scalecov=len(scalecov),
                 n_shapecov=len(shapecov),
@@ -541,7 +541,7 @@ def return_level(
                 nobsperblock_pareto=nobsperblock_pareto,
             ),
             dask_gufunc_kwargs={
-                "output_sizes": {"return_level": len(return_level_dim)}
+                "output_sizes": {dim: len(return_level_dim) if not stationary else -1}
             },
         )
         result_return = xr.merge([result_return, results[0]])
@@ -554,13 +554,9 @@ def return_level(
     cint_upper_data = result_upper.rename(
         {var: f"{var}_upper" for var in result_upper.data_vars}
     )
-    data = xr.merge([result_return, cint_lower_data, cint_upper_data])
 
-    # Add coordinates for the distribution parameters and transpose to original shape (with dim -> dparams)
-    dims = [d if d != dim else "return_level" for d in ds.dims]
-    out = data.assign_coords(return_level=return_level_dim)
-    out = out.transpose(*dims)
-    out.attrs = prefix_attrs(
+    data = xr.merge([result_return, cint_lower_data, cint_upper_data])
+    data.attrs = prefix_attrs(
         ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
     )
     dist = get_dist(dist)
@@ -571,8 +567,8 @@ def return_level(
         return_period=return_period,
         confidence_level=confidence_level,
     )
-    out.attrs.update(attrs)
-    return out
+    data.attrs.update(attrs)
+    return data
 
 
 def _fitfunc_return_level(
