@@ -8,7 +8,6 @@ from typing import Any
 import numpy as np
 import scipy.stats
 import xarray as xr
-from xclim.core.formatting import prefix_attrs
 from xclim.indices.stats import get_dist
 
 try:
@@ -305,11 +304,7 @@ def fit(
     dims = [d if d != dim else "dparams" for d in ds.dims]
     out = data.assign_coords(dparams=dist_params).transpose(*dims)
 
-    out.attrs = prefix_attrs(
-        ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
-    )
-
-    out.attrs.update(attrs_dist | dict(confidence_level=confidence_level))
+    out.attrs = ds.attrs
     return out
 
 
@@ -601,11 +596,9 @@ def return_level(
     )
 
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
-    data.attrs = prefix_attrs(
-        ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
-    )
 
-    data.attrs.update(attrs_dist | dict(confidence_level=confidence_level))
+    data.attrs = ds.attrs
+
     return data
 
 
