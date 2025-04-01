@@ -514,7 +514,7 @@ def return_level(
     )
 
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
-    return_level_dim = ds[dim].values if not stationary else None
+    return_level_dim = ds[dim].values if not stationary else ["return_period"]
 
     dist_params = _get_params(dist, shapecov, locationcov, scalecov)
 
@@ -540,7 +540,11 @@ def return_level(
             _fitfunc_return_level,
             *args,
             input_core_dims=[[dim]] * len(args),
-            output_core_dims=[[dim], [dim], [dim]] if not stationary else [[], [], []],
+            output_core_dims=(
+                [["return_period"], ["return_period"], ["return_period"]]
+                if stationary
+                else [[dim], [dim], [dim]]
+            ),
             vectorize=True,
             dask="parallelized",
             keep_attrs=True,
@@ -549,7 +553,7 @@ def return_level(
                 dist=dist,
                 nparams=len(dist_params),
                 method=method,
-                main_dim_length=len(return_level_dim) if not stationary else None,
+                main_dim_length=len(return_level_dim),
                 n_loccov=len(locationcov),
                 n_scalecov=len(scalecov),
                 n_shapecov=len(shapecov),
@@ -562,7 +566,9 @@ def return_level(
                 nobsperblock_pareto=nobsperblock_pareto,
             ),
             dask_gufunc_kwargs={
-                "output_sizes": {dim: len(return_level_dim) if not stationary else -1}
+                "output_sizes": {
+                    "return_period" if stationary else dim: len(return_level_dim)
+                }
             },
         )
 
@@ -596,6 +602,9 @@ def return_level(
     )
 
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
+
+    if stationary:
+        data = data.assign_coords({"return_period": [return_period]})
 
     data.attrs = ds.attrs
 
