@@ -603,8 +603,7 @@ def return_level(
 
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
 
-    if stationary:
-        data = data.assign_coords({"return_period": [return_period]})
+    data = data.assign_coords({"return_period": [return_period]})
 
     data.attrs = ds.attrs
 
