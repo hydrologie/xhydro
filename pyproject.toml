@@ -62,7 +62,7 @@ dependencies = [
   "tqdm",
   "xarray >=2023.11.0,<2025.3.0", # Temporary pin until we fix the issue
   "xarray-spatial >=0.3.7",
-  "xclim >=0.53.2,<0.56",
+  "xclim >=0.53.2,<0.57",
   "xdatasets >=0.3.6",
   "xscen >=0.10.1,<0.11",
   "xvec"
