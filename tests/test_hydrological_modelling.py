@@ -123,8 +123,8 @@ class TestFormatInputs:
         "units": "m",
     }
 
-    # Create a dataset with a few issues for Raven HBVEC
-    ds_bad_for_raven = datablock_3d(
+    # Create a rotated dataset with a few issues
+    ds_bad_rotated = datablock_3d(
         np.array(
             np.tile(
                 [[10, 11, 12, 13, 14, 15], [10, 11, 12, 13, 14, 15]],
@@ -142,7 +142,7 @@ class TestFormatInputs:
         as_dataset=True,
     )
 
-    ds_bad_for_raven["tasminnn"] = datablock_3d(
+    ds_bad_rotated["tasminnn"] = datablock_3d(
         np.array(
             np.tile([[8, 9, 10, 11, 12, 13], [8, 9, 10, 11, 12, 13]], (365 * 3, 1, 1))
         ),
@@ -156,7 +156,7 @@ class TestFormatInputs:
         start="2000-01-01",
     )
 
-    ds_bad_for_raven["precip"] = datablock_3d(
+    ds_bad_rotated["precip"] = datablock_3d(
         np.array(
             np.tile(
                 [
@@ -176,51 +176,17 @@ class TestFormatInputs:
         start="2000-01-01",
     )
 
-    ds_bad_for_raven["precip"].attrs = {"units": "kg m-2 s-1"}
-    ds_bad_for_raven["precip"] = ds_bad_for_raven["precip"].where(
-        ds_bad_for_raven["precip"] > 0.0001
+    ds_bad_rotated["precip"].attrs = {"units": "kg m-2 s-1"}
+    ds_bad_rotated["precip"] = ds_bad_rotated["precip"].where(
+        ds_bad_rotated["precip"] > 0.0001
     )
 
     # Add an elevation coordinate
-    ds_bad_for_raven["z"] = (
-        xr.ones_like(ds_bad_for_raven["tasmax"].isel(time=0)).drop_vars("time") * 100
+    ds_bad_rotated["z"] = (
+        xr.ones_like(ds_bad_rotated["tasmax"].isel(time=0)).drop_vars("time") * 100
     )
-    ds_bad_for_raven = ds_bad_for_raven.assign_coords({"z": ds_bad_for_raven["z"]})
-    ds_bad_for_raven["z"].attrs = {"units": "m"}
-
-    # Add a latitude coordinate
-    ds_bad_for_raven["lat"] = (
-        xr.ones_like(ds_bad_for_raven["tasmax"].isel(time=0)).drop_vars("time") * 100
-    )
-    ds_bad_for_raven = ds_bad_for_raven.assign_coords({"lat": ds_bad_for_raven["lat"]})
-    ds_bad_for_raven["lat"].attrs = {
-        "long_name": "latitude",
-        "standard_name": "latitude",
-        "units": "degrees_north",
-    }
-
-    # Add a longitude coordinate
-    ds_bad_for_raven["lon"] = (
-        xr.ones_like(ds_bad_for_raven["tasmax"].isel(time=0)).drop_vars("time") * 100
-    )
-    ds_bad_for_raven = ds_bad_for_raven.assign_coords({"lon": ds_bad_for_raven["lon"]})
-    ds_bad_for_raven["lon"].attrs = {
-        "long_name": "longitude",
-        "standard_name": "longitude",
-        "units": "degrees_east",
-    }
-
-    # Change attributes for rlat and rlon
-    ds_bad_for_raven["rlat"].attrs = {
-        "long_name": "latitude in rotated pole grid",
-        "standard_name": "grid_latitude",
-        "units": "degrees",
-    }
-    ds_bad_for_raven["rlon"].attrs = {
-        "long_name": "longitude in rotated pole grid",
-        "standard_name": "grid_longitude",
-        "units": "degrees",
-    }
+    ds_bad_rotated = ds_bad_rotated.assign_coords({"z": ds_bad_rotated["z"]})
+    ds_bad_rotated["z"].attrs = {"units": "m"}
 
     @pytest.mark.parametrize("lons", ["180", "360"])
     def test_hydrotel(self, tmpdir, lons):
@@ -282,7 +248,7 @@ class TestFormatInputs:
 
         with pytest.warns(
             UserWarning,
-            match="NaNs will need to be filled manually before running Hydrotel",
+            match="NaNs will need to be filled manually before running Hydrotel or Raven HBVEC.",
         ):
             ds_out, _ = format_input(ds, "Hydrotel")
         np.testing.assert_array_equal(ds_out.tasmin.isel(station=1, time=59), np.nan)
@@ -320,15 +286,16 @@ class TestFormatInputs:
 
     @pytest.mark.parametrize("lons", ["180", "360"])
     def test_raven_hbvec(self, tmpdir, lons):
-        ds = self.ds_bad_for_raven.copy()
+        ds = self.ds_bad_rotated.copy()
 
         if lons == "360":
             with xr.set_options(keep_attrs=True):
                 ds["lon"] = ds["lon"] + 180
 
-        ds_out = format_input(ds, "HBVEC", save_as=tmpdir / "meteo.nc")
+        ds_out, _ = format_input(ds, "HBVEC", save_as=tmpdir / "meteo.nc")
 
         ds_loaded = xr.open_dataset(tmpdir / "meteo.nc")
+
         # Time will differ when xarray reads the file
         assert (
             ds_out.isel(time=0)
@@ -336,7 +303,11 @@ class TestFormatInputs:
             .equals(ds_loaded.isel(time=0).drop_vars("time"))
         )
 
-        assert tuple(ds_out.sizes.keys()) == ("rlon", "rlat", "time")
+        assert Path(tmpdir / "meteo.nc.config.yml").is_file()
+
+        assert tuple(ds_out.pr.sizes.keys()) == ("rlon", "rlat", "time")
+        assert tuple(ds_out.tasmin.sizes.keys()) == ("rlon", "rlat", "time")
+        assert tuple(ds_out.tasmax.sizes.keys()) == ("rlon", "rlat", "time")
 
         assert ("rlon" in ds_out.dims) and ("rlon" in ds_out.coords)
         assert ("rlat" in ds_out.dims) and ("rlat" in ds_out.coords)
@@ -362,21 +333,19 @@ class TestFormatInputs:
             ds.isel(rlon=2, rlat=0).precip.values * 86400,
         )
 
-        assert ds_out.time.attrs["units"] == "days since 1970-01-01 00:00:00"
-        np.testing.assert_array_equal(ds_out.time[0], 10957)
         np.testing.assert_array_equal(
             ds_loaded.time[0], pd.Timestamp("2000-01-01").to_datetime64()
         )
 
     def test_raven_hbvec_calendars(self, tmpdir):
-        ds = self.ds_bad_for_raven.copy()
+        ds = self.ds_bad_rotated.copy()
         ds = ds.convert_calendar("365_day")
 
         with pytest.warns(
             UserWarning,
-            match="NaNs will need to be filled manually before running Raven HBVEC",
+            match="NaNs will need to be filled manually before running Hydrotel or Raven HBVEC.",
         ):
-            ds_out = format_input(ds, "HBVEC")
+            ds_out, _ = format_input(ds, "HBVEC")
         np.testing.assert_array_equal(
             ds_out.tasmin.isel(rlon=2, rlat=0, time=59), np.nan
         )
@@ -384,13 +353,13 @@ class TestFormatInputs:
             ds_out.tasmin.isel(rlon=2, rlat=0).isnull().sum(), 1
         )
 
-        ds_out2 = format_input(ds, "HBVEC", convert_calendar_missing=999)
+        ds_out2, _ = format_input(ds, "HBVEC", convert_calendar_missing=999)
         np.testing.assert_array_equal(ds_out2.tasmin.isel(rlon=2, rlat=0, time=59), 999)
         np.testing.assert_array_equal(
             ds_out2.tasmin.isel(rlon=2, rlat=0).isnull().sum(), 0
         )
 
-        ds_out3 = format_input(
+        ds_out3, _ = format_input(
             ds,
             "HBVEC",
             convert_calendar_missing={"tasmin": "interpolate", "tasmax": 999, "pr": 0},
@@ -411,7 +380,7 @@ class TestFormatInputs:
         )
 
     def test_raven_hbvec_error(self):
-        ds = self.ds_bad_for_raven.copy()
+        ds = self.ds_bad_rotated.copy()
         ds = ds.drop_vars("tasmax")
         with pytest.raises(
             ValueError, match="The dataset is missing the following required variables"

@@ -214,28 +214,20 @@ def format_input(  # noqa: C901
         q = xc.core.units.str2pint(u)
         return q.dimensionality.get("[time]", 0) < 0
 
-    if model == "Hydrotel":
-        if not all(
-            v in ds for v in ["lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"]
-        ):
-            missing = {
-                "lon",
-                "lat",
-                "orog",
-                "time",
-                "tasmax",
-                "tasmin",
-                "pr",
-            }.difference(ds.variables)
+    # Data processing common to Hydrotel and HBVEC
+    if model == "Hydrotel" or model == "HBVEC":
+
+        required_vars = ["lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"]
+
+        if not all(v in ds for v in required_vars):
+            missing = set(required_vars) - set(ds.variables)
             raise ValueError(
-                f"The dataset is missing the following required variables for Hydrotel: "
+                f"The dataset is missing the following required variables for Hydrotel or Raven HBVEC: "
                 f"{missing}."
             )
 
         # Remove unused variables
-        ds = ds.drop_vars(
-            set(ds.data_vars) - {"lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"}
-        )
+        ds = ds.drop_vars(set(ds.data_vars) - set(required_vars))
 
         # Convert units
         if _is_rate(ds["pr"].attrs.get("units", "")):
@@ -257,11 +249,7 @@ def format_input(  # noqa: C901
                 ds["lon"] = ds["lon"] - 180
 
         # Convert calendar
-        # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
-        if Version(xs.__version__) > Version("0.9.10"):
-            convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
-        else:
-            convert_calendar_kwargs = {"target": "default"}
+        convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
         if isinstance(convert_calendar_missing, dict):
             missing_by_var = convert_calendar_missing
         else:
@@ -274,13 +262,20 @@ def format_input(  # noqa: C901
             ):
                 warnings.warn(
                     f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
-                    f"NaNs will need to be filled manually before running Hydrotel."
+                    f"NaNs will need to be filled manually before running Hydrotel or Raven HBVEC."
                 )
+
         ds = xs.utils.clean_up(
             ds,
             convert_calendar_kwargs=convert_calendar_kwargs,
             missing_by_var=missing_by_var,
         )
+
+    else:
+        raise NotImplementedError(f"The model '{model}' is not recognized.")
+
+    # Additional data processing specific to Hydrotel
+    if model == "Hydrotel":
 
         # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
         new_time = (
@@ -333,108 +328,37 @@ def format_input(  # noqa: C901
                     f.write(f"{k}; {v}\n")
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
+    # Additional data processing specific to HBVEC
     elif model == "HBVEC":
-        if not all(
-            v in ds
-            for v in [
-                "rlon",
-                "rlat",
-                "lon",
-                "lat",
-                "orog",
-                "time",
-                "tasmax",
-                "tasmin",
-                "pr",
-            ]
-        ):
-            missing = {
-                "rlon",
-                "rlat",
-                "lon",
-                "lat",
-                "orog",
-                "time",
-                "tasmax",
-                "tasmin",
-                "pr",
-            }.difference(ds.variables)
-            raise ValueError(
-                f"The dataset is missing the following required variables for Raven HBVEC: "
-                f"{missing}."
-            )
 
-        # Remove unused variables
-        ds = ds.drop_vars(
-            set(ds.data_vars)
-            - {"rlon", "rlat", "lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"}
-        )
+        x_name = ds.cf.axes["X"][0]
+        y_name = ds.cf.axes["Y"][0]
 
-        # Convert units
-        if _is_rate(ds["pr"].attrs.get("units", "")):
-            ds["pr"] = xc.units.rate2amount(ds["pr"])
-        ds["pr"] = xc.units.convert_units_to(ds["pr"], "mm", context="hydro")
-        ds["tasmax"] = xc.units.convert_units_to(ds["tasmax"], "degC")
-        ds["tasmin"] = xc.units.convert_units_to(ds["tasmin"], "degC")
+        # Convert units to ensure that they are written in this format and not as "°C", which Raven doesn't like
         ds = xs.utils.change_units(ds, {"tasmin": "degC", "tasmax": "degC"})
-        ds["orog"] = xc.units.convert_units_to(ds["orog"], "m")
-
-        # Ensure that longitude is in the range [-180, 180]
-        # This tries guessing if lons are wrapped around at 180+ but without much information, this might not be true
-        if np.min(ds["lon"]) >= -180 and np.max(ds["lon"]) <= 180:
-            pass
-        elif np.min(ds["lon"]) >= 0 and np.max(ds["lon"]) <= 360:
-            warnings.warn(
-                "Longitude values appear to be in the range [0, 360]. They will be converted to [-180, 180]."
-            )
-            with xr.set_options(keep_attrs=True):
-                ds["lon"] = ds["lon"] - 180
 
         # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
         # Raven is faster with gridded inputs than with stations when there are a lot of stations
-        ds = ds.transpose("rlon", "rlat", "time")
+        ds = ds.transpose(x_name, y_name, "time")
 
-        # Convert calendar
-        # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
-        if Version(xs.__version__) > Version("0.9.10"):
-            convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
-        else:
-            convert_calendar_kwargs = {"target": "default"}
-        if isinstance(convert_calendar_missing, dict):
-            missing_by_var = convert_calendar_missing
-        else:
-            missing_by_var = None
-            convert_calendar_kwargs["missing"] = convert_calendar_missing
-            if (
-                ds.time.dt.calendar
-                not in ["standard", "gregorian", "proleptic_gregorian"]
-                and convert_calendar_missing is np.nan
-            ):
-                warnings.warn(
-                    f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
-                    f"NaNs will need to be filled manually before running Raven HBVEC."
-                )
-        ds = xs.utils.clean_up(
-            ds,
-            convert_calendar_kwargs=convert_calendar_kwargs,
-            missing_by_var=missing_by_var,
-        )
+        cfg = {
+            "TYPE (station/grid)": "grid",
+            "STATION_DIM_NAME": None,
+            "LATITUDE_NAME": x_name,
+            "LONGITUDE_NAME": y_name,
+            "ELEVATION_NAME": "orog",
+            "TIME_NAME": "time",
+            "TEMP_MIN": "tasmin",
+            "TEMP_MAX": "tasmax",
+            "PRECIP": "pr",
+        }
 
-        new_time = (
-            (ds["time"].values - np.datetime64("1970-01-01 00:00:00"))
-            .astype("timedelta64[D]")
-            .astype(int)
-        )
-        ds["time"] = xr.DataArray(
-            new_time,
-            dims="time",
-            coords={"time": new_time},
-            attrs={"units": "days since 1970-01-01 00:00:00"},
-        )
-
-        out = ds
+        out = (ds, cfg)
         if save_as:
             Path(save_as).parent.mkdir(parents=True, exist_ok=True)
+            with Path(save_as).with_suffix(".nc.config.yml").open("w") as f:
+                for k, v in cfg.items():
+                    f.write(f"{k}: {v}\n")
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
     else:
