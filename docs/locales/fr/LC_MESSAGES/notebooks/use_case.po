@@ -3,12 +3,25 @@
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
+#, fuzzy
 msgid ""
 msgstr ""
+"Project-Id-Version: xHydro 0.4.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../notebooks/use_case.ipynb:9
 msgid "Use Case Example"
-msgstr "Exemple complet d'utilisation"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:11
 msgid ""
@@ -16,102 +29,86 @@ msgid ""
 "involved in building a hydrological model and conducting a climate change"
 " analysis:"
 msgstr ""
-"Cet exemple illustre un cas d'utilisation qui couvre les étapes "
-"principales impliquées dans la construction d'un modèle hydrologique et la "
-"réalisation d'une analyse du changement climatique:"
 
 #: ../../notebooks/use_case.ipynb:13
 msgid "**Identification of the watershed and its key characteristics**"
-msgstr "**Identification du bassin versant et de ses caractéristiques principales**"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:15
 msgid ""
 "Beaurivage watershed in Southern Quebec, at the location of the 023401 "
 "streamflow gauge."
 msgstr ""
-"Le bassin versant de la rivière Beaurivage dans le sud du Québec, à l'emplacement "
-"de la jauge de débit 023401."
 
 #: ../../notebooks/use_case.ipynb:17
 msgid "**Collection of observed data**"
-msgstr "**Collection de données observées**"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:19
 msgid "ERA5-Land and streamflow gauge data."
-msgstr "ERA5-Land et données de débit."
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:21
 msgid "**Preparation and calibration of the hydrological model**"
-msgstr "**Préparation et calage du modèle hydrologique**"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:23
 msgid "GR4JCN emulated by the Raven hydrological framework."
-msgstr "GR4JCN émulé par le cadre hydrologique de Raven."
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:25
 msgid "**Calculation of hydrological indicators**"
-msgstr "**Calcul des indicateurs hydrologiques**"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:27
 msgid "Mean summer flow"
-msgstr "Débit moyen en été"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:28
 msgid "Mean monthly flow"
-msgstr "Débit mensuel moyen"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:29
 msgid "20- and 100-year maximum flow"
-msgstr "Débit maximum de 20 et 100 ans"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:30
 msgid "2-year minimum 7-day average summer flow"
-msgstr "Débit minimal en été, moyenné sur 7 jours, récurrence de 2 ans"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:32
 msgid "**Assessment of the impact of climate change**"
-msgstr "**Évaluation de l'impact du changement climatique**"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:34
 msgid "Bias-adjusted CMIP6 simulations from the ESPO-G6-R2 dataset"
 msgstr ""
-"Simulations CMIP6 post-traitées de l'ensemble de "
-"données ESPO-G6-R2"
 
 #: ../../notebooks/use_case.ipynb:37
 msgid "Identification of a watershed and its characteristics"
-msgstr "Identification d'un bassin versant et de ses caractéristiques"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:43 ../../notebooks/use_case.ipynb:590
 #: ../../notebooks/use_case.ipynb:4063 ../../notebooks/use_case.ipynb:4446
 #: ../../notebooks/use_case.ipynb:4458 ../../notebooks/use_case.ipynb:5008
 #: ../../notebooks/use_case.ipynb:7094
 msgid "INFO"
-msgstr "INFO"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:45
 msgid ""
 "For more information on this section and available options, consult the "
-"`GIS module page "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/gis.html#GIS-"
-"module>`__."
+"`GIS notebook <gis.ipynb>`__."
 msgstr ""
-"Pour plus d'informations sur cette section et les options disponibles, consultez la"
-" `Page du module GIS "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/gis.html#GIS-"
-"module>`__."
 
 #: ../../notebooks/use_case.ipynb:51
 msgid ""
 "This first step is highly dependent on the hydrological model. Since we "
 "will use GR4JCN in our example, we need to obtain the drainage area, "
 "centroid coordinates, and elevation. We'll also need the watershed "
-"delineation to extract the meteorological data."
+"delineation to extract the meteorological data. This information will "
+"come from HydroBASINS through the ``xhydro.gis`` module."
 msgstr ""
-"Cette première étape dépend fortement du modèle hydrologique. Puisque nous"
-" utiliserons GR4JCN dans notre exemple, nous devons obtenir l'aire de drainage,"
-" les coordonnées du centroïde et l'altitude. Nous aurons également besoin de la"
-" délimitation du bassin versant pour extraire les données météorologiques."
 
 #: ../../notebooks/use_case.ipynb:53
 msgid ""
@@ -119,27 +116,22 @@ msgid ""
 "``xhydro.gis.watershed_delineation`` and "
 "``xhydro.gis.watershed_properties``"
 msgstr ""
-"Délimitation du bassin versant et caractéristiques de base :"
-"``xhydro.gis.watershed_delineation`` et"
-"``xhydro.gis.watershed_properties``"
 
 #: ../../notebooks/use_case.ipynb:54
 msgid "Elevation: ``xhydro.gis.surface_properties``"
-msgstr "Élévation: ``xhydro.gis.surface_properties``"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:203
 msgid "Showing ``m`` will output this map: |image.png|"
-msgstr "Illustrer ``m`` sortira cette carte: |image.png|"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:205
 msgid "image.png"
-msgstr "image.png"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:483
 msgid "We'll keep the necessary information and format it for GR4JCN."
 msgstr ""
-"Nous conserverons les informations nécessaires et les "
-"formaterons pour GR4JCN."
 
 #: ../../notebooks/use_case.ipynb:507
 msgid ""
@@ -149,40 +141,28 @@ msgid ""
 "of 708 km², which differs from our results. Streamflow will have to be "
 "adjusted using an area scaling factor."
 msgstr ""
-"Puisque ``xhgis.watershed_delineation`` extrait le polygone HydroBASINS le plus proche,"
-" le bassin versant pourrait ne pas correspondre exactement aux coordonnées demandées. Le"
-" jauge de débit 023401 a une aire de drainage associée de 708 km², ce qui diffère de nos résultats."
-" Le débit devra être ajusté en utilisant un facteur de mise à l'échelle de la zone."
 
 #: ../../notebooks/use_case.ipynb:556
 msgid "Collection of observed data"
-msgstr "Collecte de données observées"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:584
 msgid "Meteorological data"
-msgstr "Données météorologiques"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:592
 msgid ""
 "Multiple libraries could be used to perform these steps. For simplicity, "
-"this example will use the ```subset`` "
+"this example will use the `subset "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
-"#Defining-the-region>`__ and ```aggregate`` modules of the xscen "
+"#Defining-the-region>`__ and `aggregate "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
-"#Spatial-mean>`__ library."
+"#Spatial-mean>`__ modules of the xscen library."
 msgstr ""
-"Plusieurs libraries pourraient être utilisées pour effectuer ces étapes. Par simplicité,"
-" cet exemple utilisera les modules ```subset``"
-"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
-"#Defining-the-region>`__ et ```aggregate`` du module xscen"
-"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
-"#Spatial-mean>`__."
 
 #: ../../notebooks/use_case.ipynb:598
 msgid "This example will use daily ERA5-Land data hosted on the PAVICS platform."
 msgstr ""
-"Cet exemple utilisera les données quotidiennes ERA5-Land "
-"hébergées sur la plate-forme PAVICS."
 
 #: ../../notebooks/use_case.ipynb:1692
 msgid ""
@@ -191,10 +171,6 @@ msgid ""
 "temporally. For the spatial subset, the GeoDataFrame obtained earlier can"
 " be used."
 msgstr ""
-"Ce jeu de données couvre le globe en entier et dispose de plus de "
-"70 ans de données. La première étape sera donc de couper les données "
-"à la fois spatialement et temporellement. Pour le "
-"sous-ensemble spatial, le GeoDataFrame obtenu plus tôt peut être utilisé."
 
 #: ../../notebooks/use_case.ipynb:2626
 msgid ""
@@ -207,14 +183,6 @@ msgid ""
 "can be very slow for detailed polygons with lots of vertices, but the "
 "\"simplify_tolerance\" argument helps speed up that process."
 msgstr ""
-"Puisque GR4JCN est un modèle global, nous devons moyenner les données météorologiques sur le"
-" bassin versant. Cela sera accompli en utilisant ``xscen.spatial_mean``."
-" Plusieurs méthodes existent, mais pour les shapefiles, la plus précise est"
-" \"xesmf\", qui fait appel à `xESMF's SpatialAverager <https://pangeo-"
-"xesmf.readthedocs.io/en/latest/notebooks/Spatial_Averaging.html>`__ pour"
-" suivre avec précision la représentation de chaque cellule de grille sur le polygone. Cela"
-" peut être très lent pour les polygones détaillés avec beaucoup de sommets, mais l'argument"
-" \"simplify_tolerance\" aide à accélérer ce processus."
 
 #: ../../notebooks/use_case.ipynb:3397
 msgid ""
@@ -222,22 +190,16 @@ msgid ""
 "but they currently are in CF-compliant Kelvin and kg m-2 s-1, "
 "respectively. Once again, ``xscen`` can be used for that operation."
 msgstr ""
-"Raven s'attend à des températures en Celsius et à des "
-"précipitations en millimètres, mais ils sont actuellement dans Kelvin et kg m-2 s-1, "
-"conformément au conventions CF. Encore une fois, ``xscen`` peut être utilisé pour cette "
-"opération."
 
 #: ../../notebooks/use_case.ipynb:3432
 msgid "Hydrometric data"
-msgstr "Données hydrométriques"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:3434
 msgid ""
 "Gauge streamflow data from the Quebec government can be accessed through "
 "the ``xdatasets`` library."
 msgstr ""
-"Les données de débit du gouvernement du Québec sont "
-"accessibles via la librairie `xdatasets``."
 
 #: ../../notebooks/use_case.ipynb:4023
 msgid ""
@@ -245,23 +207,16 @@ msgid ""
 "account for the differences in watershed sizes between the gauge and the "
 "polygon."
 msgstr ""
-"Comme spécifié précédemment, les observations de débit "
-"doivent être modifiées pour tenir compte des différences de tailles de bassin "
-"versant entre la jauge et le polygone."
 
 #: ../../notebooks/use_case.ipynb:4057
 msgid "Preparation and calibration of the hydrological model (xhydro.modelling)"
-msgstr "Préparation et calage du modèle hydrologique (xhydro.modelling)"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:4065
 msgid ""
 "For more information on this section and available options, consult the "
-"`Hydrological modelling module page "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/hydrological_modelling.html>`__."
+"`Hydrological modelling notebook <hydrological_modelling_raven.ipynb>`__."
 msgstr ""
-"Pour plus d'informations sur cette section et les options disponibles, consultez la "
-"page du module de `modélisation hydrologique "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/hydrological_modelling.html>`__."
 
 #: ../../notebooks/use_case.ipynb:4092
 msgid ""
@@ -270,10 +225,6 @@ msgid ""
 "required information has been acquired in previous sections, so it is "
 "only a matter of filling in the entries of the RavenPy/GR4JCN model."
 msgstr ""
-"La fonction ``perform_calibration`` nécessite un argument ``model_config``"
-" qui lui permet de construire le modèle hydrologique correspondant. Toutes les "
-"informations requises ont été acquises dans les sections précédentes, il s'agit donc"
-" seulement de remplir les entrées du modèle RavenPy/GR4JCN."
 
 #: ../../notebooks/use_case.ipynb:4094
 msgid ""
@@ -285,13 +236,6 @@ msgid ""
 "estimated using `Brown & Brasnett (2010) "
 "<https://ccin.ca/ccw/snow/overview/references>`__."
 msgstr ""
-"Pour des raisons de simplification, l'altitude de la station météorologique sera"
-" définie comme l'altitude moyenne du bassin versant réel. Le calcul de l'altitude des"
-" cellules dans ERA5-Land n'est pas toujours trivial et ne relève pas du"
-" cadre de cet exemple. De même, l'équivalent en eau de neige n'est pas actuellement"
-" disponible dans la base de données de PAVICS, donc \"AVG_ANNUAL_SNOW\" a été grossièrement"
-" estimé en utilisant `Brown & Brasnett (2010) "
-"<https://ccin.ca/ccw/snow/overview/references>`__."
 
 #: ../../notebooks/use_case.ipynb:4286
 msgid ""
@@ -300,64 +244,48 @@ msgid ""
 "The parameters below were obtained by running the code above with 150 "
 "evaluations."
 msgstr ""
-"Pour réduire les temps de calcul pour cet exemple, seulement 10 étapes ont été utilisées pour"
-" la fonction de calage, ce qui est bien en dessous du nombre recommandé. "
-"Les paramètres ci-dessous ont été obtenus en exécutant le code ci-dessus avec 150 "
-"évaluations."
 
 #: ../../notebooks/use_case.ipynb:4318
 msgid ""
 "The real KGE should be computed from a validation period, using "
 "``get_objective_function``."
 msgstr ""
-"Le vrai KGE devrait être calculé à partir d'une période de validation, en utilisant"
-" ``get_objective_function``."
 
 #: ../../notebooks/use_case.ipynb:4416
 msgid "Calculation of hydroclimatological indicators"
-msgstr "Calcul des indicateurs hydroclimatologiques"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:4440
 msgid "Non-frequential indicators"
-msgstr "Indicateurs non fréquentiels"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:4448 ../../notebooks/use_case.ipynb:7096
 msgid ""
 "For more information on this section and available options, consult the "
-"`Climate change analysis page "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/climate_change.html>`__."
+"`Climate change analysis notebook <climate_change.ipynb>`__."
 msgstr ""
-"Pour plus d'informations sur cette section et les options disponibles, consultez la"
-" `Page d'analyse du changement climatique "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/climate_change.html>`__."
 
 #: ../../notebooks/use_case.ipynb:4460
 msgid ""
 "Custom indicators in ``xHydro`` are built by following the YAML "
 "formatting required by ``xclim``."
 msgstr ""
-"Les indicateurs personnalisés dans ``xHydro`` sont créés en suivant le format YAML"
-" requis par ``xclim``."
 
 #: ../../notebooks/use_case.ipynb:4462
 msgid ""
 "A custom indicator built using "
 "``xclim.core.indicator.Indicator.from_dict`` will need these elements:"
 msgstr ""
-"Un indicateur personnalisé créé en utilisant"
-" ``xclim.core.indicator.Indicator.from_dict`` aura besoin de ces éléments :"
 
 #: ../../notebooks/use_case.ipynb:4464
 msgid "\"data\": A dictionary with the following information:"
-msgstr "\"data\": Un dictionnaire contenant les informations suivantes :"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:4466
 msgid ""
 "\"base\": The \"YAML ID\" obtained from `here "
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 msgstr ""
-"\"base\": Le \"YAML ID\" obtenu depuis `ce lien "
-"<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 
 #: ../../notebooks/use_case.ipynb:4467
 msgid ""
@@ -365,9 +293,6 @@ msgid ""
 "your variable. Needed only if it is different. In the link above, they "
 "are the string following \"Uses:\"."
 msgstr ""
-"\"input\": Un dictionnaire liant l'entrée par défaut d'xclim au nom de"
-" votre variable. Nécessaire uniquement si elle est différente. Dans le lien ci-dessus,"
-" ce sont les chaînes qui suivent \"Uses:\"."
 
 #: ../../notebooks/use_case.ipynb:4468
 msgid ""
@@ -376,27 +301,19 @@ msgid ""
 "clicking the link in the top-right corner of the box describing a given "
 "indicator."
 msgstr ""
-"\"parameters\": Un dictionnaire contenant tous les autres paramètres pour un indicateur donné."
-" Dans le lien ci-dessus, la façon la plus simple d'y accéder est en cliquant sur le lien dans le coin"
-" supérieur droit de la boîte décrivant un indicateur donné."
 
 #: ../../notebooks/use_case.ipynb:4469
 msgid ""
 "More entries can be used here, as described `in the xclim documentation "
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__ "
-"under \"<identifier>\"."
+"under \"identifier\"."
 msgstr ""
-"D'autres entrées peuvent être utilisées ici, comme décrit `dans la documentation xclim "
-"<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__"
-" sous \"<identifier>\"."
 
 #: ../../notebooks/use_case.ipynb:4471
 msgid ""
 "\"identifier\": A custom name for your indicator. This will be the name "
 "returned in the results."
 msgstr ""
-"\"identifier\": Un nom personnalisé pour votre indicateur. Ce sera le nom"
-" retourné dans les résultats."
 
 #: ../../notebooks/use_case.ipynb:4472
 msgid ""
@@ -404,17 +321,12 @@ msgid ""
 "overwriting of ``xclim`` indicators, it is best to use something "
 "different from: [\"atmos\", \"land\", \"generic\"]."
 msgstr ""
-"\"module\": Nécessaire, mais peut être n'importe quoi. Pour éviter un"
-" écrasement accidentel des indicateurs ``xclim``, il est préférable d'utiliser quelque chose"
-" de différent de : [\"atmos\", \"land\", \"generic\"]."
 
 #: ../../notebooks/use_case.ipynb:4478
 msgid ""
 "For a climate change impact analysis, the typical process to compute non-"
 "frequential indicators would be to:"
 msgstr ""
-"Pour une analyse des impacts du changement climatique, le processus typique pour calculer les indicateurs non"
-" fréquentiels serait de :"
 
 #: ../../notebooks/use_case.ipynb:4480
 msgid ""
@@ -422,9 +334,6 @@ msgid ""
 "below or through a `YAML file "
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__."
 msgstr ""
-"Définir les indicateurs soit via les fonctionnalités ``xclim`` montrées"
-" ci-dessous, soit via un fichier `YAML "
-"<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__."
 
 #: ../../notebooks/use_case.ipynb:4481
 msgid ""
@@ -432,20 +341,16 @@ msgid ""
 " results through a dictionary, where each key represents the requested "
 "frequencies."
 msgstr ""
-"Appeler ``xhydro.indicators.compute_indicators``, ce qui produira des résultats annuels"
-" sous forme de dictionnaire, où chaque clé représente les fréquences demandées."
 
 #: ../../notebooks/use_case.ipynb:4482
 msgid ""
 "Call ``xhydro.cc.climatological_op`` on each entry of the dictionary to "
 "compute the 30-year average."
 msgstr ""
-"Appeler ``xhydro.cc.climatological_op`` sur chaque entrée du dictionnaire pour"
-" calculer la moyenne sur 30 ans."
 
 #: ../../notebooks/use_case.ipynb:4483
 msgid "Recombine the datasets."
-msgstr "Recombiner les jeux de données."
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:4485
 msgid ""
@@ -456,82 +361,60 @@ msgid ""
 " In the case of seasonal or monthly indicators, a corresponding "
 "``season`` or ``month`` dimension is also added."
 msgstr ""
-"Cependant, si les résultats annuels ne sont pas nécessaires,"
-" ``xhydro.cc.produce_horizon`` peut contourner les étapes 2 à 4 et éviter beaucoup"
-" de tracas. Cela est accompli en supprimant l'axe ``time`` et"
-" en le remplaçant par une dimension ``horizon`` qui représente un segment de temps."
-" Dans le cas des indicateurs saisonniers ou mensuels, une dimension correspondante"
-" ``season`` ou ``month`` est également ajoutée."
 
 #: ../../notebooks/use_case.ipynb:4487
 msgid ""
 "We will compute the mean summer flow (an annual indicator) and mean "
 "monthly flows."
 msgstr ""
-"Nous allons calculer le débit moyen estival (un indicateur annuel) et les débits"
-" mensuels moyens."
 
 #: ../../notebooks/use_case.ipynb:5002
 msgid "Frequency analysis"
-msgstr "Analyse fréquencielle"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:5010
 msgid ""
 "For more information on this section and available options, consult the "
-"`Local frequency analysis page "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/local_frequency_analysis.html>`__."
+"`Local frequency analysis notebook <local_frequency_analysis.ipynb>`__."
 msgstr ""
-"Pour plus d'informations sur cette section et les options disponibles, consultez la"
-" `Page d'analyse fréquencielle locale "
-"<https://xhydro.readthedocs.io/en/latest/notebooks/local_frequency_analysis.html>`__."
 
 #: ../../notebooks/use_case.ipynb:5016
 msgid "A frequency analysis typically follows these steps:"
-msgstr "Une analyse fréquentielle suit généralement ces étapes :"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:5018
 msgid ""
 "Get the raw data needed for the analysis, such as annual maximums, "
 "through ``xhydro.indicators.get_yearly_op``."
 msgstr ""
-"Obtenir les données brutes nécessaires à l'analyse, telles que les maximums annuels,"
-" via ``xhydro.indicators.get_yearly_op``."
 
 #: ../../notebooks/use_case.ipynb:5019
 msgid ""
 "Call ``xhfa.local.fit`` to obtain the parameters for a specified number "
 "of distributions, such as Gumbel, GEV, and Pearson-III."
 msgstr ""
-"Appeler ``xhfa.local.fit`` pour obtenir les paramètres d'un nombre spécifié"
-" de distributions, telles que Gumbel, GEV et Pearson-III."
 
 #: ../../notebooks/use_case.ipynb:5020
 msgid ""
 "(Optional) Call ``xhfa.local.criteria`` to obtain goodness-of-fit "
 "parameters."
 msgstr ""
-"(Facultatif) Appeler ``xhfa.local.criteria`` pour obtenir les paramètres de qualité d'ajustement."
 
 #: ../../notebooks/use_case.ipynb:5021
 msgid "Call ``xhfa.local.parametric_quantiles`` to obtain the return levels."
 msgstr ""
-"Appeler ``xhfa.local.parametric_quantiles`` pour obtenir les niveaux de retour."
 
 #: ../../notebooks/use_case.ipynb:5023
 msgid ""
 "We will compute the 20 and 100-year annual maximums, as well as the "
 "2-year minimum 7-day summer flow."
 msgstr ""
-"Nous allons calculer les maximums annuels sur 20 et 100 ans, ainsi que le"
-" débit minimum estival sur 7 jours pour 2 ans."
 
 #: ../../notebooks/use_case.ipynb:5594
 msgid ""
 "While not foolproof, the best fit can be identified using the Bayesian "
 "Information Criteria."
 msgstr ""
-"Bien que non infaillible, le meilleur ajustement peut être identifié en utilisant le"
-" Critère d'Information Bayésien."
 
 #: ../../notebooks/use_case.ipynb:5660
 msgid ""
@@ -540,18 +423,14 @@ msgid ""
 "Until a public function is added to the library, they can still be called"
 " to illustrate the results."
 msgstr ""
-"Les fonctions de tracé arriveront éventuellement dans ``xhydro.frequency_analysis``,"
-" mais elles sont actuellement en cours de développement et sont cachées par défaut."
-" En attendant qu'une fonction publique soit ajoutée à la librairie, elles peuvent quand même être appelées"
-" pour illustrer les résultats."
 
 #: ../../notebooks/use_case.ipynb:6322
 msgid "Future streamflow simulations and indicators"
-msgstr "Simulations et indicateurs de débit futurs"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:6325
 msgid "Future meteorological data"
-msgstr "Données météorologiques futures"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:6327
 msgid ""
@@ -563,13 +442,6 @@ msgid ""
 "recommended to use multiple emission scenarios, this example will only "
 "use the SSP2-4.5 simulations from 14 climate models."
 msgstr ""
-"Maintenant que nous avons accès à un modèle hydrologique calé et à des"
-" indicateurs historiques, nous pouvons réaliser l'analyse du changement climatique. Cet exemple"
-" utilisera un ensemble de modèles CMIP6 qui ont été ajustés à l'aide de"
-" ERA5-Land, pour assurer la cohérence avec le produit de référence. Plus précisément, nous"
-" utiliserons l'ensemble de données ESPO-G6-E5L, également hébergé sur PAVICS. Bien qu'il soit"
-" recommandé d'utiliser plusieurs scénarios d'émission, cet exemple utilisera uniquement"
-" les simulations SSP2-4.5 de 14 modèles climatiques."
 
 #: ../../notebooks/use_case.ipynb:6329
 msgid ""
@@ -577,21 +449,16 @@ msgid ""
 "climate models often use custom calendars that need to be converted back "
 "to standard ones. Once again, ``xscen`` can be used for that."
 msgstr ""
-"Nous pouvons principalement réutiliser le même code que ci-dessus. Une différence est que"
-" les modèles climatiques utilisent souvent des calendriers non standards qui doivent être convertis."
-" Encore une fois, ``xscen`` peut être utilisé pour cela."
 
 #: ../../notebooks/use_case.ipynb:6365
 msgid ""
 "The code below will showcase how to proceed with the first simulation, "
 "but it could be looped to process all 14."
 msgstr ""
-"Le code ci-dessous montrera comment procéder avec la première "
-"simulation, mais il pourrait être bouclé pour traiter les 14."
 
 #: ../../notebooks/use_case.ipynb:6420
 msgid "Future streamflow data and indicators"
-msgstr "Données et indicateurs de débit futurs"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:6422
 msgid ""
@@ -600,10 +467,6 @@ msgid ""
 "best parameters can be used when setting up the hydrological model, and "
 "that the dates are the full range going to 2100."
 msgstr ""
-"Encore une fois, le même code qu'auparavant peut être grosso modo réutilisé ici, mais avec"
-" ``xhydro.modelling.hydrological_model``. La principale différence est que les"
-" meilleurs paramètres peuvent être utilisés lors de la configuration du modèle hydrologique, et"
-" que les dates couvrent toute la période jusqu'en 2100."
 
 #: ../../notebooks/use_case.ipynb:6424
 msgid ""
@@ -613,36 +476,26 @@ msgid ""
 "``xhydro.frequency_analysis.fit`` function can also accept a ``periods`` "
 "argument."
 msgstr ""
-"Les indicateurs sont également calculés de manière similaire, avec l'ajout de l'utilisation d'une liste"
-" de périodes dans l'argument ``periods`` pour créer une dimension ``horizon``,"
-" au lieu d'une seule période. La fonction"
-" ``xhydro.frequency_analysis.fit`` peut également accepter un argument ``periods``."
 
 #: ../../notebooks/use_case.ipynb:6426
 msgid ""
 "The code below will once again only showcase the first simulation, but "
 "could be used to process all 14."
 msgstr ""
-"Le code ci-dessous ne présentera à nouveau que la première "
-"simulation, mais pourrait être utilisé pour traiter les 14."
 
 #: ../../notebooks/use_case.ipynb:7088
 msgid "Climate change impacts"
-msgstr "Impacts du changement climatique"
+msgstr ""
 
 #: ../../notebooks/use_case.ipynb:7102
 msgid "This example will keep the climate change analysis fairly simple."
 msgstr ""
-"Cet exemple maintiendra l'analyse du changement climatique assez "
-"simple."
 
 #: ../../notebooks/use_case.ipynb:7104
 msgid ""
 "Compute the difference between the future and reference periods using "
 "``xhydro.cc.compute_deltas``."
 msgstr ""
-"Calculer la différence entre le futur et la période de référence "
-"à l'aide de ``xhydro.cc.compute_deltas``."
 
 #: ../../notebooks/use_case.ipynb:7105
 msgid ""
@@ -650,9 +503,6 @@ msgid ""
 "``xhydro.cc.ensemble_stats``: ensemble percentiles and agreement between "
 "the climate models."
 msgstr ""
-"Utiliser ces différences pour calculer les statistiques d'ensemble à l'aide de"
-" ``xhydro.cc.ensemble_stats`` : les percentiles d'ensemble et l'accord entre"
-" les modèles climatiques."
 
 #: ../../notebooks/use_case.ipynb:7628
 msgid ""
@@ -664,9 +514,3 @@ msgid ""
 "we only wish to compute ensemble statistics, we can keep it simpler and "
 "provide a list."
 msgstr ""
-"Il existe plusieurs façons de créer l'ensemble lui-même. Si vous utilisez un dictionnaire"
-" de jeux de données, la clé sera utilisée pour nommer chaque élément de la nouvelle"
-" dimension ``realization``. Cela peut être très utile lors de l'exécution d'analyses plus"
-" détaillées ou lorsqu'on souhaite pondérer les différents modèles en fonction, par exemple,"
-" du nombre de simulations disponibles. Dans notre cas, puisque nous ne souhaitons calculer"
-" que des statistiques d'ensemble, nous pouvons le garder plus simple et fournir une liste."

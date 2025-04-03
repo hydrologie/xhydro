@@ -1,0 +1,416 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.4.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../notebooks/pmp.ipynb:9
+msgid "Probable Maximum Precipitation (PMP)"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:11
+msgid ""
+"Probable Maximum Precipitation (PMP) is the theoretical maximum amount of"
+" precipitation that could occur at a specific location within a given "
+"period of time, considering the most extreme meteorological conditions. "
+"PMP is a critical parameter in hydrology, especially for the design of "
+"infrastructure such as dams, reservoirs, and drainage systems."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:13
+msgid ""
+"There are several methods for calculating PMP, each varying in complexity"
+" and the type of data used. The method currently implemented in "
+"``xHydro`` is based on the approach outlined by `Clavet-Gaumont et al. "
+"(2017) <https://doi.org/10.1016/j.ejrh.2017.07.003>`__. This method "
+"involves maximizing the precipitable water over a given location, which "
+"refers to the total water vapor in the atmosphere that could potentially "
+"be converted into precipitation under ideal conditions. By maximizing "
+"this value, the method estimates the maximum precipitation that could "
+"theoretically occur at the location."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:333
+msgid ""
+"Data type cannot be displayed: application/javascript, "
+"application/vnd.holoviews_load.v0+json"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:597
+msgid ""
+"Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
+"application/javascript"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:686
+msgid ""
+"Data type cannot be displayed: text/html, "
+"application/vnd.holoviews_exec.v0+json"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:696
+msgid "Acquiring data"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:698
+msgid ""
+"The acquisition of climatological data is outside the scope of "
+"``xHydro``. However, some examples of how to obtain and handle such data "
+"are provided in the `GIS operations <gis.ipynb>`__ and `Use Case Example "
+"<use_case.ipynb>`__ notebooks. For this notebook, we will use a test "
+"dataset consisting of 2 years and 3x3 grid cells from CanESM5 climate "
+"model data. In a real application, it would be preferable to have as many"
+" years of data as possible."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:700
+msgid "To perform the analysis, certain climatological variables are required."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:702
+msgid "**Daily Timestep Variables**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:704
+msgid "``pr`` → Precipitation flux"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:705
+msgid "``snw`` → Snow water equivalent"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:706
+msgid "``hus`` → Specific humidity for multiple pressure levels"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:707
+msgid "``zg`` → Geopotential height for multiple pressure levels"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:709
+msgid "**Fixed Field Variables**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:711
+msgid "``orog`` → Surface altitude"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:713
+msgid ""
+"In cold regions, it may be necessary to split total precipitation into "
+"rainfall and snowfall components. Many climate models already provide "
+"this data separately. However, if this data is not directly available, "
+"libraries such as ``xclim`` can approximate the split using precipitation"
+" and temperature data."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2193
+msgid "Computing the PMP"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2195
+msgid ""
+"The method outlined by `Clavet-Gaumont et al. (2017) "
+"<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ follows these steps:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Identification of Major Precipitation Events**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"The first step involves identifying the major precipitation events that "
+"will be maximized. This is done by filtering events based on a specified "
+"threshold."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Computation of Monthly 100-Year Precipitable Water**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+#, python-format
+msgid ""
+"The next step involves calculating the 100-year precipitable water on a "
+"monthly basis using the Generalized Extreme Value (GEV) distribution, "
+"with a maximum cap of 20% greater than the largest observed value."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Maximization of Precipitation During Events**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"In this step, the precipitation events are maximized based on the ratio "
+"between the 100-year monthly precipitable water and the precipitable "
+"water during the major precipitation events. In snow-free regions, this "
+"is the final result."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Seasonal Separation in Cold Regions**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"In cold regions, the results are separated into seasons (e.g., spring, "
+"summer) to account for snow during the computation of Probable Maximum "
+"Floods (PMF)."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2209
+msgid ""
+"This method provides a comprehensive approach for estimating the PMP, "
+"taking into account both temperature and precipitation variations across "
+"different regions and seasons."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2212
+msgid "Major precipitation events"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2214
+msgid ""
+"The first step in calculating the Probable Maximum Precipitation (PMP) "
+"involves filtering the precipitation data to retain only the events that "
+"exceed a certain threshold. These major precipitation events will be "
+"maximized in subsequent steps. The function "
+"``xh.indicators.pmp.major_precipitation_events`` can be used for this "
+"purpose. It also provides the option to sum precipitation over a "
+"specified number of days, which can help aggregate storm events. For 2D "
+"data, such as in this example, each grid point is treated independently."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2217
+msgid ""
+"In this example, we will filter out the 10% most intense storms to avoid "
+"overemphasizing smaller precipitation events during the maximization "
+"process. Additionally, we will focus on rainfall (``rf``) rather than "
+"total precipitation (``pr``) to exclude snowstorms and ensure that we are"
+" only considering liquid precipitation events."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2469
+msgid "Daily precipitable water"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2475
+msgid "WARNING"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2477
+msgid ""
+"This step should be avoided if possible, as it involves approximating "
+"precipitable water from the integral of specific humidity and will be "
+"highly sensitive to the number of pressure levels used. If available, "
+"users are strongly encouraged to use a variable or combination of "
+"variables that directly represent precipitable water."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2483
+msgid ""
+"Precipitable water can be estimated using "
+"``xhydro.indicators.pmp.precipitable_water`` by integrating the vertical "
+"column of humidity. This process requires specific humidity, geopotential"
+" height, and elevation data. The resulting value represents the total "
+"amount of water vapor that could potentially be precipitated from the "
+"atmosphere under ideal conditions."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2782
+msgid "Monthly 100-year precipitable water"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2784
+#, python-format
+msgid ""
+"According to Clavet-Gaumont et al. (2017), a monthly 100-year "
+"precipitable water must be computed using the Generalized Extreme Value "
+"(GEV) distribution. The value should be limited to a maximum of 20% "
+"greater than the largest observed precipitable water value for a given "
+"month. This approach ensures that the estimated 100-year event is "
+"realistic and constrained by observed data."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:2786
+msgid ""
+"To compute this, you can use the "
+"``xh.indicators.pmp.precipitable_water_100y`` function. If using "
+"``rebuild_time``, the output will have the same time axis as the original"
+" data."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3058
+msgid "Maximized precipitation"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3064
+msgid "INFO"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3066
+msgid ""
+"This step follows the methodology described in Clavet-Gaumont et al., "
+"2017. It is referred to as \"Maximizing precipitation\", however, it "
+"effectively applies a ratio based on the monthly 100-year precipitable "
+"water. If a historical event surpassed this value—such as the case "
+"observed for January 2011—the result may actually lower the "
+"precipitation, rather than increasing it."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3072
+msgid ""
+"With the information gathered so far, we can now proceed to maximize the "
+"precipitation events. Although ``xHydro`` does not provide an explicit "
+"function for this step, it can be accomplished by following these steps:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3074
+msgid ""
+"**Compute the Ratio**: First, calculate the ratio between the 100-year "
+"monthly precipitable water and the precipitable water during the major "
+"precipitation events."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3076
+msgid ""
+"**Apply the Ratio**: Next, apply this ratio to the precipitation values "
+"themselves to maximize the precipitation events accordingly."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3078
+msgid ""
+"This process effectively scales the precipitation events based on the "
+"100-year precipitable water, giving an estimate of the maximum possible "
+"rainfall."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3234
+msgid "Seasonal Mask"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3236
+msgid ""
+"In cold regions, computing Probable Maximum Floods (PMFs) often involves "
+"scenarios that combine both rainfall and snowpack. Therefore, PMP values "
+"may need to be separated into two categories: rain-on-snow (i.e., "
+"\"spring\") and snow-free rainfall (i.e., \"summer\")."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3238
+msgid ""
+"This can be computed easily using "
+"``xhydro.indicators.pmp.compute_spring_and_summer_mask``, which defines "
+"the start and end dates of spring, summer, and winter based on the "
+"presence of snow on the ground, with the following criteria:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3240
+msgid "**Winter**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3242
+msgid ""
+"Winter start: The first day after which there are at least 14 consecutive"
+" days with snow on the ground."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3243
+msgid ""
+"Winter end: The last day with snow on the ground, followed by at least 45"
+" consecutive snow-free days."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3245
+msgid "**Spring**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3247
+msgid "Spring start: 60 days before the end of winter."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3248
+msgid "Spring end: 30 days after the end of winter."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3250
+msgid "**Summer**:"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:3252
+msgid ""
+"The summer period is defined as the time between the end of spring and "
+"the start of winter, covering all snow-free conditions in between. This "
+"period is not influenced by whether it falls in the traditional summer or"
+" fall seasons, but rather simply marks the interval between snow seasons."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4155
+msgid "Final PMP"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4157
+msgid ""
+"The final PMP is obtained by finding the maximum value over the ``time`` "
+"dimension. In our case, since we computed a season mask, we can further "
+"refine the results into a spring and summer PMP."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4232
+msgid "PMPs with aggregated storm configurations"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4234
+msgid ""
+"In some cases, it may be preferable to avoid processing each grid cell "
+"independently. Instead, storms can be aggregated using various "
+"configurations to provide a more regionally representative estimate. "
+"These configurations allow for the spatial averaging of storm events, "
+"which can help reduce variability across grid cells and yield more "
+"reliable results."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4236
+msgid ""
+"Different aggregation configurations are discussed in Clavet-Gaumont et "
+"al. (2017) and have been implemented in ``xHydro`` under the function "
+"``xhydro.indicators.pmp.spatial_average_storm_configurations``."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:4238
+msgid ""
+"Note that precipitable water must first be calculated in a distributed "
+"manner and then spatially averaged to obtain the aggregated precipitable "
+"water."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:5168
+msgid ""
+"After applying storm aggregation, the subsequent steps remain the same as"
+" before, following the standard PMP calculation process outlined earlier."
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:5840
+msgid ""
+"Previously, the final PMP for each season was obtained by taking the "
+"maximum value over the ``time`` dimension. In this updated approach, we "
+"can now take the maximum across both the ``time`` and ``conf`` "
+"dimensions, using our multiple storm configurations."
+msgstr ""

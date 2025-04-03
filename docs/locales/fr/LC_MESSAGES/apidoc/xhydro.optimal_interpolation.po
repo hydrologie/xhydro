@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.6\n"
+"Project-Id-Version: xHydro 0.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../apidoc/xhydro.optimal_interpolation.rst:2
 msgid "xhydro.optimal\\_interpolation package"
@@ -122,7 +122,7 @@ msgstr ""
 #: xhydro.optimal_interpolation.ECF_climate_correction.general_ecf:13
 #: xhydro.optimal_interpolation.ECF_climate_correction.initialize_stats_variables:15
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:40
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:32
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:30
 #: xhydro.optimal_interpolation.utilities.plot_results:15
 #: xhydro.optimal_interpolation.utilities.prepare_flow_percentiles_dataset:21
 msgid "Returns"
@@ -130,10 +130,7 @@ msgstr ""
 
 #: of
 #: xhydro.optimal_interpolation.ECF_climate_correction.calculate_ECF_stats:20
-#: xhydro.optimal_interpolation.ECF_climate_correction.correction:29
-#: xhydro.optimal_interpolation.ECF_climate_correction.eval_covariance_bin:16
-#: xhydro.optimal_interpolation.ECF_climate_correction.initialize_stats_variables:16
-msgid "tuple"
+msgid "tuple[np.ndarray, np.ndarray, np.ndarray]"
 msgstr ""
 
 #: of
@@ -193,7 +190,6 @@ msgstr ""
 
 #: of xhydro.optimal_interpolation.ECF_climate_correction.correction:-1
 #: xhydro.optimal_interpolation.ECF_climate_correction.eval_covariance_bin:-1
-#: xhydro.optimal_interpolation.ECF_climate_correction.initialize_stats_variables:-1
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
 msgid "int, optional"
 msgstr ""
@@ -215,6 +211,7 @@ msgstr ""
 
 #: of xhydro.optimal_interpolation.ECF_climate_correction.correction:-1
 #: xhydro.optimal_interpolation.ECF_climate_correction.general_ecf:-1
+#: xhydro.optimal_interpolation.ECF_climate_correction.initialize_stats_variables:-1
 #: xhydro.optimal_interpolation.compare_result.compare:-1
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
 msgid "int"
@@ -233,7 +230,6 @@ msgstr ""
 #: of xhydro.optimal_interpolation.ECF_climate_correction.correction:-1
 #: xhydro.optimal_interpolation.ECF_climate_correction.eval_covariance_bin:-1
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:-1
 msgid "float"
 msgstr ""
 
@@ -272,6 +268,11 @@ msgid ""
 "the ECF equation for variogram fitting. It is multiplied by \"hmax\", "
 "which is calculated to be the threshold limit for the variogram sill. "
 "Defaults to [0.05, 3.0]."
+msgstr ""
+
+#: of xhydro.optimal_interpolation.ECF_climate_correction.correction:29
+#: xhydro.optimal_interpolation.ECF_climate_correction.initialize_stats_variables:16
+msgid "tuple"
 msgstr ""
 
 #: of xhydro.optimal_interpolation.ECF_climate_correction.correction:30
@@ -343,6 +344,11 @@ msgid "Array of values corresponding to each data point."
 msgstr ""
 
 #: of
+#: xhydro.optimal_interpolation.ECF_climate_correction.eval_covariance_bin:16
+msgid "tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]"
+msgstr ""
+
+#: of
 #: xhydro.optimal_interpolation.ECF_climate_correction.eval_covariance_bin:17
 msgid "Arrays for heights, covariance, standard deviation, row length."
 msgstr ""
@@ -368,9 +374,7 @@ msgid "par"
 msgstr ""
 
 #: of xhydro.optimal_interpolation.ECF_climate_correction.general_ecf:-1
-#: xhydro.optimal_interpolation.compare_result.compare:-1
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
-msgid "list"
+msgid "list or array-like"
 msgstr ""
 
 #: of xhydro.optimal_interpolation.ECF_climate_correction.general_ecf:8
@@ -450,6 +454,7 @@ msgstr ""
 
 #: of xhydro.optimal_interpolation.compare_result.compare:-1
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:41
 msgid "xr.Dataset"
 msgstr ""
 
@@ -492,6 +497,11 @@ msgstr ""
 #: of xhydro.optimal_interpolation.compare_result.compare:13
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:11
 msgid "observation_stations"
+msgstr ""
+
+#: of xhydro.optimal_interpolation.compare_result.compare:-1
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:-1
+msgid "list"
 msgstr ""
 
 #: of xhydro.optimal_interpolation.compare_result.compare:14
@@ -629,22 +639,7 @@ msgid ""
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:41
-msgid "flow_quantiles"
-msgstr ""
-
-#: of
 #: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:42
-msgid "A list containing the flow quantiles for each desired percentile."
-msgstr ""
-
-#: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:43
-msgid "ds"
-msgstr ""
-
-#: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation:44
 msgid ""
 "An xarray dataset containing the flow quantiles and all the associated "
 "metadata."
@@ -766,20 +761,20 @@ msgid ""
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:25
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:24
 msgid "bg_est"
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:26
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:25
 msgid ""
 "Background field values at estimation sites (vector of size \"estimation "
 "stations\")."
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:27
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:37
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:26
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:35
 msgid "precalcs"
 msgstr ""
 
@@ -789,42 +784,42 @@ msgid "dict"
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:28
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:27
 msgid ""
 "Additional arguments and state information for the interpolation process,"
 " to accelerate calculations between timesteps."
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:33
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:31
 msgid "v_est"
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:34
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:32
 msgid ""
 "Estimated values at the estimation sites (vector of size \"estimation "
 "stations\")."
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:35
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:33
 msgid "var_est"
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:36
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:34
 msgid ""
 "Estimated variance at the estimation sites (vector of size \"estimation "
 "stations\")."
 msgstr ""
 
 #: of
-#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:38
+#: xhydro.optimal_interpolation.optimal_interpolation_fun.optimal_interpolation:36
 msgid ""
 "Additional arguments and state information for the interpolation process,"
 " to accelerate calculations between timesteps. This variable returns the "
-"pre-calcualted distance matrices."
+"pre-calculated distance matrices."
 msgstr ""
 
 #: ../../apidoc/xhydro.optimal_interpolation.rst:41

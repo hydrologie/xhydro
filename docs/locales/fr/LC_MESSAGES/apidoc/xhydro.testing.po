@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.6\n"
+"Project-Id-Version: xHydro 0.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../apidoc/xhydro.testing.rst:2
 msgid "xhydro.testing package"
@@ -39,73 +39,54 @@ msgstr ""
 msgid "Helper functions for testing data management."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DATA_DIR:1
-msgid "Sets the directory to store the testing datasets."
-msgstr ""
-
-#: ../../docstring of xhydro.testing.helpers.DATA_DIR:3
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_BRANCH:1
 msgid ""
-"If not set, the default location will be used (based on ``platformdirs``,"
-" see :func:`pooch.os_cache`)."
+"Sets the branch of hydrologie/xhydro-testdata to use when fetching "
+"testing datasets."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DATA_DIR:6
-#: xhydro.testing.helpers.DEVEREAUX:4
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_BRANCH:4
+#: xhydro.testing.helpers.TESTDATA_CACHE_DIR:6
+#: xhydro.testing.helpers.TESTDATA_REPO_URL:4
+#: xhydro.testing.helpers.deveraux:20
 #: xhydro.testing.utils.fake_hydrotel_project:15
-#: xhydro.testing.utils.publish_release_notes:19
+#: xhydro.testing.utils.publish_release_notes:21
 msgid "Notes"
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DATA_DIR:7
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_BRANCH:5
+#: xhydro.testing.helpers.TESTDATA_CACHE_DIR:7
+#: xhydro.testing.helpers.TESTDATA_REPO_URL:5
 msgid ""
 "When running tests locally, this can be set for both `pytest` and `tox` "
 "by exporting the variable:"
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DATA_DIR:13
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_BRANCH:11
+#: xhydro.testing.helpers.TESTDATA_CACHE_DIR:13
+#: xhydro.testing.helpers.TESTDATA_REPO_URL:11
 msgid "or setting the variable at runtime:"
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:1
-msgid "Pooch registry instance for xhydro test data."
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_CACHE_DIR:1
+msgid "Sets the directory to store the testing datasets."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:5
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_CACHE_DIR:3
 msgid ""
-"There are two environment variables that can be used to control the "
-"behaviour of this registry:"
+"If not set, the default location will be used (based on ``platformdirs``,"
+" see :func:`pooch.os_cache`)."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:7
-msgid ""
-"``XHYDRO_DATA_DIR``: If this environment variable is set, it will be used"
-" as the base directory to store the data files. The directory should be "
-"an absolute path (i.e., it should start with ``/``). Otherwise, the "
-"default location will be used (based on ``platformdirs``, see "
-":func:`pooch.os_cache`)."
+#: ../../docstring of xhydro.testing.helpers.TESTDATA_REPO_URL:1
+msgid "Sets the URL of the testing data repository to use when fetching datasets."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:11
-msgid ""
-"``XHYDRO_DATA_UPDATES``: If this environment variable is set, then the "
-"data files will be downloaded even if the upstream hashes do not match. "
-"This is useful if you want to always use the latest version of the data "
-"files."
+#: of xhydro.testing.helpers.audit_url:1
+msgid "Check if the URL is well-formed."
 msgstr ""
 
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:15
-msgid "Examples"
-msgstr ""
-
-#: ../../docstring of xhydro.testing.helpers.DEVEREAUX:16
-msgid "Using the registry to download a file:"
-msgstr ""
-
-#: of xhydro.testing.helpers.generate_registry:1
-msgid "Generate a registry file for the test data."
-msgstr ""
-
-#: of xhydro.testing.helpers.generate_registry:4
+#: of xhydro.testing.helpers.audit_url:4 xhydro.testing.helpers.deveraux:4
 #: xhydro.testing.helpers.load_registry:4
 #: xhydro.testing.helpers.populate_testing_data:4
 #: xhydro.testing.utils.fake_hydrotel_project:4
@@ -113,64 +94,172 @@ msgstr ""
 msgid "Parameters"
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:5
-msgid "filenames"
+#: of xhydro.testing.helpers.audit_url:5
+msgid "url"
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:-1
-msgid "list of str, optional"
+#: of xhydro.testing.helpers.audit_url:-1 xhydro.testing.helpers.audit_url:12
+#: xhydro.testing.helpers.deveraux:-1 xhydro.testing.helpers.load_registry:-1
+msgid "str"
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:6
-msgid ""
-"List of filenames to generate the registry file for. If not provided, all"
-" files under xhydro/testing/data will be used."
+#: of xhydro.testing.helpers.audit_url:6
+msgid "The URL to check."
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:8
-msgid "base_url"
+#: of xhydro.testing.helpers.audit_url:7
+msgid "context"
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:-1
+#: of xhydro.testing.helpers.audit_url:-1
 #: xhydro.testing.helpers.populate_testing_data:-1
 msgid "str, optional"
 msgstr ""
 
-#: of xhydro.testing.helpers.generate_registry:9
-msgid "Base URL to the test data repository."
+#: of xhydro.testing.helpers.audit_url:8
+msgid "Additional context to include in the error message."
+msgstr ""
+
+#: of xhydro.testing.helpers.audit_url:11 xhydro.testing.helpers.deveraux:15
+#: xhydro.testing.helpers.load_registry:11
+#: xhydro.testing.utils.publish_release_notes:16
+msgid "Returns"
+msgstr ""
+
+#: of xhydro.testing.helpers.audit_url:13
+msgid "The URL if it is well-formed."
+msgstr ""
+
+#: of xhydro.testing.helpers.audit_url:16
+msgid "Raises"
+msgstr ""
+
+#: of xhydro.testing.helpers.audit_url:17
+msgid "URLError"
+msgstr ""
+
+#: of xhydro.testing.helpers.audit_url:18
+msgid "If the URL is not well-formed."
+msgstr ""
+
+#: ../../docstring of xhydro.testing.helpers.default_testdata_cache:1
+msgid "Default location for the testing data cache."
+msgstr ""
+
+#: ../../docstring of xhydro.testing.helpers.default_testdata_repo_url:1
+msgid "Default URL of the testing data repository to use when fetching datasets."
+msgstr ""
+
+#: ../../docstring of xhydro.testing.helpers.default_testdata_version:1
+msgid "Default version of the testing data to use when fetching datasets."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:1
+msgid "Pooch registry instance for xhydro test data."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:5 xhydro.testing.helpers.load_registry:7
+#: xhydro.testing.helpers.populate_testing_data:7
+msgid "repo"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:6 xhydro.testing.helpers.load_registry:8
+#: xhydro.testing.helpers.populate_testing_data:8
+msgid "URL of the repository to use when fetching testing datasets."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:7 xhydro.testing.helpers.load_registry:5
+#: xhydro.testing.helpers.populate_testing_data:9
+msgid "branch"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:8
+msgid "Branch of repository to use when fetching testing datasets."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:9
+msgid "cache_dir"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:-1
+msgid "str or Path"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:10
+msgid "The path to the directory where the data files are stored."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:11
+msgid "data_updates"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:-1
+#: xhydro.testing.utils.publish_release_notes:-1
+msgid "bool"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:12
+msgid "If True, allow updates to the data files. Default is True."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:16
+msgid "pooch.Pooch"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:17
+msgid "The Pooch instance for accessing the xhydro testing data."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:21
+msgid ""
+"There are three environment variables that can be used to control the "
+"behaviour of this registry:"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:22
+msgid ""
+"``XHYDRO_TESTDATA_CACHE_DIR``: If this environment variable is set, it "
+"will be used as the base directory to store the data files. The directory"
+" should be an absolute path (i.e., it should start with ``/``). "
+"Otherwise,the default location will be used (based on ``platformdirs``, "
+"see :py:func:`pooch.os_cache`)."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:25
+msgid ""
+"``XHYDRO_TESTDATA_REPO_URL``: If this environment variable is set, it "
+"will be used as the URL of the repository to use when fetching datasets. "
+"Otherwise, the default repository will be used."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:27
+msgid ""
+"``XHYDRO_TESTDATA_BRANCH``: If this environment variable is set, it will "
+"be used as the branch of the repository to use when fetching datasets. "
+"Otherwise, the default branch will be used."
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:31
+msgid "Examples"
+msgstr ""
+
+#: of xhydro.testing.helpers.deveraux:32
+msgid "Using the registry to download a file:"
 msgstr ""
 
 #: of xhydro.testing.helpers.load_registry:1
 msgid "Load the registry file for the test data."
 msgstr ""
 
-#: of xhydro.testing.helpers.load_registry:5
-#: xhydro.testing.utils.publish_release_notes:7
-msgid "file"
-msgstr ""
-
-#: of xhydro.testing.helpers.load_registry:-1
-#: xhydro.testing.helpers.populate_testing_data:-1
-msgid "str or Path, optional"
-msgstr ""
-
 #: of xhydro.testing.helpers.load_registry:6
-msgid ""
-"Path to the registry file. If not provided, the registry file found "
-"within the package data will be used."
+msgid "Branch of the repository to use when fetching testing datasets."
 msgstr ""
 
-#: of xhydro.testing.helpers.load_registry:9
-#: xhydro.testing.helpers.populate_testing_data:15
-#: xhydro.testing.utils.publish_release_notes:14
-msgid "Returns"
-msgstr ""
-
-#: of xhydro.testing.helpers.load_registry:10
+#: of xhydro.testing.helpers.load_registry:12
 msgid "dict"
 msgstr ""
 
-#: of xhydro.testing.helpers.load_registry:11
+#: of xhydro.testing.helpers.load_registry:13
 msgid "Dictionary of filenames and hashes."
 msgstr ""
 
@@ -179,16 +268,6 @@ msgid "Populate the local cache with the testing data."
 msgstr ""
 
 #: of xhydro.testing.helpers.populate_testing_data:5
-msgid "registry"
-msgstr ""
-
-#: of xhydro.testing.helpers.populate_testing_data:6
-msgid ""
-"Path to the registry file. If not provided, the registry file from "
-"package_data will be used."
-msgstr ""
-
-#: of xhydro.testing.helpers.populate_testing_data:7
 msgid "temp_folder"
 msgstr ""
 
@@ -196,36 +275,29 @@ msgstr ""
 msgid "Path, optional"
 msgstr ""
 
-#: of xhydro.testing.helpers.populate_testing_data:8
+#: of xhydro.testing.helpers.populate_testing_data:6
 msgid ""
 "Path to a temporary folder to use as the local cache. If not provided, "
 "the default location will be used."
 msgstr ""
 
-#: of xhydro.testing.helpers.populate_testing_data:9
-msgid "branch"
-msgstr ""
-
 #: of xhydro.testing.helpers.populate_testing_data:10
-msgid ""
-"Branch of hydrologie/xhydro-testdata to use when fetching testing "
-"datasets."
+msgid "Branch of xhydro-testdata to use when fetching testing datasets."
 msgstr ""
 
 #: of xhydro.testing.helpers.populate_testing_data:11
-msgid "_local_cache"
+msgid "local_cache"
+msgstr ""
+
+#: of xhydro.testing.helpers.populate_testing_data:-1
+msgid "Path"
 msgstr ""
 
 #: of xhydro.testing.helpers.populate_testing_data:12
-msgid "Path to the local cache. Defaults to the default location."
-msgstr ""
-
-#: of xhydro.testing.helpers.populate_testing_data:16
-msgid "None"
-msgstr ""
-
-#: of xhydro.testing.helpers.populate_testing_data:17
-msgid "The testing data will be downloaded to the local cache."
+msgid ""
+"The path to the local cache. Defaults to the location set by the "
+"platformdirs library. The testing data will be downloaded to this local "
+"cache."
 msgstr ""
 
 #: ../../apidoc/xhydro.testing.rst:23
@@ -280,8 +352,8 @@ msgstr ""
 msgid ""
 "Uses the directory structure specified in "
 "xhydro/testing/data/hydrotel_structure.yml. Most files are fake, except "
-"for the projet.csv, simulation.csv and output.csv files, which are filled"
-" with default options taken from "
+"for the project.csv, simulation.csv and output.csv files, which are "
+"filled with default options taken from "
 "xhydro/modelling/data/hydrotel_defaults/."
 msgstr ""
 
@@ -294,6 +366,7 @@ msgid "style"
 msgstr ""
 
 #: of xhydro.testing.utils.publish_release_notes:-1
+#, python-brace-format
 msgid "{\"rst\", \"md\"}"
 msgstr ""
 
@@ -303,7 +376,12 @@ msgid ""
 "Markdown."
 msgstr ""
 
+#: of xhydro.testing.utils.publish_release_notes:7
+msgid "file"
+msgstr ""
+
 #: of xhydro.testing.utils.publish_release_notes:-1
+#, python-brace-format
 msgid "{os.PathLike, StringIO, TextIO}, optional"
 msgstr ""
 
@@ -318,6 +396,7 @@ msgid "changes"
 msgstr ""
 
 #: of xhydro.testing.utils.publish_release_notes:-1
+#, python-brace-format
 msgid "{str, os.PathLike}, optional"
 msgstr ""
 
@@ -327,15 +406,25 @@ msgid ""
 "found. Assumes a relative path otherwise."
 msgstr ""
 
-#: of xhydro.testing.utils.publish_release_notes:15
+#: of xhydro.testing.utils.publish_release_notes:12
+msgid "latest"
+msgstr ""
+
+#: of xhydro.testing.utils.publish_release_notes:13
+msgid ""
+"Whether to return the release notes of the latest version or all the "
+"content of the changelog."
+msgstr ""
+
+#: of xhydro.testing.utils.publish_release_notes:17
 msgid "str or None"
 msgstr ""
 
-#: of xhydro.testing.utils.publish_release_notes:16
+#: of xhydro.testing.utils.publish_release_notes:18
 msgid "Formatted release notes as a string, if `file` is not provided."
 msgstr ""
 
-#: of xhydro.testing.utils.publish_release_notes:20
+#: of xhydro.testing.utils.publish_release_notes:22
 msgid ""
 "This function exists solely for development purposes. Adapted from "
 "xclim.testing.utils.publish_release_notes."

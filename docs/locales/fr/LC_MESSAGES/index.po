@@ -1,13 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.0\n"
+"Project-Id-Version: xHydro 0.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -16,16 +17,32 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../index.rst:4
 msgid "Contents:"
-msgstr "Contenu:"
+msgstr ""
 
 #: ../../index.rst:19
 msgid "All Modules"
-msgstr "Tous les modules"
+msgstr ""
 
 #: ../../index.rst:2
 msgid "Welcome to xHydro's documentation!"
-msgstr "Bienvenue dans la documentation de xHydro !"
+msgstr ""
+
+#: ../../index.rst:26
+msgid "Documentation and Support"
+msgstr ""
+
+#: ../../index.rst:27
+msgid "`GitHub Repository <https://github.com/hydrologie/xhydro>`_"
+msgstr ""
+
+#: ../../index.rst:28
+msgid "`PyPI Package <https://pypi.org/project/xhydro/>`_"
+msgstr ""
+
+#: ../../index.rst:29
+msgid "`Conda Package <https://anaconda.org/conda-forge/xhydro>`_"
+msgstr ""
