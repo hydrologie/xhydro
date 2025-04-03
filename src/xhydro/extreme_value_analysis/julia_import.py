@@ -82,13 +82,13 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
 
 # It was not necessary to add a dependency dictionary as we only need Extremes.jl, however this mechanism is more
 # scalable in case we need to add many other julia dependencies in the future
-deps = {  # TODO fix version while issue #292 is solved
-    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "1.0.3"},
-    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "1.10.0"},
+deps = {
+    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "=1.11.0"},
+    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "=1.0.3"},
 }
 for dependency, info in deps.items():
-    if not check_function_output(juliapkg.deps.status, dependency):
-        juliapkg.add(dependency, info["uuid"], version=info.get("version"))
+    juliapkg.add(dependency, info["uuid"], version=info.get("version"))
+
 juliapkg.resolve()
 jl = cast(ModuleType, jl)
 jl_version = (

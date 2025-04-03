@@ -129,11 +129,9 @@ ESMF_VERSION := $(shell cat $(ESMFMKFILE) | grep "ESMF_VERSION_STRING=" | awk -F
 install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
 	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
 
-#install: install-esmpy ## install the package to the active Python's site-packages
-#	python -m pip install .
+install: install-esmpy ## install the package to the active Python's site-packages
+	python -m pip install .
 
-#dev: install-esmpy ## install the package to the active Python's site-packages
-#	python -m pip install --editable .[all]
-#	pre-commit install
-dev: python -m pip install --editable .[all]  # TODO: If this fails, change instructions in CONTRIBUTING.rst
+dev: install-esmpy ## install the package to the active Python's site-packages
+	python -m pip install --editable .[all]
 	pre-commit install

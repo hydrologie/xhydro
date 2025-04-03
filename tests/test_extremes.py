@@ -6,7 +6,7 @@ import xarray as xr
 @pytest.mark.requires_julia
 class Testfit:
 
-    def test_stationary_grv(self, data_fre):
+    def test_stationary_gev(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
