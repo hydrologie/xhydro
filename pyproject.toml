@@ -46,7 +46,7 @@ dependencies = [
   "planetary-computer",
   "pooch >=1.8.0",
   "dask <=2024.10.0",
-  "dask-geopandas <=0.4.2",
+  "dask-geopandas <=0.4.3",
   "intake-xarray <=0.7.0",
   "questionary <=2.1.0",
   "pystac <1.12.0", # Temporary pin until it is fixed.
