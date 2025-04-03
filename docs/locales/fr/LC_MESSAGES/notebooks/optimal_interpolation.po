@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/optimal_interpolation.ipynb:9
 msgid "Optimal interpolation"
-msgstr ""
+msgstr "Interpolation optimale"
 
 #: ../../notebooks/optimal_interpolation.ipynb:20
 msgid ""
@@ -34,6 +34,14 @@ msgid ""
 " actual observational records, ensuring that the reanalysis precipitation"
 " is corrected over the entire domain."
 msgstr ""
+"L'interpolation optimale est une méthode utilisée pour combiner des "
+"données spatialement distribuées (le \"champ d'essai'\") avec des observations "
+"basées sur des points. Cette technique ajuste l'ensemble du champ en incorporant "
+"les écarts entre les données observées et le champ aux points d'observation, "
+"ce qui aboutit à un ajustement statistiquement optimal du champ d'essai. Par exemple, "
+"elle peut être utilisée pour fusionner les données de précipitation d'une réanalyse (comme ERA5) "
+"avec des données observées réelles, assurant que la précipitation de la réanalyse "
+"est corrigée sur l'ensemble du domaine."
 
 #: ../../notebooks/optimal_interpolation.ipynb:23
 msgid ""
@@ -46,6 +54,12 @@ msgid ""
 " outputs) using optimal interpolation techniques, following the approach "
 "outlined in Lachance-Cloutier et al. (2017)."
 msgstr ""
+"Cette page montre comment utiliser ``xHydro`` pour réaliser une interpolation optimale "
+"pour la modélisation hydrologique en intégrant des simulations de type champ d'essai avec des observations. "
+"Dans ce cas, le champ d'essai est constitué des sorties d'un modèle hydrologique "
+"distribué, tandis que les observations correspondent à des mesures réelles aux stations "
+"hydrométriques. L'objectif est de corriger le champ d'essai (c'est-à-dire les sorties du modèle hydrologique) "
+"en utilisant des techniques d'interpolation optimale, selon l'approche décrite dans Lachance-Cloutier et al. (2017)."
 
 #: ../../notebooks/optimal_interpolation.ipynb:26
 msgid ""
@@ -54,12 +68,18 @@ msgid ""
 "estimation of daily streamflow for ungauged rivers in southern Quebec "
 "(Canada). Journal of hydrology, 550, pp.294-306.*"
 msgstr ""
+"*Lachance-Cloutier, S., Turcotte, R. and Cyr, J.F., 2017. Combining "
+"streamflow observations and hydrologic simulations for the retrospective "
+"estimation of daily streamflow for ungauged rivers in southern Quebec "
+"(Canada). Journal of hydrology, 550, pp.294-306.*"
 
 #: ../../notebooks/optimal_interpolation.ipynb:28
 msgid ""
 "Optimal interpolation relies on a set of hyperparameters. Some of these "
 "are more complex than others, so let’s break down the main steps."
 msgstr ""
+"L'interpolation optimale repose sur un ensemble d'hyperparamètres. Certains d'entre eux "
+"sont plus complexes que d'autres, alors décomposons les étapes principales."
 
 #: ../../notebooks/optimal_interpolation.ipynb:30
 msgid ""
@@ -71,6 +91,13 @@ msgid ""
 "streamflow during extrapolation. We will reverse this transformation "
 "later in the process."
 msgstr ""
+"La première étape consiste à calculer les différences (ou \"écarts\") entre "
+"le débit observé et simulé aux stations où les deux valeurs sont "
+"disponibles. Ces différences doivent être mises à l'échelle en fonction de la surface du bassin versant pour "
+"s'assurer que les erreurs sont relatives et peuvent être correctement interpolées. De plus, "
+"nous prenons le logarithme de ces valeurs mises à l'échelle pour éviter les débits "
+"négatifs lors de l'extrapolation. Nous inverserons cette transformation "
+"plus tard dans le processus."
 
 #: ../../notebooks/optimal_interpolation.ipynb:32
 msgid ""
@@ -78,25 +105,24 @@ msgid ""
 "available for our observation and simulation sites. These include "
 "estimates of:"
 msgstr ""
+"Ensuite, nous avons besoin de quelques informations supplémentaires, qui peuvent ou non être "
+"disponibles pour nos sites d'observation et de simulation. Cela inclut des estimations de :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:34
 msgid "The variance of the observations at the gauged sites."
-msgstr ""
+msgstr "La variance des observations aux sites jaugeables."
 
 #: ../../notebooks/optimal_interpolation.ipynb:35
-msgid ""
-"The variance of the simulated flows at the observation sites. This is a "
-"vector of size 3 in this example, with one value per observation site. "
-"Note that this variance refers to the simulations at the observation "
-"sites, not the variance of the observations themselves."
-msgstr ""
+msgid "The variance of the simulated flows at the observation sites."
+msgstr "La variance des débits simulés aux sites d'observation."
 
 #: ../../notebooks/optimal_interpolation.ipynb:36
 msgid ""
-"The variance of the simulated flows at the estimation sites. This is a "
-"vector of size 5 in this example, with one value per simulation site, "
+"The variance of the simulated flows at the estimation sites, "
 "including those that also correspond to an observation site."
 msgstr ""
+"La variance des débits simulés aux sites d'estimation, "
+"y compris ceux qui correspondent également à un site d'observation."
 
 #: ../../notebooks/optimal_interpolation.ipynb:38
 msgid ""
@@ -105,6 +131,10 @@ msgid ""
 "associated with the instrumentation at gauged sites. These parameters can"
 " also be fine-tuned based on past experience or through trial-and-error."
 msgstr ""
+"Ces valeurs peuvent être estimées dans des applications réelles en utilisant de longues séries temporelles "
+"de débits transformés logarithmiquement et mis à l'échelle, ou à partir des erreurs de mesure "
+"associées à l'instrumentation aux sites jaugeables. Ces paramètres peuvent "
+"également être ajustés en fonction de l'expérience passée ou par essais et erreurs."
 
 #: ../../notebooks/optimal_interpolation.ipynb:40
 msgid ""
@@ -116,14 +146,22 @@ msgid ""
 "while a station farther away will have a lower correlation. Therefore, we"
 " need a covariance function that estimates:"
 msgstr ""
+"La dernière composante dont nous avons besoin est la fonction de covariance "
+"d'erreur (ECF). En termes simples, l'interpolation optimale prend en compte "
+"la distance entre une observation (ou plusieurs observations) et le site où "
+"nous devons estimer une nouvelle valeur de débit. Intuitivement, une station "
+"de simulation proche d'une station d'observation devrait avoir une forte "
+"correlation avec celle-ci, tandis qu'une station plus éloignée aura une "
+"correlation plus faible. Par conséquent, nous avons besoin d'une fonction de "
+"covariance qui estime :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:42
 msgid "The degree of covariability between an observed and simulated point."
-msgstr ""
+msgstr "Le degré de covariabilité entre un point observé et un point simulé."
 
 #: ../../notebooks/optimal_interpolation.ipynb:43
 msgid "The distance between these points."
-msgstr ""
+msgstr "La distance entre ces points."
 
 #: ../../notebooks/optimal_interpolation.ipynb:45
 msgid ""
@@ -132,6 +170,10 @@ msgid ""
 "its parameters will be adjusted to best represent the covariance between "
 "points."
 msgstr ""
+"La fonction ECF est essentielle pour cela, et plusieurs modèles existent "
+"dans la littérature. Dans de nombreux cas, une forme de modèle sera choisie "
+"*a priori*, et ses paramètres seront ajustés pour mieux représenter la "
+"covariance entre les points."
 
 #: ../../notebooks/optimal_interpolation.ipynb:47
 msgid ""
@@ -142,10 +184,16 @@ msgid ""
 "calibrated (under normal circumstances), and *h* represents the distance "
 "between points:"
 msgstr ""
+"Dans cet exemple de test, nous n'avons pas suffisamment de points ou de "
+"pas de temps pour développer un modèle (ou une paramétrisation) significatif "
+"à partir des données. En conséquence, nous allons imposer un modèle. "
+"``xHydro`` inclut quatre modèles intégrés, où ``par[0]`` et ``par[1]`` sont "
+"les paramètres du modèle à calibrer (dans des circonstances normales), et "
+"*h* représente la distance entre les points :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:49
 msgid "**Model 1**:"
-msgstr ""
+msgstr "**Modèle 1**:"
 
 #: ../../notebooks/optimal_interpolation.ipynb:51
 msgid ""
@@ -155,10 +203,15 @@ msgid ""
 "Lachance-Cloutier et al. 2017.}\n"
 "\\end{flalign*}"
 msgstr ""
+"\\begin{flalign*}\n"
+"&\\text{par}[0] \\cdot \\left( 1 + \\frac{h}{\\text{par}[1]} \\right) "
+"\\cdot \\exp\\left(- \\frac{h}{\\text{par}[1]} \\right) && \\text{— D'après "
+"Lachance-Cloutier et al. 2017.}\n"
+"\\end{flalign*}"
 
 #: ../../notebooks/optimal_interpolation.ipynb:58
 msgid "**Model 2**:"
-msgstr ""
+msgstr "**Modèle 2**:"
 
 #: ../../notebooks/optimal_interpolation.ipynb:60
 msgid ""
@@ -167,10 +220,14 @@ msgid ""
 "\\frac{h}{\\text{par}[1]} \\right)^2 \\right) &&\n"
 "\\end{flalign*}"
 msgstr ""
+"\\begin{flalign*}\n"
+"&\\text{par}[0] \\cdot \\exp\\left( -0.5 \\cdot \\left( "
+"\\frac{h}{\\text{par}[1]} \\right)^2 \\right) &&\n"
+"\\end{flalign*}"
 
 #: ../../notebooks/optimal_interpolation.ipynb:67
 msgid "**Model 3**:"
-msgstr ""
+msgstr "**Modèle 3**:"
 
 #: ../../notebooks/optimal_interpolation.ipynb:69
 msgid ""
@@ -179,10 +236,14 @@ msgid ""
 "&&\n"
 "\\end{flalign*}"
 msgstr ""
+"\\begin{flalign*}\n"
+"&\\text{par}[0] \\cdot \\exp\\left( -\\frac{h}{\\text{par}[1]} \\right) "
+"&&\n"
+"\\end{flalign*}"
 
 #: ../../notebooks/optimal_interpolation.ipynb:76
 msgid "**Model 4**:"
-msgstr ""
+msgstr "**Modèle 4**:"
 
 #: ../../notebooks/optimal_interpolation.ipynb:78
 msgid ""
@@ -191,52 +252,62 @@ msgid ""
 "-\\frac{h^{\\text{par}[1]}}{\\text{par}[0]} \\right) &&\n"
 "\\end{flalign*}"
 msgstr ""
+"\\begin{flalign*}\n"
+"&\\text{par}[0] \\cdot \\exp\\left( "
+"-\\frac{h^{\\text{par}[1]}}{\\text{par}[0]} \\right) &&\n"
+"\\end{flalign*}"
 
 #: ../../notebooks/optimal_interpolation.ipynb:119
 msgid "Example with HYDROTEL data"
-msgstr ""
+msgstr "Exemple avec les données d'HYDROTEL"
 
 #: ../../notebooks/optimal_interpolation.ipynb:130
 msgid ""
 "Optimal interpolation relies on both observed and simulated datasets and "
 "requires the following information:"
 msgstr ""
+"L'interpolation optimale repose sur les jeux de données observés et simulés "
+"et nécessite les informations suivantes :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:132
 msgid "Observed data for the gauged locations"
-msgstr ""
+msgstr "Données observées pour les sites mesurés"
 
 #: ../../notebooks/optimal_interpolation.ipynb:133
 msgid "Simulated data for all locations"
-msgstr ""
+msgstr "Données simulées pour tous les sites"
 
 #: ../../notebooks/optimal_interpolation.ipynb:134
 msgid "Catchment areas (for error scaling)"
-msgstr ""
+msgstr "Aires de bassin (pour mettre à l'échelle les erreurs)"
 
 #: ../../notebooks/optimal_interpolation.ipynb:135
 msgid "Catchment latitude and longitude (to develop the spatial error model)"
-msgstr ""
+msgstr "Latitude et longitude du bassin (pour développer le modèle d'erreur spatial)"
 
 #: ../../notebooks/optimal_interpolation.ipynb:137
 msgid ""
 "This example will use a subset of data generated using the HYDROTEL "
 "hydrological model."
 msgstr ""
+"Cet exemple utilisera un sous-ensemble de données générées à l'aide du "
+"modèle hydrologique HYDROTEL."
 
 #: ../../notebooks/optimal_interpolation.ipynb:204
 msgid "There are three datasets, as well as a list:"
-msgstr ""
+msgstr "Il y a trois jeux de données, ainsi qu'une liste :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:206
 msgid "**qobs**: The dataset containing point observations and station metadata."
-msgstr ""
+msgstr "**qobs** : Le jeu de données contenant les observations ponctuelles et les métadonnées des stations."
 
 #: ../../notebooks/optimal_interpolation.ipynb:207
 msgid ""
 "**qsim**: The dataset containing the background field simulations (e.g. "
 "the raw HYDROTEL results), including simulated station metadata."
 msgstr ""
+"**qsim** : Le jeu de données contenant les simulations du champ d'essai (ici, "
+"les résultats bruts de HYDROTEL), y compris les métadonnées des stations simulées."
 
 #: ../../notebooks/optimal_interpolation.ipynb:208
 msgid ""
@@ -246,16 +317,22 @@ msgid ""
 " distributed simulations often employ coded or sequentially numbered "
 "identifiers."
 msgstr ""
+"**station_correspondence** : Un jeu de données qui lie simplement les identifiants "
+"des stations entre les stations observées et simulées. Cela est nécessaire car les stations "
+"observées utilisent des identifiants \"réels\", tandis que les simulations distribuées "
+"utilisent souvent des identifiants codés ou numérotés séquentiellement."
 
 #: ../../notebooks/optimal_interpolation.ipynb:209
 msgid ""
 "**observation_stations**: A list of the stations from the observation set"
 " that we want to use to build the optimal interpolation."
 msgstr ""
+"**observation_stations** : Une liste des stations du jeu d'observations "
+"que nous voulons utiliser pour construire l'interpolation optimale."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1706
 msgid "WARNING"
-msgstr ""
+msgstr "AVERTISSEMENT"
 
 #: ../../notebooks/optimal_interpolation.ipynb:1708
 msgid ""
@@ -263,31 +340,39 @@ msgid ""
 "progress and is highly hard-coded, particularly regarding inputs. Expect "
 "significant changes as the code is refactored and improved."
 msgstr ""
+"Le module d'interpolation optimale dans ``xHydro`` est encore en "
+"développement et est fortement hard-codé, notamment en ce qui concerne les "
+"entrées. Attendez-vous à des changements significatifs à mesure que le code est "
+"refactorisé et amélioré."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1714
 msgid "The datasets need to follow specific formatting requirements."
-msgstr ""
+msgstr "Les jeux de données doivent respecter des exigences de formatage spécifiques."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1716
 msgid ""
 "For the observed dataset (``qobs`` in this example), the following "
 "conditions must be met:"
 msgstr ""
+"Pour le jeu de données observées (``qobs`` dans cet exemple), les "
+"conditions suivantes doivent être remplies :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:1718
 #: ../../notebooks/optimal_interpolation.ipynb:1726
 msgid "The dimensions should be ``station`` and ``time``."
-msgstr ""
+msgstr "Les dimensions doivent être ``station`` et ``time``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1719
 msgid "The streamflow data must be stored in a variable called ``streamflow``."
-msgstr ""
+msgstr "Les données de débit doivent être stockées dans une variable appelée ``streamflow``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1720
 msgid ""
 "The catchment drainage area must be represented in a variable named "
 "``drainage_area``."
 msgstr ""
+"L'aire de drainage du bassin doit être représentée dans une variable appelée "
+"``drainage_area``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1721
 msgid ""
@@ -295,6 +380,9 @@ msgid ""
 "``centroid_lat`` and ``centroid_lon`` (these are not the hydrometric "
 "station coordinates)."
 msgstr ""
+"La latitude et la longitude des centroïdes du bassin doivent être stockées sous "
+"``centroid_lat`` et ``centroid_lon`` (ce ne sont pas les coordonnées des "
+"stations hydrométriques)."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1722
 msgid ""
@@ -302,28 +390,37 @@ msgid ""
 "identifier for each station. This will be used to match the observation "
 "stations with their corresponding simulated stations."
 msgstr ""
+"Une variable appelée ``station_id`` doit exister, contenant un identifiant "
+"unique pour chaque station. Cela sera utilisé pour faire correspondre les "
+"stations d'observation avec leurs stations simulées correspondantes."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1724
 msgid ""
 "For the simulation dataset (``qsim`` in this example), the following "
 "requirements apply:"
 msgstr ""
+"Pour le jeu de données simulées (``qsim`` dans cet exemple), les "
+"exigences suivantes s'appliquent :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:1727
 msgid "The streamflow data should be in a variable named ``streamflow``."
-msgstr ""
+msgstr "Les données de débit doivent être dans une variable appelée ``streamflow``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1728
 msgid ""
 "The drainage area for each catchment, as simulated by the model, should "
 "be stored in a variable called ``drainage_area``."
 msgstr ""
+"L'aire' de drainage pour chaque bassin, telle que simulée par le modèle, doit "
+"être stockée dans une variable appelée ``drainage_area``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1729
 msgid ""
 "The centroids of the catchments must be represented by the coordinates "
 "``lat`` and ``lon``."
 msgstr ""
+"Les centroïdes des bassins doivent être représentés par les coordonnées "
+"``lat`` et ``lon``."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1730
 msgid ""
@@ -331,20 +428,25 @@ msgid ""
 "identifier for each simulated station, used to map it to the observed "
 "stations."
 msgstr ""
+"Une variable appelée ``station_id`` doit exister, contenant un identifiant "
+"unique pour chaque station simulée, utilisée pour la lier aux stations "
+"observées."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1732
 msgid ""
 "The correspondence table (``station_correspondence`` in this example) "
 "must include:"
 msgstr ""
+"La table de correspondance (``station_correspondence`` dans cet exemple) "
+"doit inclure :"
 
 #: ../../notebooks/optimal_interpolation.ipynb:1734
 msgid "``station_id`` for the observed stations."
-msgstr ""
+msgstr "``station_id`` pour les stations observées."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1735
 msgid "``reach_id`` for the simulated stations."
-msgstr ""
+msgstr "``reach_id`` pour les stations simulées."
 
 #: ../../notebooks/optimal_interpolation.ipynb:1737
 msgid ""
@@ -360,6 +462,17 @@ msgid ""
 " cores used will be limited to ``([number-of-available-cores / 2] - 1)`` "
 "to avoid overloading your computer."
 msgstr ""
+"L'interpolation optimale dans ``xHydro`` est principalement accessible "
+"via la fonction ``xhydro.optimal_interpolation.optimal_interpolation_fun.execute_interpolation``. "
+"Lors de la validation croisée leave-one-out sur plusieurs bassins, "
+"l'ensemble du processus d'interpolation est répété pour chaque bassin. "
+"Dans chaque itération, une station d'observation est laissée de côté et "
+"gardée indépendante pour la validation. Ce processus peut être long, mais "
+"peut être parallélisé en ajustant le flag approprié et en définissant "
+"le nombre de cœurs CPU en fonction de la capacité de votre machine. Par défaut, "
+"le code n'utilise qu'un seul cœur, mais si vous choisissez d'en augmenter "
+"le nombre, le nombre maximal de cœurs utilisés sera limité à ``([nombre-de-coeurs / 2] - 1)`` "
+"pour éviter de surcharger votre ordinateur."
 
 #: ../../notebooks/optimal_interpolation.ipynb:2586
 msgid ""
@@ -368,9 +481,15 @@ msgid ""
 "any requested percentile to assess uncertainty. Let's now explore how the"
 " optimal interpolation has changed the streamflow at one catchment."
 msgstr ""
+"Le jeu de données retourné contient une variable appelée ``streamflow`` "
+"avec les dimensions ``[percentile, station_id, time]``, fournissant des estimations pour "
+"tout percentile demandé pour évaluer l'incertitude. Explorons maintenant comment l'interpolation optimale "
+"a modifié le débit dans un bassin."
 
 #: ../../notebooks/optimal_interpolation.ipynb:2653
 msgid ""
 "We can observe that optimal interpolation generally helped bring the "
 "model simulation closer to the observed data."
 msgstr ""
+"Nous pouvons observer que l'interpolation optimale a généralement aidé à rapprocher "
+"la simulation du modèle des données observées."

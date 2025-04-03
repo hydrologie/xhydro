@@ -348,10 +348,12 @@ msgid ""
 "The function ``xhydro.frequency_analysis.regional.calc_h_z`` is used to "
 "compute the *H-Score* and *Z-Score* for the regional frequency analysis."
 msgstr ""
+"La fonction ``xhydro.frequency_analysis.regional.calc_h_z`` est utilisée "
+"pour calculer le *H-Score* et le *Z-Score* pour l'analyse fréquentielle régionale."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2954
 msgid "WARNING"
-msgstr ""
+msgstr "AVERTISSEMENT"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2956
 msgid ""
@@ -362,6 +364,12 @@ msgid ""
 "currently be included in the ``xHydro`` requirements and must be "
 "installed independently."
 msgstr ""
+"L'argument ``kap`` dans la fonction "
+"``xhydro.frequency_analysis.regional.calc_h_z`` attend un objet de "
+"distribution Kappa3 généré à l'aide de ``lmoments3.distr.KappaGen()``. "
+"En raison de problèmes de licence, la librairie ``lmoments3`` ne peut "
+"pas être incluse dans les exigences de ``xHydro`` et doit être installée "
+"indépendamment."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:3537
 msgid ""
@@ -371,6 +379,11 @@ msgid ""
 "thresholds are set to 1 for H and 1.64 for Z. However, these thresholds "
 "can be customized to suit the specific requirements of the analysis."
 msgstr ""
+"Nous pouvons filtrer les résultats pour inclure uniquement les données "
+"ayant des scores H et Z inférieurs aux seuils donnés en utilisant la "
+"fonction ``xhydro.frequency_analysis.regional.mask_h_z``. Par défaut, les "
+"seuils sont définis à 1 pour H et 1,64 pour Z. Cependant, ces seuils "
+"peuvent être personnalisés en fonction des exigences spécifiques de l'analyse fréquentielle."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:3648
 msgid ""
@@ -383,14 +396,24 @@ msgid ""
 "exclude any regions with less than a specified number of stations. By "
 "default, this threshold is set to 5."
 msgstr ""
+"La dernière étape de l'analyse fréquentielle régionale est similaire à "
+"l'analyse fréquentielle locale, mais au lieu d'utiliser "
+"``xhydro.frequency_analysis.local.parametric_quantiles``, nous utilisons "
+"``xhydro.frequency_analysis.regional.calculate_rp_from_afr`` pour calculer"
+" les périodes de retour. De plus, pour éviter de réaliser l'analyse sur "
+"des régions trop petites, l'argument ``remove_small_regions`` peut être "
+"utilisé pour exclure les régions ayant moins d'un nombre spécifié de stations. "
+"Par défaut, ce seuil est fixé à 5."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4837
 msgid "Let's plot results for one station, comparing local and regional analyses."
 msgstr ""
+"Affichons les résultats pour une station, en comparant les analyses "
+"locales et régionales."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4923
 msgid "Uncertainties"
-msgstr ""
+msgstr "Incertitudes"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4925
 msgid ""
@@ -402,10 +425,17 @@ msgid ""
 "confidence intervals for parameter estimates, to ensure robust "
 "conclusions."
 msgstr ""
+"Les incertitudes sont un aspect important de l'analyse fréquentielle et doivent être"
+" prises en compte lors de l'interprétation des résultats. Ces incertitudes proviennent souvent "
+"de la qualité des données, du choix de la distribution et de l'estimation des "
+"paramètres. Bien que les visualisations puissent fournir des informations sur l'ajustement du modèle,"
+" il est essentiel de quantifier et de prendre en compte les incertitudes, telles que "
+"les intervalles de confiance pour les estimations des paramètres, afin d'assurer des "
+"conclusions robustes."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4928
 msgid "a) Bootstrapping the observations"
-msgstr ""
+msgstr "a) Bootstrap des observations"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4930
 msgid ""
@@ -417,6 +447,13 @@ msgid ""
 "generate multiple datasets, which can then be used to assess the "
 "variability in the model's parameters and results."
 msgstr ""
+"Une méthode pour quantifier les incertitudes consiste à effectuer un bootstrap des "
+"observations. Dans cet exemple, nous effectuerons le bootstrap un petit "
+"nombre de fois pour illustrer le processus, bien qu'en pratique, un nombre plus élevé "
+"d'itérations (par exemple, 5000) soit recommandé pour obtenir des estimations plus fiables. "
+"Le bootstrap consiste à rééchantillonner les données observées avec remplacement pour "
+"générer plusieurs ensembles de données, qui peuvent ensuite être utilisés pour évaluer la "
+"variabilité des paramètres et des résultats du modèle."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:4932
 msgid ""
@@ -430,10 +467,19 @@ msgid ""
 "``xhydro.frequency_analysis.uncertainties.calc_q_iter`` is used to "
 "calculate the return periods based on those L-moments."
 msgstr ""
+"Cela peut être réalisé en appelant "
+"``xhydro.frequency_analysis.uncertainties.bootstrap_obs``. Une différence "
+"importante avec les analyses locales est qu'aucune étape d'ajustement n'est "
+"nécessaire pour les analyses fréquentielles régionales, ce qui rend cette fonction "
+"beaucoup plus rapide. Les résultats sont obtenus en utilisant d'abord "
+"``xhydro.frequency_analysis.uncertainties.calc_moments_iter`` pour calculer "
+"les L-moments pour tous les échantillons de bootstrap. Ensuite, "
+"``xhydro.frequency_analysis.uncertainties.calc_q_iter`` est utilisé pour "
+"calculer les périodes de retour à partir de ces L-moments."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6194
 msgid "b) Using multiple regions"
-msgstr ""
+msgstr "b) Utilisation de plusieurs régions"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6196
 msgid ""
@@ -446,6 +492,13 @@ msgid ""
 "regions can help in evaluating uncertainty in the regional frequency "
 "analysis."
 msgstr ""
+"Une autre approche pour estimer l'incertitude consiste à considérer plusieurs "
+"régions pour un bassin versant d'intérêt. Cela peut être réalisé en appliquant "
+"différentes méthodes de clustering ou en effectuant une procédure de jackknife "
+"sur la liste des stations. Comme ce processus peut être intensif en termes "
+"de calcul, nous présentons ici un exemple simplifié pour illustrer le potentiel de "
+"cette méthode. L'objectif principal est de démontrer comment la prise en compte de plusieurs "
+"régions peut aider à évaluer l'incertitude dans l'analyse fréquentielle régionale."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6199
 msgid ""
@@ -456,40 +509,56 @@ msgid ""
 "allowing us to evaluate how the exclusion of different stations impacts "
 "the groupings."
 msgstr ""
+"Tout d'abord, nous utiliserons "
+"``xhydro.frequency_analysis.uncertainties.generate_combinations`` sur les "
+"résultats de notre ACP pour générer des listes de stations. Cette fonction crée "
+"des combinaisons qui excluent un certain nombre de stations à chaque fois, "
+"nous permettant ainsi d'évaluer comment l'exclusion de différentes stations "
+"affecte les regroupements."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6329
 msgid ""
 "Next, we will combine those lists with three clustering methods and, for "
 "each method, we'll try to change some of the parameters."
 msgstr ""
+"Ensuite, nous combinerons ces listes avec trois méthodes de clustering et, pour "
+"chaque méthode, nous essaierons de modifier certains des paramètres."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6376
 msgid ""
 "The next steps follow a similar approach to the previous ones, but now "
 "with multiple regions."
 msgstr ""
+"Les étapes suivantes suivent une approche similaire à celles précédentes, mais maintenant "
+"avec plusieurs régions."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6942
 msgid "c) Combining the bootstrap with multiple regions"
-msgstr ""
+msgstr "c) Combinaison du bootstrap avec plusieurs régions"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6944
 msgid ""
 "It is possible to combine both methods—bootstrapping and multiple "
 "regions—by integrating the following:"
 msgstr ""
+"Il est possible de combiner les deux méthodes—bootstrap et plusieurs "
+"régions—en intégrant les éléments suivants :"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6946
 msgid ""
 "Bootstrapped L-moments from "
 "``xhydro.frequency_analysis.uncertainties.calc_moments_iter``."
 msgstr ""
+"Les L-moments bootstrapés de "
+"``xhydro.frequency_analysis.uncertainties.calc_moments_iter``."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6947
 msgid ""
 "Masked results from ``xhydro.frequency_analysis.regional.group_ds`` that "
 "have been filtered based on the H and Z-Scores."
 msgstr ""
+"Les résultats masqués de ``xhydro.frequency_analysis.regional.group_ds`` qui "
+"ont été filtrés en fonction des scores H et Z."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:6949
 msgid ""
@@ -500,11 +569,17 @@ msgid ""
 " 35 bootstraps and roughly 220 regions, this will generate a total of "
 "around 7,700 samples for further analysis."
 msgstr ""
+"Lorsque nous combinons ces méthodes, "
+"``xhydro.frequency_analysis.uncertainties.calc_q_iter`` vérifiera dans combien "
+"de valeurs distinctes de ``group_id`` la station est présente et empilera "
+"les données en conséquence avec les échantillons bootstrapés. Par exemple, si nous avons "
+"35 bootstrap et environ 220 régions, cela générera un total d'environ 7 700 échantillons "
+"pour une analyse ultérieure."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:7506
 msgid "d) Comparison"
-msgstr ""
+msgstr "d) Comparaison"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:7508
 msgid "Let's show the difference between approaches."
-msgstr ""
+msgstr "Illustrons la différence entre les approches."
