@@ -18,6 +18,7 @@ Bug fixes
 ^^^^^^^^^
 * Patched the outputs of `xh.optimal_interpolation.execute` to remove a superfluous `station` dimension and to ensure that the `time` dimension has coordinates. (:pull:`274`).
   * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
+* Added attributes to variables instead of global attributes in `xh.extreme_value_analysis`. Modified dimension names and introduced a new dimension, `return_period`, to the results of `xh.extreme_value_analysis.return_level()`. (:pull:`283`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^

@@ -15,7 +15,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -46,7 +46,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -81,7 +81,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["Exceedance_lower"].attrs["method"] == "Maximum likelihood"
         assert (
             (p["Exceedance_lower"] < p["Exceedance"])
             & (p["Exceedance"] < p["Exceedance_upper"])
@@ -117,7 +117,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -155,7 +155,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
@@ -251,7 +251,7 @@ class Testfit:
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert np.isnan(p.to_array().values).all()
         np.testing.assert_array_equal(
             p.coords["dparams"].values,
@@ -290,11 +290,11 @@ class Testfit:
             )
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert np.isnan(p.to_array().values).all()
         np.testing.assert_array_equal(
-            p.coords["return_level"].values, np.array([1897, 1898, 1899, 1900, 1901])
+            p.coords["Year"].values, np.array([1897, 1898, 1899, 1900, 1901])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -317,16 +317,14 @@ class TestRtnlv:
         )
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert p.to_array().shape[1] == 1
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
-        np.testing.assert_array_equal(
-            p.coords["return_level"].values, np.array(["return_level"])
-        )
+        np.testing.assert_array_equal(p.coords["return_period"].values, np.array([100]))
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
@@ -348,15 +346,15 @@ class TestRtnlv:
         )
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
         np.testing.assert_array_equal(
-            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["Year"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -390,11 +388,11 @@ class TestRtnlv:
         )
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
         np.testing.assert_array_equal(
-            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["Year"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]

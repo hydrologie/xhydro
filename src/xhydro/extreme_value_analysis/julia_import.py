@@ -88,6 +88,7 @@ deps = {
 }
 for dependency, info in deps.items():
     juliapkg.add(dependency, info["uuid"], version=info.get("version"))
+
 juliapkg.resolve()
 jl = cast(ModuleType, jl)
 jl_version = (

@@ -8,7 +8,6 @@ from typing import Any
 import numpy as np
 import scipy.stats
 import xarray as xr
-from xclim.core.formatting import prefix_attrs
 from xclim.indices.stats import get_dist
 
 try:
@@ -240,6 +239,13 @@ def fit(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
+    dist_scp = get_dist(dist)
+
+    attrs_dist = dict(
+        dist=dist_scp.name,
+        method=METHOD_NAMES[method].capitalize(),
+    )
+
     for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
@@ -264,9 +270,27 @@ def fit(
             ),
             dask_gufunc_kwargs={"output_sizes": {"dparams": len(dist_params)}},
         )
-        result_params = xr.merge([result_params, results[0]])
-        result_lower = xr.merge([result_lower, results[1]])
-        result_upper = xr.merge([result_upper, results[2]])
+        par, low, upp = results
+
+        par.attrs.update(dict(long_name=f"Distribution parameters") | attrs_dist)
+        low.attrs.update(
+            dict(
+                long_name="Lower limit of confidence interval for the distribution parameters",
+                confidence_level=confidence_level,
+            )
+            | attrs_dist
+        )
+        upp.attrs.update(
+            dict(
+                long_name="Upper limit of confidence interval for the distribution parameters",
+                confidence_level=confidence_level,
+            )
+            | attrs_dist
+        )
+
+        result_params = xr.merge([result_params, par])
+        result_lower = xr.merge([result_lower, low])
+        result_upper = xr.merge([result_upper, upp])
 
     cint_lower_data = result_lower.rename(
         {var: f"{var}_lower" for var in result_lower.data_vars}
@@ -280,17 +304,7 @@ def fit(
     dims = [d if d != dim else "dparams" for d in ds.dims]
     out = data.assign_coords(dparams=dist_params).transpose(*dims)
 
-    out.attrs = prefix_attrs(
-        ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
-    )
-    dist = get_dist(dist)
-    attrs = dict(
-        long_name=f"{dist.name} parameters",
-        dist=dist.name,
-        method=METHOD_NAMES[method].capitalize(),
-        confidence_level=confidence_level,
-    )
-    out.attrs.update(attrs)
+    out.attrs = ds.attrs
     return out
 
 
@@ -500,7 +514,7 @@ def return_level(
     )
 
     stationary = len(locationcov) == 0 and len(scalecov) == 0 and len(shapecov) == 0
-    return_level_dim = ["return_level"] if stationary else ds[dim].values
+    return_level_dim = ds[dim].values if not stationary else ["return_period"]
 
     dist_params = _get_params(dist, shapecov, locationcov, scalecov)
 
@@ -513,13 +527,24 @@ def return_level(
     result_lower = xr.Dataset()
     result_upper = xr.Dataset()
 
+    dist_scp = get_dist(dist)
+
+    attrs_dist = dict(
+        dist=dist_scp.name,
+        method=METHOD_NAMES[method].capitalize(),
+    )
+
     for data_var in variables:
         args = [ds[data_var]] + locationcov_data + scalecov_data + shapecov_data
         results = xr.apply_ufunc(
             _fitfunc_return_level,
             *args,
             input_core_dims=[[dim]] * len(args),
-            output_core_dims=[["return_level"], ["return_level"], ["return_level"]],
+            output_core_dims=(
+                [["return_period"], ["return_period"], ["return_period"]]
+                if stationary
+                else [[dim], [dim], [dim]]
+            ),
             vectorize=True,
             dask="parallelized",
             keep_attrs=True,
@@ -541,9 +566,30 @@ def return_level(
                 nobsperblock_pareto=nobsperblock_pareto,
             ),
             dask_gufunc_kwargs={
-                "output_sizes": {"return_level": len(return_level_dim)}
+                "output_sizes": {
+                    "return_period" if stationary else dim: len(return_level_dim)
+                }
             },
         )
+
+        par, low, upp = results
+
+        par.attrs.update(dict(long_name=f"Distribution parameters") | attrs_dist)
+        low.attrs.update(
+            dict(
+                long_name="Lower limit of confidence interval for the distribution parameters",
+                confidence_level=confidence_level,
+            )
+            | attrs_dist
+        )
+        upp.attrs.update(
+            dict(
+                long_name="Upper limit of confidence interval for the distribution parameters",
+                confidence_level=confidence_level,
+            )
+            | attrs_dist
+        )
+
         result_return = xr.merge([result_return, results[0]])
         result_lower = xr.merge([result_lower, results[1]])
         result_upper = xr.merge([result_upper, results[2]])
@@ -554,25 +600,14 @@ def return_level(
     cint_upper_data = result_upper.rename(
         {var: f"{var}_upper" for var in result_upper.data_vars}
     )
+
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
 
-    # Add coordinates for the distribution parameters and transpose to original shape (with dim -> dparams)
-    dims = [d if d != dim else "return_level" for d in ds.dims]
-    out = data.assign_coords(return_level=return_level_dim)
-    out = out.transpose(*dims)
-    out.attrs = prefix_attrs(
-        ds.attrs, ["standard_name", "long_name", "units", "description"], "original_"
-    )
-    dist = get_dist(dist)
-    attrs = dict(
-        long_name=f"Return level estimation",
-        dist=dist.name,
-        method=METHOD_NAMES[method].capitalize(),
-        return_period=return_period,
-        confidence_level=confidence_level,
-    )
-    out.attrs.update(attrs)
-    return out
+    data = data.assign_coords({"return_period": [return_period]})
+
+    data.attrs = ds.attrs
+
+    return data
 
 
 def _fitfunc_return_level(
