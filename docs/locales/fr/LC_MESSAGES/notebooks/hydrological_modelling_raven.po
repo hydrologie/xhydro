@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:9
 msgid "Hydrological modelling - Raven"
-msgstr ""
+msgstr "Modélisation hydrologique - Raven"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:11
 msgid ""
@@ -36,6 +36,17 @@ msgid ""
 "to support multi-model assessments with HYDROTEL, though users seeking "
 "advanced functionalities may prefer to use ``RavenPy`` directly."
 msgstr ""
+"``xHydro`` propose une collection de fonctions conçues pour faciliter "
+"la modélisation hydrologique, en se concentrant sur deux modèles clés : "
+"`HYDROTEL <https://github.com/INRS-Modelisation-hydrologique/hydrotel>`__ "
+"et une suite de modèles émulés par le `Raven Hydrological Framework "
+"<https://raven.uwaterloo.ca/>`__. Il est important de noter que Raven "
+"dispose déjà d'une vaste librairie Python, `RavenPy "
+"<https://github.com/CSHS-CWRA/RavenPy>`__, qui permet aux utilisateurs de "
+"construire, calibrer et exécuter des modèles. ``xHydro`` encapsule certaines "
+"de ces fonctions pour soutenir les évaluations multi-modèles avec HYDROTEL, "
+"mais les utilisateurs recherchant des fonctionnalités avancées préféreront "
+"utiliser ``RavenPy`` directement."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:14
 msgid ""
@@ -45,10 +56,14 @@ msgid ""
 "notebook for ``HYDROTEL`` is available `here "
 "<hydrological_modelling_hydrotel.ipynb>`__."
 msgstr ""
+"La principale contribution de ``xHydro`` à la modélisation hydrologique est donc "
+"son support pour HYDROTEL, un modèle qui manquait auparavant d'une librairie "
+"Python dédiée. Ce Notebook couvre les modèles ``RavenPy``, mais un Notebook similaire "
+"pour ``HYDROTEL`` est disponible `ici <hydrological_modelling_hydrotel.ipynb>`__."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:17
 msgid "Basic information"
-msgstr ""
+msgstr "Informations de base"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:39
 msgid ""
@@ -59,6 +74,13 @@ msgid ""
 "files or other), csv configuration files, parameters, and basically "
 "anything that is required to configure and execute an hydrological model."
 msgstr ""
+"Le cadre de modélisation ``xHydro`` est basé sur un dictionnaire ``model_config``, "
+"qui est censé contenir toutes les informations nécessaires pour exécuter un modèle "
+"hydrologique donné. Par exemple, en fonction du modèle, il peut stocker directement "
+"les jeux de données météorologiques, les chemins vers ces jeux de données "
+"(fichiers netCDF ou autres), les fichiers de configuration csv, les paramètres, "
+"et fondamentalement tout ce qui est nécessaire pour configurer et exécuter un modèle "
+"hydrologique."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:41
 msgid ""
@@ -68,6 +90,10 @@ msgid ""
 "``xh.modelling.get_hydrological_model_inputs`` function to get a list of "
 "the required keys for a given model, as well as the documentation."
 msgstr ""
+"La liste des entrées requises pour le dictionnaire peut être obtenue de deux façons. "
+"La première consiste à regarder la classe du modèle hydrologique, comme ``xhydro.modelling.RavenpyModel``. "
+"La seconde consiste à utiliser la fonction ``xh.modelling.get_hydrological_model_inputs`` "
+"pour obtenir la liste des clés requises pour un modèle donné, ainsi que sa documentation."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:346
 msgid ""
@@ -75,6 +101,9 @@ msgid ""
 "functions, but an effort will be made to standardize the outputs as much "
 "as possible. Currently, all models include the following three functions:"
 msgstr ""
+"HYDROTEL et Raven varient en termes d'entrées requises et de fonctions disponibles, "
+"mais un effort sera fait pour standardiser les sorties autant que possible. Actuellement, "
+"tous les modèles incluent les trois fonctions suivantes :"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:348
 msgid ""
@@ -82,12 +111,17 @@ msgid ""
 "with analysis tools in ``xHydro``, and returns the simulated streamflow "
 "as a ``xarray.Dataset``."
 msgstr ""
+"``.run()`` : Exécute le modèle, reformate les sorties pour être compatibles "
+"avec les outils d'analyse dans ``xHydro``, et retourne le débit simulé "
+"en tant que ``xarray.Dataset``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:350
 msgid ""
 "The streamflow variable will be named ``streamflow`` and will have units "
 "of ``m3 s-1``."
 msgstr ""
+"La variable de débit sera nommée ``streamflow`` et aura pour unités "
+"``m3 s-1``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:351
 msgid ""
@@ -95,20 +129,22 @@ msgid ""
 "in the dataset will be identified by the ``cf_role: timeseries_id`` "
 "attribute."
 msgstr ""
+"Pour les données 1D (comme les stations hydrométriques), la dimension correspondante "
+"dans le jeux de données sera identifiée par l'attribut ``cf_role: timeseries_id``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:353
 msgid "``.get_inputs()``: Retrieves the meteorological inputs used by the model."
-msgstr ""
+msgstr "``.get_inputs()`` : Récupère les entrées météorologiques utilisées par le modèle."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:355
 msgid ""
 "``.get_streamflow()``: Retrieves the simulated streamflow output from the"
 " model."
-msgstr ""
+msgstr "``.get_streamflow()`` : Récupère la sortie de débit simulé du modèle."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:358
 msgid "Initializing and running a calibrated model"
-msgstr ""
+msgstr "Initialisation et exécution d'un modèle calé"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:360
 msgid ""
@@ -118,6 +154,11 @@ msgid ""
 "files. For instance, changing simulation dates or meteorological data "
 "directly through the files is not yet supported."
 msgstr ""
+"Raven nécessite plusieurs fichiers ``.rv*`` pour contrôler divers aspects tels que "
+"les entrées météorologiques, les caractéristiques du bassin versant, et plus encore. Actuellement, "
+"``RavenPy`` ne fournit pas de moyen direct d'ouvrir et de modifier ces fichiers. "
+"Par exemple, changer les dates de simulation ou les données météorologiques "
+"directement à travers les fichiers n'est pas encore pris en charge."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:362
 msgid ""
@@ -129,6 +170,13 @@ msgid ""
 " notebooks. Therefore, this notebook will utilize a test dataset. All "
 "RavenPy models available currently in ``xHydro`` are lumped."
 msgstr ""
+"Jusqu'à ce que cette fonctionnalité soit ajoutée, toutes les informations pertinentes "
+"doivent être fournies à ``RavenPy`` via le dictionnaire ``model_config`` afin "
+"d'exécuter correctement le modèle. Pour des exemples sur la manière d'obtenir "
+"de nombreuses entrées nécessaires, telles que les caractéristiques du bassin versant et les "
+"données météorologiques, consultez les Notebook `GIS <gis.ipynb>`__ et `Exemnple de cas d'utilisation "
+"<use_case.ipynb>`__. Par conséquent, ce Notebook utilisera un jeu de données de test. "
+"Les modèles RavenPy actuellement disponibles dans ``xHydro`` sont tous des modèles globaux."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:456
 msgid ""
@@ -136,10 +184,13 @@ msgid ""
 "be initialized using ``xhydro.modelling.hydrological_model`` or the "
 "``xhydro.modelling.RavenpyModel`` class directly."
 msgstr ""
+"Une fois ``model_config`` en main, une instance du modèle hydrologique peut "
+"être initialisée en utilisant ``xhydro.modelling.hydrological_model`` ou directement "
+"la classe ``xhydro.modelling.RavenpyModel``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:504
 msgid "Validating the Meteorological Data"
-msgstr ""
+msgstr "Validation des données météorologiques"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:506
 msgid ""
@@ -152,6 +203,14 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/3_diagnostics.html"
 "#Health-checks>`__."
 msgstr ""
+"Avant d'exécuter les modèles hydrologiques, quelques vérifications de base "
+"seront effectuées automatiquement. Cependant, les utilisateurs peuvent "
+"souhaiter effectuer des contrôles de santé plus avancés sur les données "
+"météorologiques (par exemple, identifier des valeurs irréalistes). Cela peut "
+"être fait en utilisant ``xhydro.utils.health_checks``. Pour la liste complète "
+"des contrôles disponibles, consultez la documentation de `xscen "
+"<https://xscen.readthedocs.io/en/latest/notebooks/3_diagnostics.html"
+"#Health-checks>`__."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:508
 msgid ""
@@ -159,10 +218,13 @@ msgid ""
 " data. In this example, we'll ensure there are no abnormal meteorological"
 " values or sequences of values."
 msgstr ""
+"Nous pouvons utiliser ``.get_inputs()`` pour récupérer automatiquement les "
+"données météorologiques. Dans cet exemple, nous nous assurerons qu'il n'y a "
+"pas de valeurs ou de séquences de valeurs météorologiques anormales."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:568
 msgid "Executing the Model"
-msgstr ""
+msgstr "Exécution du modèle"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:570
 msgid ""
@@ -170,12 +232,17 @@ msgid ""
 "before executing the model itself. For ``RavenPy``, the following checks "
 "are made:"
 msgstr ""
+"Quelques vérifications de base sont effectuées lorsque la fonction ``.run()`` "
+"est appelée, avant d'exécuter le modèle lui-même. Pour ``RavenPy``, les vérifications suivantes "
+"sont effectuées :"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:572
 msgid ""
 "The model name is valid: [\"Blended\", \"GR4JCN\", \"HBVEC\", \"HMETS\", "
 "\"HYPR\", \"Mohyse\", \"SACSMA\"]"
 msgstr ""
+"Le nom du modèle est valide : [\"Blended\", \"GR4JCN\", \"HBVEC\", \"HMETS\", "
+"\"HYPR\", \"Mohyse\", \"SACSMA\"]"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:574
 msgid ""
@@ -183,6 +250,9 @@ msgid ""
 " Note that Raven itself will perform a series of checkups, which is why "
 "they are kept at a minimum in ``xHydro``."
 msgstr ""
+"Ce n'est que si ces vérifications réussissent que la fonction procédera à l'exécution du modèle. "
+"Notez que Raven effectuera lui-même une série de vérifications, c'est pourquoi elles sont "
+"minimisées dans ``xHydro``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:576
 msgid ""
@@ -191,10 +261,14 @@ msgid ""
 "with other ``xHydro`` modules. Note that, at this time, this reformatting"
 " only supports the outgoing streamflow."
 msgstr ""
+"Une fois le modèle exécuté, ``xHydro`` reformatera automatiquement le fichier "
+"NetCDF pour le rapprocher des conventions CF, assurant ainsi la compatibilité "
+"avec les autres modules ``xHydro``. Notez qu'en ce moment, ce reformatage "
+"soutient uniquement le débit sortant."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:1085
 msgid "Model Calibration"
-msgstr ""
+msgstr "Calage du modèle"
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:1087
 msgid ""
@@ -205,6 +279,11 @@ msgid ""
 "calibration function utilizes ``SPOTPY`` to carry out the optimization "
 "process."
 msgstr ""
+"Lors de la création d'un modèle à partir de zéro, une étape de calage est nécessaire "
+"pour trouver l'ensemble optimal de paramètres. Le calage du modèle implique une boucle "
+"de plusieurs itérations, où : les paramètres du modèle sont sélectionnés, le modèle est "
+"exécuté, et les résultats sont comparés aux données observées. Dans ``xHydro``, la fonction de "
+"calage utilise ``SPOTPY`` pour réaliser le processus d'optimisation."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:1089
 msgid ""
@@ -212,6 +291,8 @@ msgid ""
 "created earlier, but now within the ``xh.modelling.perform_calibration`` "
 "function."
 msgstr ""
+"La fonction de calage utilise toujours le dictionnaire ``model_config`` "
+"créé précédemment, mais maintenant au sein de la fonction ``xh.modelling.perform_calibration``."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:1350
 msgid ""
@@ -221,6 +302,11 @@ msgid ""
 " This can be achieved using the ``mask`` argument, which uses an array of"
 " 0 and 1."
 msgstr ""
+"Nous pouvons préparer les arguments supplémentaires nécessaires à la fonction "
+"de calibration. Un bon processus de calibration doit toujours exclure certaines données du "
+"calcul de la fonction objectif, afin de garantir une période de validation indépendante. "
+"Cela peut être réalisé en utilisant l'argument ``mask``, qui utilise un array de "
+"0 et 1."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:1352
 msgid ""
@@ -228,3 +314,6 @@ msgid ""
 " real calibration should rely on at least 500 iterations with simple "
 "models such as GR4JCN."
 msgstr ""
+"Cet exemple n'utilisera que 10 évaluations pour réduire le temps de calcul, mais un "
+"calage réel devrait reposer sur au moins 500 itérations avec des modèles simples "
+"tels que GR4JCN."

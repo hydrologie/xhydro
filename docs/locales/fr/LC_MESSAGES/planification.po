@@ -21,13 +21,15 @@ msgstr ""
 
 #: ../../planification.rst:3
 msgid "External Package Structure"
-msgstr ""
+msgstr "Structure des librairies externes"
 
 #: ../../planification.rst:5
 msgid ""
 "Testing data can be found here: https://github.com/hydrologie/xhydro-"
 "testdata"
 msgstr ""
+"Les données de test peuvent être trouvées ici : https://github.com/hydrologie/xhydro-"
+"testdata"
 
 #: ../../planification.rst:7
 msgid ""
@@ -35,3 +37,6 @@ msgid ""
 "lstm. It is not included in this package to avoid dependencies on "
 "`tensorflow`."
 msgstr ""
+"Un module LSTM peut être trouvé ici : https://github.com/hydrologie/xhydro-"
+"lstm. Il n'est pas inclus dans ce package afin d'éviter des dépendances à "
+"`tensorflow`."

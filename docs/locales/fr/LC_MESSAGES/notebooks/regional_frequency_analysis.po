@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:9
 msgid "Regional frequency analyses"
-msgstr ""
+msgstr "Analyses fréquentielles régionales"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:91
 msgid ""
@@ -32,6 +32,12 @@ msgid ""
 "`Local frequency analysis <local_frequency_analysis.ipynb>`__ notebook "
 "for an overview."
 msgstr ""
+"Ce Notebook montrera comment utiliser la librairie ``xHydro`` "
+"pour réaliser des analyses fréquentielles régionales sur un jeu de "
+"données de débit. Comme les étapes initiales pour l'analyse fréquentielle "
+"régionale sont les mêmes que pour l'analyse fréquentielle locale, les "
+"utilisateurs sont invités à consulter le Notebook `Analyses "
+"fréquentielles locales <local_frequency_analysis.ipynb>`__ pour un aperçu."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:93
 msgid ""
@@ -41,10 +47,15 @@ msgid ""
 "analyses rely on having access to multiple sources of data, we will "
 "extract streamflow for 15 stations."
 msgstr ""
+"Dans cet exemple, nous utiliserons le même jeu de données de stations "
+"hydrométriques couvrant une partie du sud du Québec, assurant la continuité "
+"avec l'analyse précédente tout en s'étendant à une échelle régionale. Cependant, "
+"comme les analyses régionales nécessitent l'accès à plusieurs sources de données, "
+"nous allons extraire les débits pour 15 stations."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:701
 msgid "Explanatory variables"
-msgstr ""
+msgstr "Variables explicatives"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:703
 msgid ""
@@ -56,10 +67,17 @@ msgid ""
 "geographic and environmental characteristics on extreme events, allowing "
 "for more accurate regional predictions."
 msgstr ""
+"Dans les analyses fréquentielles régionales, les variables explicatives sont utilisées "
+"pour aider à expliquer la variation spatiale des extrêmes hydrologiques à travers différents "
+"lieux. Ces variables peuvent inclure des facteurs tels que la superficie du bassin versant, "
+"l'altitude, les précipitations, l'utilisation des terres et le type de sol, entre autres. "
+"En intégrant ces variables explicatives, nous pouvons prendre en compte l'influence des "
+"caractéristiques géographiques et environnementales sur les événements extrêmes, ce qui permet "
+"d'obtenir des prédictions régionales plus précises."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:706
 msgid "a) Extraction of watershed characteristics using ``xhydro.gis``"
-msgstr ""
+msgstr "a) Extraction des caractéristiques des bassins versants à l’aide de ``xhydro.gis``"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:708
 msgid ""
@@ -69,10 +87,16 @@ msgid ""
 "analysis requirements. For detailed steps on how to extract and work with"
 " these data, refer to the `GIS operations <gis.ipynb>`__ notebook."
 msgstr ""
+"Dans cet exemple, nous utiliserons les propriétés des bassins versants comme "
+"variables explicatives principales. Cependant, d'autres variables, telles que "
+"les moyennes climatiques ou les données d'utilisation des terres, peuvent également "
+"être intégrées en fonction des exigences de l'analyse. Pour les étapes détaillées sur "
+"comment extraire et travailler avec ces données, consultez le Notebook `Opérations "
+"SIG <gis.ipynb>`__."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:1214
 msgid "b) Principal component analysis"
-msgstr ""
+msgstr "b) Analyse en composantes principales"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:1216
 msgid ""
@@ -84,6 +108,12 @@ msgid ""
 "accomplished using the function "
 "``xhydro.frequency_analysis.regional.fit_pca``."
 msgstr ""
+"Après avoir acquis les variables explicatives, l'étape suivante consiste à les traiter "
+"en utilisant l'Analyse en Composantes Principales (ACP) pour réduire la dimensionnalité du "
+"jeu de données. L'ACP permet de simplifier le jeu de données en transformant les "
+"variables originales en un ensemble réduit de composantes non corrélées, tout en conservant la "
+"plupart des variations dans les données. Cela est réalisé en utilisant la fonction "
+"``xhydro.frequency_analysis.regional.fit_pca``."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:1862
 msgid ""
@@ -94,10 +124,15 @@ msgid ""
 "in the explanatory variables without significant overlap or "
 "multicollinearity."
 msgstr ""
+"Les résultats montrent que la corrélation entre les composantes est proche de 0, ce qui "
+"suggère que les trois premières composantes sont suffisamment indépendantes. Cela indique que "
+"ces composantes peuvent être utilisées efficacement pour le reste de notre analyse, car "
+"elles capturent la majorité de la variation des variables explicatives, sans chevauchement "
+"ou multicolinéarité significative."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2001
 msgid "c) Clustering"
-msgstr ""
+msgstr "c) Clustering (regroupement)"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2003
 msgid ""
@@ -110,10 +145,17 @@ msgid ""
 " will use ``AgglomerativeClustering`` to form 3 clusters based on the PCA"
 " results."
 msgstr ""
+"Les résultats de l'ACP peuvent être utilisés pour regrouper les stations en clusters "
+"en fonction de leurs similarités dans les composantes principales. Le clustering aide "
+"à identifier des régions avec des caractéristiques similaires, permettant des analyses "
+"fréquentielles régionales plus ciblées et précises. Cette étape est réalisée en utilisant "
+"``xhydro.frequency_analysis.regional.get_group_from_fit``, qui prend en charge les méthodes "
+"de clustering de ``sklearn.cluster``. Dans cet exemple, nous utiliserons ``AgglomerativeClustering`` "
+"pour former 3 clusters en fonction des résultats de l'ACP."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2198
 msgid "Regional Frequency Analysis"
-msgstr ""
+msgstr "Analyse fréquentielle régionale"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2200
 msgid ""
@@ -122,6 +164,10 @@ msgid ""
 "extreme events across different regions. Here’s a brief overview of the "
 "key concepts:"
 msgstr ""
+"**Hosking et Wallis** ont introduit une méthode pour l'analyse fréquentielle "
+"régionale basée sur les L-moments, qui sont particulièrement utiles pour l'analyse "
+"des événements extrêmes à travers différentes régions. Voici un aperçu des principaux "
+"concepts :"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2202
 msgid ""
@@ -133,6 +179,13 @@ msgid ""
 "characteristics of extreme values, as they provide more stable and "
 "reliable estimates."
 msgstr ""
+"**L-Moments** : Les L-moments sont des mesures statistiques dérivées des "
+"combinaisons linéaires des statistiques d'ordre. Ils offrent une alternative "
+"plus robuste aux moments traditionnels (comme la moyenne et la variance), en particulier "
+"en présence de valeurs aberrantes ou lorsque l'on traite de petits échantillons. "
+"Les L-moments sont largement utilisés dans les études hydrologiques pour estimer les "
+"caractéristiques des valeurs extrêmes, car ils fournissent des estimations plus stables et "
+"fiables."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2204
 msgid ""
@@ -145,6 +198,13 @@ msgid ""
 "regional frequency distribution and assessing how well it captures the "
 "characteristics of the data."
 msgstr ""
+"**Analyse fréquentielle régionale** : Cette technique consiste à regrouper "
+"les données de plusieurs sites ou régions pour estimer la distribution de fréquence des "
+"événements extrêmes, tels que les inondations ou les sécheresses. L'approche permet de déterminer "
+"les paramètres statistiques communs à différents endroits, offrant ainsi une perspective plus "
+"généralisée et régionale sur le comportement des événements extrêmes. La méthode de Hosking et "
+"Wallis se concentre sur l'ajustement d'une distribution fréquentielle régionale et l'évaluation "
+"de sa capacité à capturer les caractéristiques des données."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2207
 msgid ""
@@ -156,12 +216,20 @@ msgid ""
 "predictions for extreme events, particularly when data from multiple "
 "sites are available."
 msgstr ""
+"**L-Moments régionaux** : Il s'agit des L-moments calculés à partir des données regroupées "
+"de plusieurs sites au sein d'une région. En appliquant les L-moments régionaux, nous pouvons "
+"estimer les paramètres des distributions fréquentielles régionales et mieux comprendre l'occurrence "
+"des événements extrêmes dans différentes parties de la région. Cette méthode améliore la précision "
+"et la robustesse des prédictions des événements extrêmes, en particulier lorsque des données de "
+"plusieurs sites sont disponibles."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2209
 msgid ""
 "Let's start by calculating the L-moments for each station using "
 "``xhydro.frequency_analysis.regional.calc_moments``."
 msgstr ""
+"Commençons par calculer les L-moments pour chaque station en utilisant "
+"``xhydro.frequency_analysis.regional.calc_moments``."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2823
 msgid ""
@@ -174,6 +242,13 @@ msgid ""
 " according to the cluster assignments and prepares it for further "
 "analysis."
 msgstr ""
+"Pour réaliser une analyse fréquentielle régionale, nous devons remodeler nos jeux "
+"de données de maxima annuels et nos L-moments en fonction des regroupements identifiés par "
+"l'algorithme de clustering. Comme il n'existe pas de convention de nommage standardisée pour "
+"cette nouvelle dimension, ``xHydro`` utilise le nom ``group_id`` pour les regroupements de "
+"clusters. Ce processus de remodelage est géré par la fonction ``xhydro.frequency_analysis.regional.group_ds``, "
+"qui organise les données en fonction des attributions de clusters et les prépare pour une analyse "
+"plus approfondie."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2928
 msgid ""
@@ -186,14 +261,22 @@ msgid ""
 "their variability. It helps determine how well the theoretical "
 "distribution (based on the regional model) fits the observed data."
 msgstr ""
+"Nous devons maintenant calculer deux scores importants pour évaluer l'analyse "
+"fréquentielle régionale : le *H-Score* et le *Z-Score*. Le H-Score mesure "
+"l'homogénéité des données à travers différents sites ou régions par rapport au "
+"modèle régional. Il permet de déterminer dans quelle mesure les données de "
+"plusieurs sites s'alignent avec la distribution régionale. Le Z-Score quantifie "
+"l'écart entre les valeurs observées et attendues, standardisé par leur variabilité. "
+"Il aide à déterminer dans quelle mesure la distribution théorique (basée sur le modèle "
+"régional) correspond aux données observées."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2931
 msgid "**H-Score (Homogeneity Score)**"
-msgstr ""
+msgstr "**H-Score (Score d'homogénéité)**"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid "**H < 1: Homogeneous**"
-msgstr ""
+msgstr "**H < 1 : Homogène**"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid ""
@@ -201,10 +284,13 @@ msgid ""
 "align well with the regional model, suggesting that the regional model is"
 " suitable for the entire region."
 msgstr ""
+"Cela indique que les données des différents sites sont assez similaires et "
+"s'alignent bien avec le modèle régional, ce qui suggère que le modèle régional "
+"est adapté pour l'ensemble de la région."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid "**1 ≤ H < 2: Maybe Homogeneous**"
-msgstr ""
+msgstr "**1 ≤ H < 2 : Peut-être homogène**"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid ""
@@ -212,10 +298,13 @@ msgid ""
 "generally fit the regional model, but there are some variations that the "
 "model does not fully capture."
 msgstr ""
+"Cette plage suggère une certaine hétérogénéité, ce qui signifie que les données "
+"peuvent encore s'adapter généralement au modèle régional, mais qu'il existe des "
+"variations que le modèle ne capture pas entièrement."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid "**H ≥ 2: Heterogeneous**"
-msgstr ""
+msgstr "**H ≥ 2 : Hétérogène**"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb
 msgid ""
@@ -223,10 +312,14 @@ msgid ""
 "regions, suggesting that the regional model might not be appropriate for "
 "all the data. The region may be too diverse or require model adjustments."
 msgstr ""
+"Un score aussi élevé indique des différences significatives entre les sites ou "
+"les régions, suggérant que le modèle régional pourrait ne pas être adapté à "
+"toutes les données. La région peut être trop diverse ou nécessiter des ajustements "
+"du modèle."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2942
 msgid "**Z-Score (Goodness of Fit)**"
-msgstr ""
+msgstr "**Z-Score (Qualité de l'ajustement)**"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2944
 msgid ""
@@ -234,6 +327,9 @@ msgid ""
 "the observed data. Typically, an absolute Z-Score below 1.64 indicates "
 "that the model is appropriate and the fit is statistically acceptable."
 msgstr ""
+"**Z-Score faible** : Un Z-Score faible suggère un bon ajustement entre le modèle et "
+"les données observées. En général, un Z-Score absolu inférieur à 1,64 indique "
+"que le modèle est approprié et que l'ajustement est statistiquement acceptable."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2946
 msgid ""
@@ -242,6 +338,10 @@ msgid ""
 "implies that the model might not fit the data well, and further "
 "adjustments or a different model might be needed."
 msgstr ""
+"**Z-Score élevé** : Un Z-Score élevé suggère des écarts significatifs "
+"entre les valeurs observées et attendues. Un Z-Score absolu supérieur à 1,64 "
+"implique que le modèle ne correspond peut-être pas bien aux données et que des "
+"ajustements supplémentaires ou un modèle différent pourraient être nécessaires."
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:2948
 msgid ""

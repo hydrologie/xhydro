@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../notebooks/gis.ipynb:9
 msgid "GIS operations"
-msgstr ""
+msgstr "Opérations SIG"
 
 #: ../../notebooks/gis.ipynb:20
 msgid ""
@@ -31,10 +31,15 @@ msgid ""
 "watershed boundaries and extracting critical physiographic, "
 "climatological, and geographical variables at the watershed scale."
 msgstr ""
+"Les opérations de Système d'Information Géographique (SIG) sont cruciales "
+"pour l'analyse hydrologique. Cette section illustre comment utiliser la "
+"librairie ``xHydro`` pour effectuer des tâches SIG clés, y compris la délimitation "
+"des limites de bassins versants et l'extraction de variables physiographiques, "
+"climatiques et géographiques essentielles à l'échelle du bassin versant."
 
 #: ../../notebooks/gis.ipynb:50
 msgid "Watershed delineation"
-msgstr ""
+msgstr "Délimitation du bassin versant"
 
 #: ../../notebooks/gis.ipynb:61
 msgid ""
@@ -50,18 +55,28 @@ msgid ""
 "enhances the visualization and understanding of the watershed delineation"
 " process."
 msgstr ""
+"Actuellement, la délimitation des bassins versants utilise `HydroBASINS` de HydroSHEDS "
+"<https://www.hydrosheds.org/products/hydrobasins>`__ "
+"(hybas_na_lev01-12_v1c) et est compatible avec toute localisation en Amérique du Nord. "
+"Le processus consiste à identifier tous les sous-bassins en amont d'un "
+"exutoire spécifié et à les consolider en un bassin versant unifié. La "
+"librairie `leafmap <https://leafmap.org/>`__ est utilisée pour générer "
+"des cartes interactives, permettant de sélectionner les sorties ou de "
+"visualiser les limites du bassin versant résultant. Bien que l'utilisation de la "
+"carte ne soit pas obligatoire pour effectuer les calculs, elle améliore considérablement "
+"la visualisation et la compréhension du processus de délimitation du bassin versant."
 
 #: ../../notebooks/gis.ipynb:83
 msgid "|image_feneral.png|"
-msgstr ""
+msgstr "|image_feneral.png|"
 
 #: ../../notebooks/gis.ipynb:85
 msgid "image_feneral.png"
-msgstr ""
+msgstr "image_feneral.png"
 
 #: ../../notebooks/gis.ipynb:97
 msgid "a) From a list of coordinates"
-msgstr ""
+msgstr "a) À partir d'une liste de coordonnées"
 
 #: ../../notebooks/gis.ipynb:99
 msgid ""
@@ -69,10 +84,13 @@ msgid ""
 " we select two pour points, with each one representing the outlet for the"
 " watersheds of Montmorency and the Beaurivage River, respectively."
 msgstr ""
+"Une première option consiste à fournir une liste de coordonnées. Dans l'exemple ci-dessous, "
+"nous sélectionnons deux points, chacun représentant l'exutoire pour les "
+"bassins versants des rivières Montmorency et Beaurivage, respectivement."
 
 #: ../../notebooks/gis.ipynb:124
 msgid "b) From markers on a map"
-msgstr ""
+msgstr "b) À partir de marqueurs sur une carte"
 
 #: ../../notebooks/gis.ipynb:135
 msgid ""
@@ -82,14 +100,18 @@ msgid ""
 "demonstrates how to select pour points by dragging markers to the desired"
 " locations on the map."
 msgstr ""
+"Plutôt que d'utiliser une liste, une approche plus interactive permet de sélectionner directement "
+"les sorties à partir de la carte existante ``m``, en utilisant le bouton ``Draw a "
+"marker`` situé à gauche de la carte. L'image ci-dessous montre comment sélectionner les points "
+"en faisant glisser des marqueurs vers les emplacements souhaités sur la carte."
 
 #: ../../notebooks/gis.ipynb:137
 msgid "|image_marker.png|"
-msgstr ""
+msgstr "|image_marker.png|"
 
 #: ../../notebooks/gis.ipynb:139
 msgid "image_marker.png"
-msgstr ""
+msgstr "image_marker.png"
 
 #: ../../notebooks/gis.ipynb:150
 msgid ""
@@ -97,6 +119,9 @@ msgid ""
 "of both, we can initiate the watershed delineation calculation. This is "
 "done using the function ``xhydro.gis.watershed_delineation``."
 msgstr ""
+"Après avoir sélectionné des points en utilisant l'approche a) ou b), ou une combinaison "
+"des deux, nous pouvons initier le calcul de délimitation du bassin versant. Cela se fait "
+"en utilisant la fonction ``xhydro.gis.watershed_delineation``."
 
 #: ../../notebooks/gis.ipynb:384
 msgid ""
@@ -108,18 +133,25 @@ msgid ""
 " with your notebook interpreter, you can use the following code to "
 "extract the HTML from the map and plot it:"
 msgstr ""
+"Les résultats sont stockés dans un objet GeoPandas ``gpd.GeoDataFrame``, "
+"ce qui nous permet d'enregistrer les polygones dans divers formats courants, tels que ESRI "
+"Shapefile ou GeoJSON. Si une carte ``m`` est disponible, les polygones y seront "
+"automatiquement ajoutés. Pour visualiser la carte, tapez simplement ``m`` dans la "
+"cellule de code. Si l'affichage direct de la carte n'est pas compatible"
+" avec votre interpréteur de notebook, vous pouvez utiliser le code suivant pour "
+"extraire le HTML de la carte et l'afficher :"
 
 #: ../../notebooks/gis.ipynb:405
 msgid "|image_gdf.png|"
-msgstr ""
+msgstr "|image_gdf.png|"
 
 #: ../../notebooks/gis.ipynb:407
 msgid "image_gdf.png"
-msgstr ""
+msgstr "image_gdf.png"
 
 #: ../../notebooks/gis.ipynb:419
 msgid "c) From `xdatasets <https://github.com/hydrologie/xdatasets>`__"
-msgstr ""
+msgstr "c) À partir de `xdatasets <https://github.com/hydrologie/xdatasets>`__"
 
 #: ../../notebooks/gis.ipynb:421
 msgid ""
@@ -131,14 +163,20 @@ msgid ""
 "``xdatasets.Query`` function. As of today, the following watershed "
 "sources are available:"
 msgstr ""
+"Bien que la délimitation automatique des limites de bassins versants soit un outil précieux, "
+"les utilisateurs sont encouragés à utiliser les limites officielles des bassins versants lorsqu'elles "
+"sont disponibles, plutôt que d'en générer de nouvelles. La librairie `xdatasets "
+"<https://github.com/hydrologie/xdatasets>`__ par exemple, héberge "
+"quelques limites officielles qui peuvent être accessibles en utilisant la "
+"fonction ``xdatasets.Query``. À ce jour, les sources de bassins versants suivantes sont disponibles :"
 
 #: ../../notebooks/gis.ipynb:424
 msgid "Source"
-msgstr ""
+msgstr "Source"
 
 #: ../../notebooks/gis.ipynb:424
 msgid "Dataset name"
-msgstr ""
+msgstr "Nom du jeu de données"
 
 #: ../../notebooks/gis.ipynb:426
 msgid ""
@@ -147,10 +185,14 @@ msgid ""
 "overview/quantity/monitoring/survey/data-products-services/national-"
 "archive-hydat.html>`__"
 msgstr ""
+"`(Canada) Archives nationales des données hydrologiques : HYDAT <https://www.canada.ca/en"
+"/environment-climate-change/services/water-"
+"overview/quantity/monitoring/survey/data-products-services/national-"
+"archive-hydat.html>`__"
 
 #: ../../notebooks/gis.ipynb:426
 msgid "hydat_polygons"
-msgstr ""
+msgstr "hydat_polygons"
 
 #: ../../notebooks/gis.ipynb:428
 msgid ""
@@ -158,22 +200,25 @@ msgid ""
 "<https://www.cehq.gouv.qc.ca/atlas-hydroclimatique/stations-"
 "hydrometriques/index.htm>`__"
 msgstr ""
+"`(Québec) Ministère provincial de l'Environnement (MELCCFP/DPEH) "
+"<https://www.cehq.gouv.qc.ca/atlas-hydroclimatique/stations-"
+"hydrometriques/index.htm>`__"
 
 #: ../../notebooks/gis.ipynb:428
 msgid "deh_polygons"
-msgstr ""
+msgstr "deh_polygons"
 
 #: ../../notebooks/gis.ipynb:430
 msgid "`(Quebec) Hydro-Quebec <https://www.hydroquebec.com/>`__"
-msgstr ""
+msgstr "`(Québec) Hydro-Québec <https://www.hydroquebec.com/>`__"
 
 #: ../../notebooks/gis.ipynb:430
 msgid "hq_polygons"
-msgstr ""
+msgstr "hq_polygons"
 
 #: ../../notebooks/gis.ipynb:544
 msgid "Extraction of watershed properties"
-msgstr ""
+msgstr "Extraction des propriétés du bassin versant"
 
 #: ../../notebooks/gis.ipynb:555
 msgid ""
@@ -181,10 +226,13 @@ msgid ""
 "properties such as geographical information, land use classification, and"
 " climatological data from the delineated watersheds."
 msgstr ""
+"Une fois les limites du bassin versant obtenues, nous pouvons extraire des "
+"propriétés telles que des informations géographiques, la classification "
+"de l'utulisation des sols et des données climatologiques."
 
 #: ../../notebooks/gis.ipynb:567
 msgid "a) Geographical watershed properties"
-msgstr ""
+msgstr "a) Propriétés géographiques du bassin versant"
 
 #: ../../notebooks/gis.ipynb:569
 msgid ""
@@ -194,16 +242,22 @@ msgid ""
 "that this function returns all the columns present in the provided "
 "``gpd.GeoDataFrame`` argument."
 msgstr ""
+"Tout d'abord, ``xhydro.gis.watershed_properties`` peut être utilisé pour extraire "
+"les propriétés géographiques du bassin versant, y compris le périmètre, la surface totale, "
+"le coefficient de Gravelius et le centre du bassin. Il est important de noter que cette "
+"fonction retourne toutes les colonnes présentes dans l'argument ``gpd.GeoDataFrame`` fourni."
 
 #: ../../notebooks/gis.ipynb:811
 msgid ""
 "For added convenience, we can also retrieve the same results in the form "
 "of an ``xarray.Dataset``:"
 msgstr ""
+"Pour plus de commodité, nous pouvons également récupérer les mêmes résultats sous "
+"la forme d'un ``xarray.Dataset`` :"
 
 #: ../../notebooks/gis.ipynb:1285
 msgid "b) Surface properties"
-msgstr ""
+msgstr "b) Propriétés de surface"
 
 #: ../../notebooks/gis.ipynb:1287
 msgid ""
@@ -215,16 +269,23 @@ msgid ""
 " as of 2021-04-22. However, both the source and the date can be modified "
 "through the function's arguments."
 msgstr ""
+"Nous pouvons utiliser ``xhydro.gis.surface_properties`` pour extraire les propriétés "
+"de surface pour le même ``gpd.GeoDataFrame``, telles que la pente et l'aspect. Par défaut, "
+"ces propriétés sont calculées en utilisant le modèle d'élévation numérique `GLO-90 de Copernicus "
+"<https://portal.opentopography.org/raster?opentopoID=OTSDEM.032021.4326.1>`__ au 22 avril 2021. "
+"Cependant, la source et la date peuvent être modifiées à l'aide des arguments de la fonction."
 
 #: ../../notebooks/gis.ipynb:1594
 msgid ""
 "Again, for convenience, we can output the results in ``xarray.Dataset`` "
 "format :"
 msgstr ""
+"Encore une fois, pour plus de commodité, nous pouvons afficher les résultats au format "
+"``xarray.Dataset`` :"
 
 #: ../../notebooks/gis.ipynb:2105
 msgid "c) Land use classification"
-msgstr ""
+msgstr "c) Classification de l'utilisation des sols"
 
 #: ../../notebooks/gis.ipynb:2107
 msgid ""
@@ -236,10 +297,15 @@ msgid ""
 "dataset (\"io-lulc-annual-v02\"). However, alternative collections can be"
 " specified as arguments to the function."
 msgstr ""
+"Enfin, nous pouvons récupérer les classifications de l'utilisation des sols en utilisant "
+"``xhydro.gis.land_use_classification``. Cette fonction est alimentée par le catalogue STAC du "
+"Planetary Computer et, par défaut, utilise le jeu de données `10m Annual Land Use Land Cover (9-class) V2 "
+"<https://planetarycomputer.microsoft.com/dataset/io-lulc-annual-v02>`__ (\"io-lulc-annual-v02\"). "
+"Cependant, des collections alternatives peuvent être spécifiées comme arguments de la fonction."
 
 #: ../../notebooks/gis.ipynb:2784
 msgid "d) Climate indicators"
-msgstr ""
+msgstr "d) Indicateurs climatiques"
 
 #: ../../notebooks/gis.ipynb:2786
 msgid ""
@@ -254,12 +320,22 @@ msgid ""
 "pixels from a gridded dataset within a watershed while accounting for the"
 " weighting of each pixel intersecting the watershed."
 msgstr ""
+"L'extraction des indicateurs climatiques est l'étape la plus complexe, car elle nécessite "
+"l'accès à un jeu de données météorologiques, puis la subdivision et la moyenne des données "
+"sur les différents bassins versants contenus dans l'objet ``GeoDataFrame``. Ces étapes dépassent "
+"le cadre de ``xHydro``, et les utilisateurs devront recourir à d'autres bibliothèques pour cette tâche. "
+"Une approche, décrite dans l'`exemple de cas d'utilisation <use_case.ipynb>`__, implique l'utilisation "
+"d'une combinaison de ``xscen`` et ``xESMF``. Une autre approche, démontrée ici, utilise ``xdatasets``. "
+"En effet, ``xdatasets`` permet l'extraction de tous les pixels d'un jeu de données à l'intérieur "
+"d'un bassin versant tout en tenant compte du poids de chaque pixel intersectant ce dernier."
 
 #: ../../notebooks/gis.ipynb:2789
 msgid ""
 "For this example, we will use ERA5-Land reanalysis data covering the "
 "period from 1981 to 2010 as our climatological dataset."
 msgstr ""
+"Pour cet exemple, nous utiliserons les données de la réanalyse ERA5-Land couvrant la période de "
+"1981 à 2010."
 
 #: ../../notebooks/gis.ipynb:2889
 msgid ""
@@ -269,6 +345,11 @@ msgid ""
 "conventions/cf-conventions.html>`__. At a minimum, the "
 "``xarray.DataArray`` used should adhere to the following principles:"
 msgstr ""
+"Parce que les étapes suivantes utilisent `xclim "
+"<https://xclim.readthedocs.io/en/stable/index.html>`__ en arrière-plan, "
+"le jeu de données doit être conforme aux normes `CF <https://cfconventions.org/cf-"
+"conventions/cf-conventions.html>`__. Au minimum, le ``xarray.DataArray`` utilisé "
+"doit respecter les principes suivants :"
 
 #: ../../notebooks/gis.ipynb:2891
 msgid ""
@@ -277,6 +358,9 @@ msgid ""
 "your data deviates from this format, extra caution should be taken when "
 "interpreting the results."
 msgstr ""
+"Le jeu de données doit inclure une dimension ``time``, généralement à une fréquence quotidienne, "
+"sans pas de temps manquant (bien que les NaNs soient supportés). Si vos données dévient "
+"de ce format, une prudence particulière doit être prise lors de l'interprétation des résultats."
 
 #: ../../notebooks/gis.ipynb:2892
 msgid ""
@@ -284,6 +368,9 @@ msgid ""
 "below, it must have an attribute ``cf_role`` with the value "
 "``timeseries_id``."
 msgstr ""
+"S'il y a une dimension spatiale 1D, comme ``HYBAS_ID`` dans l'exemple "
+"ci-dessous, elle doit avoir un attribut ``cf_role`` avec la valeur "
+"``timeseries_id``."
 
 #: ../../notebooks/gis.ipynb:2893
 msgid ""
@@ -292,10 +379,14 @@ msgid ""
 "are expected by ``xclim``, and warnings will be raised if they are "
 "missing."
 msgstr ""
+"La variable doit inclure au moins un attribut ``units``. Bien que non "
+"obligatoire, d'autres attributs tels que ``long_name`` et ``cell_methods`` "
+"sont attendus par ``xclim``, et des avertissements seront émis si ils sont "
+"manquants."
 
 #: ../../notebooks/gis.ipynb:2894
 msgid "Variable names should match those supported by ``xclim``."
-msgstr ""
+msgstr "Les noms des variables doivent correspondre à ceux supportés par ``xclim``."
 
 #: ../../notebooks/gis.ipynb:2896
 msgid ""
@@ -303,6 +394,9 @@ msgid ""
 "``xdatasets`` to add missing metadata and change the variable names and "
 "units:"
 msgstr ""
+"Le code suivant formatera les données ERA5-Land obtenues depuis "
+"``xdatasets`` pour ajouter les métadonnées manquantes et changer les noms des variables et "
+"les unités :"
 
 #: ../../notebooks/gis.ipynb:3442
 msgid ""
@@ -312,6 +406,10 @@ msgid ""
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__ within a "
 "user-friendly and flexible framework."
 msgstr ""
+"Les indicateurs climatiques peuvent être calculés de différentes manières, et pour la plupart des tâches simples, "
+"utiliser directement ``xclim`` est toujours une option viable. ``xclim`` propose une liste étendue "
+"d'`indicateurs disponibles <https://xclim.readthedocs.io/en/stable/indicators.html>`__ dans un "
+"cadre convivial et flexible."
 
 #: ../../notebooks/gis.ipynb:3936
 msgid ""
@@ -325,32 +423,45 @@ msgid ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Computing-indicators>`__)."
 msgstr ""
+"Pour des tâches plus complexes, ou lorsqu'il s'agit de calculer plusieurs indicateurs simultanément, "
+"``xhydro.indicators.compute_indicators`` est souvent la méthode privilégiée. Cette fonction permet "
+"aux utilisateurs de créer et de passer plusieurs indicateurs à la fois, soit en fournissant une liste d'indicateurs personnalisés "
+"créés avec ``xclim.core.indicator.Indicator.from_dict`` (voir la boîte INFO ci-dessous), soit en référant un fichier YAML (voir "
+"la `documentation de ``xscen`` "
+"<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
+"#Computing-indicators>`__)."
 
 #: ../../notebooks/gis.ipynb:3943
 msgid "INFO"
-msgstr ""
+msgstr "INFO"
 
 #: ../../notebooks/gis.ipynb:3945
 msgid ""
 "Custom indicators in ``xHydro`` are built by following the YAML "
 "formatting required by ``xclim``."
 msgstr ""
+"Les indicateurs personnalisés dans ``xHydro`` sont construits en suivant le formatage YAML requis "
+"par ``xclim``."
 
 #: ../../notebooks/gis.ipynb:3947
 msgid ""
 "A custom indicator built using "
 "``xclim.core.indicator.Indicator.from_dict`` will need these elements:"
 msgstr ""
+"Un indicateur personnalisé construit avec "
+"``xclim.core.indicator.Indicator.from_dict`` nécessitera ces éléments :"
 
 #: ../../notebooks/gis.ipynb:3949
 msgid "\"data\": A dictionary with the following information:"
-msgstr ""
+msgstr "\"data\" : Un dictionnaire avec les informations suivantes :"
 
 #: ../../notebooks/gis.ipynb:3951
 msgid ""
 "\"base\": The \"YAML ID\" obtained from `here "
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 msgstr ""
+"\"base\" : L'\"ID YAML\" obtenu depuis `cette page "
+"<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 
 #: ../../notebooks/gis.ipynb:3952
 msgid ""
@@ -358,6 +469,9 @@ msgid ""
 "your variable. Needed only if it is different. In the link above, they "
 "are the string following \"Uses:\"."
 msgstr ""
+"\"input\" : Un dictionnaire reliant l'entrée xclim par défaut au nom de "
+"votre variable. Nécessaire uniquement si elle diffère. Dans le lien ci-dessus, "
+"ce sont les chaînes suivant \"Uses:\"."
 
 #: ../../notebooks/gis.ipynb:3953
 msgid ""
@@ -366,6 +480,9 @@ msgid ""
 "clicking the link in the top-right corner of the box describing a given "
 "indicator."
 msgstr ""
+"\"parameters\" : Un dictionnaire contenant tous les autres paramètres pour un indicateur donné. "
+"Dans le lien ci-dessus, la manière la plus simple d'y accéder est de cliquer sur le lien dans "
+"le coin supérieur droit de la boîte décrivant un indicateur donné."
 
 #: ../../notebooks/gis.ipynb:3954
 msgid ""
@@ -373,12 +490,17 @@ msgid ""
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__ "
 "under \"identifier\"."
 msgstr ""
+"Des entrées supplémentaires peuvent être utilisées ici, comme décrit `dans la documentation xclim "
+"<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__ "
+"sous \"identifier\"."
 
 #: ../../notebooks/gis.ipynb:3956
 msgid ""
 "\"identifier\": A custom name for your indicator. This will be the name "
 "returned in the results."
 msgstr ""
+"\"identifier\" : Un nom personnalisé pour votre indicateur. Ce sera le nom "
+"retourné dans les résultats."
 
 #: ../../notebooks/gis.ipynb:3957
 msgid ""
@@ -386,6 +508,9 @@ msgid ""
 "overwriting of ``xclim`` indicators, it is best to use something "
 "different from: [\"atmos\", \"land\", \"generic\"]."
 msgstr ""
+"\"module\": Nécessaire, mais peut être n'importe quoi. Pour éviter un "
+"écrasement accidentel des indicateurs ``xclim``, il est préférable "
+"d'utiliser quelque chose de différent de : [\"atmos\", \"land\", \"generic\"]."
 
 #: ../../notebooks/gis.ipynb:4672
 msgid ""
@@ -395,6 +520,11 @@ msgid ""
 "particularly useful, for instance, when extracting raw data needed for "
 "frequency analyses."
 msgstr ""
+"Enfin, ``xhydro.indicators.get_yearly_op``, également basé sur la librairie "
+"``xclim``, fournit une méthode flexible pour obtenir les valeurs annuelles de "
+"statistiques spécifiques, telles que les maxima annuels ou saisonniers. Cela peut être "
+"particulièrement utile, par exemple, lors de l'extraction des données brutes nécessaires "
+"pour les analyses fréquentielles."
 
 #: ../../notebooks/gis.ipynb:4852
 msgid ""
@@ -402,22 +532,29 @@ msgid ""
 "``xclim.core.calendar.select_time``. Four types of indexers are currently"
 " accepted:"
 msgstr ""
+"L'argument ``timeargs`` repose sur des indexeurs compatibles avec "
+"``xclim.core.calendar.select_time``. Quatre types d'indexeurs sont actuellement "
+"acceptés :"
 
 #: ../../notebooks/gis.ipynb:4854
 msgid "``month``, followed by a sequence of month numbers."
-msgstr ""
+msgstr "``month``, suivi d'une séquence de numéros de mois."
 
 #: ../../notebooks/gis.ipynb:4855
 msgid ""
 "``season``, followed by one or more of ``'DJF'``, ``'MAM'``, ``'JJA'``, "
 "and ``'SON'``."
 msgstr ""
+"``season``, suivi de un ou plusieurs parmi ``'DJF'``, ``'MAM'``, ``'JJA'``, "
+"et ``'SON'``."
 
 #: ../../notebooks/gis.ipynb:4856
 msgid ""
 "``doy_bounds``, followed by a sequence representing the inclusive bounds "
 "of the period to be considered (``'start'``, ``'end'``)."
 msgstr ""
+"``doy_bounds``, suivi d'une séquence représentant les bornes inclusives "
+"de la période à considérer (``'début'``, ``'fin'``)."
 
 #: ../../notebooks/gis.ipynb:4857
 #, python-format
@@ -425,6 +562,8 @@ msgid ""
 "``date_bounds``, similar to ``doy_bounds``, but using a month-day "
 "(``'%m-%d'``) format."
 msgstr ""
+"``date_bounds``, similaire à ``doy_bounds``, mais utilisant un format mois-jour "
+"(``'%m-%d'``)."
 
 #: ../../notebooks/gis.ipynb:4859
 msgid ""
@@ -432,6 +571,9 @@ msgid ""
 "variable. Supported operations include ``\"max\"``, ``\"min\"``, "
 "``\"mean\"``, and ``\"sum\"``."
 msgstr ""
+"Ensuite, nous spécifions les opérations à effectuer pour chaque "
+"variable. Les opérations prises en charge incluent ``\"max\"``, ``\"min\"``, "
+"``\"mean\"``, et ``\"sum\"``."
 
 #: ../../notebooks/gis.ipynb:4890
 msgid ""
@@ -439,7 +581,10 @@ msgid ""
 "product enables the efficient generation of a comprehensive array of "
 "climate indicators."
 msgstr ""
+"La combinaison de ``timeargs`` et ``operations`` par le produit cartésien permet "
+"la génération efficace d'un ensemble complet d'indicateurs climatiques."
 
 #: ../../notebooks/gis.ipynb:5474
 msgid "The same data can also be visualized as a ``pd.DataFrame`` as well :"
 msgstr ""
+"Les mêmes données peuvent également être visualisées sous la forme d'un ``pd.DataFrame`` :"

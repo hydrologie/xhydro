@@ -21,4 +21,4 @@ msgstr ""
 
 #: ../../notebooks/index.rst:2
 msgid "Modules"
-msgstr ""
+msgstr "Modules"

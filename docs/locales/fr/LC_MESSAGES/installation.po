@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../installation.rst:3
 msgid "Installation"
-msgstr ""
+msgstr "Installation"
 
 #: ../../installation.rst:5
 msgid ""
@@ -31,16 +31,24 @@ msgid ""
 "environment. If `mamba` is not already your default solver, consider "
 "running the following commands in order to speed up the process:"
 msgstr ""
+"Nous recommandons fortement d'installer `xHydro` dans un environnement "
+"Python Anaconda. De plus, en raison de la complexité de certains packages, "
+"le solveur de dépendances par défaut peut prendre beaucoup de temps pour "
+"résoudre l'environnement. Si `mamba` n'est pas déjà votre solveur par "
+"défaut, nous vous conseillons d'exécuter les commandes suivantes pour "
+"accélérer le processus :"
 
 #: ../../installation.rst:12
 msgid ""
 "If you don't have `pip`_ installed, this `Python installation guide`_ can"
 " guide you through the process."
 msgstr ""
+"Si vous n'avez pas `pip`_ installé, ce `guide d'installation Python`_ "
+"peut vous aider à traverser le processus."
 
 #: ../../installation.rst:18
 msgid "Stable release"
-msgstr ""
+msgstr "Version stable"
 
 #: ../../installation.rst:19
 msgid ""
@@ -49,6 +57,10 @@ msgid ""
 "Anaconda. This will ensure that all dependencies are met and that the "
 "package will work as expected."
 msgstr ""
+"Certaines des dépendances de `xHydro` peuvent être difficiles à installer "
+"avec `pip`. Pour cette raison, nous recommandons vivement d'installer "
+"`xHydro` en utilisant Anaconda. Cela garantira que toutes les dépendances "
+"sont satisfaites et que la librairie fonctionnera comme prévu."
 
 #: ../../installation.rst:25
 msgid ""
@@ -58,12 +70,19 @@ msgid ""
 "installing through `pip` might not currently be possible because of "
 "`raven-hydro`."
 msgstr ""
+"Alternativement, vous pouvez installer `xHydro` en utilisant `pip`. Toutes "
+"les fonctionnalités de `xHydro` fonctionneront, mais certaines librairies "
+"(`xscen` et `xESMF` en particulier) pourraient ne pas être complètement "
+"fonctionnelles. Si vous êtes sur Windows, l'installation via `pip` pourrait "
+"ne pas être possible en raison de `raven-hydro`."
 
 #: ../../installation.rst:31
 msgid ""
 "Either of those will install the latest stable release of `xHydro` with "
 "all its dependencies, with two exception:"
 msgstr ""
+"L'une ou l'autre de ces méthodes installera la dernière version stable de "
+"`xHydro` avec toutes ses dépendances, à deux exceptions près :"
 
 #: ../../installation.rst:33
 msgid ""
@@ -71,6 +90,9 @@ msgid ""
 "the `Extremes.jl`_ Julia package, you will need to install the `julia` "
 "extra:"
 msgstr ""
+"Si vous souhaitez utiliser le module `extreme_value_analysis`, qui repose "
+"sur le package `Extremes.jl`_ de Julia, vous devrez installer l'extra "
+"`julia` :"
 
 #: ../../installation.rst:41
 msgid ""
@@ -78,10 +100,14 @@ msgid ""
 "need to install the `lmoments3` library yourself. This library is "
 "available on both `PyPI` or `conda-forge`, but has a restricted license."
 msgstr ""
+"Si vous souhaitez utiliser le module `frequency_analysis.regional`, vous "
+"devrez installer vous-même la librairie `lmoments3`. Cette librairie "
+"est disponible à la fois sur `PyPI` et `conda-forge`, mais possède une "
+"licence restreinte."
 
 #: ../../installation.rst:48
 msgid "From sources"
-msgstr ""
+msgstr "Depuis les sources"
 
 #: ../../installation.rst:49
 msgid ""
@@ -90,36 +116,47 @@ msgid ""
 "latest features, or if you want to contribute to the development of "
 "`xHydro`, you can install it from the sources."
 msgstr ""
+"`xHydro` est toujours en développement actif et les dernières fonctionnalités "
+"peuvent ne pas être encore disponibles sur `PyPI` ou `conda-forge`. Si vous "
+"voulez utiliser les dernières fonctionnalités, ou si vous souhaitez contribuer "
+"au développement de `xHydro`, vous pouvez l'installer depuis les sources."
 
 #: ../../installation.rst:51
 msgid "The sources for xHydro can be downloaded from the `Github repo`_."
 msgstr ""
+"Les sources de xHydro peuvent être téléchargées depuis le `dépôt Github`_."
 
 #: ../../installation.rst:53
 msgid ""
 "Download the source code from the `Github repo`_ using one of the "
 "following methods:"
 msgstr ""
+"Téléchargez le code source depuis le `dépôt Github`_ en utilisant l'une des "
+"méthodes suivantes :"
 
 #: ../../installation.rst:55
 msgid "Clone the public repository:"
-msgstr ""
+msgstr "Clonez le dépôt public :"
 
 #: ../../installation.rst:61
 msgid ""
 "Download the `tarball "
 "<https://github.com/hydrologie/xhydro/tarball/main>`_:"
 msgstr ""
+"Téléchargez l'archive `tarball "
+"<https://github.com/hydrologie/xhydro/tarball/main>`_ :"
 
 #: ../../installation.rst:67
 msgid "Once you have a copy of the source, you can install it with:"
 msgstr ""
+"Une fois que vous avez une copie des sources, vous pouvez l'installer avec :"
 
 #: ../../installation.rst:75
 msgid ""
 "If you are on Windows, replace the ``make dev`` command with the "
 "following:"
 msgstr ""
+"Si vous êtes sous Windows, remplacez la commande ``make dev`` par celle-ci :"
 
 #: ../../installation.rst:81
 msgid ""
@@ -130,12 +167,22 @@ msgid ""
 " of `xHydro` into an existing Anaconda environment (*not recommended if "
 "requirements are not met*), only run the last command above."
 msgstr ""
+"Bien que vous ne souhaitiez pas contribuer à `xHydro`, nous privilégions "
+"l'utilisation de `environment-dev.yml` plutôt que `environment.yml` car il "
+"inclut des librairies supplémentaires nécessaires pour exécuter tous les "
+"exemples fournis dans la documentation. Si, pour une raison quelconque, vous "
+"souhaitez installer la version `PyPI` de `xHydro` dans un environnement "
+"Anaconda existant (*non recommandé si les exigences ne sont pas remplies*), "
+"exécutez uniquement la dernière commande ci-dessus."
 
 #: ../../installation.rst:83
 msgid ""
 "When new changes are made to the `Github repo`_, you can update your "
 "local copy using the following commands from the root of the repository:"
 msgstr ""
+"Lorsque de nouveaux changements sont apportés au `dépôt Github`_, vous "
+"pouvez mettre à jour votre copie locale en utilisant les commandes suivantes "
+"depuis la racine du dépôt :"
 
 #: ../../installation.rst:94
 msgid ""
@@ -143,3 +190,6 @@ msgid ""
 "to the repository, you might need to remove the environment and create it"
 " again."
 msgstr ""
+"Ces commandes devraient fonctionner dans la plupart des cas, mais si de "
+"gros changements sont apportés au dépôt, vous devrez peut-être supprimer "
+"l'environnement et le recréer."

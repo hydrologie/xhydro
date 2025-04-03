@@ -21,28 +21,28 @@ msgstr ""
 
 #: ../../index.rst:4
 msgid "Contents:"
-msgstr ""
+msgstr "Contenu :"
 
 #: ../../index.rst:19
 msgid "All Modules"
-msgstr ""
+msgstr "Tous les modules"
 
 #: ../../index.rst:2
 msgid "Welcome to xHydro's documentation!"
-msgstr ""
+msgstr "Bienvenue dans la documentation de xHydro !"
 
 #: ../../index.rst:26
 msgid "Documentation and Support"
-msgstr ""
+msgstr "Documentation et support"
 
 #: ../../index.rst:27
 msgid "`GitHub Repository <https://github.com/hydrologie/xhydro>`_"
-msgstr ""
+msgstr "`Dépôt GitHub <https://github.com/hydrologie/xhydro>`_"
 
 #: ../../index.rst:28
 msgid "`PyPI Package <https://pypi.org/project/xhydro/>`_"
-msgstr ""
+msgstr "`Package PyPI <https://pypi.org/project/xhydro/>`_"
 
 #: ../../index.rst:29
 msgid "`Conda Package <https://anaconda.org/conda-forge/xhydro>`_"
-msgstr ""
+msgstr "`Package Conda <https://anaconda.org/conda-forge/xhydro>`_"

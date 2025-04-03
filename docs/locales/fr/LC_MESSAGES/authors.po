@@ -21,66 +21,76 @@ msgstr ""
 
 #: ../../../AUTHORS.rst:3
 msgid "Credits"
-msgstr ""
+msgstr "Crédits"
 
 #: ../../../AUTHORS.rst:6
 msgid "Development Lead"
-msgstr ""
+msgstr "Responsable du développement"
 
 #: ../../../AUTHORS.rst:8
 msgid ""
 "Thomas-Charles Fortier Filion <tcff_hydro@outlook.com> `@TC-FF "
 "<https://github.com/TC-FF>`_"
 msgstr ""
+"Thomas-Charles Fortier Filion <tcff_hydro@outlook.com> `@TC-FF "
+"<https://github.com/TC-FF>`_"
 
 #: ../../../AUTHORS.rst:11
 msgid "Co-Developers"
-msgstr ""
+msgstr "Co-développeurs"
 
 #: ../../../AUTHORS.rst:13
 msgid ""
 "Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre "
 "<https://github.com/Zeitsperre>`_"
 msgstr ""
+"Trevor James Smith <smith.trevorj@ouranos.ca> `@Zeitsperre "
+"<https://github.com/Zeitsperre>`_"
 
 #: ../../../AUTHORS.rst:14
 msgid ""
 "Gabriel Rondeau-Genesse <rondeau-genesse.gabriel@ouranos.ca> `@RondeauG "
 "<https://github.com/RondeauG>`_"
 msgstr ""
+"Gabriel Rondeau-Genesse <rondeau-genesse.gabriel@ouranos.ca> `@RondeauG "
+"<https://github.com/RondeauG>`_"
 
 #: ../../../AUTHORS.rst:15
 msgid ""
 "Sébastien Langlois `@sebastienlanglois "
 "<https://github.com/sebastienlanglois>`_"
 msgstr ""
+"Sébastien Langlois `@sebastienlanglois "
+"<https://github.com/sebastienlanglois>`_"
 
 #: ../../../AUTHORS.rst:16
 msgid "Julián Ospina `@ospinajulian <https://github.com/ospinajulian>`_"
-msgstr ""
+msgstr "Julián Ospina `@ospinajulian <https://github.com/ospinajulian>`_"
 
 #: ../../../AUTHORS.rst:17
 msgid "Kamil Maarite `@Sci-pio <https://github.com/Sci-pio>`_"
-msgstr ""
+msgstr "Kamil Maarite `@Sci-pio <https://github.com/Sci-pio>`_"
 
 #: ../../../AUTHORS.rst:20
 msgid "Contributors"
-msgstr ""
+msgstr "Contributeurs"
 
 #: ../../../AUTHORS.rst:22
 msgid ""
 "Richard Arsenault `@richardarsenault "
 "<https://github.com/richardarsenault>`_"
 msgstr ""
+"Richard Arsenault `@richardarsenault "
+"<https://github.com/richardarsenault>`_"
 
 #: ../../../AUTHORS.rst:23
 msgid "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
-msgstr ""
+msgstr "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
 
 #: ../../../AUTHORS.rst:24
 msgid "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
-msgstr ""
+msgstr "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
 
 #: ../../../AUTHORS.rst:25
 msgid "Essi Parent `@essicolo <https://github.com/essicolo>`_"
-msgstr ""
+msgstr "Essi Parent `@essicolo <https://github.com/essicolo>`_"

@@ -21,121 +21,123 @@ msgstr ""
 
 #: ../../../README.rst:3
 msgid "xHydro |logo| |logo-light| |logo-dark|"
-msgstr ""
+msgstr "xHydro |logo| |logo-light| |logo-dark|"
 
 #: ../../../README.rst:72
 msgid "xHydro"
-msgstr ""
+msgstr "xHydro"
 
 #: ../../../README.rst:6
 msgid "Versions"
-msgstr ""
+msgstr "Versions"
 
 #: ../../../README.rst:6
 msgid "|pypi| |versions|"
-msgstr ""
+msgstr "|pypi| |versions|"
 
 #: ../../../README.rst:99
 msgid "PyPI"
-msgstr ""
+msgstr "PyPI"
 
 #: ../../../README.rst:111
 msgid "Supported Python Versions"
-msgstr ""
+msgstr "Versions Python prises en charge"
 
 #: ../../../README.rst:8
 msgid "Documentation and Support"
-msgstr ""
+msgstr "Documentation et support"
 
 #: ../../../README.rst:8
 msgid "|docs|"
-msgstr ""
+msgstr "|docs|"
 
 #: ../../../README.rst:60
 msgid "Documentation Status"
-msgstr ""
+msgstr "État de la documentation"
 
 #: ../../../README.rst:10
 msgid "Open Source"
-msgstr ""
+msgstr "Source ouverte"
 
 #: ../../../README.rst:10
 msgid "|license| |ossf-score|"
-msgstr ""
+msgstr "|license| |ossf-score|"
 
 #: ../../../README.rst:68
 msgid "License"
-msgstr ""
+msgstr "Licence"
 
 #: ../../../README.rst:91
 msgid "OpenSSF Scorecard"
-msgstr ""
+msgstr "OpenSSF Scorecard"
 
 #: ../../../README.rst:12
 msgid "Coding Standards"
-msgstr ""
+msgstr "Normes de codage"
 
 #: ../../../README.rst:12
 msgid "|black| |isort| |ruff| |pre-commit|"
-msgstr ""
+msgstr "|black| |isort| |ruff| |pre-commit|"
 
 #: ../../../README.rst:43
 msgid "Python Black"
-msgstr ""
+msgstr "Python Black"
 
 #: ../../../README.rst:64
 msgid "Isort"
-msgstr ""
+msgstr "Isort"
 
 #: ../../../README.rst:103
 msgid "Ruff"
-msgstr ""
+msgstr "Ruff"
 
 #: ../../../README.rst:95
 msgid "pre-commit.ci Status"
-msgstr ""
+msgstr "État de pre-commit.ci"
 
 #: ../../../README.rst:14
 msgid "Development Status"
-msgstr ""
+msgstr "État du développement"
 
 #: ../../../README.rst:14
 msgid "|status| |build| |coveralls|"
-msgstr ""
+msgstr "|status| |build| |coveralls|"
 
 #: ../../../README.rst:107
 msgid ""
 "Project Status: Active – The project has reached a stable, usable state "
 "and is being actively developed."
 msgstr ""
+"Statut du projet : Actif – Le projet a atteint un état stable et utilisable "
+"et est en développement actif."
 
 #: ../../../README.rst:47
 msgid "Build Status"
-msgstr ""
+msgstr "État de la construction"
 
 #: ../../../README.rst:51
 msgid "Coveralls"
-msgstr ""
+msgstr "Coveralls"
 
 #: ../../../README.rst:17
 msgid "Hydrological analysis library built with xarray"
-msgstr ""
+msgstr "Librairie d'analyse hydrologique construite avec xarray"
 
 #: ../../../README.rst:19
 msgid "Free software: Apache-2.0"
-msgstr ""
+msgstr "Logiciel libre : Apache-2.0"
 
 #: ../../../README.rst:20
 msgid "Documentation: https://xhydro.readthedocs.io/en/latest/"
-msgstr ""
+msgstr "Documentation anglaise : https://xhydro.readthedocs.io/en/latest/"
 
 #: ../../../README.rst:21
 msgid "Version française: https://xhydro.readthedocs.io/fr/latest/"
-msgstr ""
+msgstr "Version française : https://xhydro.readthedocs.io/fr/latest/"
 
 #: ../../../README.rst:24
 msgid "Features"
-msgstr ""
+msgstr "Fonctionnalités"
 
 #: ../../../README.rst:26
 msgid ""
@@ -143,45 +145,56 @@ msgid ""
 "and watershed boundaries from the HydroSHEDS API over any area of "
 "interest."
 msgstr ""
+"Trouvez et extrayez facilement des données géospatiales depuis l'API Planetary Computer "
+"et les frontières des bassins versants depuis l'API HydroSHEDS sur n'importe quelle zone d'intérêt."
 
 #: ../../../README.rst:27
 msgid "Calibrate and execute Hydrotel and Raven-emulated hydrological models."
-msgstr ""
+msgstr "Calibrez et exécutez les modèles hydrologiques Hydrotel et émulés par Raven."
 
 #: ../../../README.rst:28
 msgid ""
 "Perform optimal interpolation on hydrological data (daily streamflow and "
 "indices)."
 msgstr ""
+"Effectuez une interpolation optimale sur les données hydrologiques (débit quotidien et indices)."
 
 #: ../../../README.rst:29
 msgid ""
 "Compute hydrological indicators (e.g. n-day peak flow, annual maximum "
 "series, low flow, average flow, etc.) over custom date ranges."
 msgstr ""
+"Calculez des indicateurs hydrologiques (par exemple, débit de crue sur n jours, série maximale annuelle, "
+"débit de base, débit moyen, etc.) sur des plages de dates personnalisées."
 
 #: ../../../README.rst:30
 msgid ""
 "Perform frequency analyses on hydrological indicators using a variety of "
 "methods (e.g. Gumbel, GEV, etc.)."
 msgstr ""
+"Effectuez des analyses fréquentielles sur des indicateurs hydrologiques en utilisant diverses méthodes "
+"(par exemple, Gumbel, GEV, etc.)."
 
 #: ../../../README.rst:31
 msgid "Perform climate change impact analyses of hydrological data."
-msgstr ""
+msgstr "Effectuez des analyses d'impact du changement climatique sur les données hydrologiques."
 
 #: ../../../README.rst:34
 msgid "Credits"
-msgstr ""
+msgstr "Crédits"
 
 #: ../../../README.rst:36
 msgid ""
 "This package was created with Cookiecutter_ and the `Ouranosinc"
 "/cookiecutter-pypackage`_ project template."
 msgstr ""
+"Cette libraire a été créée avec Cookiecutter_ et le modèle de projet `Ouranosinc"
+"/cookiecutter-pypackage`_."
 
 #: ../../../README.rst:38
 msgid ""
 "This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal"
 " (@lou-a), with inputs from the `xHydro` team."
 msgstr ""
+"Ce logo a été conçu par Élyse Fournier (@elysefounier) et Louise Arnal"
+" (@lou-a), avec la contribution de l'équipe `xHydro`."
