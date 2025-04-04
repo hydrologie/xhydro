@@ -22,11 +22,11 @@ Welcome to xHydro's documentation!
 
    apidoc/modules
 
-Documentation and Support
--------------------------
+Useful links
+------------
 - `GitHub Repository <https://github.com/hydrologie/xhydro>`_
-- `PyPI Package <https://pypi.org/project/xhydro/>`_
-- `Conda Package <https://anaconda.org/conda-forge/xhydro>`_
+- `PyPI <https://pypi.org/project/xhydro/>`_
+- `Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_
 
 .. Indices and tables
 .. ==================

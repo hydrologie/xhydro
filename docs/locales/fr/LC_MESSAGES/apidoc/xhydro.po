@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.6\n"
+"Project-Id-Version: xHydro 0.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -17,7 +17,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../apidoc/xhydro.rst:2
 msgid "xhydro package"
@@ -31,11 +31,11 @@ msgstr ""
 msgid "Subpackages"
 msgstr ""
 
-#: ../../apidoc/xhydro.rst:22
+#: ../../apidoc/xhydro.rst:24
 msgid "Submodules"
 msgstr ""
 
-#: ../../apidoc/xhydro.rst:25
+#: ../../apidoc/xhydro.rst:27
 msgid "xhydro.cc module"
 msgstr ""
 
@@ -49,28 +49,26 @@ msgid ""
 "the temporal resolution of ds."
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:4 xhydro.gis.land_use_classification:8
-#: xhydro.gis.land_use_plot:4 xhydro.gis.surface_properties:12
-#: xhydro.gis.watershed_delineation:8 xhydro.gis.watershed_properties:10
-#: xhydro.indicators.compute_volume:4 xhydro.indicators.get_yearly_op:4
-#: xscen.aggregate.climatological_op:4 xscen.aggregate.compute_deltas:4
-#: xscen.aggregate.produce_horizon:9 xscen.diagnostics.health_checks:4
-#: xscen.ensembles.ensemble_stats:4 xscen.indicators.compute_indicators:8
+#: of xhydro.cc.sampled_indicators:4 xhydro.cc.weighted_random_sampling:4
+#: xhydro.gis.land_use_classification:8 xhydro.gis.land_use_plot:4
+#: xhydro.gis.surface_properties:12 xhydro.gis.watershed_delineation:8
+#: xhydro.gis.watershed_properties:10 xhydro.utils.merge_attributes:6
+#: xhydro.utils.update_history:6 xscen.aggregate.climatological_op:4
+#: xscen.aggregate.compute_deltas:4 xscen.aggregate.produce_horizon:9
+#: xscen.diagnostics.health_checks:4 xscen.ensembles.ensemble_stats:4
 msgid "Parameters"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:5 xhydro.indicators.get_yearly_op:5
-#: xscen.aggregate.climatological_op:5 xscen.aggregate.compute_deltas:5
-#: xscen.aggregate.produce_horizon:10 xscen.indicators.compute_indicators:9
+#: of xhydro.cc.weighted_random_sampling:5 xscen.aggregate.climatological_op:5
+#: xscen.aggregate.compute_deltas:5 xscen.aggregate.produce_horizon:10
 msgid "ds"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:-1 xhydro.indicators.get_yearly_op:-1
-#: xhydro.indicators.get_yearly_op:35 xscen.aggregate.climatological_op:-1
+#: of xhydro.cc.sampled_indicators:-1 xhydro.cc.weighted_random_sampling:-1
+#: xhydro.cc.weighted_random_sampling:20 xscen.aggregate.climatological_op:-1
 #: xscen.aggregate.climatological_op:51 xscen.aggregate.compute_deltas:-1
 #: xscen.aggregate.compute_deltas:21 xscen.aggregate.produce_horizon:-1
-#: xscen.aggregate.produce_horizon:28 xscen.ensembles.ensemble_stats:28
-#: xscen.indicators.compute_indicators:-1
+#: xscen.aggregate.produce_horizon:31 xscen.ensembles.ensemble_stats:28
 msgid "xr.Dataset"
 msgstr ""
 
@@ -78,11 +76,12 @@ msgstr ""
 msgid "Dataset to use for the computation."
 msgstr ""
 
-#: of xhydro.indicators.get_yearly_op:7 xscen.aggregate.climatological_op:7
+#: of xscen.aggregate.climatological_op:7 xscen.aggregate.produce_horizon:22
 msgid "op"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:-1 xscen.aggregate.compute_deltas:-1
+#: xscen.aggregate.produce_horizon:-1
 msgid "str or dict"
 msgstr ""
 
@@ -91,10 +90,11 @@ msgid ""
 "Operation to perform over time. The operation can be any method name of "
 "xarray.core.rolling.DatasetRolling, 'linregress', or a dictionary. If "
 "'op' is a dictionary, the key is the operation name and the value is a "
-"dict of kwargs accepted by the operation. While other operations are "
-"technically possible, the following are recommended and tested: ['max', "
-"'mean', 'median', 'min', 'std', 'sum', 'var', 'linregress']. Operations "
-"beyond methods of xarray.core.rolling.DatasetRolling include:"
+"dict of kwargs accepted by the equivalent NumPy function. See the Notes "
+"for more information. While other operations are technically possible, "
+"the following are recommended and tested: ['max', 'mean', 'median', "
+"'min', 'std', 'sum', 'var', 'linregress']. Operations beyond methods of "
+"xarray.core.rolling.DatasetRolling include:"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:16
@@ -109,11 +109,12 @@ msgstr ""
 msgid "Only one operation per call is supported, so len(op)==1 if a dict."
 msgstr ""
 
-#: of xhydro.indicators.get_yearly_op:11 xscen.aggregate.climatological_op:22
+#: of xscen.aggregate.climatological_op:22
 msgid "window"
 msgstr ""
 
-#: of xscen.aggregate.climatological_op:-1
+#: of xhydro.cc.weighted_random_sampling:-1
+#: xscen.aggregate.climatological_op:-1
 msgid "int, optional"
 msgstr ""
 
@@ -148,9 +149,9 @@ msgstr ""
 msgid "stride"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:-1 xhydro.gis.land_use_plot:-1
+#: of xhydro.cc.weighted_random_sampling:-1 xhydro.gis.land_use_plot:-1
 #: xhydro.gis.surface_properties:-1 xhydro.gis.watershed_properties:-1
-#: xhydro.indicators.get_yearly_op:-1 xscen.aggregate.climatological_op:-1
+#: xscen.aggregate.climatological_op:-1
 msgid "int"
 msgstr ""
 
@@ -160,13 +161,11 @@ msgid ""
 "operation."
 msgstr ""
 
-#: of xscen.aggregate.climatological_op:35 xscen.aggregate.produce_horizon:14
-#: xscen.indicators.compute_indicators:16
+#: of xscen.aggregate.climatological_op:35 xscen.aggregate.produce_horizon:15
 msgid "periods"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:-1 xscen.aggregate.produce_horizon:-1
-#: xscen.indicators.compute_indicators:-1
 msgid "list of str or list of lists of str, optional"
 msgstr ""
 
@@ -181,29 +180,28 @@ msgstr ""
 msgid "rename_variables"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:-1 xhydro.indicators.get_yearly_op:-1
-#: xscen.aggregate.climatological_op:-1 xscen.aggregate.compute_deltas:-1
-#: xscen.ensembles.ensemble_stats:-1 xscen.indicators.compute_indicators:-1
+#: of xscen.aggregate.climatological_op:-1 xscen.aggregate.compute_deltas:-1
+#: xscen.ensembles.ensemble_stats:-1
 msgid "bool"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:40
+#, python-brace-format
 msgid "If True, '_clim_{op}' will be added to variable names."
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:41 xscen.aggregate.compute_deltas:15
-#: xscen.aggregate.produce_horizon:21 xscen.ensembles.ensemble_stats:23
-#: xscen.indicators.compute_indicators:26
+#: xscen.aggregate.produce_horizon:24 xscen.ensembles.ensemble_stats:23
 msgid "to_level"
 msgstr ""
 
-#: of xscen.aggregate.climatological_op:-1 xscen.aggregate.compute_deltas:-1
-#: xscen.aggregate.produce_horizon:-1 xscen.indicators.compute_indicators:-1
+#: of xhydro.gis.surface_properties:-1 xhydro.gis.watershed_properties:-1
+#: xhydro.utils.update_history:-1 xscen.aggregate.climatological_op:-1
+#: xscen.aggregate.compute_deltas:-1 xscen.aggregate.produce_horizon:-1
 msgid "str, optional"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:42 xscen.aggregate.compute_deltas:16
-#: xscen.indicators.compute_indicators:27
 msgid ""
 "The processing level to assign to the output. If None, the processing "
 "level of the inputs is preserved."
@@ -221,18 +219,33 @@ msgid ""
 " from periods and/or windows and their stride in the rolling operation."
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:26 xhydro.gis.land_use_classification:21
-#: xhydro.gis.land_use_plot:17 xhydro.gis.surface_properties:29
-#: xhydro.gis.watershed_delineation:17 xhydro.gis.watershed_properties:21
-#: xhydro.indicators.compute_volume:14 xhydro.indicators.get_yearly_op:34
-#: xscen.aggregate.climatological_op:50 xscen.aggregate.compute_deltas:20
-#: xscen.aggregate.produce_horizon:27 xscen.diagnostics.health_checks:47
-#: xscen.ensembles.ensemble_stats:27 xscen.indicators.compute_indicators:31
+#: of xhydro.cc.sampled_indicators:22 xhydro.cc.weighted_random_sampling:19
+#: xhydro.gis.land_use_classification:21 xhydro.gis.land_use_plot:17
+#: xhydro.gis.surface_properties:29 xhydro.gis.watershed_delineation:17
+#: xhydro.gis.watershed_properties:21 xhydro.utils.merge_attributes:23
+#: xhydro.utils.update_history:19 xscen.aggregate.climatological_op:50
+#: xscen.aggregate.compute_deltas:20 xscen.aggregate.produce_horizon:30
+#: xscen.diagnostics.health_checks:47 xscen.ensembles.ensemble_stats:27
 msgid "Returns"
 msgstr ""
 
 #: of xscen.aggregate.climatological_op:52
 msgid "Dataset with the results from the climatological operation."
+msgstr ""
+
+#: of xhydro.cc.sampled_indicators:29 xhydro.cc.weighted_random_sampling:24
+#: xscen.aggregate.climatological_op:55 xscen.ensembles.ensemble_stats:32
+msgid "Notes"
+msgstr ""
+
+#: of xscen.aggregate.climatological_op:56
+msgid ""
+"xarray.core.rolling.DatasetRolling functions do not support kwargs other "
+"than 'keep_attrs'. In order to pass additional arguments to the "
+"operation, we instead use the 'reduce' method and pass the operation as a"
+" numpy function. If possible, a function that handles NaN values will be "
+"used (e.g. op='mean' will use np.nanmean), as the 'min_periods' argument "
+"already decides how many NaN values are acceptable."
 msgstr ""
 
 #: of xscen.aggregate.compute_deltas:1
@@ -300,11 +313,12 @@ msgstr ""
 msgid "statistics"
 msgstr ""
 
-#: of xscen.ensembles.ensemble_stats:-1 xscen.indicators.compute_indicators:32
+#: of xscen.ensembles.ensemble_stats:-1
 msgid "dict"
 msgstr ""
 
 #: of xscen.ensembles.ensemble_stats:12
+#, python-brace-format
 msgid ""
 "xclim.ensembles statistics to be called. Dictionary in the format "
 "{function: arguments}. If a function requires 'weights', you can leave it"
@@ -317,8 +331,7 @@ msgstr ""
 msgid "create_kwargs"
 msgstr ""
 
-#: of xhydro.indicators.compute_volume:-1 xhydro.indicators.get_yearly_op:-1
-#: xscen.aggregate.produce_horizon:-1 xscen.ensembles.ensemble_stats:-1
+#: of xscen.aggregate.produce_horizon:-1 xscen.ensembles.ensemble_stats:-1
 msgid "dict, optional"
 msgstr ""
 
@@ -326,11 +339,11 @@ msgstr ""
 msgid "Dictionary of arguments for xclim.ensembles.create_ensemble."
 msgstr ""
 
-#: of xscen.ensembles.ensemble_stats:18
+#: of xhydro.cc.weighted_random_sampling:7 xscen.ensembles.ensemble_stats:18
 msgid "weights"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:-1 xscen.ensembles.ensemble_stats:-1
+#: of xhydro.cc.weighted_random_sampling:-1 xscen.ensembles.ensemble_stats:-1
 msgid "xr.DataArray, optional"
 msgstr ""
 
@@ -351,10 +364,11 @@ msgid ""
 "dataset (same behaviour as xclim.ensembles.create_ensemble)"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:-1 xhydro.gis.land_use_classification:-1
-#: xhydro.gis.land_use_plot:-1 xhydro.gis.surface_properties:-1
-#: xhydro.gis.watershed_properties:-1 xhydro.indicators.compute_volume:-1
-#: xhydro.indicators.get_yearly_op:-1 xscen.ensembles.ensemble_stats:-1
+#: of xhydro.gis.land_use_classification:-1 xhydro.gis.land_use_plot:-1
+#: xhydro.gis.surface_properties:-1 xhydro.gis.watershed_properties:-1
+#: xhydro.utils.merge_attributes:-1 xhydro.utils.merge_attributes:24
+#: xhydro.utils.update_history:-1 xhydro.utils.update_history:20
+#: xscen.ensembles.ensemble_stats:-1
 msgid "str"
 msgstr ""
 
@@ -364,11 +378,6 @@ msgstr ""
 
 #: of xscen.ensembles.ensemble_stats:29
 msgid "Dataset with ensemble statistics"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:37 xhydro.indicators.get_yearly_op:40
-#: xscen.ensembles.ensemble_stats:32
-msgid "Notes"
 msgstr ""
 
 #: of xscen.ensembles.ensemble_stats:33
@@ -420,7 +429,7 @@ msgid ""
 "be compatible with other statistics."
 msgstr ""
 
-#: of xscen.ensembles.ensemble_stats:53 xscen.indicators.compute_indicators:36
+#: of xscen.ensembles.ensemble_stats:53
 msgid "See Also"
 msgstr ""
 
@@ -450,37 +459,39 @@ msgid ""
 msgstr ""
 
 #: of xscen.aggregate.produce_horizon:11
-msgid "Input dataset with a time dimension."
+msgid ""
+"Input dataset with a time dimension. If 'indicators' is None, the dataset"
+" should contain the precomputed indicators."
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:12 xscen.indicators.compute_indicators:11
+#: of xscen.aggregate.produce_horizon:13
 msgid "indicators"
 msgstr ""
 
 #: of xscen.aggregate.produce_horizon:-1
 msgid ""
-"Union[str, os.PathLike, Sequence[Indicator], Sequence[Tuple[str, "
-"Indicator]], ModuleType]"
+"str | os.PathLike | Sequence[Indicator] | Sequence[Tuple[str, Indicator]]"
+" | ModuleType, optional"
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:13
+#: of xscen.aggregate.produce_horizon:14
 msgid ""
 "Indicators to compute. It will be passed to the `indicators` argument of "
 "`xs.compute_indicators`."
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:15
+#: of xscen.aggregate.produce_horizon:16
 msgid ""
 "Either [start, end] or list of [start_year, end_year] for the period(s) "
 "to be evaluated. If both periods and warminglevels are None, the full "
 "time series will be used."
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:17
+#: of xscen.aggregate.produce_horizon:18
 msgid "warminglevels"
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:18
+#: of xscen.aggregate.produce_horizon:19
 msgid ""
 "Dictionary of arguments to pass to `py:func:xscen.subset_warming_level`. "
 "If 'wl' is a list, the function will be called for each value and produce"
@@ -488,141 +499,175 @@ msgid ""
 "time series will be used."
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:22
+#: of xscen.aggregate.produce_horizon:23
+msgid ""
+"Operation to perform over the time dimension. See "
+"`py:func:xscen.climatological_op` for details. Default is 'mean'."
+msgstr ""
+
+#: of xscen.aggregate.produce_horizon:25
+#, python-brace-format
 msgid ""
 "The processing level to assign to the output. If there is only one "
 "horizon, you can use \"{wl}\", \"{period0}\" and \"{period1}\" in the "
 "string to dynamically include that information in the processing level."
 msgstr ""
 
-#: of xscen.aggregate.produce_horizon:29
+#: of xscen.aggregate.produce_horizon:32
 msgid "Horizon dataset."
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:1
-msgid ""
-"Compute future indicators using a perturbation approach and random "
-"sampling."
+msgid "Reconstruct indicators using a perturbation approach and random sampling."
+msgstr ""
+
+#: of xhydro.cc.sampled_indicators:5
+msgid "ds_dist"
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:6
 msgid ""
-"Dataset containing the historical indicators. The indicators are expected"
-" to be represented by a distribution of pre-computed percentiles. The "
-"percentiles should be stored in either a dimension called \"percentile\" "
-"[0, 100] or \"quantile\" [0, 1]."
+"Dataset containing the sampled reference distribution, stacked along a "
+"'sample' dimension. Typically generated using "
+"'xhydro.cc.weighted_random_sampling'."
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:8
-msgid "deltas"
+msgid "deltas_dist"
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:9
 msgid ""
-"Dataset containing the future deltas to apply to the historical "
-"indicators."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:10
-msgid "delta_type"
+"Dataset containing the sampled deltas, stacked along a 'sample' "
+"dimension. Typically generated using "
+"'xhydro.cc.weighted_random_sampling'."
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:11
-msgid "Type of delta provided. Must be one of ['absolute', 'percentage']."
+msgid "delta_kind"
+msgstr ""
+
+#: of xhydro.cc.sampled_indicators:-1
+msgid "str or dict, optional"
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:12
-msgid "ds_weights"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:13
 msgid ""
-"Weights to use when sampling the historical indicators, for dimensions "
-"other than 'percentile'/'quantile'. Dimensions not present in this "
-"Dataset, or if None, will be sampled uniformly unless they are shared "
-"with 'deltas'."
+"Type of delta provided. Recognized values are: ['absolute', 'abs.', '+'],"
+" ['percentage', 'pct.', '%']. If a dict is provided, it should map the "
+"variable names to their respective delta type. If None, the variables "
+"should have a 'delta_kind' attribute."
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:15
-msgid "delta_weights"
+msgid "percentiles"
+msgstr ""
+
+#: of xhydro.cc.sampled_indicators:-1
+msgid "xr.DataArray or xr.Dataset or list or np.ndarray, optional"
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:16
 msgid ""
-"Weights to use when sampling the deltas, such as along the 'realization' "
-"dimension. Dimensions not present in this Dataset, or if None, will be "
-"sampled uniformly unless they are shared with 'ds'."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:18
-msgid "n"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:19
-msgid "Number of samples to generate."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:20
-msgid "seed"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:21
-msgid "Seed to use for the random number generator."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:22
-msgid "return_dist"
+"Percentiles to compute in the future distribution. This will change the "
+"output of the function to a tuple containing the future distribution and "
+"the future percentiles. If given a Dataset, it should contain a "
+"'percentile' or 'quantile' dimension. If given a list or np.ndarray, it "
+"should contain percentiles [0, 100]."
 msgstr ""
 
 #: of xhydro.cc.sampled_indicators:23
-msgid ""
-"Whether to return the full distributions (ds, deltas, fut) or only the "
-"percentiles."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:27
-msgid "fut_pct"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:28
-msgid "Dataset containing the future percentiles."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:29
-msgid "ds_dist"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:30
-msgid "The historical distribution, stacked along the 'sample' dimension."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:31
-msgid "deltas_dist"
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:32
-msgid "The delta distribution, stacked along the 'sample' dimension."
-msgstr ""
-
-#: of xhydro.cc.sampled_indicators:33
 msgid "fut_dist"
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:34
+#: of xhydro.cc.sampled_indicators:24
 msgid "The future distribution, stacked along the 'sample' dimension."
 msgstr ""
 
-#: of xhydro.cc.sampled_indicators:38
-msgid ""
-"The future percentiles are computed as follows: 1. Sample 'n' values from"
-" the historical distribution, weighting the percentiles by their "
-"associated coverage. 2. Sample 'n' values from the delta distribution, "
-"using the provided weights. 3. Create the future distribution by applying"
-" the sampled deltas to the sampled historical distribution, element-wise."
-" 4. Compute the percentiles of the future distribution."
+#: of xhydro.cc.sampled_indicators:25
+msgid "fut_pct"
 msgstr ""
 
-#: ../../apidoc/xhydro.rst:34
+#: of xhydro.cc.sampled_indicators:26
+msgid "Dataset containing the future percentiles."
+msgstr ""
+
+#: of xhydro.cc.sampled_indicators:30
+msgid ""
+"The future percentiles are computed as follows: 1. Sample 'n' values from"
+" the reference distribution. 2. Sample 'n' values from the delta "
+"distribution. 3. Create the future distribution by applying the sampled "
+"deltas to the sampled historical distribution, element-wise. 4. Compute "
+"the percentiles of the future distribution (optional)."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:1
+msgid "Sample from a dataset using random sampling."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:6
+msgid "Dataset to sample from."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:8
+msgid ""
+"Weights to use when sampling the dataset, for dimensions other than "
+"'percentile' or 'quantile'. See Notes for more information on special "
+"cases for 'percentile', 'quantile', 'time', and 'horizon' dimensions."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:10
+msgid "include_dims"
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:-1
+msgid "list of str, optional"
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:11
+msgid ""
+"List of dimensions to include when sampling the dataset, in addition to "
+"the 'percentile' or 'quantile' dimensions and those with weights. These "
+"dimensions will be sampled uniformly."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:13
+msgid "n"
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:14
+msgid "Number of samples to generate."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:15
+msgid "seed"
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:16
+msgid "Seed to use for the random number generator."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:21
+msgid "Dataset containing the 'n' samples, stacked along a 'sample' dimension."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:25
+msgid ""
+"If the dataset contains a \"percentile\" [0, 100] or \"quantile\" [0, 1] "
+"dimension, the percentiles will be sampled accordingly as to account for "
+"the uneven spacing between percentiles and maintain the distribution's "
+"shape."
+msgstr ""
+
+#: of xhydro.cc.weighted_random_sampling:28
+msgid ""
+"Weights along the 'time' or 'horizon' dimensions are supported, but "
+"behave differently than other dimensions. They will not be stacked "
+"alongside other dimensions in the new 'sample' dimension. Rather, a "
+"separate sampling will be done for each time/horizon,"
+msgstr ""
+
+#: ../../apidoc/xhydro.rst:36
 msgid "xhydro.gis module"
 msgstr ""
 
@@ -707,6 +752,18 @@ msgstr ""
 
 #: of xhydro.gis.land_use_classification:23 xhydro.gis.watershed_properties:23
 msgid "Output dataset containing the watershed properties."
+msgstr ""
+
+#: of xhydro.gis.land_use_classification:26 xhydro.gis.land_use_plot:22
+#: xhydro.gis.surface_properties:34 xhydro.gis.watershed_delineation:22
+msgid "Warnings"
+msgstr ""
+
+#: of xhydro.gis.land_use_classification:27 xhydro.gis.land_use_plot:23
+#: xhydro.gis.surface_properties:35
+msgid ""
+"This function relies on the Microsoft Planetary Computer's STAC Catalog "
+"to retrieve the Digital Elevation Model (DEM) data."
 msgstr ""
 
 #: of xhydro.gis.land_use_plot:1
@@ -836,6 +893,12 @@ msgstr ""
 msgid "GeoDataFrame containing the watershed boundaries."
 msgstr ""
 
+#: of xhydro.gis.watershed_delineation:23
+msgid ""
+"This function relies on an Amazon S3-hosted dataset to delineate "
+"watersheds."
+msgstr ""
+
 #: of xhydro.gis.watershed_properties:1
 msgid "Watershed properties extracted from a gpd.GeoDataFrame."
 msgstr ""
@@ -846,209 +909,7 @@ msgid ""
 " coordinates"
 msgstr ""
 
-#: ../../apidoc/xhydro.rst:43
-msgid "xhydro.indicators module"
-msgstr ""
-
-#: of xhydro.indicators:1
-msgid ""
-"Module to compute indicators using xclim's "
-"build_indicator_module_from_yaml."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:1
-msgid "Calculate variables and indicators based on a YAML call to xclim."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:3
-msgid ""
-"The function cuts the output to be the same years as the inputs. Hence, "
-"if an indicator creates a timestep outside the original year range (e.g. "
-"the first DJF for QS-DEC), it will not appear in the output."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:10
-msgid "Dataset to use for the indicators."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:-1
-msgid ""
-"Union[str, os.PathLike, Sequence[Indicator], Sequence[tuple[str, "
-"Indicator]], ModuleType]"
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:12
-msgid ""
-"Path to a YAML file that instructs on how to calculate missing variables."
-" Can also be only the \"stem\", if translations and custom indices are "
-"implemented. Can be the indicator module directly, or a sequence of "
-"indicators or a sequence of tuples (indicator name, indicator) as "
-"returned by `iter_indicators()`."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:17
-msgid ""
-"Either [start, end] or list of [start, end] of continuous periods over "
-"which to compute the indicators. This is needed when the time axis of ds "
-"contains some jumps in time. If None, the dataset will be considered "
-"continuous."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:20
-msgid "restrict_years"
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:21
-msgid ""
-"If True, cut the time axis to be within the same years as the input. This"
-" is mostly useful for frequencies that do not start in January, such as "
-"QS-DEC. In that instance, `xclim` would start on previous_year-12-01 "
-"(DJF), with a NaN. `restrict_years` will cut that first timestep. This "
-"should have no effect on YS and MS indicators."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:33
-msgid ""
-"Dictionary (keys = timedeltas) with indicators separated by temporal "
-"resolution."
-msgstr ""
-
-#: of xscen.indicators.compute_indicators:37
-msgid "xclim.indicators, xclim.core.indicator.build_indicator_module_from_yaml"
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:1
-msgid ""
-"Compute the volume of water from a streamflow variable, keeping the same "
-"frequency."
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:5
-msgid "da"
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:-1 xhydro.indicators.compute_volume:15
-msgid "xr.DataArray"
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:6
-msgid "Streamflow variable."
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:7
-msgid "out_units"
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:8
-msgid "Output units. Defaults to \"m3\"."
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:9
-msgid "attrs"
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:10
-msgid ""
-"Attributes to add to the output variable. Default attributes for "
-"\"long_name\", \"units\", \"cell_methods\" and \"description\" will be "
-"added if not provided."
-msgstr ""
-
-#: of xhydro.indicators.compute_volume:16
-msgid "Volume of water."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:1
-msgid "Compute yearly operations on a variable."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:6
-msgid "Dataset containing the variable to compute the operation on."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:8
-msgid "Operation to compute. One of [\"max\", \"min\", \"mean\", \"sum\"]."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:9
-msgid "input_var"
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:10
-msgid "Name of the input variable. Defaults to \"streamflow\"."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:12
-msgid ""
-"Size of the rolling window. A \"mean\" operation is performed on the "
-"rolling window before the call to xclim. This parameter cannot be used "
-"with the \"sum\" operation."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:14
-msgid "timeargs"
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:15
-msgid ""
-"Dictionary of time arguments for the operation. Keys are the name of the "
-"period that will be added to the results (e.g. \"winter\", \"summer\", "
-"\"annual\"). Values are up to two dictionaries, with both being optional."
-" The first is {'freq': str}, where str is a frequency supported by xarray"
-" (e.g. \"YS\", \"YS-JAN\", \"YS-DEC\"). It needs to be a yearly "
-"frequency. Defaults to \"YS-JAN\". The second is an indexer as supported "
-"by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which "
-"means the whole year. See :py:func:`xclim.core.calendar.select_time` for "
-"more information. Examples: {\"winter\": {\"freq\": \"YS-DEC\", "
-"\"date_bounds\": [\"12-01\", \"02-28\"]}}, {\"jan\": {\"freq\": \"YS\", "
-"\"month\": 1}}, {\"annual\": {}}."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:24
-msgid "missing"
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:25
-msgid ""
-"How to handle missing values. One of \"skip\", \"any\", \"at_least_n\", "
-"\"pct\", \"wmo\". See :py:func:`xclim.core.missing` for more information."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:27
-msgid "missing_options"
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:28
-msgid ""
-"Dictionary of options for the missing values' method. See "
-":py:func:`xclim.core.missing` for more information."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:29
-msgid "interpolate_na"
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:30
-msgid ""
-"Whether to interpolate missing values before computing the operation. "
-"Only used with the \"sum\" operation. Defaults to False."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:36
-msgid ""
-"Dataset containing the computed operations, with one variable per "
-"indexer. The name of the variable follows the pattern "
-"`{input_var}{window}_{op}_{indexer}`."
-msgstr ""
-
-#: of xhydro.indicators.get_yearly_op:41
-msgid ""
-"If you want to perform a frequency analysis on a frequency that is finer "
-"than annual, simply use multiple timeargs (e.g. 1 per month) to create "
-"multiple distinct variables."
-msgstr ""
-
-#: ../../apidoc/xhydro.rst:52
+#: ../../apidoc/xhydro.rst:45
 msgid "xhydro.utils module"
 msgstr ""
 
@@ -1201,4 +1062,114 @@ msgstr ""
 msgid ""
 "Dataset containing the flags if return_flags is True & raise_on is False "
 "for the \"flags\" check."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:1
+msgid "Merge attributes from several DataArrays or Datasets."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:3
+msgid ""
+"If more than one input is given, its name (if available) is prepended as:"
+" \"<input name> : <input attribute>\"."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:7
+msgid "attribute"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:8
+msgid "The attribute to merge."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:9 xhydro.utils.update_history:9
+msgid "\\*inputs_list"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:-1 xhydro.utils.update_history:-1
+msgid "xr.DataArray or xr.Dataset"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:10
+msgid ""
+"The datasets or variables that were used to produce the new object. "
+"Inputs given that way will be prefixed by their `name` attribute if "
+"available."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:12
+msgid "new_line"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:13
+msgid ""
+"The character to put between each instance of the attributes. Usually, in"
+" CF-conventions, the history attributes uses '\\\\n' while cell_methods "
+"uses ' '."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:15
+msgid "missing_str"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:16
+msgid ""
+"A string that is printed if an input doesn't have the attribute. Defaults"
+" to None, in which case the input is simply skipped."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:18 xhydro.utils.update_history:14
+msgid "\\*\\*inputs_kws"
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:19 xhydro.utils.update_history:15
+msgid ""
+"Mapping from names to the datasets or variables that were used to produce"
+" the new object. Inputs given that way will be prefixes by the passed "
+"name."
+msgstr ""
+
+#: of xhydro.utils.merge_attributes:25
+msgid ""
+"The new attribute made from the combination of the ones from all the "
+"inputs."
+msgstr ""
+
+#: of xhydro.utils.update_history:1
+msgid ""
+"Return a history string with the timestamped message and the combination "
+"of the history of all inputs."
+msgstr ""
+
+#: of xhydro.utils.update_history:3
+msgid ""
+"The new history entry is formatted as \"[<timestamp>] <new_name>: "
+"<hist_str> - xhydro version: <xhydro.__version__>.\""
+msgstr ""
+
+#: of xhydro.utils.update_history:7
+msgid "hist_str"
+msgstr ""
+
+#: of xhydro.utils.update_history:8
+msgid "The string describing what has been done on the data."
+msgstr ""
+
+#: of xhydro.utils.update_history:10
+msgid ""
+"The datasets or variables that were used to produce the new object. "
+"Inputs given that way will be prefixed by their \"name\" attribute if "
+"available."
+msgstr ""
+
+#: of xhydro.utils.update_history:12
+msgid "new_name"
+msgstr ""
+
+#: of xhydro.utils.update_history:13
+msgid "The name of the newly created variable or dataset to prefix hist_msg."
+msgstr ""
+
+#: of xhydro.utils.update_history:21
+msgid "The combine history of all inputs starting with `hist_str`."
 msgstr ""

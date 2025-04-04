@@ -1,0 +1,322 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:9
+msgid "Extreme Value Analysis using Extremes.jl"
+msgstr "Analyse des valeurs extrêmes utilisant Extremes.jl"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:11
+msgid ""
+"This module provides an easy-to-use wrapper for the ``Extremes.jl`` Julia"
+" package, enabling seamless integration with ``xarray`` for extreme value"
+" analysis. However, do note that ``juliacall`` is not installed by "
+"default when installing ``xHydro``. Consult the installation page for "
+"instructions."
+msgstr ""
+"Ce module fournit une interface facile à utiliser pour le package "
+"``Extremes.jl`` en Julia, permettant une intégration fluide avec ``xarray`` "
+"pour l'analyse des valeurs extrêmes. Cependant, veuillez noter que "
+"``juliacall`` n'est pas installé par défaut lors de l'installation de "
+"``xHydro``. Consultez la page d'installation pour des instructions."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:13
+msgid ""
+"The ``Extremes.jl`` package is specifically designed for analyzing "
+"extreme values and offers a variety of powerful features:"
+msgstr ""
+"Le package ``Extremes.jl`` est spécialement conçu pour l'analyse des "
+"valeurs extrêmes et offre une variété de fonctionnalités puissantes :"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:15
+msgid ""
+"Block Maxima and Threshold Exceedance methods, including popular "
+"distributions such as ``genextreme``, ``gumbel_r``, and ``genpareto``."
+msgstr ""
+"Méthodes des maxima par blocs et de dépassements de seuil, y compris des "
+"distributions populaires telles que ``genextreme``, ``gumbel_r`` et "
+"``genpareto``."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:16
+msgid ""
+"Flexible parameter estimation techniques, supporting methods like "
+"``Probability-Weighted Moments (PWM)``, ``Maximum Likelihood Estimation "
+"(MLE)``, and ``Bayesian Estimation``."
+msgstr ""
+"Techniques flexibles d'estimation des paramètres, prenant en charge des "
+"méthodes telles que ``Probability-Weighted Moments (PWM)``, "
+"``Maximum Likelihood Estimation (MLE)``, et ``Bayesian Estimation``."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:17
+msgid ""
+"Compatibility with both stationary and non-stationary models for flexible"
+" modeling of future extreme events."
+msgstr ""
+"Compatibilité avec les modèles stationnaires et non stationnaires pour une "
+"modélisation flexible des événements extrêmes futurs."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:18
+msgid ""
+"Return level estimation for quantifying the risk of extreme events over "
+"different return periods."
+msgstr ""
+"Estimation du niveau de retour pour quantifier le risque d'événements "
+"extrêmes sur différentes périodes de retour."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:20
+msgid ""
+"For further information on the ``Extremes.jl`` package, consult the "
+"following resources:"
+msgstr ""
+"Pour plus d'informations sur le package ``Extremes.jl``, consultez les "
+"ressources suivantes :"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:22
+msgid "`Extremes.jl - JSS Article <https://doi.org/10.18637/jss.v109.i06>`__"
+msgstr "`Extremes.jl - Article JSS <https://doi.org/10.18637/jss.v109.i06>`__"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:23
+msgid "`Extremes.jl GitHub Repository <https://github.com/jojal5/Extremes.jl>`__"
+msgstr "`Extremes.jl Dépôt GitHub <https://github.com/jojal5/Extremes.jl>`__"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:57
+msgid "Data acquisition"
+msgstr "Acquisition des données"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:59
+msgid ""
+"This example will use climate data from the ``GFDL-ESM4.1`` model to "
+"demonstrate non-stationarity. The dataset includes annual total "
+"precipitation data from 1955 to 2100, spanning 97 virtual stations across"
+" the province of Quebec. For more information on how to access "
+"precipitation data or perform block maxima, consult the `Local frequency "
+"analyses <local_frequency_analysis.ipynb>`__ notebook."
+msgstr ""
+"Cet exemple utilisera les données du modèle climatique ``GFDL-ESM4.1`` pour "
+"démontrer la non-stationnarité. Le jeu de données inclut des données de "
+"précipitations annuelles totales de 1955 à 2100, couvrant 97 stations "
+"virtuelles à travers la province de Québec. Pour plus d'informations sur "
+"comment accéder aux données de précipitations ou effectuer des maxima par "
+"blocs, consultez le Notebook `Analyses fréquentielles locales "
+"<local_frequency_analysis.ipynb>`__."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:767
+msgid "WARNING"
+msgstr "ATTENTION"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:769
+msgid ""
+"Currently, there is no way to provide ``Extremes.jl`` with a predefined "
+"set of parameters to directly calculate return levels. Until this "
+"functionality is implemented in either ``xHydro`` or ``Extremes.jl``, the"
+" ``.fit()`` and ``.return_level()`` functions should be considered "
+"independent. Specifically, the ``.return_level()`` function will first "
+"estimate the distribution parameters before calculating the return "
+"levels."
+msgstr ""
+"Actuellement, il n'est pas possible de fournir à ``Extremes.jl`` un ensemble "
+"prédéfini de paramètres pour calculer directement les périodes de retour. "
+"Jusqu'à ce que cette fonctionnalité soit implémentée dans ``xHydro`` ou "
+"``Extremes.jl``, les fonctions ``.fit()`` et ``.return_level()`` doivent "
+"être considérées comme indépendantes. Plus précisément, la fonction "
+"``.return_level()`` estimera d'abord les paramètres de la distribution avant "
+"de calculer les niveaux de retour."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:776
+msgid "Parameter estimation"
+msgstr "Estimation des paramètres"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:778
+msgid ""
+"The ``xhydro.extreme_value_analysis.fit`` function serves as the "
+"interface between ``xHydro`` and the ``Extremes.jl`` package. Most of the"
+" arguments mirror those used in the "
+"``xhydro.frequency_analysis.local.fit`` function. The statistical "
+"distribution names have been made to align with those in ``SciPy``. Below"
+" are a few key differences:"
+msgstr ""
+"La fonction ``xhydro.extreme_value_analysis.fit`` sert d'interface entre "
+"``xHydro`` et le package ``Extremes.jl``. La plupart des arguments sont "
+"identiques à ceux utilisés dans la fonction "
+"``xhydro.frequency_analysis.local.fit``. Les noms des distributions "
+"statistiques ont été alignés avec ceux de ``SciPy``. Voici quelques différences "
+"principales :"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:780
+msgid ""
+"Bayesian Method (``BAYES``): When using the ``BAYES`` method, you can "
+"specify two additional parameters:"
+msgstr ""
+"Méthode bayésienne (``BAYES``) : Lors de l'utilisation de la méthode "
+"``BAYES``, vous pouvez spécifier deux paramètres supplémentaires :"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:782
+msgid "``niter``: Number of iterations for the Bayesian inference algorithm."
+msgstr "``niter`` : Nombre d'itérations pour l'algorithme d'inférence bayésienne."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:783
+msgid "``warmup``: Number of warmup iterations for the Bayesian inference."
+msgstr "``warmup`` : Nombre d'itérations de préchauffage pour l'inférence bayésienne."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:785
+msgid ""
+"Confidence Intervals: A significant addition to this function is the "
+"``confidence_level`` parameter, which simplifies the process of obtaining"
+" confidence interval compared to the other options available in "
+"``xHydro``, as detailed in the other frequency analysis notebooks."
+msgstr ""
+"Intervalles de confiance : Un ajout important à cette fonction est le paramètre "
+"``confidence_level``, qui simplifie le processus d'obtention de l'intervalle "
+"de confiance par rapport aux autres options disponibles dans ``xHydro``, comme "
+"expliqué dans les autres Notebooks d'analyse fréquentielle."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:787
+#, python-format
+msgid ""
+"In this example, we will estimate a Generalized Extreme Value (GEV) "
+"distribution (``genextreme``) using the Probability Weighted Moments "
+"(``PWM``) method. Additionally, we will calculate and return the 95% "
+"confidence intervals for the estimated parameters."
+msgstr ""
+"Dans cet exemple, nous estimerons une distribution des Valeurs Extrêmes "
+"Généralisées (GEV) (``genextreme``) en utilisant la méthode des Moments "
+"Pondérés par la Probabilité (``PWM``). De plus, nous calculerons et renverrons "
+"les intervalles de confiance à 95 % pour les paramètres estimés."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:1424
+msgid "Return levels"
+msgstr "Périodes de retour"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:1426
+msgid ""
+"As mentioned in the warning above, the "
+"``xhydro.extreme_value_analysis.return_level`` function cannot accept "
+"pre-defined parameters and ``Extremes.jl`` must compute them internally. "
+"Therefore, with the inclusion of the ``return_period`` argument, all "
+"function parameters remain the same."
+msgstr ""
+"Comme mentionné dans l'avertissement ci-dessus, la fonction "
+"``xhydro.extreme_value_analysis.return_level`` ne peut pas accepter de "
+"paramètres prédéfinis et ``Extremes.jl`` doit les calculer en interne. "
+"Par conséquent, avec l'inclusion de l'argument ``return_period``, tous les "
+"paramètres de la fonction restent les mêmes."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:1428
+#, python-format
+msgid ""
+"In this example, we will estimate a Gumbel distribution (``gumbel_r``) "
+"using the Maximum Likelihood (``ML``) method. Additionally, we will "
+"calculate and return the 95% confidence intervals for the estimated "
+"parameters."
+msgstr ""
+"Dans cet exemple, nous estimerons une distribution de Gumbel (``gumbel_r``) "
+"en utilisant la méthode du Maximum de Vraisemblance (``ML``). De plus, nous "
+"calculerons et renverrons les intervalles de confiance à 95 % pour les "
+"paramètres estimés."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:2090
+msgid "Non-stationary model"
+msgstr "Modèle non stationnaire"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:2092
+msgid ""
+"So far, we've skipped three additional arguments—``locationcov``, "
+"``scalecov``, and ``shapecov``—that accept variable names. These "
+"arguments allow you to introduce a non-linear aspect to the statistical "
+"model. In non-stationary models, explanatory variables (covariates) can "
+"be used to capture changes in model parameters over time or across "
+"different conditions. These covariates can represent factors such as "
+"time, geographic location, global temperature increases or CO2 "
+"concentrations, or any other variable that may influence the distribution"
+" parameters."
+msgstr ""
+"Jusqu'à présent, nous avons ignoré trois arguments supplémentaires—``locationcov``, "
+"``scalecov`` et ``shapecov``—qui acceptent des noms de variables. Ces "
+"arguments vous permettent d'introduire un aspect non linéaire dans le modèle "
+"statistique. Dans les modèles non stationnaires, des variables explicatives "
+"(covariables) peuvent être utilisées pour capturer les changements dans les "
+"paramètres du modèle au fil du temps ou selon différentes conditions. Ces "
+"covariables peuvent représenter des facteurs tels que le temps, la localisation "
+"géographique, l'augmentation de la température mondiale ou les concentrations de CO2, "
+"ou toute autre variable qui pourrait influencer les paramètres de la distribution."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:2095
+msgid ""
+"Also, note that the ``PWM`` method cannot be used with non-stationary "
+"models."
+msgstr ""
+"Notez également que la méthode ``PWM`` ne peut pas être utilisée avec des "
+"modèles non stationnaires."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:2097
+msgid ""
+"For this example, we'll keep it simple and assume that the location "
+"parameter varies as a linear function of the year. To do this, we'll need"
+" to add a new variable containing the year to our dataset and then "
+"provide this variable to the ``locationcov`` argument."
+msgstr ""
+"Pour cet exemple, nous allons simplifier les choses et supposer que le "
+"paramètre de localisation varie de manière linéaire avec l'année. Pour ce faire, nous "
+"devrons ajouter une nouvelle variable contenant l'année à notre jeu de données et "
+"fournir ensuite cette variable à l'argument ``locationcov``."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:2758
+msgid ""
+"In the case of the ``.fit()`` function, adding a covariate will introduce"
+" a new entry under the ``dparams`` dimension. For this example, it "
+"created a new entry called ``loc_year_covariate`` under the ``dparams`` "
+"dimension."
+msgstr ""
+"Dans le cas de la fonction ``.fit()``, l'ajout d'une covariable introduira "
+"une nouvelle entrée sous la dimension ``dparams``. Pour cet exemple, elle "
+"a créé une nouvelle entrée appelée ``loc_year_covariate`` sous la dimension "
+"``dparams``."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:3253
+msgid ""
+"In the case of the ``.return_level()`` function, adding a covariate "
+"preserves the original dimensions, including the dimension along which "
+"the ``return_level`` is computed (e.g., time )."
+msgstr ""
+"Dans le cas de la fonction ``.return_level()``, l'ajout d'une covariable "
+"préserve les dimensions d'origine, y compris la dimension le long de laquelle "
+"le ``return_level`` est calculé (par exemple, le temps)."
+
+#: ../../notebooks/extreme_value_analysis.ipynb:3973
+msgid ""
+"Comparison of the return level using the stationary and non-stationary "
+"model"
+msgstr ""
+"Comparaison des périodes de retour en utilisant les modèles stationnaire et non stationnaire"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:4091
+msgid "Working with ``dask.array`` Chunks"
+msgstr "Travailler avec ``dask.array``"
+
+#: ../../notebooks/extreme_value_analysis.ipynb:4093
+msgid ""
+"Currently, the Python-to-Julia interaction is not thread-safe. To "
+"mitigate potential issues, it is recommended to use the "
+"``dask.scheduler=\"processes\"`` option when computing results. This "
+"ensures that tasks are executed in separate Python processes, providing "
+"better isolation and avoiding thread-related conflicts."
+msgstr ""
+"Actuellement, l'interaction Python-Julia n'est pas sûre pour les threads. Pour "
+"atténuer les problèmes potentiels, il est recommandé d'utiliser l'option "
+"``dask.scheduler=\"processes\"`` lors du calcul des résultats. Cela garantit "
+"que les tâches sont exécutées dans des processus Python séparés, offrant ainsi "
+"une meilleure isolation et évitant les conflits liés aux threads."

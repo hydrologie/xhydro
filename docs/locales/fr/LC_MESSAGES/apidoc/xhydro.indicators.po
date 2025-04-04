@@ -1,0 +1,692 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.4.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-03 11:23-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: ../../apidoc/xhydro.indicators.rst:2
+msgid "xhydro.indicators package"
+msgstr ""
+
+#: of xhydro.indicators:1
+msgid "Indicators submodule."
+msgstr ""
+
+#: ../../apidoc/xhydro.indicators.rst:11
+msgid "Submodules"
+msgstr ""
+
+#: ../../apidoc/xhydro.indicators.rst:14
+msgid "xhydro.indicators.generic module"
+msgstr ""
+
+#: of xhydro.indicators.generic:1
+msgid ""
+"Module to compute indicators using xclim's "
+"build_indicator_module_from_yaml."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:1
+msgid "Calculate variables and indicators based on a YAML call to xclim."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:3
+msgid ""
+"The function cuts the output to be the same years as the inputs. Hence, "
+"if an indicator creates a timestep outside the original year range (e.g. "
+"the first DJF for QS-DEC), it will not appear in the output."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:4
+#: xhydro.indicators.generic.get_yearly_op:4
+#: xhydro.indicators.pmp.compute_spring_and_summer_mask:4
+#: xhydro.indicators.pmp.major_precipitation_events:4
+#: xhydro.indicators.pmp.precipitable_water:4
+#: xhydro.indicators.pmp.precipitable_water_100y:4
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:4
+#: xscen.indicators.compute_indicators:8
+msgid "Parameters"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:5
+#: xscen.indicators.compute_indicators:9
+msgid "ds"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:-1
+#: xhydro.indicators.generic.get_yearly_op:35
+#: xhydro.indicators.pmp.compute_spring_and_summer_mask:22
+#: xscen.indicators.compute_indicators:-1
+msgid "xr.Dataset"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:10
+msgid "Dataset to use for the indicators."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:11
+msgid "indicators"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:-1
+msgid ""
+"str | os.PathLike | Sequence[Indicator] | Sequence[tuple[str, Indicator]]"
+" | ModuleType"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:12
+msgid ""
+"Path to a YAML file that instructs on how to calculate missing variables."
+" Can also be only the \"stem\", if translations and custom indices are "
+"implemented. Can be the indicator module directly, or a sequence of "
+"indicators or a sequence of tuples (indicator name, indicator) as "
+"returned by `iter_indicators()`."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:16
+msgid "periods"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:-1
+msgid "list of str or list of lists of str, optional"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:17
+msgid ""
+"Either [start, end] or list of [start, end] of continuous periods over "
+"which to compute the indicators. This is needed when the time axis of ds "
+"contains some jumps in time. If None, the dataset will be considered "
+"continuous."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:20
+msgid "restrict_years"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:-1
+#: xhydro.indicators.pmp.precipitable_water_100y:-1
+#: xscen.indicators.compute_indicators:-1
+msgid "bool"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:21
+msgid ""
+"If True, cut the time axis to be within the same years as the input. This"
+" is mostly useful for frequencies that do not start in January, such as "
+"QS-DEC. In that instance, `xclim` would start on previous_year-12-01 "
+"(DJF), with a NaN. `restrict_years` will cut that first timestep. This "
+"should have no effect on YS and MS indicators."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:25
+msgid "to_level"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:-1
+msgid "str, optional"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:26
+msgid ""
+"The processing level to assign to the output. If None, the processing "
+"level of the inputs is preserved."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:28
+msgid "rechunk_input"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:29
+msgid ""
+"If True, the dataset is rechunked with "
+":py:func:`flox.xarray.rechunk_for_blockwise` according to the resampling "
+"frequency of the indicator. Each rechunking is done once per frequency "
+"with :py:func:`xscen.utils.rechunk_for_resample`."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:14
+#: xhydro.indicators.generic.get_yearly_op:34
+#: xhydro.indicators.pmp.compute_spring_and_summer_mask:21
+#: xhydro.indicators.pmp.major_precipitation_events:13
+#: xhydro.indicators.pmp.precipitable_water:23
+#: xhydro.indicators.pmp.precipitable_water_100y:19
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:11
+#: xscen.indicators.compute_indicators:34
+msgid "Returns"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:35
+msgid "dict"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:36
+msgid ""
+"Dictionary (keys = timedeltas) with indicators separated by temporal "
+"resolution."
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:39
+msgid "See Also"
+msgstr ""
+
+#: of xscen.indicators.compute_indicators:40
+msgid "xclim.indicators, xclim.core.indicator.build_indicator_module_from_yaml"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:1
+msgid ""
+"Compute the volume of water from a streamflow variable, keeping the same "
+"frequency."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:5
+#: xhydro.indicators.pmp.major_precipitation_events:5
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:5
+msgid "da"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:-1
+#: xhydro.indicators.generic.compute_volume:15
+#: xhydro.indicators.pmp.major_precipitation_events:-1
+#: xhydro.indicators.pmp.major_precipitation_events:14
+#: xhydro.indicators.pmp.precipitable_water:-1
+#: xhydro.indicators.pmp.precipitable_water:24
+#: xhydro.indicators.pmp.precipitable_water_100y:-1
+#: xhydro.indicators.pmp.precipitable_water_100y:20
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:-1
+msgid "xr.DataArray"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:6
+msgid "Streamflow variable."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:7
+msgid "out_units"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:-1
+#: xhydro.indicators.generic.get_yearly_op:-1
+#: xhydro.indicators.pmp.compute_spring_and_summer_mask:-1
+#: xhydro.indicators.pmp.precipitable_water_100y:-1
+msgid "str"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:8
+msgid "Output units. Defaults to \"m3\"."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:9
+msgid "attrs"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:-1
+#: xhydro.indicators.generic.get_yearly_op:-1
+msgid "dict, optional"
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:10
+msgid ""
+"Attributes to add to the output variable. Default attributes for "
+"\"long_name\", \"units\", \"cell_methods\" and \"description\" will be "
+"added if not provided."
+msgstr ""
+
+#: of xhydro.indicators.generic.compute_volume:16
+msgid "Volume of water."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:1
+msgid "Compute yearly operations on a variable."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:6
+msgid "Dataset containing the variable to compute the operation on."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:7
+msgid "op"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:8
+msgid "Operation to compute. One of [\"max\", \"min\", \"mean\", \"sum\"]."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:9
+msgid "input_var"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:10
+msgid "Name of the input variable. Defaults to \"streamflow\"."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:11
+msgid "window"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:-1
+#: xhydro.indicators.pmp.compute_spring_and_summer_mask:-1
+msgid "int"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:12
+msgid ""
+"Size of the rolling window. A \"mean\" operation is performed on the "
+"rolling window before the call to xclim. This parameter cannot be used "
+"with the \"sum\" operation."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:14
+msgid "timeargs"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:15
+#, python-brace-format
+msgid ""
+"Dictionary of time arguments for the operation. Keys are the name of the "
+"period that will be added to the results (e.g. \"winter\", \"summer\", "
+"\"annual\"). Values are up to two dictionaries, with both being optional."
+" The first is {'freq': str}, where str is a frequency supported by xarray"
+" (e.g. \"YS\", \"YS-JAN\", \"YS-DEC\"). It needs to be a yearly "
+"frequency. Defaults to \"YS-JAN\". The second is an indexer as supported "
+"by :py:func:`xclim.core.calendar.select_time`. Defaults to {}, which "
+"means the whole year. See :py:func:`xclim.core.calendar.select_time` for "
+"more information. Examples: {\"winter\": {\"freq\": \"YS-DEC\", "
+"\"date_bounds\": [\"12-01\", \"02-28\"]}}, {\"jan\": {\"freq\": \"YS\", "
+"\"month\": 1}}, {\"annual\": {}}."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:24
+msgid "missing"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:25
+msgid ""
+"How to handle missing values. One of \"skip\", \"any\", \"at_least_n\", "
+"\"pct\", \"wmo\". See :py:func:`xclim.core.missing` for more information."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:27
+msgid "missing_options"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:28
+msgid ""
+"Dictionary of options for the missing values' method. See "
+":py:func:`xclim.core.missing` for more information."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:29
+msgid "interpolate_na"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:30
+msgid ""
+"Whether to interpolate missing values before computing the operation. "
+"Only used with the \"sum\" operation. Defaults to False."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:36
+#, python-brace-format
+msgid ""
+"Dataset containing the computed operations, with one variable per "
+"indexer. The name of the variable follows the pattern "
+"`{input_var}{window}_{op}_{indexer}`."
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:40
+#: xhydro.indicators.pmp.major_precipitation_events:18
+#: xhydro.indicators.pmp.precipitable_water:28
+#: xhydro.indicators.pmp.precipitable_water_100y:24
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:18
+msgid "Notes"
+msgstr ""
+
+#: of xhydro.indicators.generic.get_yearly_op:41
+msgid ""
+"If you want to perform a frequency analysis on a frequency that is finer "
+"than annual, simply use multiple timeargs (e.g. 1 per month) to create "
+"multiple distinct variables."
+msgstr ""
+
+#: ../../apidoc/xhydro.indicators.rst:23
+msgid "xhydro.indicators.pmp module"
+msgstr ""
+
+#: of xhydro.indicators.pmp:1
+msgid "Module to compute Probable Maximum Precipitation."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:1
+msgid ""
+"Create a mask that defines the spring and summer seasons based on the "
+"snow water equivalent."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:5
+msgid "snw"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:-1
+msgid "xarray.DataArray"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:6
+msgid ""
+"Snow water equivalent. Must be a length (e.g. \"mm\") or a mass (e.g. "
+"\"kg m-2\")."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:7
+msgid "thresh"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:-1
+msgid "Quantified"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:8
+msgid "Threshold snow thickness to define the start and end of winter."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:9
+msgid "window_wint_start"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:10
+msgid ""
+"Minimum number of days with snow depth above or equal to threshold to "
+"define the start of winter."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:11
+msgid "window_wint_end"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:12
+msgid ""
+"Maximum number of days with snow depth below or equal to threshold to "
+"define the end of winter."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:13
+msgid "spr_start"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:14
+msgid "Number of days before the end of winter to define the start of spring."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:15
+msgid "spr_end"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:16
+msgid "Number of days after the end of winter to define the end of spring."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:17
+msgid "freq"
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:18
+msgid "Frequency of the time axis (annual frequency). Defaults to \"YS-JUL\"."
+msgstr ""
+
+#: of xhydro.indicators.pmp.compute_spring_and_summer_mask:23
+msgid ""
+"Dataset with two DataArrays (mask_spring and mask_summer), with values of"
+" 1 where the spring and summer criteria are met and 0 where they are not."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:1
+msgid ""
+"Get precipitation events that exceed a given quantile for a given time "
+"step accumulation. Based on Clavet-Gaumont et al. (2017)."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:6
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:6
+msgid "DataArray containing the precipitation values."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:7
+#: xhydro.indicators.pmp.precipitable_water:11
+msgid "windows"
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:-1
+msgid "list of int"
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:8
+msgid "List of the number of time steps to accumulate precipitation."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:9
+msgid "quantile"
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:-1
+#: xhydro.indicators.pmp.precipitable_water_100y:-1
+#: xhydro.indicators.pmp.spatial_average_storm_configurations:-1
+msgid "float"
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:10
+msgid ""
+"Threshold that limits the events to those that exceed this quantile. "
+"Defaults to 0.9."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:15
+msgid "Masked DataArray containing the major precipitation events."
+msgstr ""
+
+#: of xhydro.indicators.pmp.major_precipitation_events:19
+#: xhydro.indicators.pmp.precipitable_water_100y:25
+msgid "https://doi.org/10.1016/j.ejrh.2017.07.003"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:1
+msgid ""
+"Compute precipitable water based on Clavet-Gaumont et al. (2017) and "
+"Rousseau et al (2014)."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:5
+msgid "hus"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:6
+msgid "Specific humidity. Must have a pressure level (plev) dimension."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:7
+msgid "zg"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:8
+msgid "Geopotential height. Must have a pressure level (plev) dimension."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:9
+msgid "orog"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:10
+msgid "Surface altitude."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:-1
+msgid "list of int, optional"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:12
+msgid ""
+"Duration of the event in time steps. Defaults to [1]. Note that an "
+"additional time step will be added to the window size to account for "
+"antecedent conditions."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:14
+msgid "beta_func"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:-1
+msgid "bool, optional"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:15
+msgid ""
+"If True, use the beta function proposed by Boer (1982) to get the "
+"pressure layers above the topography. If False, the surface altitude is "
+"used as the lower boundary of the atmosphere assuming that the surface "
+"altitude and the geopotential height are virtually identical at low "
+"altitudes."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:18
+msgid "add_pre_lay"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:19
+msgid ""
+"If True, add the pressure layer between the surface and the lowest "
+"pressure level (e.g., at sea level). If False, only the pressure layers "
+"between the lowest and highest pressure level are considered."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:25
+msgid "Precipitable water."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:29
+msgid ""
+"1) The precipitable water of an event is defined as the maximum "
+"precipitable water found during the entire duration of the event, "
+"extending up to one time step before the start of the event. Thus, the "
+"rolling operation made using `windows` is a maximum, not a sum."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:32
+msgid ""
+"beta_func = True and add_pre_lay = False follow Clavet-Gaumont et al. "
+"(2017) and Rousseau et al (2014)."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water:34
+msgid ""
+"https://doi.org/10.1016/j.ejrh.2017.07.003 "
+"https://doi.org/10.1016/j.jhydrol.2014.10.053 "
+"https://doi.org/10.1175/1520-0493(1982)110<1801:DEIIC>2.0.CO;2"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:1
+msgid ""
+"Compute the 100-year return period of precipitable water for each month. "
+"Based on Clavet-Gaumont et al. (2017)."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:5
+msgid "pw"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:6
+msgid "DataArray containing the precipitable water."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:7
+msgid "dist"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:8
+msgid "Probability distributions."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:9
+msgid "method"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:-1
+#, python-brace-format
+msgid "{\"ML\" or \"MLE\", \"MM\", \"PWM\", \"APP\"}"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:10
+msgid ""
+"Fitting method, either maximum likelihood (ML or MLE), method of moments "
+"(MM) or approximate method (APP). Can also be the probability weighted "
+"moments (PWM), also called L-Moments, if a compatible `dist` object is "
+"passed."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:12
+msgid "mf"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:13
+msgid ""
+"Maximum majoration factor of the 100-year event compared to the maximum "
+"of the timeseries. Used as an upper limit for the frequency analysis."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:15
+msgid "rebuild_time"
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:16
+msgid ""
+"Whether or not to reconstruct a timeseries with the same time dimensions "
+"as `pw`."
+msgstr ""
+
+#: of xhydro.indicators.pmp.precipitable_water_100y:21
+msgid "Precipitable water for a 100-year return period."
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:1
+msgid ""
+"Compute the spatial average for different storm configurations proposed "
+"by Clavet-Gaumont et al. (2017)."
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:7
+msgid "radius"
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:8
+msgid "Maximum radius of the storm."
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:12
+msgid "xr.DataSet"
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:13
+msgid ""
+"DataSet containing the spatial averages for all the storm configurations."
+" The y and x coordinates indicate the location of the storm. This "
+"location is determined by n//2, where n is the total number of cells for "
+"both the rows and columns in the configuration, and // represents floor "
+"division."
+msgstr ""
+
+#: of xhydro.indicators.pmp.spatial_average_storm_configurations:19
+msgid "https://doi.org/10.1016/j.ejrh.2017.07.003."
+msgstr ""
