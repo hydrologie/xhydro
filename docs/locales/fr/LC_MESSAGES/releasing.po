@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../releasing.rst:3
 msgid "Releasing"
-msgstr "Publication"
+msgstr "Publier une nouvelle version"
 
 #: ../../releasing.rst:6
 msgid "Deployment"

@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../../../CHANGELOG.rst:3
 msgid "Changelog"
-msgstr "Changements"
+msgstr "Liste des changements"
 
 #: ../../../CHANGELOG.rst:6
 msgid "v0.5.0 (unreleased)"

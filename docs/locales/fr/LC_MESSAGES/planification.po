@@ -20,8 +20,8 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../planification.rst:3
-msgid "External Package Structure"
-msgstr "Structure des librairies externes"
+msgid "External Complementary Libraries"
+msgstr "Librairies externes compémentaires"
 
 #: ../../planification.rst:5
 msgid ""

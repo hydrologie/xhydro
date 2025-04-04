@@ -32,17 +32,17 @@ msgid "Welcome to xHydro's documentation!"
 msgstr "Bienvenue dans la documentation de xHydro !"
 
 #: ../../index.rst:26
-msgid "Documentation and Support"
-msgstr "Documentation et support"
+msgid "Useful links"
+msgstr "Liens utiles"
 
 #: ../../index.rst:27
 msgid "`GitHub Repository <https://github.com/hydrologie/xhydro>`_"
 msgstr "`Dépôt GitHub <https://github.com/hydrologie/xhydro>`_"
 
 #: ../../index.rst:28
-msgid "`PyPI Package <https://pypi.org/project/xhydro/>`_"
-msgstr "`Package PyPI <https://pypi.org/project/xhydro/>`_"
+msgid "`PyPI <https://pypi.org/project/xhydro/>`_"
+msgstr "`Sur PyPI <https://pypi.org/project/xhydro/>`_"
 
 #: ../../index.rst:29
-msgid "`Conda Package <https://anaconda.org/conda-forge/xhydro>`_"
-msgstr "`Package Conda <https://anaconda.org/conda-forge/xhydro>`_"
+msgid "`Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_"
+msgstr "`Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_"

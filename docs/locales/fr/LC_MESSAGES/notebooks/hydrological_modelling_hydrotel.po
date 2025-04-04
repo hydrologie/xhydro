@@ -45,7 +45,7 @@ msgid ""
 "The HYDROTEL executable can be acquired from this `GitHub repository "
 "<https://github.com/INRS-Modelisation-hydrologique/hydrotel>`__."
 msgstr ""
-"L'exécutable HYDROTEL peut être acquis à partir de ce dépôt GitHub "
+"L'exécutable HYDROTEL peut être acquis à partir de ce `dépôt GitHub "
 "<https://github.com/INRS-Modelisation-hydrologique/hydrotel>`__."
 
 #: ../../notebooks/hydrological_modelling_hydrotel.ipynb:35

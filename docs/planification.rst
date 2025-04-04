@@ -1,6 +1,6 @@
-==========================
-External Package Structure
-==========================
+================================
+External Complementary Libraries
+================================
 
 Testing data can be found here: https://github.com/hydrologie/xhydro-testdata
 
