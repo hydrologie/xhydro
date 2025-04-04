@@ -38,7 +38,7 @@ msgstr "`Dépôt GitHub <https://github.com/hydrologie/xhydro>`_"
 
 #: ../../index.rst:28
 msgid "`PyPI <https://pypi.org/project/xhydro/>`_"
-msgstr "`Sur PyPI <https://pypi.org/project/xhydro/>`_"
+msgstr "`PyPI <https://pypi.org/project/xhydro/>`_"
 
 #: ../../index.rst:29
 msgid "`Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_"
