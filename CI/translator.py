@@ -82,9 +82,10 @@ def translate_missing_po_entries(  # noqa: C901
                 msg = f"Found {len(fuzzy_entries)} fuzzy entries in {file_path}"
                 logger.info(msg)
                 for i in fuzzy_entries:
-                    entry = i[1].split("\nmsgstr ")
-                    # Remove the fuzzy entry
-                    content = content.replace(entry[1], '""\n\n')
+                    if "Project-Id-Version" not in i[1]:
+                        entry = i[1].split("\nmsgstr ")
+                        # Remove the fuzzy entry
+                        content = content.replace(entry[1], '""\n\n')
                 # Since we can't guarantee the exact way the fuzzy entry was written
                 # we remove the fuzzy tag in 2 steps
                 content = content.replace(", fuzzy", "")

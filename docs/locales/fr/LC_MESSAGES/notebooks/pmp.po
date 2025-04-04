@@ -5,6 +5,16 @@
 #
 msgid ""
 msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../notebooks/pmp.ipynb:9
 msgid "Probable Maximum Precipitation (PMP)"
@@ -18,11 +28,12 @@ msgid ""
 "PMP is a critical parameter in hydrology, especially for the design of "
 "infrastructure such as dams, reservoirs, and drainage systems."
 msgstr ""
-"La Précipitation Maximale Probable (PMP) est la quantité théorique maximale de précipitations "
-"qui pourrait se produire à un endroit spécifique dans un laps de temps donné, "
-"en tenant compte des conditions météorologiques les plus extrêmes. La PMP est un paramètre "
-"critique en hydrologie, en particulier pour la conception d'infrastructures telles que les "
-"barrages, réservoirs et systèmes de drainage."
+"La Précipitation Maximale Probable (PMP) est la quantité théorique "
+"maximale de précipitations qui pourrait se produire à un endroit "
+"spécifique dans un laps de temps donné, en tenant compte des conditions "
+"météorologiques les plus extrêmes. La PMP est un paramètre critique en "
+"hydrologie, en particulier pour la conception d'infrastructures telles "
+"que les barrages, réservoirs et systèmes de drainage."
 
 #: ../../notebooks/pmp.ipynb:13
 msgid ""
@@ -36,15 +47,35 @@ msgid ""
 "this value, the method estimates the maximum precipitation that could "
 "theoretically occur at the location."
 msgstr ""
-"Il existe plusieurs méthodes pour calculer la PMP, chacune variant en complexité "
-"et en fonction du type de données utilisées. La méthode actuellement implémentée dans "
-"``xHydro`` est basée sur l'approche décrite par `Clavet-Gaumont et al. "
-"(2017) <https://doi.org/10.1016/j.ejrh.2017.07.003>`__. Cette méthode "
-"consiste à maximiser l'eau précipitable sur un emplacement donné, ce qui "
-"fait référence à la quantité totale de vapeur d'eau dans l'atmosphère qui pourrait être "
-"potentiellement convertie en précipitations dans des conditions idéales. En maximisant "
-"cette valeur, la méthode estime la précipitation maximale qui pourrait théoriquement "
-"se produire à cet endroit."
+"Il existe plusieurs méthodes pour calculer la PMP, chacune variant en "
+"complexité et en fonction du type de données utilisées. La méthode "
+"actuellement implémentée dans ``xHydro`` est basée sur l'approche décrite"
+" par `Clavet-Gaumont et al. (2017) "
+"<https://doi.org/10.1016/j.ejrh.2017.07.003>`__. Cette méthode consiste à"
+" maximiser l'eau précipitable sur un emplacement donné, ce qui fait "
+"référence à la quantité totale de vapeur d'eau dans l'atmosphère qui "
+"pourrait être potentiellement convertie en précipitations dans des "
+"conditions idéales. En maximisant cette valeur, la méthode estime la "
+"précipitation maximale qui pourrait théoriquement se produire à cet "
+"endroit."
+
+#: ../../notebooks/pmp.ipynb:333
+msgid ""
+"Data type cannot be displayed: application/javascript, "
+"application/vnd.holoviews_load.v0+json"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:597
+msgid ""
+"Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
+"application/javascript"
+msgstr ""
+
+#: ../../notebooks/pmp.ipynb:686
+msgid ""
+"Data type cannot be displayed: text/html, "
+"application/vnd.holoviews_exec.v0+json"
+msgstr ""
 
 #: ../../notebooks/pmp.ipynb:696
 msgid "Acquiring data"
@@ -61,15 +92,19 @@ msgid ""
 " years of data as possible."
 msgstr ""
 "L'acquisition des données climatiques est hors de la portée de "
-"``xHydro``. Cependant, quelques exemples de comment obtenir et gérer de telles données "
-"sont fournis dans les Notebooks `Opérations SIG <gis.ipynb>`__ et `Exemple de cas d'application "
-"<use_case.ipynb>`__. Pour ce Notebook, nous allons utiliser un jeu de données test "
-"composé de 2 ans et de 9 points de grille issus des données du modèle climatique CanESM5. "
-"Dans une application réelle, il serait préférable d'avoir autant d'années de données que possible."
+"``xHydro``. Cependant, quelques exemples de comment obtenir et gérer de "
+"telles données sont fournis dans les Notebooks `Opérations SIG "
+"<gis.ipynb>`__ et `Exemple de cas d'application <use_case.ipynb>`__. Pour"
+" ce Notebook, nous allons utiliser un jeu de données test composé de 2 "
+"ans et de 9 points de grille issus des données du modèle climatique "
+"CanESM5. Dans une application réelle, il serait préférable d'avoir autant"
+" d'années de données que possible."
 
 #: ../../notebooks/pmp.ipynb:700
 msgid "To perform the analysis, certain climatological variables are required."
-msgstr "Pour effectuer l'analyse, certaines variables climatiques sont nécessaires."
+msgstr ""
+"Pour effectuer l'analyse, certaines variables climatiques sont "
+"nécessaires."
 
 #: ../../notebooks/pmp.ipynb:702
 msgid "**Daily Timestep Variables**:"
@@ -107,17 +142,18 @@ msgid ""
 "libraries such as ``xclim`` can approximate the split using precipitation"
 " and temperature data."
 msgstr ""
-"Dans les régions froides, il peut être nécessaire de diviser les précipitations totales en "
-"composantes de pluie et de neige. De nombreux modèles climatiques fournissent déjà "
-"ces données séparément. Cependant, si ces données ne sont pas directement disponibles, "
-"des librairies comme ``xclim`` peuvent approximer la division en utilisant les données de "
+"Dans les régions froides, il peut être nécessaire de diviser les "
+"précipitations totales en composantes de pluie et de neige. De nombreux "
+"modèles climatiques fournissent déjà ces données séparément. Cependant, "
+"si ces données ne sont pas directement disponibles, des librairies comme "
+"``xclim`` peuvent approximer la division en utilisant les données de "
 "précipitations et de température."
 
-#: ../../notebooks/pmp.ipynb:2193
+#: ../../notebooks/pmp.ipynb:2158
 msgid "Computing the PMP"
 msgstr "Calcul de la PMP"
 
-#: ../../notebooks/pmp.ipynb:2195
+#: ../../notebooks/pmp.ipynb:2160
 msgid ""
 "The method outlined by `Clavet-Gaumont et al. (2017) "
 "<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ follows these steps:"
@@ -135,8 +171,9 @@ msgid ""
 "will be maximized. This is done by filtering events based on a specified "
 "threshold."
 msgstr ""
-"La première étape consiste à identifier les grands événements de précipitation qui "
-"seront maximisés. Cela se fait en filtrant les événements en fonction d'un seuil spécifié."
+"La première étape consiste à identifier les grands événements de "
+"précipitation qui seront maximisés. Cela se fait en filtrant les "
+"événements en fonction d'un seuil spécifié."
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Computation of Monthly 100-Year Precipitable Water**:"
@@ -149,9 +186,10 @@ msgid ""
 "monthly basis using the Generalized Extreme Value (GEV) distribution, "
 "with a maximum cap of 20% greater than the largest observed value."
 msgstr ""
-"L'étape suivante consiste à calculer l'eau précipitable de récurrence 100 ans sur une base mensuelle en utilisant "
-"la distribution des Valeurs Extrêmes Généralisées (GEV), avec un plafond maximum de 20 % supérieur à la "
-"valeur observée la plus grande."
+"L'étape suivante consiste à calculer l'eau précipitable de récurrence 100"
+" ans sur une base mensuelle en utilisant la distribution des Valeurs "
+"Extrêmes Généralisées (GEV), avec un plafond maximum de 20 % supérieur à "
+"la valeur observée la plus grande."
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Maximization of Precipitation During Events**:"
@@ -164,9 +202,10 @@ msgid ""
 "water during the major precipitation events. In snow-free regions, this "
 "is the final result."
 msgstr ""
-"Dans cette étape, les événements de précipitation sont maximisés en fonction du rapport "
-"entre l'eau précipitable mensuelle de récurrence 100 ans et l'eau précipitable pendant les grands événements de "
-"précipitation. Dans les régions sans neige, c'est le résultat final."
+"Dans cette étape, les événements de précipitation sont maximisés en "
+"fonction du rapport entre l'eau précipitable mensuelle de récurrence 100 "
+"ans et l'eau précipitable pendant les grands événements de précipitation."
+" Dans les régions sans neige, c'est le résultat final."
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Seasonal Separation in Cold Regions**:"
@@ -178,23 +217,25 @@ msgid ""
 "summer) to account for snow during the computation of Probable Maximum "
 "Floods (PMF)."
 msgstr ""
-"Dans les régions froides, les résultats sont séparés en saisons (par exemple, printemps, "
-"été) pour tenir compte de la neige lors du calcul des Crues Maximales Probables (CMP)."
+"Dans les régions froides, les résultats sont séparés en saisons (par "
+"exemple, printemps, été) pour tenir compte de la neige lors du calcul des"
+" Crues Maximales Probables (CMP)."
 
-#: ../../notebooks/pmp.ipynb:2209
+#: ../../notebooks/pmp.ipynb:2174
 msgid ""
 "This method provides a comprehensive approach for estimating the PMP, "
 "taking into account both temperature and precipitation variations across "
 "different regions and seasons."
 msgstr ""
-"Cette méthode fournit une approche complète pour estimer la PMP, en tenant compte à la fois des variations de "
-"température et de précipitations à travers différentes régions et saisons."
+"Cette méthode fournit une approche complète pour estimer la PMP, en "
+"tenant compte à la fois des variations de température et de "
+"précipitations à travers différentes régions et saisons."
 
-#: ../../notebooks/pmp.ipynb:2212
+#: ../../notebooks/pmp.ipynb:2177
 msgid "Major precipitation events"
 msgstr "Grands événements de précipitation"
 
-#: ../../notebooks/pmp.ipynb:2214
+#: ../../notebooks/pmp.ipynb:2179
 msgid ""
 "The first step in calculating the Probable Maximum Precipitation (PMP) "
 "involves filtering the precipitation data to retain only the events that "
@@ -206,15 +247,16 @@ msgid ""
 "data, such as in this example, each grid point is treated independently."
 msgstr ""
 "La première étape pour calculer la Précipitation Maximale Probable (PMP) "
-"consiste à filtrer les données de précipitation pour ne retenir que les événements qui "
-"dépassent un certain seuil. Ces grands événements de précipitation seront "
-"maximisés dans les étapes suivantes. La fonction "
-"``xh.indicators.pmp.major_precipitation_events`` peut être utilisée à cette "
-"fin. Elle offre également l'option de sommer les précipitations sur un "
-"nombre spécifié de jours, ce qui peut aider à agréger les événements de tempête. Pour les données 2D, "
-"comme dans cet exemple, chaque point de grille est traité indépendamment."
+"consiste à filtrer les données de précipitation pour ne retenir que les "
+"événements qui dépassent un certain seuil. Ces grands événements de "
+"précipitation seront maximisés dans les étapes suivantes. La fonction "
+"``xh.indicators.pmp.major_precipitation_events`` peut être utilisée à "
+"cette fin. Elle offre également l'option de sommer les précipitations sur"
+" un nombre spécifié de jours, ce qui peut aider à agréger les événements "
+"de tempête. Pour les données 2D, comme dans cet exemple, chaque point de "
+"grille est traité indépendamment."
 
-#: ../../notebooks/pmp.ipynb:2217
+#: ../../notebooks/pmp.ipynb:2182
 msgid ""
 "In this example, we will filter out the 10% most intense storms to avoid "
 "overemphasizing smaller precipitation events during the maximization "
@@ -222,20 +264,21 @@ msgid ""
 "total precipitation (``pr``) to exclude snowstorms and ensure that we are"
 " only considering liquid precipitation events."
 msgstr ""
-"Dans cet exemple, nous allons filtrer les 10 % des tempêtes les plus intenses pour éviter "
-"de surévaluer les événements de précipitation plus petits pendant le processus de maximisation. "
-"De plus, nous nous concentrerons sur les précipitations liquides (``rf``) plutôt que sur "
-"les précipitations totales (``pr``) afin d'exclure les tempêtes de neige."
+"Dans cet exemple, nous allons filtrer les 10 % des tempêtes les plus "
+"intenses pour éviter de surévaluer les événements de précipitation plus "
+"petits pendant le processus de maximisation. De plus, nous nous "
+"concentrerons sur les précipitations liquides (``rf``) plutôt que sur les"
+" précipitations totales (``pr``) afin d'exclure les tempêtes de neige."
 
-#: ../../notebooks/pmp.ipynb:2469
+#: ../../notebooks/pmp.ipynb:2434
 msgid "Daily precipitable water"
 msgstr "Eau précipitable quotidienne"
 
-#: ../../notebooks/pmp.ipynb:2475
+#: ../../notebooks/pmp.ipynb:2440
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#: ../../notebooks/pmp.ipynb:2477
+#: ../../notebooks/pmp.ipynb:2442
 msgid ""
 "This step should be avoided if possible, as it involves approximating "
 "precipitable water from the integral of specific humidity and will be "
@@ -244,12 +287,13 @@ msgid ""
 "variables that directly represent precipitable water."
 msgstr ""
 "Cette étape doit être évitée si possible, car elle consiste à approximer "
-"l'eau précipitable à partir de l'intégrale de l'humidité spécifique et sera "
-"fortement sensible au nombre de niveaux de pression utilisés. Si disponible, "
-"les utilisateurs sont fortement encouragés à utiliser une variable ou une combinaison de "
-"variables qui représentent directement l'eau précipitable."
+"l'eau précipitable à partir de l'intégrale de l'humidité spécifique et "
+"sera fortement sensible au nombre de niveaux de pression utilisés. Si "
+"disponible, les utilisateurs sont fortement encouragés à utiliser une "
+"variable ou une combinaison de variables qui représentent directement "
+"l'eau précipitable."
 
-#: ../../notebooks/pmp.ipynb:2483
+#: ../../notebooks/pmp.ipynb:2448
 msgid ""
 "Precipitable water can be estimated using "
 "``xhydro.indicators.pmp.precipitable_water`` by integrating the vertical "
@@ -259,16 +303,17 @@ msgid ""
 "atmosphere under ideal conditions."
 msgstr ""
 "L'eau précipitable peut être estimée en utilisant "
-"``xhydro.indicators.pmp.precipitable_water`` pour intégrer la colonne verticale de l'humidité. "
-"Ce processus nécessite des données d'humidité spécifique, de hauteur géopotentielle et d'altitude. "
-"La valeur résultante représente la quantité totale de vapeur d'eau qui pourrait être précipitée de l'atmosphère "
-"sous des conditions idéales."
+"``xhydro.indicators.pmp.precipitable_water`` pour intégrer la colonne "
+"verticale de l'humidité. Ce processus nécessite des données d'humidité "
+"spécifique, de hauteur géopotentielle et d'altitude. La valeur résultante"
+" représente la quantité totale de vapeur d'eau qui pourrait être "
+"précipitée de l'atmosphère sous des conditions idéales."
 
-#: ../../notebooks/pmp.ipynb:2782
+#: ../../notebooks/pmp.ipynb:2747
 msgid "Monthly 100-year precipitable water"
 msgstr "Eau précipitable mensuelle de récurrence 100 ans"
 
-#: ../../notebooks/pmp.ipynb:2784
+#: ../../notebooks/pmp.ipynb:2749
 #, python-format
 msgid ""
 "According to Clavet-Gaumont et al. (2017), a monthly 100-year "
@@ -278,13 +323,14 @@ msgid ""
 "month. This approach ensures that the estimated 100-year event is "
 "realistic and constrained by observed data."
 msgstr ""
-"Selon Clavet-Gaumont et al. (2017), l'eau précipitable mensuelle de récurrence 100 ans "
-"doit être calculée en utilisant la distribution des Valeurs Extrêmes Généralisées (GEV). "
-"La valeur doit être limitée à un maximum de 20 % supérieur à la valeur maximale observée de l'eau précipitable "
-"pour un mois donné. Cette approche garantit que l'événement estimé sur 100 ans est "
-"réaliste et contraint par les données observées."
+"Selon Clavet-Gaumont et al. (2017), l'eau précipitable mensuelle de "
+"récurrence 100 ans doit être calculée en utilisant la distribution des "
+"Valeurs Extrêmes Généralisées (GEV). La valeur doit être limitée à un "
+"maximum de 20 % supérieur à la valeur maximale observée de l'eau "
+"précipitable pour un mois donné. Cette approche garantit que l'événement "
+"estimé sur 100 ans est réaliste et contraint par les données observées."
 
-#: ../../notebooks/pmp.ipynb:2786
+#: ../../notebooks/pmp.ipynb:2751
 msgid ""
 "To compute this, you can use the "
 "``xh.indicators.pmp.precipitable_water_100y`` function. If using "
@@ -293,17 +339,18 @@ msgid ""
 msgstr ""
 "Pour calculer cela, vous pouvez utiliser la fonction "
 "``xh.indicators.pmp.precipitable_water_100y``. Si vous utilisez "
-"``rebuild_time``, la sortie aura le même axe temporel que les données d'origine."
+"``rebuild_time``, la sortie aura le même axe temporel que les données "
+"d'origine."
 
-#: ../../notebooks/pmp.ipynb:3058
+#: ../../notebooks/pmp.ipynb:3023
 msgid "Maximized precipitation"
 msgstr "Précipitations maximisées"
 
-#: ../../notebooks/pmp.ipynb:3064
+#: ../../notebooks/pmp.ipynb:3029
 msgid "INFO"
 msgstr "INFO"
 
-#: ../../notebooks/pmp.ipynb:3066
+#: ../../notebooks/pmp.ipynb:3031
 msgid ""
 "This step follows the methodology described in Clavet-Gaumont et al., "
 "2017. It is referred to as \"Maximizing precipitation\", however, it "
@@ -312,65 +359,71 @@ msgid ""
 "observed for January 2011—the result may actually lower the "
 "precipitation, rather than increasing it."
 msgstr ""
-"Cette étape suit la méthodologie décrite dans Clavet-Gaumont et al., 2017. "
-"Elle est appelée \"Maximisation des précipitations\", cependant, elle applique "
-"effectivement un rapport basé sur l'eau précipitable mensuelle de récurrence 100 ans. Si un événement historique "
-"a dépassé cette valeur—comme cela a été observé pour janvier 2011—le résultat peut en réalité "
-"réduire les précipitations, plutôt que de les augmenter."
+"Cette étape suit la méthodologie décrite dans Clavet-Gaumont et al., "
+"2017. Elle est appelée \"Maximisation des précipitations\", cependant, "
+"elle applique effectivement un rapport basé sur l'eau précipitable "
+"mensuelle de récurrence 100 ans. Si un événement historique a dépassé "
+"cette valeur—comme cela a été observé pour janvier 2011—le résultat peut "
+"en réalité réduire les précipitations, plutôt que de les augmenter."
 
-#: ../../notebooks/pmp.ipynb:3072
+#: ../../notebooks/pmp.ipynb:3037
 msgid ""
 "With the information gathered so far, we can now proceed to maximize the "
 "precipitation events. Although ``xHydro`` does not provide an explicit "
 "function for this step, it can be accomplished by following these steps:"
 msgstr ""
-"Grâce aux informations recueillies jusqu'à présent, nous pouvons maintenant procéder à la maximisation des "
-"événements de précipitation. Bien que ``xHydro`` ne fournisse pas de fonction explicite pour cette étape, "
-"cela peut être accompli en suivant ces étapes :"
+"Grâce aux informations recueillies jusqu'à présent, nous pouvons "
+"maintenant procéder à la maximisation des événements de précipitation. "
+"Bien que ``xHydro`` ne fournisse pas de fonction explicite pour cette "
+"étape, cela peut être accompli en suivant ces étapes :"
 
-#: ../../notebooks/pmp.ipynb:3074
+#: ../../notebooks/pmp.ipynb:3039
 msgid ""
 "**Compute the Ratio**: First, calculate the ratio between the 100-year "
 "monthly precipitable water and the precipitable water during the major "
 "precipitation events."
 msgstr ""
-"**Calculer le rapport** : Tout d'abord, calculez le rapport entre l'eau précipitable mensuelle de récurrence 100 ans "
-"et l'eau précipitable pendant les grands événements de précipitation."
+"**Calculer le rapport** : Tout d'abord, calculez le rapport entre l'eau "
+"précipitable mensuelle de récurrence 100 ans et l'eau précipitable "
+"pendant les grands événements de précipitation."
 
-#: ../../notebooks/pmp.ipynb:3076
+#: ../../notebooks/pmp.ipynb:3041
 msgid ""
 "**Apply the Ratio**: Next, apply this ratio to the precipitation values "
 "themselves to maximize the precipitation events accordingly."
 msgstr ""
-"**Appliquer le rapport** : Ensuite, appliquez ce rapport aux valeurs de précipitations elles-mêmes "
-"pour maximiser les événements de précipitation en conséquence."
+"**Appliquer le rapport** : Ensuite, appliquez ce rapport aux valeurs de "
+"précipitations elles-mêmes pour maximiser les événements de précipitation"
+" en conséquence."
 
-#: ../../notebooks/pmp.ipynb:3078
+#: ../../notebooks/pmp.ipynb:3043
 msgid ""
 "This process effectively scales the precipitation events based on the "
 "100-year precipitable water, giving an estimate of the maximum possible "
 "rainfall."
 msgstr ""
-"Ce processus ajuste les événements de précipitation en fonction de l'eau précipitable de récurrence "
-"100 ans, fournissant une estimation des précipitations maximales possibles."
+"Ce processus ajuste les événements de précipitation en fonction de l'eau "
+"précipitable de récurrence 100 ans, fournissant une estimation des "
+"précipitations maximales possibles."
 
-#: ../../notebooks/pmp.ipynb:3234
+#: ../../notebooks/pmp.ipynb:3199
 msgid "Seasonal Mask"
 msgstr "Masque saisonnier"
 
-#: ../../notebooks/pmp.ipynb:3236
+#: ../../notebooks/pmp.ipynb:3201
 msgid ""
 "In cold regions, computing Probable Maximum Floods (PMFs) often involves "
 "scenarios that combine both rainfall and snowpack. Therefore, PMP values "
 "may need to be separated into two categories: rain-on-snow (i.e., "
 "\"spring\") and snow-free rainfall (i.e., \"summer\")."
 msgstr ""
-"Dans les régions froides, le calcul des Crues Maximales Probables (CMP) implique souvent "
-"des scénarios qui combinent à la fois les précipitations et le manteau neigeux. Par conséquent, les valeurs de PMP "
-"peuvent devoir être séparées en deux catégories : pluie-sur-neige (c'est-à-dire, "
+"Dans les régions froides, le calcul des Crues Maximales Probables (CMP) "
+"implique souvent des scénarios qui combinent à la fois les précipitations"
+" et le manteau neigeux. Par conséquent, les valeurs de PMP peuvent devoir"
+" être séparées en deux catégories : pluie-sur-neige (c'est-à-dire, "
 "\"printemps\") et précipitations sans neige (c'est-à-dire, \"été\")."
 
-#: ../../notebooks/pmp.ipynb:3238
+#: ../../notebooks/pmp.ipynb:3203
 msgid ""
 "This can be computed easily using "
 "``xhydro.indicators.pmp.compute_spring_and_summer_mask``, which defines "
@@ -378,75 +431,77 @@ msgid ""
 "presence of snow on the ground, with the following criteria:"
 msgstr ""
 "Cela peut être facilement calculé en utilisant "
-"``xhydro.indicators.pmp.compute_spring_and_summer_mask``, qui définit "
-"les dates de début et de fin du printemps, de l'été et de l'hiver en fonction de "
-"la présence de neige au sol, selon les critères suivants :"
+"``xhydro.indicators.pmp.compute_spring_and_summer_mask``, qui définit les"
+" dates de début et de fin du printemps, de l'été et de l'hiver en "
+"fonction de la présence de neige au sol, selon les critères suivants :"
 
-#: ../../notebooks/pmp.ipynb:3240
+#: ../../notebooks/pmp.ipynb:3205
 msgid "**Winter**:"
 msgstr "**Hiver** :"
 
-#: ../../notebooks/pmp.ipynb:3242
+#: ../../notebooks/pmp.ipynb:3207
 msgid ""
 "Winter start: The first day after which there are at least 14 consecutive"
 " days with snow on the ground."
 msgstr ""
-"Début de l'hiver : Le premier jour après lequel il y a au moins 14 jours consécutifs "
-"avec de la neige au sol."
+"Début de l'hiver : Le premier jour après lequel il y a au moins 14 jours "
+"consécutifs avec de la neige au sol."
 
-#: ../../notebooks/pmp.ipynb:3243
+#: ../../notebooks/pmp.ipynb:3208
 msgid ""
 "Winter end: The last day with snow on the ground, followed by at least 45"
 " consecutive snow-free days."
 msgstr ""
-"Fin de l'hiver : Le dernier jour avec de la neige au sol, suivi d'au moins 45 jours "
-"consécutifs sans neige."
+"Fin de l'hiver : Le dernier jour avec de la neige au sol, suivi d'au "
+"moins 45 jours consécutifs sans neige."
 
-#: ../../notebooks/pmp.ipynb:3245
+#: ../../notebooks/pmp.ipynb:3210
 msgid "**Spring**:"
 msgstr "**Printemps** :"
 
-#: ../../notebooks/pmp.ipynb:3247
+#: ../../notebooks/pmp.ipynb:3212
 msgid "Spring start: 60 days before the end of winter."
 msgstr "Début du printemps : 60 jours avant la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3248
+#: ../../notebooks/pmp.ipynb:3213
 msgid "Spring end: 30 days after the end of winter."
 msgstr "Fin du printemps : 30 jours après la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3250
+#: ../../notebooks/pmp.ipynb:3215
 msgid "**Summer**:"
 msgstr "**Été** :"
 
-#: ../../notebooks/pmp.ipynb:3252
+#: ../../notebooks/pmp.ipynb:3217
 msgid ""
-"The summer period is defined as the time between winters. This "
-"period is not influenced by whether it falls in the traditional summer or"
-" fall seasons, but rather simply marks the interval between snow seasons."
+"The summer period is defined as the time between winters. This period is "
+"not influenced by whether it falls in the traditional summer or fall "
+"seasons, but rather simply marks the interval between snow seasons."
 msgstr ""
 "La période estivale est définie comme la période entre les hivers. Cette "
-"période n'est pas influencée par le fait qu'elle tombe pendant l'été ou l'automne traditionnels, "
-"mais marque simplement l'intervalle entre les saisons de neige."
+"période n'est pas influencée par le fait qu'elle tombe pendant l'été ou "
+"l'automne traditionnels, mais marque simplement l'intervalle entre les "
+"saisons de neige."
 
-#: ../../notebooks/pmp.ipynb:4155
+#: ../../notebooks/pmp.ipynb:4120
 msgid "Final PMP"
 msgstr "PMP finale"
 
-#: ../../notebooks/pmp.ipynb:4157
+#: ../../notebooks/pmp.ipynb:4122
 msgid ""
 "The final PMP is obtained by finding the maximum value over the ``time`` "
 "dimension. In our case, since we computed a season mask, we can further "
 "refine the results into a spring and summer PMP."
 msgstr ""
-"La PMP finale est obtenue en trouvant la valeur maximale sur la dimension ``time``. "
-"Dans notre cas, puisque nous avons calculé un masque saisonnier, nous pouvons affiner "
-"les résultats en une PMP pour le printemps et l'été."
+"La PMP finale est obtenue en trouvant la valeur maximale sur la dimension"
+" ``time``. Dans notre cas, puisque nous avons calculé un masque "
+"saisonnier, nous pouvons affiner les résultats en une PMP pour le "
+"printemps et l'été."
 
-#: ../../notebooks/pmp.ipynb:4232
+#: ../../notebooks/pmp.ipynb:4197
 msgid "PMPs with aggregated storm configurations"
 msgstr "PMP avec configurations de tempêtes agrégées"
 
-#: ../../notebooks/pmp.ipynb:4234
+#: ../../notebooks/pmp.ipynb:4199
 msgid ""
 "In some cases, it may be preferable to avoid processing each grid cell "
 "independently. Instead, storms can be aggregated using various "
@@ -455,41 +510,44 @@ msgid ""
 "which can help reduce variability across grid cells and yield more "
 "reliable results."
 msgstr ""
-"Dans certains cas, il peut être préférable d'éviter de traiter chaque point de grille "
-"indépendamment. À la place, les tempêtes peuvent être agrégées en utilisant différentes "
-"configurations pour fournir une estimation plus représentative à l'échelle régionale. "
-"Ces configurations permettent une moyenne spatiale des événements de tempête, "
-"ce qui peut aider à réduire la variabilité entre les points de grille et fournir des résultats "
-"plus fiables."
+"Dans certains cas, il peut être préférable d'éviter de traiter chaque "
+"point de grille indépendamment. À la place, les tempêtes peuvent être "
+"agrégées en utilisant différentes configurations pour fournir une "
+"estimation plus représentative à l'échelle régionale. Ces configurations "
+"permettent une moyenne spatiale des événements de tempête, ce qui peut "
+"aider à réduire la variabilité entre les points de grille et fournir des "
+"résultats plus fiables."
 
-#: ../../notebooks/pmp.ipynb:4236
+#: ../../notebooks/pmp.ipynb:4201
 msgid ""
 "Different aggregation configurations are discussed in Clavet-Gaumont et "
 "al. (2017) and have been implemented in ``xHydro`` under the function "
 "``xhydro.indicators.pmp.spatial_average_storm_configurations``."
 msgstr ""
-"Différentes configurations d'agrégation sont discutées dans Clavet-Gaumont et "
-"al. (2017) et ont été implémentées dans ``xHydro`` sous la fonction "
-"``xhydro.indicators.pmp.spatial_average_storm_configurations``."
+"Différentes configurations d'agrégation sont discutées dans Clavet-"
+"Gaumont et al. (2017) et ont été implémentées dans ``xHydro`` sous la "
+"fonction ``xhydro.indicators.pmp.spatial_average_storm_configurations``."
 
-#: ../../notebooks/pmp.ipynb:4238
+#: ../../notebooks/pmp.ipynb:4203
 msgid ""
 "Note that precipitable water must first be calculated in a distributed "
 "manner and then spatially averaged to obtain the aggregated precipitable "
 "water."
 msgstr ""
-"Notez que l'eau précipitable doit d'abord être calculée de manière distribuée "
-"puis moyennée spatialement pour obtenir l'eau précipitable agrégée."
+"Notez que l'eau précipitable doit d'abord être calculée de manière "
+"distribuée puis moyennée spatialement pour obtenir l'eau précipitable "
+"agrégée."
 
-#: ../../notebooks/pmp.ipynb:5168
+#: ../../notebooks/pmp.ipynb:5133
 msgid ""
 "After applying storm aggregation, the subsequent steps remain the same as"
 " before, following the standard PMP calculation process outlined earlier."
 msgstr ""
-"Après avoir appliqué l'agrégation des tempêtes, les étapes suivantes restent les mêmes qu'auparavant, "
-"suivant le processus standard de calcul da le PMP."
+"Après avoir appliqué l'agrégation des tempêtes, les étapes suivantes "
+"restent les mêmes qu'auparavant, suivant le processus standard de calcul "
+"da le PMP."
 
-#: ../../notebooks/pmp.ipynb:5840
+#: ../../notebooks/pmp.ipynb:5805
 msgid ""
 "Previously, the final PMP for each season was obtained by taking the "
 "maximum value over the ``time`` dimension. In this updated approach, we "
@@ -497,6 +555,7 @@ msgid ""
 "dimensions, using our multiple storm configurations."
 msgstr ""
 "Auparavant, la PMP finale pour chaque saison était obtenue en prenant la "
-"valeur maximale sur la dimension ``time``. Dans cette approche mise à jour, nous "
-"pouvons désormais prendre la valeur maximale à la fois sur les dimensions ``time`` et ``conf``, "
-"en utilisant nos multiples configurations de tempêtes."
+"valeur maximale sur la dimension ``time``. Dans cette approche mise à "
+"jour, nous pouvons désormais prendre la valeur maximale à la fois sur les"
+" dimensions ``time`` et ``conf``, en utilisant nos multiples "
+"configurations de tempêtes."
