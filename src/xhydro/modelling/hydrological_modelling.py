@@ -1,3 +1,4 @@
+# numpydoc ignore=EX01,SA01,ES01
 """Hydrological modelling framework."""
 
 import inspect
@@ -13,6 +14,7 @@ import xclim as xc
 import xscen as xs
 from packaging.version import Version
 
+from ._hydrobudget import Hydrobudget
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
 
@@ -20,7 +22,9 @@ __all__ = ["format_input", "get_hydrological_model_inputs", "hydrological_model"
 
 
 def hydrological_model(model_config):
-    """Initialize an instance of a hydrological model.
+    # numpydoc ignore=EX01,SA01,ES01
+    """
+    Initialize an instance of a hydrological model.
 
     Parameters
     ----------
@@ -45,6 +49,10 @@ def hydrological_model(model_config):
         model_config.pop("model_name")
         return Hydrotel(**model_config)
 
+    if model_name == "Hydrobudget":
+        model_config.pop("model_name")
+        return Hydrobudget(**model_config)
+
     elif model_name in [
         "Blended",
         "GR4JCN",
@@ -60,9 +68,12 @@ def hydrological_model(model_config):
 
 
 def get_hydrological_model_inputs(
-    model_name, required_only: bool = False
+    # numpydoc ignore=EX01,SA01,ES01
+    model_name,
+    required_only: bool = False,
 ) -> tuple[dict, str]:
-    """Get the required inputs for a given hydrological model.
+    """
+    Get the required inputs for a given hydrological model.
 
     Parameters
     ----------
@@ -81,6 +92,8 @@ def get_hydrological_model_inputs(
     """
     if model_name == "Hydrotel":
         model = Hydrotel
+    if model_name == "Hydrobudget":
+        model = Hydrobudget
     elif model_name in [
         "Blended",
         "GR4JCN",
@@ -109,13 +122,15 @@ def get_hydrological_model_inputs(
 
 
 def format_input(
+    # numpydoc ignore=EX01,SA01,ES01
     ds: xr.Dataset,
     model: str,
     convert_calendar_missing: float | str | dict = np.nan,
     save_as: str | PathLike | None = None,
     **kwargs,
 ) -> tuple[xr.Dataset, dict]:
-    r"""Reformat CF-compliant meteorological data for use in hydrological models.
+    r"""
+    Reformat CF-compliant meteorological data for use in hydrological models.
 
     Parameters
     ----------
@@ -204,6 +219,7 @@ def format_input(
         ds = _detect_variable(ds, attributes, names, return_ds=True)
 
     def _is_rate(u):
+        # numpydoc ignore=EX01,SA01,ES01,RT01,PR01,GL08
         q = xc.core.units.str2pint(u)
         return q.dimensionality.get("[time]", 0) < 0
 
@@ -333,7 +349,11 @@ def format_input(
 
 
 def _detect_variable(
-    ds: xr.Dataset, attributes: dict, names: list, return_ds: bool = False
+    # numpydoc ignore=EX01,SA01,ES01,RT01,PR01
+    ds: xr.Dataset,
+    attributes: dict,
+    names: list,
+    return_ds: bool = False,
 ) -> xr.Dataset | str:
     """Find a variable in the dataset based on its attributes or name."""
     out = []

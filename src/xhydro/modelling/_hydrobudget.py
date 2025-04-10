@@ -1,23 +1,15 @@
+# numpydoc ignore=EX01,SA01,ES01
 """Class to handle Hydrotel simulations."""
 
 import os
-import re
-import shutil
 import subprocess  # noqa: S404
-import warnings
-from copy import deepcopy
 from datetime import datetime
-from pathlib import Path, PureWindowsPath
-from typing import Optional, Union
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import xarray as xr
-import xclim as xc
 from scipy.io import netcdf_file
-from xscen.io import estimate_chunks, save_to_netcdf
-
-from xhydro.utils import health_checks
 
 from ._hm import HydrologicalModel
 
@@ -25,7 +17,9 @@ __all__ = ["Hydrobuget"]
 
 
 class Hydrobudget(HydrologicalModel):
-    """Class to handle Hydrobudget simulations.
+    # numpydoc ignore=EX01,SA01,ES01
+    """
+    Class to handle Hydrobudget simulations.
 
     Parameters
     ----------
@@ -45,6 +39,7 @@ class Hydrobudget(HydrologicalModel):
     """
 
     def __init__(
+        # numpydoc ignore=EX01,SA01,ES01
         self,
         project_dir: str | os.PathLike,
         executable: str | os.PathLike,
@@ -54,7 +49,25 @@ class Hydrobudget(HydrologicalModel):
         parameters_names: np.ndarray | list[float] | None = None,
         qobs: np.ndarray | None,
     ):
-        """Initialize the Hydrobudget simulation."""
+        """
+        Initialize the Hydrobudget simulation.
+
+        Parameters
+        ----------
+        project_dir : str or os.PathLike
+            Path to the project folder (including inputs file, shell script and R script).
+        executable : str or os.PathLike
+            Command to execute Hydrobudget.
+            This should be the path to the shell script launching the R script.
+        output_config : dict, optional
+            Dictionary of configuration options to overwrite in the output file (output.csv).
+        parameters : np.array or list, optional
+            Parameters values for calibration.
+        parameters_names : np.array or list, optional
+            Parameters names for calibration.
+        qobs : np.array, optional
+            Observed streamflows.
+        """
         output_config = output_config or dict()
 
         self.project_dir = Path(project_dir)
@@ -67,10 +80,12 @@ class Hydrobudget(HydrologicalModel):
         self.parameters_names = parameters_names
 
     def run(
+        # numpydoc ignore=EX01,SA01,ES01
         self,
         xr_open_kwargs_out: dict | None = None,
     ) -> str | xr.Dataset:
-        """Run the simulation.
+        """
+        Run the simulation.
 
         Parameters
         ----------
@@ -97,8 +112,8 @@ class Hydrobudget(HydrologicalModel):
                 else:
                     file.write(line)
 
-        # If parameters are given in model_config (for calibration), write .txt file that will be take int accompt by the model
-        # FONCTION À ARRANGER !!!!!
+        # If parameters are given in model_config (for calibration), write .txt file that will be take int account by the model
+        # FUNCTION À ARRANGER !!!!!
 
         if self.parameters is not None:
 
@@ -130,7 +145,7 @@ class Hydrobudget(HydrologicalModel):
                         file.write(line)
 
         """Run simulation."""
-        subprocess.call(self.executable, shell=True)
+        # subprocess.call(self.executable, shell=True)
 
         """Standardize the outputs"""
         self._standardise_outputs(**(xr_open_kwargs_out or {}))
@@ -139,7 +154,9 @@ class Hydrobudget(HydrologicalModel):
         return self.get_streamflow()
 
     def _standardise_outputs(self, **kwargs):
-        r"""Standardise the outputs of the simulation to be more consistent with CF conventions.
+        # numpydoc ignore=EX01,SA01,ES01
+        r"""
+        Standardise the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
         ----------
@@ -293,7 +310,9 @@ class Hydrobudget(HydrologicalModel):
         filename.close()
 
     def get_streamflow(self, **kwargs) -> xr.Dataset:
-        r"""Get the streamflow from the simulation.
+        # numpydoc ignore=EX01,SA01,ES01
+        r"""
+        Get the streamflow from the simulation.
 
         Parameters
         ----------
