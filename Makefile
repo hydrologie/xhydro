@@ -101,7 +101,7 @@ autodoc: clean-docs ## create sphinx-apidoc files:
 initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files (but not the API docs)
 	${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
-	rm -fr docs/locales/fr/apidoc
+	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck

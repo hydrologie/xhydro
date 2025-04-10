@@ -11,7 +11,7 @@ rem Run sphinx-intl update
 sphinx-intl update -p docs\_build\gettext -d docs\locales -l fr
 
 rem Remove API translation files
-rmdir /s /q docs\fr\apidoc
+rmdir /s /q docs\fr\LC_MESSAGES\apidoc
 
 if %ERRORLEVEL% neq 0 (
     echo Error occurred during translation update.
