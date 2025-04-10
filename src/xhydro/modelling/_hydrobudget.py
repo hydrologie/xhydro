@@ -30,6 +30,8 @@ class Hydrobudget(HydrologicalModel):
         This should be the path to the shell script launching the R script.
     output_config : dict, optional
         Dictionary of configuration options to overwrite in the output file (output.csv).
+    simulation_config : dict, optional
+        Begin and end dates of the simulation, format "%Y-%m-%d".
     parameters : np.array or list, optional
         Parameters values for calibration.
     parameters_names : np.array or list, optional
@@ -45,6 +47,7 @@ class Hydrobudget(HydrologicalModel):
         executable: str | os.PathLike,
         *,
         output_config: dict | None = None,
+        simulation_config: dict | None = None,
         parameters: np.ndarray | list[float] | None = None,
         parameters_names: np.ndarray | list[float] | None = None,
         qobs: np.ndarray | None,
@@ -61,6 +64,8 @@ class Hydrobudget(HydrologicalModel):
             This should be the path to the shell script launching the R script.
         output_config : dict, optional
             Dictionary of configuration options to overwrite in the output file (output.csv).
+        simulation_config : dict, optional
+            Begin and end dates of the simulation, format "%Y-%m-%d".
         parameters : np.array or list, optional
             Parameters values for calibration.
         parameters_names : np.array or list, optional
@@ -75,9 +80,11 @@ class Hydrobudget(HydrologicalModel):
             raise ValueError("The project folder does not exist.")
 
         self.executable = str(Path(executable))
-        self.qobs = qobs
+        self.qobs = qobs or None
         self.parameters = parameters
         self.parameters_names = parameters_names
+        self.simu_begin = simulation_config["DATE DEBUT"]
+        self.simu_end = simulation_config["DATE FIN"]
 
     def run(
         # numpydoc ignore=EX01,SA01,ES01
@@ -113,14 +120,30 @@ class Hydrobudget(HydrologicalModel):
                     file.write(line)
 
         # If parameters are given in model_config (for calibration), write .txt file that will be take int account by the model
-        # FUNCTION À ARRANGER !!!!!
+        param_file = Path(self.project_dir, "param.txt")
+        with Path.open(param_file) as file:
+            lines = file.readlines()
+
+        with Path.open(param_file, "w") as file:
+            for line in lines:
+                if line.startswith("Debut"):
+                    file.write(
+                        "Debut"
+                        + " "
+                        + str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year)
+                        + "\n"
+                    )
+                elif line.startswith("Fin"):
+                    file.write(
+                        "Fin"
+                        + " "
+                        + str(datetime.strptime(self.simu_end, "%Y-%m-%d").year)
+                        + "\n"
+                    )
+                else:
+                    file.write(line)
 
         if self.parameters is not None:
-
-            param_file = Path(self.project_dir, "param.txt")
-            print(param_file)
-            with Path.open(param_file) as file:
-                lines = file.readlines()
 
             with Path.open(param_file, "w") as file:
                 for line in lines:
@@ -130,11 +153,6 @@ class Hydrobudget(HydrologicalModel):
                             for i, x in enumerate(self.parameters_names)
                             if x == line.split(" ")[0]
                         ][0]
-                        print(
-                            self.parameters_names[place_param]
-                            + " "
-                            + str(self.parameters[place_param])
-                        )
                         file.write(
                             self.parameters_names[place_param]
                             + " "
@@ -175,14 +193,23 @@ class Hydrobudget(HydrologicalModel):
         if not self.output_dir.is_dir():
             raise ValueError("The project output folder does not exist.")
 
+        list_output_files_stations_tot = [
+            str(f) for f in self.output_dir.iterdir() if f.is_file()
+        ]
+
         list_output_files_stations = [
-            f
-            for f in pathlib.Path.iterdir(self.output_dir)
-            if f.endswith("_debit_sim_obs.csv")
+            file
+            for file in list_output_files_stations_tot
+            if file.endswith("debit_sim.csv")
+        ]
+
+        list_stations_interm = [
+            list_output_files_stations[i].split("\\")[-1]
+            for i in range(len(list_output_files_stations))
         ]
         list_stations = [
-            list_output_files_stations[i].split("_", 1)[0]
-            for i in range(len(list_output_files_stations))
+            list_stations_interm[i].split("_")[-3]
+            for i in range(len(list_stations_interm))
         ]
 
         # Create variables that will be in the netcdf file
@@ -225,14 +252,12 @@ class Hydrobudget(HydrologicalModel):
         input_dir = Path(self.project_dir, "Input")
         self.input_dir = Path(input_dir)
 
+        list_input_files_tot = [str(f) for f in self.input_dir.iterdir() if f.is_file()]
         qobs_input_file = [
-            f
-            for f in pathlib.Path.iterdir(self.input_dir)
-            if f.endswith("observed_flow.csv")
+            file for file in list_input_files_tot if file.endswith("observed_flow.csv")
         ]
-        qobs_file = pd.read_csv(
-            Path(self.input_dir, str(qobs_input_file[0])), delimiter=","
-        )
+
+        qobs_file = pd.read_csv(Path(qobs_input_file[0]), delimiter=",")
         qobs_file["month_number"] = (
             (qobs_file["year"] - reference_date.year) * 12
             + qobs_file["month"]
@@ -328,3 +353,20 @@ class Hydrobudget(HydrologicalModel):
         # qsim = qsim["qsim"]
 
         return qsim
+
+    def get_inputs(self, **kwargs) -> xr.Dataset:
+        # numpydoc ignore=EX01,SA01,ES01
+        r"""
+        Get the input data for the hydrological model.
+
+        Parameters
+        ----------
+        \*\*kwargs : dict
+            Additional keyword arguments for the hydrological model.
+
+        Returns
+        -------
+        xr.Dataset
+            Input data for the hydrological model, in xarray Dataset format.
+        """
+        pass
