@@ -98,9 +98,10 @@ coverage: ## check code coverage quickly with the default Python
 autodoc: clean-docs ## create sphinx-apidoc files:
 	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
-initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files
+initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files (but not the API docs)
 	${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
+	rm -fr docs/locales/fr/apidoc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck
