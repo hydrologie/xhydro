@@ -54,12 +54,19 @@ Stable release (PyPI)
 ---------------------
 You can also install `xHydro` from `PyPI` using `pip`:
 
-    .. code-block:: console
+.. code-block:: console
 
-       pip install xhydro
+   pip install xhydro
 
-The points above about the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply here. Also note that some of the dependencies of `xHydro` might not be fully functional when installed using `pip`, such as `xESMF`.
-**IMPORTANT:** There currently seems to be an issue with the `juliacall` library when installing `xHydro` from `PyPI`, which will cause segmentation faults when trying to import it. Until this issue is resolved or a workaround is found, we recommend installing `xHydro` from `conda` instead if you want to use the `extreme_value_analysis` module.
+Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the PyPI installation.
+
+Additionally, some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
+
+.. warning::
+
+   There is currently a known issue with the `juliacall` library when installing `xHydro` from `PyPI`. This can lead to segmentation faults when attempting to import the library.
+
+   Until this issue is resolved or a reliable workaround is identified, we recommend installing `xHydro` via `conda` if you intend to use the `extreme_value_analysis` module.
 
 Installing `ravenpy` and `raven-hydro` can be challenging in standard `pip` environments due to complex system-level dependencies. As a result, installing `xHydro` from PyPI will **not** include these two packages by default, and any related modules will be deactivated.
 
