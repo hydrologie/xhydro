@@ -220,19 +220,10 @@ class Hydrobudget(HydrologicalModel):
             delimiter=",",
             usecols=columns_to_read,
         )
-        reference_date = datetime.strptime("1970-01-01", "%Y-%m-%d")
-        times = []
-        for d in range(len(dates.index)):
-            time = datetime.strptime(
-                datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m"),
-                "%Y-%m",
-            )
-            time_month = (
-                (time.year - reference_date.year) * 12
-                + time.month
-                - reference_date.month
-            )
-            times.append(time_month)
+        times = [
+            datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m-%d")
+            for d in range(len(dates.index))
+        ]
 
         # Qsim
         # Build variable for netcdf
@@ -258,16 +249,17 @@ class Hydrobudget(HydrologicalModel):
         ]
 
         qobs_file = pd.read_csv(Path(qobs_input_file[0]), delimiter=",")
-        qobs_file["month_number"] = (
-            (qobs_file["year"] - reference_date.year) * 12
-            + qobs_file["month"]
-            - reference_date.month
-        )
+        qobs_file["time"] = [
+            datetime(qobs_file["year"][d], qobs_file["month"][d], 1).strftime(
+                "%Y-%m-%d"
+            )
+            for d in range(len(qobs_file.index))
+        ]
 
         # Keep observations only if the corresponding month has been simulated
-        unique = set(list(qobs_file["month_number"]))
-        qobs_file_select = qobs_file[qobs_file.month_number.isin(times)]
-        qobs_sum_month = qobs_file_select.groupby("month_number")[list_stations].sum()
+        unique = set(list(qobs_file["time"]))
+        qobs_file_select = qobs_file[qobs_file.time.isin(times)]
+        qobs_sum_month = qobs_file_select.groupby("time")[list_stations].sum()
 
         # Build variable for netcdf
         qobs_tot = np.zeros((len(list_stations), len(times)))
@@ -294,13 +286,20 @@ class Hydrobudget(HydrologicalModel):
         # qbase_obs = filename.createVariable('qbase_obs', 'f4', ('time', 'station'))
 
         # Attributes
-        time.units = "months since January 1970"
+        time.units = "days since 1970-01-01 0:0:0"
         station.units = "stations names (no unit)"
         qobs.units = "mm/month"
         # qbase_obs.units = 'mm/month'
 
         # Populate the variables with data
-        time[:] = times
+        time_day = [
+            (
+                datetime.strptime(times[d], "%Y-%m-%d")
+                - datetime.strptime("1970-01-01", "%Y-%m-%d")
+            ).days
+            for d in range(len(times))
+        ]
+        time[:] = time_day
         station[:] = list_stations
         qobs[:, :] = qobs_tot
 
@@ -322,13 +321,13 @@ class Hydrobudget(HydrologicalModel):
         # qbase_sim = filename.createVariable('qbase_sim', 'f4', ('time', 'station'))
 
         # Attributes
-        time.units = "months since January 1970"
+        time.units = "days since 1970-01-01 0:0:0"
         station.units = "stations names (no unit)"
         streamflow.units = "mm/month"
         # qbase_sim.units = 'mm/month'
 
         # Populate the variables with data
-        time[:] = times
+        time[:] = time_day
         station[:] = list_stations
         streamflow[:, :] = qsim_tot
 
