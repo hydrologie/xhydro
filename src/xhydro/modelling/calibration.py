@@ -228,12 +228,12 @@ class SpotSetup:
             self.qobs = qobs
         else:
             if isinstance(qobs, xr.Dataset):
-                da = qobs.streamflow
+                da = qobs.q
             elif isinstance(qobs, xr.DataArray):
                 da = qobs
             elif isinstance(qobs, os.PathLike):
                 with xr.open_dataset(qobs) as ds:
-                    da = ds.streamflow
+                    da = ds.q
             else:
                 raise ValueError(
                     "qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file."
@@ -273,7 +273,7 @@ class SpotSetup:
         qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["streamflow"].values
+        return qsim["q"].values
 
     def evaluation(self):
         """Evaluation function for spotpy.

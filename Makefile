@@ -125,13 +125,9 @@ dist: clean ## builds source and wheel package
 release: dist ## package and upload a release
 	python -m flit publish dist/*
 
-ESMF_VERSION := $(shell cat $(ESMFMKFILE) | grep "ESMF_VERSION_STRING=" | awk -F= '{print $$2}' | tr -d "'")
-install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
-	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
-
-install: install-esmpy ## install the package to the active Python's site-packages
+install: ## install the package to the active Python's site-packages
 	python -m pip install .
 
-dev: install-esmpy ## install the package to the active Python's site-packages
+dev: ## install the package to the active Python's site-packages
 	python -m pip install --editable .[all]
 	pre-commit install

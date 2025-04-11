@@ -4,11 +4,11 @@ import warnings
 
 import xarray as xr
 import xclim as xc
-import xscen as xs
 from xclim.core.units import rate2amount
 
 # Special imports from xscen
 from xscen import compute_indicators
+from xscen.utils import clean_up
 
 __all__ = [
     "compute_indicators",
@@ -53,11 +53,11 @@ def compute_volume(
     return out
 
 
-def get_yearly_op(
+def get_yearly_op(  # noqa: C901
     ds,
     op,
     *,
-    input_var: str = "streamflow",
+    input_var: str = "q",
     window: int = 1,
     timeargs: dict | None = None,
     missing: str = "skip",
@@ -73,7 +73,7 @@ def get_yearly_op(
     op : str
         Operation to compute. One of ["max", "min", "mean", "sum"].
     input_var : str
-        Name of the input variable. Defaults to "streamflow".
+        Name of the input variable. Defaults to "q".
     window : int
         Size of the rolling window. A "mean" operation is performed on the rolling window before the call to xclim.
         This parameter cannot be used with the "sum" operation.
@@ -119,6 +119,14 @@ def get_yearly_op(
             raise ValueError("Cannot use a rolling window with a sum operation.")
         if interpolate_na:
             ds[input_var] = ds[input_var].interpolate_na(dim="time", method="linear")
+
+    if input_var == "q" and "q" not in ds and "streamflow" in ds:
+        input_var = "streamflow"
+        warnings.warn(
+            "The default 'input_var' has changed from 'streamflow' to 'q' in order to be consistent with changes in xclim. "
+            "Support for 'streamflow' will be removed in xHydro v0.7.0. Please use 'input_var=\"streamflow\"' "
+            "or change the variable name in your dataset."
+        )
 
     # Add the variable to xclim to avoid raising an error
     if input_var not in xc.core.VARIABLES:
@@ -244,6 +252,6 @@ def get_yearly_op(
             for da in ind_dict.values()
         ]
     )
-    out = xs.clean_up(out, common_attrs_only=ind_dict)
+    out = clean_up(out, common_attrs_only=ind_dict)
 
     return out
