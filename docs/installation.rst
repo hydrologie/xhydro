@@ -14,15 +14,17 @@ If you don't have `pip`_ installed, this `Python installation guide`_ can guide 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
-Furthermore, some libraries used by `xHydro` or its dependencies may require the activation of the environment to work properly. It is therefore recommended to always activate the environment before running any Python code to avoid issues. You can do this by running the following command:
+.. note::
 
-    .. code-block:: console
+   Some libraries used by `xHydro` or its dependencies may not function correctly unless the appropriate environment is activated. To avoid potential issues, it is **strongly recommended** to always activate your environment before running any Python code. You can do this with the following command:
 
-        conda activate name_of_your_environment
+   .. code-block:: console
 
-This is also true for some GUI applications, such as PyCharm, which fail to properly activate the project environment by themselves. If you are using such an application, make sure to activate the environment before launching it.
-For Windows users, this can be done by running the command above in the Anaconda Prompt before launching the application through that same prompt, or by launching the application from the Anaconda Navigator (with the correct environment activated in it).
+      conda activate name_of_your_environment
 
+   This recommendation also applies to certain GUI applications, such as PyCharm, which may not automatically activate the project environment. In such cases, be sure to activate the environment before launching the application.
+
+   On Windows, this can be done by running the command above in the *Anaconda Prompt*, and then launching the application from that same prompt. Alternatively, you can launch the application via *Anaconda Navigator*, ensuring the correct environment is selected beforehand.
 
 Stable release (Anaconda)
 -------------------------
@@ -59,14 +61,21 @@ You can also install `xHydro` from `PyPI` using `pip`:
 The points above about the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply here. Also note that some of the dependencies of `xHydro` might not be fully functional when installed using `pip`, such as `xESMF`.
 **IMPORTANT:** There currently seems to be an issue with the `juliacall` library when installing `xHydro` from `PyPI`, which will cause segmentation faults when trying to import it. Until this issue is resolved or a workaround is found, we recommend installing `xHydro` from `conda` instead if you want to use the `extreme_value_analysis` module.
 
-Additionally, `ravenpy` and `raven-hydro` can be quite difficult to install in `pip` environments. Thus, installing `xHydro` from `PyPI` will not include those two dependencies and the associated modules will be deactivated. If you want to use Raven-based hydrological modelling, some commands similar to the following should be run:
+Installing `ravenpy` and `raven-hydro` can be challenging in standard `pip` environments due to complex system-level dependencies. As a result, installing `xHydro` from PyPI will **not** include these two packages by default, and any related modules will be deactivated.
 
-    .. code-block:: console
+If you wish to use Raven-based hydrological modelling, you can manually install the necessary dependencies first. On Linux or macOS, you can use the following commands:
 
-       apt-get upgrade && apt-get upgrade -y && apt-get install -y git gdal-bin python3-gdal libgdal-dev gcc libnetcdf-dev
-       pip install xhydro[raven]
+.. code-block:: console
 
-More information on how to install `ravenpy` can be found in the `ravenpy`_ and `raven-hydro`_ documentation. Windows users may not be able to install all of the dependencies of `ravenpy` using `pip`, and may need to install `xHydro` using `conda` instead if they want to use `RavenPy`.
+   apt-get update && apt-get upgrade -y
+   apt-get install -y git gdal-bin python3-gdal libgdal-dev gcc libnetcdf-dev
+   pip install xhydro[raven]
+
+For further guidance on installing `ravenpy`, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
+
+.. note::
+
+   On **Windows**, installing all the dependencies for `ravenpy` may require Administrator privileges, as some packages must be added to the system `PATH`.
 
 .. _ravenpy: https://ravenpy.readthedocs.io/en/latest/installation.html#python-installation-pip
 .. _raven-hydro: https://github.com/Ouranosinc/raven-hydro?tab=readme-ov-file#installation
