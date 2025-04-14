@@ -240,20 +240,25 @@ class Hydrobudget(HydrologicalModel):
         ]
         # Qobs et Qsim
         # Build variable for netcdf
-        qobs_tot = np.zeros((len(list_stations), len(times)))
-        qobs_base = np.zeros((len(list_stations), len(times)))
-        qsim_tot = np.zeros((len(list_stations), len(times)))
-        qsim_base = np.zeros((len(list_stations), len(times)))
+        qobs_t = np.zeros((len(list_stations), 2, len(times)))
+        qsim_t = np.zeros((len(list_stations), 2, len(times)))
+
         for st in range(len(list_stations)):
             q_file = pd.read_csv(
                 Path(self.output_dir, str(list_output_files_stations[st])),
                 delimiter=",",
                 usecols=["q", "qbase", "runoff", "runoff_2", "gwr"],
             )
-            qobs_tot[st] = list(q_file["q"])
-            qobs_base[st] = list(q_file["qbase"])
-            qsim_tot[st] = list(q_file["runoff"] + q_file["runoff_2"] + q_file["gwr"])
-            qsim_base[st] = list(q_file["gwr"])
+            qobs_t[st] = np.array([list(q_file["q"]), list(q_file["qbase"])])
+            qsim_t[st] = np.array(
+                [
+                    list(q_file["runoff"] + q_file["runoff_2"] + q_file["gwr"]),
+                    list(q_file["gwr"]),
+                ]
+            )
+
+            # qsim_tot[st] = list(q_file["runoff"] + q_file["runoff_2"] + q_file["gwr"])
+            # qsim_base[st] = list(q_file["gwr"])
 
         # Build Netcdf file with the two variables qobs ad qsim
         # Write out data to a new netCDF file with some attributes
@@ -264,11 +269,14 @@ class Hydrobudget(HydrologicalModel):
         # Dimensions
         filename.createDimension("time", len(times))
         filename.createDimension("station", len(list_stations))
+        filename.createDimension("type", 2)  # streamflow types : Qtotal or Qbase
 
         # Variables
         time = filename.createVariable("time", "i", ("time",))
         station = filename.createVariable("station", "f4", ("station",))
-        streamflow = filename.createVariable("streamflow", "f4", ("station", "time"))
+        streamflow = filename.createVariable(
+            "streamflow", "f4", ("station", "type", "time")
+        )
         # qbase_obs = filename.createVariable('qbase_obs', 'f4', ('time', 'station'))
 
         # Attributes
@@ -287,7 +295,7 @@ class Hydrobudget(HydrologicalModel):
         ]
         time[:] = time_day
         station[:] = list_stations
-        streamflow[:, :] = qobs_tot
+        streamflow[:, :] = qobs_t
 
         filename.close()
 
@@ -299,11 +307,14 @@ class Hydrobudget(HydrologicalModel):
         # Dimensions
         filename.createDimension("time", len(times))
         filename.createDimension("station", len(list_stations))
+        filename.createDimension("type", 2)  # streamflow types : Qtotal or Qbase
 
         # Variables
         time = filename.createVariable("time", "i", ("time",))
         station = filename.createVariable("station", "f4", ("station",))
-        streamflow = filename.createVariable("streamflow", "f4", ("station", "time"))
+        streamflow = filename.createVariable(
+            "streamflow", "f4", ("station", "type", "time")
+        )
         # qbase_sim = filename.createVariable('qbase_sim', 'f4', ('time', 'station'))
 
         # Attributes
@@ -315,7 +326,7 @@ class Hydrobudget(HydrologicalModel):
         # Populate the variables with data
         time[:] = time_day
         station[:] = list_stations
-        streamflow[:, :] = qsim_tot
+        streamflow[:, :] = qsim_t
 
         filename.close()
 
