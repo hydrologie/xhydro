@@ -38,6 +38,10 @@ class Hydrobudget(HydrologicalModel):
         Parameters names for calibration.
     qobs : np.array, optional
         Observed streamflows.
+    start_date : str, optional
+        Calibration start date.
+    end_date : str, optional
+        Calibration end date.
     """
 
     def __init__(
@@ -45,12 +49,13 @@ class Hydrobudget(HydrologicalModel):
         self,
         project_dir: str | os.PathLike,
         executable: str | os.PathLike,
-        *,
         output_config: dict | None = None,
         simulation_config: dict | None = None,
         parameters: np.ndarray | list[float] | None = None,
         parameters_names: np.ndarray | list[float] | None = None,
-        qobs: np.ndarray | None,
+        qobs: np.ndarray | xr.Dataset | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         """
         Initialize the Hydrobudget simulation.
@@ -72,19 +77,28 @@ class Hydrobudget(HydrologicalModel):
             Parameters names for calibration.
         qobs : np.array, optional
             Observed streamflows.
+        start_date : str, optional
+            Calibration start date.
+        end_date : str, optional
+            Calibration end date.
         """
         output_config = output_config or dict()
+        qobs = qobs or None
+        start_date = start_date or None
+        end_date = end_date or None
 
         self.project_dir = Path(project_dir)
         if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
 
         self.executable = str(Path(executable))
-        self.qobs = qobs or None
+        self.qobs = qobs
         self.parameters = parameters
         self.parameters_names = parameters_names
         self.simu_begin = simulation_config["DATE DEBUT"]
         self.simu_end = simulation_config["DATE FIN"]
+        self.cal_start_date = start_date
+        self.cal_end_date = end_date
 
     def run(
         # numpydoc ignore=EX01,SA01,ES01
@@ -224,50 +238,22 @@ class Hydrobudget(HydrologicalModel):
             datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m-%d")
             for d in range(len(dates.index))
         ]
-
-        # Qsim
-        # Build variable for netcdf
-        qsim_tot = np.zeros((len(list_stations), len(times)))
-        qsim_base = np.zeros((len(list_stations), len(times)))
-        for st in range(len(list_stations)):
-            stat = list_stations[st]
-            q_file = pd.read_csv(
-                Path(self.output_dir, str(list_output_files_stations[st])),
-                delimiter=",",
-                usecols=["q", "qbase"],
-            )
-            qsim_tot[st] = list(q_file["q"])
-            qsim_base[st] = list(q_file["qbase"])
-
-        # Qobs
-        input_dir = Path(self.project_dir, "Input")
-        self.input_dir = Path(input_dir)
-
-        list_input_files_tot = [str(f) for f in self.input_dir.iterdir() if f.is_file()]
-        qobs_input_file = [
-            file for file in list_input_files_tot if file.endswith("observed_flow.csv")
-        ]
-
-        qobs_file = pd.read_csv(Path(qobs_input_file[0]), delimiter=",")
-        qobs_file["time"] = [
-            datetime(qobs_file["year"][d], qobs_file["month"][d], 1).strftime(
-                "%Y-%m-%d"
-            )
-            for d in range(len(qobs_file.index))
-        ]
-
-        # Keep observations only if the corresponding month has been simulated
-        unique = set(list(qobs_file["time"]))
-        qobs_file_select = qobs_file[qobs_file.time.isin(times)]
-        qobs_sum_month = qobs_file_select.groupby("time")[list_stations].sum()
-
+        # Qobs et Qsim
         # Build variable for netcdf
         qobs_tot = np.zeros((len(list_stations), len(times)))
         qobs_base = np.zeros((len(list_stations), len(times)))
+        qsim_tot = np.zeros((len(list_stations), len(times)))
+        qsim_base = np.zeros((len(list_stations), len(times)))
         for st in range(len(list_stations)):
-            stat = list_stations[st]
-            qobs_tot[st] = list(qobs_sum_month[stat])
-            # qobs_base[st]=list(q_file['qbase'])
+            q_file = pd.read_csv(
+                Path(self.output_dir, str(list_output_files_stations[st])),
+                delimiter=",",
+                usecols=["q", "qbase", "runoff", "runoff_2", "gwr"],
+            )
+            qobs_tot[st] = list(q_file["q"])
+            qobs_base[st] = list(q_file["qbase"])
+            qsim_tot[st] = list(q_file["runoff"] + q_file["runoff_2"] + q_file["gwr"])
+            qsim_base[st] = list(q_file["gwr"])
 
         # Build Netcdf file with the two variables qobs ad qsim
         # Write out data to a new netCDF file with some attributes
@@ -282,13 +268,13 @@ class Hydrobudget(HydrologicalModel):
         # Variables
         time = filename.createVariable("time", "i", ("time",))
         station = filename.createVariable("station", "f4", ("station",))
-        qobs = filename.createVariable("qobs", "f4", ("station", "time"))
+        streamflow = filename.createVariable("streamflow", "f4", ("station", "time"))
         # qbase_obs = filename.createVariable('qbase_obs', 'f4', ('time', 'station'))
 
         # Attributes
         time.units = "days since 1970-01-01 0:0:0"
         station.units = "stations names (no unit)"
-        qobs.units = "mm/month"
+        streamflow.units = "mm/month"
         # qbase_obs.units = 'mm/month'
 
         # Populate the variables with data
@@ -301,7 +287,7 @@ class Hydrobudget(HydrologicalModel):
         ]
         time[:] = time_day
         station[:] = list_stations
-        qobs[:, :] = qobs_tot
+        streamflow[:, :] = qobs_tot
 
         filename.close()
 
