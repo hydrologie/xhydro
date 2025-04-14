@@ -82,7 +82,7 @@ For further guidance on installing `ravenpy`, refer to the official documentatio
 
 .. note::
 
-   On **Windows**, installing all the dependencies for `ravenpy` may require Administrator privileges, as some packages must be added to the system `PATH`.
+   On **Windows**, installing all the dependencies for `ravenpy` may require Administrator privileges, as some packages must be added to the system `PATH`. If you encounter issues, consider using the `Anaconda` installation method instead.
 
 .. _ravenpy: https://ravenpy.readthedocs.io/en/latest/installation.html#python-installation-pip
 .. _raven-hydro: https://github.com/Ouranosinc/raven-hydro?tab=readme-ov-file#installation
