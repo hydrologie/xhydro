@@ -227,6 +227,7 @@ class SpotSetup:
         if isinstance(qobs, np.ndarray):
             self.qobs = qobs
         else:
+            # FIXME: This should be more robust, and should be able to handle other names
             if isinstance(qobs, xr.Dataset):
                 da = qobs.q
             elif isinstance(qobs, xr.DataArray):
