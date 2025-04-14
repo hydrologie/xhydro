@@ -195,11 +195,12 @@ def get_yearly_op(  # noqa: C901
         ):
             if "doy_bounds" in indexer.keys():
                 # transform doy to a date to find the month
-                ts = xr.cftime_range(
+                ts = xr.date_range(
                     start="2000-01-01",
                     periods=366,
                     freq="D",
                     calendar=ds.time.dt.calendar,
+                    use_cftime=True,
                 )
                 month_start = ts[indexer["doy_bounds"][0] - 1].month
                 month_end = ts[indexer["doy_bounds"][1] - 1].month

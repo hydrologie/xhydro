@@ -344,7 +344,7 @@ def surface_properties(
         bbox=gdf.total_bounds,
     )
 
-    items = list(search.get_items())
+    items = list(search.items())
 
     # Create a mosaic of
     epsg = int(items[0].properties["proj:code"].split(":")[-1])
@@ -395,7 +395,7 @@ def surface_properties(
         output_dataset = output_dataset.swap_dims({"geometry": unique_id})
 
     if output_format in ("geopandas", "gpd.GeoDataFrame"):
-        output_dataset = output_dataset.drop("geometry").to_dataframe()
+        output_dataset = output_dataset.drop_vars("geometry").to_dataframe()
 
     return output_dataset
 
