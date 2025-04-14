@@ -3,16 +3,24 @@
 import logging
 import re
 import time
+import warnings
 from pathlib import Path
 
-import deep_translator
+try:
+    import deep_translator
 
+    can_translate = True
+except ImportError:
+    warnings.warn(
+        "The deep_translator package is not installed. Automatic translation will not work."
+    )
+    can_translate = False
 logger = logging.getLogger(__name__)
 
 
 def translate_missing_po_entries(  # noqa: C901
     dir_path: str | Path,
-    translator: str = "GoogleTranslator",
+    translator: str | None = None,
     source_lang: str = "en",
     target_lang: str = "fr",
     clean_old_entries: bool = True,
@@ -26,8 +34,9 @@ def translate_missing_po_entries(  # noqa: C901
     dir_path : str
         The path to the directory containing the .po files.
     translator : str
-        The translator to use.
-        Uses GoogleTranslator by default, but can be changed to any other translator supported by `deep_translator`.
+        The translator to use. Can be any translator supported by `deep_translator`.
+        GoogleTranslator is the only one that does not require an API key, but results may be poor compared to others.
+        Use None to update the .po files without translation.
     source_lang : str
         The source language of the .po files. Defaults to "en".
     target_lang : str
@@ -44,10 +53,11 @@ def translate_missing_po_entries(  # noqa: C901
     msg_pattern = re.compile(r"msgid (.*?)(?=(#~|#:|$))", re.DOTALL)
     fuzzy_pattern = re.compile(r"#, fuzzy(.*?)\nmsgid (.*?)(?=(#~|#:|$))", re.DOTALL)
 
-    # Initialize the translator
-    translator = getattr(deep_translator, translator)(
-        source=source_lang, target=target_lang, **kwargs
-    )
+    if can_translate and translator is not None:
+        # Initialize the translator
+        translator = getattr(deep_translator, translator)(
+            source=source_lang, target=target_lang, **kwargs
+        )
 
     # Get all .po files
     files = [
@@ -61,15 +71,21 @@ def translate_missing_po_entries(  # noqa: C901
         with Path(file_path).open("r+", encoding="utf-8") as file:
             content = file.read()
 
+            # Track if the file was modified
+            modified = False
+
             # Find all fuzzy entries
             fuzzy_entries = fuzzy_pattern.findall(str(content))
             if len(fuzzy_entries) > 0 and overwrite_fuzzy:
+                modified = True
+
                 msg = f"Found {len(fuzzy_entries)} fuzzy entries in {file_path}"
                 logger.info(msg)
                 for i in fuzzy_entries:
-                    entry = i[1].split("\nmsgstr ")
-                    # Remove the fuzzy entry
-                    content = content.replace(entry[1], '""\n\n')
+                    if "Project-Id-Version" not in i[1]:
+                        entry = i[1].split("\nmsgstr ")
+                        # Remove the fuzzy entry
+                        content = content.replace(entry[1], '""\n\n')
                 # Since we can't guarantee the exact way the fuzzy entry was written
                 # we remove the fuzzy tag in 2 steps
                 content = content.replace(", fuzzy", "")
@@ -86,43 +102,45 @@ def translate_missing_po_entries(  # noqa: C901
                 msgids.extend([ids])
                 msgstrs.extend([strs])
 
-            # Track if the file was modified
-            modified = False
-
             for msgid, msgstr in zip(msgids, msgstrs):
                 # Check if translation is missing
                 if msgid and not msgstr:
-                    # Translate the missing string
-                    translated_text = translator.translate(
-                        msgid.replace('\\"', "'").replace('"', "").replace("\n", "")
-                    )
+                    if can_translate and translator is not None:
+                        # Translate the missing string
+                        translated_text = translator.translate(
+                            msgid.replace('\\"', "'").replace('"', "").replace("\n", "")
+                        )
 
-                    # Split the translated text into lines of max 60 characters
-                    if len(translated_text) > 70:  # 70 to include the spaces
-                        words = translated_text.split()
-                        length = 0
-                        words[0] = '"\n"' + words[0]
-                        for i in range(len(words)):
-                            length += len(words[i])
-                            if length > 60:
-                                words[i] = '"\n"' + words[i]
-                                length = 0
-                        translated_text = " ".join(words)
+                        # Split the translated text into lines of max 60 characters
+                        if len(translated_text) > 70:  # 70 to include the spaces
+                            words = translated_text.split()
+                            length = 0
+                            words[0] = '"\n"' + words[0]
+                            for i in range(len(words)):
+                                length += len(words[i])
+                                if length > 60:
+                                    words[i] = '"\n"' + words[i]
+                                    length = 0
+                            translated_text = " ".join(words)
 
-                    # Replace the empty msgstr with the translated text
-                    content = content.replace(
-                        f'msgid {msgid}\nmsgstr ""',
-                        f'msgid {msgid}\nmsgstr "{translated_text}"',
-                        1,
-                    )
-                    modified = True
+                        # Replace the empty msgstr with the translated text
+                        content = content.replace(
+                            f'msgid {msgid}\nmsgstr ""',
+                            f'msgid {msgid}\nmsgstr "{translated_text}"',
+                            1,
+                        )
+                        modified = True
 
-                    # Sleep to avoid rate limiting
-                    number_of_calls += 1
-                    if number_of_calls % 100 == 0:
-                        time.sleep(60)
+                        # Sleep to avoid rate limiting
+                        number_of_calls += 1
+                        if number_of_calls % 100 == 0:
+                            time.sleep(60)
+                        else:
+                            time.sleep(1)
                     else:
-                        time.sleep(1)
+                        warnings.warn(
+                            f"There are missing translations in {file_path}, but no translator is specified."
+                        )
 
             if clean_old_entries:
                 is_old = str(content).split("#~")

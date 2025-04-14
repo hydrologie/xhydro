@@ -12,7 +12,7 @@ New features and enhancements
   * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
   * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
   * You can use `pip install xhydro[julia]` to install the required dependencies.
-* Multiple improvements to the documentation. (:pull:`274`, :pull:`279`).
+* Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, :pull:`293`).
 
 Bug fixes
 ^^^^^^^^^
