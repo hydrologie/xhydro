@@ -78,7 +78,7 @@ If you wish to use Raven-based hydrological modelling, you can manually install 
    apt-get install -y git gdal-bin python3-gdal libgdal-dev gcc libnetcdf-dev
    pip install xhydro[raven]
 
-For further guidance on installing `ravenpy`, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
+This will install `ravenpy` and `raven-hydro` from `PyPI`. Alternatively, you can install `ravenpy` only, and provide your own Raven executable. For further guidance on installing these packages, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
 
 .. note::
 

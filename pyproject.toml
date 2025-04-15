@@ -106,7 +106,8 @@ julia = [
   "juliacall >=0.9.20"
 ]
 raven = [
-  "ravenpy >=0.18.0" # Only needed for pip installations. Anaconda installations will install ravenpy automatically.
+  # Only needed for pip installations. Anaconda installations will install it automatically.
+  "ravenpy[raven-hydro] >=0.18.1"
 ]
 all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
 

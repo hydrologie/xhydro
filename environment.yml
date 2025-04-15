@@ -21,7 +21,7 @@ dependencies:
   - pystac-client
   - pyyaml >=6.0.2
   - rasterio
-  - ravenpy >=0.18.0
+  - ravenpy >=0.18.1
   - rioxarray >=0.15.0
   - spotpy >=1.6.2
   - stackstac >=0.5.1
