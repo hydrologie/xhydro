@@ -58,7 +58,7 @@ You can also install `xHydro` from `PyPI` using `pip`:
 
    pip install xhydro
 
-Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the PyPI installation.
+Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the `PyPI` installation.
 
 Additionally, some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
 
