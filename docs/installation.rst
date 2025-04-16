@@ -28,7 +28,7 @@ If you don't have `pip`_ installed, this `Python installation guide`_ can guide 
 
 Stable release (Anaconda)
 -------------------------
-Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we highly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
+Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we strongly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
 
     .. code-block:: console
 
