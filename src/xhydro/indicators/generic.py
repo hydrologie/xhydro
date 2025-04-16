@@ -125,7 +125,8 @@ def get_yearly_op(  # noqa: C901
         warnings.warn(
             "The default 'input_var' has changed from 'streamflow' to 'q' in order to be consistent with changes in xclim. "
             "Support for 'streamflow' will be removed in xHydro v0.7.0. Please use 'input_var=\"streamflow\"' "
-            "or change the variable name in your dataset."
+            "or change the variable name in your dataset.",
+            FutureWarning,
         )
 
     # Add the variable to xclim to avoid raising an error
