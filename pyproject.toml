@@ -35,7 +35,7 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy >=0.23.0",
   "dask",
   "dask-geopandas",

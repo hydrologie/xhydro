@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.10,<3.13
-  # Don't forget to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
+  # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
   - dask
@@ -29,6 +29,7 @@ dependencies:
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
   - xclim
+  # - xdatasets >=0.3.6  # FIXME: temporarily disabled for development purposes
   - xscen >=0.12.1,<0.13  # xscen controls the version of xclim
   - xvec
   # Julia
@@ -67,8 +68,6 @@ dependencies:
   - sphinx-intl
   # Testing
   - tox >=4.24.1
-  - pip: # FIXME: Temporary fix to get xdatasets from a GitHub branch
-    - git+https://github.com/hydrologie/xdatasets.git@remove_pins
   # Notebooks
   - hvplot
   - xagg
