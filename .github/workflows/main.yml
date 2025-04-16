@@ -209,7 +209,7 @@ jobs:
           micromamba install -c conda-forge "pyjuliacall>=0.9.20"
       - name: Install xHydro
         run: |
-          python -m pip install .
+          python -m pip install --no-deps .
       - name: Check versions
         run: |
           micromamba list

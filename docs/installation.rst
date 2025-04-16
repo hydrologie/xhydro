@@ -28,7 +28,7 @@ If you don't have `pip`_ installed, this `Python installation guide`_ can guide 
 
 Stable release (Anaconda)
 -------------------------
-Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we highly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
+Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we strongly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
 
     .. code-block:: console
 
@@ -58,7 +58,7 @@ You can also install `xHydro` from `PyPI` using `pip`:
 
    pip install xhydro
 
-Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the PyPI installation.
+Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the `PyPI` installation.
 
 Additionally, some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
 
