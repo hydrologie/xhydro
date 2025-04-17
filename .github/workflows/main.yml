@@ -128,9 +128,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Install xdatasets (dev branch)
-        run: |
-          python -m pip install git+https://github.com/hydrologie/xdatasets.git@remove_pins
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
@@ -206,9 +203,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Install xdatasets (dev branch)
-        run: |
-          python -m pip install git+https://github.com/hydrologie/xdatasets.git@remove_pins
       - name: Install PyJuliaCall
         if: ${{ matrix.julia == true }}
         run: |
@@ -335,9 +329,6 @@ jobs:
           environment-file: environment-dev.yml
           create-args: >-
             python=${{ matrix.python-version }}
-      - name: Install xdatasets (dev branch)
-        run: |
-          python -m pip install git+https://github.com/hydrologie/xdatasets.git@remove_pins
       - name: Install PyJuliaCall
         if: ${{ matrix.julia == true }}
         run: |
