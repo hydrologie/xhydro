@@ -94,7 +94,7 @@ def prepare_flow_percentiles_dataset(
     if percentile:
         axis_percentile = np.where(np.array(discharge.shape) == len(percentile))
         if remove_time:
-            ds["streamflow"] = (
+            ds["q"] = (
                 ["percentile", "station_id"],
                 np.squeeze(
                     np.transpose(
@@ -104,7 +104,7 @@ def prepare_flow_percentiles_dataset(
                 ),
             )
         else:
-            ds["streamflow"] = (
+            ds["q"] = (
                 ["percentile", "station_id", "time"],
                 np.transpose(
                     discharge,
@@ -116,10 +116,10 @@ def prepare_flow_percentiles_dataset(
 
     else:
         if remove_time:
-            ds["streamflow"] = (["station_id"], np.squeeze(discharge))
+            ds["q"] = (["station_id"], np.squeeze(discharge))
 
         else:
-            ds["streamflow"] = (
+            ds["q"] = (
                 ["station_id", "time"],
                 np.transpose(discharge, (axis_stations[0][0], axis_time[0][0])),
             )
@@ -159,7 +159,7 @@ def prepare_flow_percentiles_dataset(
         }
         ds["time_bnds"] = (("time", "nbnds"), time_bnds)
 
-    ds["streamflow"].attrs = {
+    ds["q"].attrs = {
         "long_name": "Streamflow",
         "standard_name": "outgoing_water_volume_transport_along_river_channel",
         "units": "m3 s-1",

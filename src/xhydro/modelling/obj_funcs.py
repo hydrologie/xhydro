@@ -135,10 +135,10 @@ def get_objective_function(
     # If we got a dataset, change to np.array
     # FIXME: Implement a more flexible method
     if isinstance(qsim, xr.Dataset):
-        qsim = qsim["streamflow"]
+        qsim = qsim["q"]
 
     if isinstance(qobs, xr.Dataset):
-        qobs = qobs["streamflow"]
+        qobs = qobs["q"]
 
     # Basic error checking
     if qobs.shape[0] != qsim.shape[0]:

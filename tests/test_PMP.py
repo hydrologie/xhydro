@@ -202,8 +202,12 @@ class TestPMP:
             np.random.rand(2000, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),
@@ -255,8 +259,12 @@ class TestPMP:
             np.random.rand(2000, 2),
             dims=["time", "conf"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "conf": ["1.1", "4.1"],
             },
@@ -279,8 +287,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "some_y", "some_x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "some_y": np.linspace(0, 5, 2),
                 "some_x": np.linspace(0, 5, 2),
@@ -299,8 +311,12 @@ class TestPMP:
             np.random.rand(10, 2, 4),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 4),
@@ -385,8 +401,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 100, 2),
                 "x": np.linspace(0, 100, 2),
@@ -427,8 +447,12 @@ class TestPMP:
             ),
             dims=["time"],
             coords={
-                "time": xr.cftime_range(
-                    start="2010-01-01", periods=1460, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2010-01-01",
+                    periods=1460,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
             },
         )
@@ -548,8 +572,12 @@ class TestPMP:
             np.random.rand(600, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=600, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=600,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),

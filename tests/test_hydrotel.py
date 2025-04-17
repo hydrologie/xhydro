@@ -253,7 +253,7 @@ class TestHydrotel:
         assert list(ds_orig.data_vars) == ["debit_aval"]
         np.testing.assert_array_equal(ds_orig.dims, ["time", "troncon"])
 
-        assert list(ds.data_vars) == ["streamflow"]
+        assert list(ds.data_vars) == ["q"]
         np.testing.assert_array_equal(ds.dims, ["time", "station_id"])
         correct_attrs = {
             "units": (
@@ -265,9 +265,9 @@ class TestHydrotel:
             "_original_name": "debit_aval",
             "_original_description": "Debit en aval du troncon",
         }
-        assert sorted(set(ds.streamflow.attrs)) == sorted(set(correct_attrs))
+        assert sorted(set(ds.q.attrs)) == sorted(set(correct_attrs))
         for k, v in correct_attrs.items():
-            assert ds.streamflow.attrs[k] == v
+            assert ds.q.attrs[k] == v
 
         assert "initial_simulation_path" not in ds.attrs
 

@@ -1,14 +1,18 @@
 """Module to compute climate change statistics using xscen functions."""
 
-import os
 from datetime import datetime
 
 import numpy as np
 import xarray as xr
-import xscen as xs
 
 # Special imports from xscen
-from xscen import climatological_op, compute_deltas, ensemble_stats, produce_horizon
+from xscen import (
+    clean_up,
+    climatological_op,
+    compute_deltas,
+    ensemble_stats,
+    produce_horizon,
+)
 
 __all__ = [
     "climatological_op",
@@ -223,7 +227,7 @@ def sampled_indicators(  # noqa: C901
             )
 
     # Build the attributes based on common attributes between the historical and delta distributions
-    fut_dist = xs.clean_up(fut_dist, common_attrs_only=[ds_dist, deltas_dist])
+    fut_dist = clean_up(fut_dist, common_attrs_only=[ds_dist, deltas_dist])
 
     # Compute future percentiles
     if percentiles is not None:

@@ -14,35 +14,78 @@ If you don't have `pip`_ installed, this `Python installation guide`_ can guide 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
-Stable release
---------------
-Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we highly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
+.. note::
+
+   Some libraries used by `xHydro` or its dependencies may not function correctly unless the appropriate environment is activated. To avoid potential issues, it is **strongly recommended** to always activate your environment before running any Python code. You can do this with the following command:
+
+   .. code-block:: console
+
+      conda activate name_of_your_environment
+
+   This recommendation also applies to certain GUI applications, such as PyCharm, which may not automatically activate the project environment. In such cases, be sure to activate the environment before launching the application.
+
+   On Windows, this can be done by running the command above in the *Anaconda Prompt*, and then launching the application from that same prompt. Alternatively, you can launch the application via *Anaconda Navigator*, ensuring the correct environment is selected beforehand.
+
+Stable release (Anaconda)
+-------------------------
+Some of the dependencies of `xHydro` can be difficult to install using `pip`. For this reason, we strongly recommend installing `xHydro` using Anaconda. This will ensure that all dependencies are met and that the package will work as expected.
 
     .. code-block:: console
 
-     conda install -c conda-forge xhydro
+        conda install -c conda-forge xhydro
 
-Alternatively, you can install `xHydro` using `pip`. All features in `xHydro` itself will work, but some libraries (`xscen` and `xESMF` in particular) might not be fully functional. If you are on Windows, installing through `pip` might not currently be possible because of `raven-hydro`.
-
-    .. code-block:: console
-
-     pip install xhydro
-
-Either of those will install the latest stable release of `xHydro` with all its dependencies, with two exception:
+This will install the latest stable release of `xHydro` with all its dependencies, with two exception:
 
 If you wish to use the `extreme_value_analysis` module, which relies on the `Extremes.jl`_ Julia package, you will need to install the `julia` extra:
 
     .. code-block:: console
 
-     pip install xhydro[julia]
+        pip install xhydro[julia]
 
 .. _Extremes.jl: https://github.com/jojal5/Extremes.jl
 
-If you wish to use the `frequency_analysis.regional` module, you will need to install the `lmoments3` library yourself. This library is available on both `PyPI` or `conda-forge`, but has a restricted license.
+If you wish to use the `frequency_analysis.regional` module, you will need to install the `lmoments3` library yourself. This library is available on both `PyPI` or `conda-forge`, but has a restricted license. Note that if you installed `xHydro` using `conda`, you will need to install `lmoments3` using `conda` as well. If you installed `xHydro` using the `environment-dev.yml` file, `lmoments3` will have been added automatically.
 
     .. code-block:: console
 
-     conda install -c conda-forge lmoments3
+        conda install -c conda-forge lmoments3
+
+Stable release (PyPI)
+---------------------
+You can also install `xHydro` from `PyPI` using `pip`:
+
+.. code-block:: console
+
+   pip install xhydro
+
+Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the `PyPI` installation.
+
+Additionally, some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
+
+.. warning::
+
+   There is currently a known issue with the `juliacall` library when installing `xHydro` from `PyPI`. This can lead to segmentation faults when attempting to import the library.
+
+   Until this issue is resolved or a reliable workaround is identified, we recommend installing `xHydro` via `conda` if you intend to use the `extreme_value_analysis` module.
+
+Installing `ravenpy` and `raven-hydro` can be challenging in standard `pip` environments due to complex system-level dependencies. As a result, installing `xHydro` from PyPI will **not** include these two packages by default, and any related modules will be deactivated.
+
+If you wish to use Raven-based hydrological modelling, you can manually install the necessary dependencies first. On Linux or macOS, you can use the following commands:
+
+.. code-block:: console
+
+   apt-get update && apt-get upgrade -y
+   apt-get install -y git gdal-bin python3-gdal libgdal-dev gcc libnetcdf-dev
+   pip install xhydro[raven]
+
+This will install `ravenpy` and `raven-hydro` from `PyPI`. Alternatively, you can install `ravenpy` only, and provide your own Raven executable. For further guidance on installing these packages, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
+
+.. note::
+
+   On **Windows**, installing all the dependencies for `ravenpy` may require Administrator privileges, as some packages must be added to the system `PATH`. If you encounter issues, consider using the `Anaconda` installation method instead.
+
+.. _ravenpy: https://ravenpy.readthedocs.io/en/latest/installation.html#python-installation-pip
+.. _raven-hydro: https://github.com/Ouranosinc/raven-hydro?tab=readme-ov-file#installation
 
 From sources
 ------------

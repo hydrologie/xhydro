@@ -109,7 +109,7 @@ repos:
       - id: check-github-workflows
       - id: check-readthedocs
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.5.2
+    rev: v1.5.1  # FIXME: Rust is missing on our systems to support 1.5.2+
     hooks:
       - id: zizmor
         args: [ '--config=.zizmor.yml' ]
