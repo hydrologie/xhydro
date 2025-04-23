@@ -43,6 +43,9 @@ Internal changes
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
 * Reduced the number of tests performed on Notebooks. (:pull:`267`).
 * Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`233`).
+* Updated and fixed many dependencies. (:pull:`295`).
+* Added a workflow to test `pip` installations of `xhydro`. (:pull:`295`).
+* Removed steps involving ESMF installation from the `Makefile` and the `tox` configuration. (:pull:`295`).
 
 v0.4.1 (2024-11-07)
 -------------------
