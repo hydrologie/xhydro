@@ -52,35 +52,33 @@ If you wish to use the `frequency_analysis.regional` module, you will need to in
 
 Stable release (PyPI)
 ---------------------
-You can also install `xHydro` from `PyPI` using `pip`:
+Although not recommended, you can also install `xHydro` from `PyPI` using `pip`:
 
 .. code-block:: console
 
    pip install xhydro
 
-Please note that the considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the `PyPI` installation.
+Some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
 
-Additionally, some dependencies of `xHydro` may not be fully functional when installed via `pip`. For example, packages like `xESMF` may require additional system-level configuration to work correctly.
+The considerations mentioned above regarding the `extreme_value_analysis` and `frequency_analysis.regional` modules also apply to the `PyPI` installation, but with a few additional notes:
 
-.. warning::
+* The `julia` extra requires a working C++ compiler. Some users have reported segmentation faults when using the `juliacall` library with `xHydro` installed from `PyPI`, which we believe is due to the Julia environment not being launched with the correct C++ compiler. If you encounter this issue, we recommend using the `conda` installation method instead.
 
-   There is currently a known issue with the `juliacall` library when installing `xHydro` from `PyPI`. This can lead to segmentation faults when attempting to import the library.
-
-   Until this issue is resolved or a reliable workaround is identified, we recommend installing `xHydro` via `conda` if you intend to use the `extreme_value_analysis` module.
-
-Installing `ravenpy` and `raven-hydro` can be challenging in standard `pip` environments due to complex system-level dependencies. As a result, installing `xHydro` from PyPI will **not** include these two packages by default, and any related modules will be deactivated.
-
-If you wish to use Raven-based hydrological modelling, you can manually install the necessary dependencies first. On Linux or macOS, you can use the following commands:
-
-.. code-block:: console
-
-   apt-get update && apt-get upgrade -y
-   apt-get install -y git gdal-bin python3-gdal libgdal-dev gcc libnetcdf-dev
-   pip install xhydro[raven]
-
-This will install `ravenpy` and `raven-hydro` from `PyPI`. Alternatively, you can install `ravenpy` only, and provide your own Raven executable. For further guidance on installing these packages, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
+* The `raven` extra relies on the `ravenpy` and `raven-hydro` packages, which can be challenging to install in standard `pip` environments due to complex system-level dependencies. See the note below for more details. Unless you are familiar with the installation of these packages, we recommend using the `conda` installation method instead.
 
 .. note::
+
+    We have not currently done extensive testing for installing the `raven` extra using `pip`, but the following commands are known to work on some Linux systems:
+
+    .. code-block:: console
+
+       apt-get update && apt-get upgrade -y
+       apt-get install -y git gdal-bin python3-gdal libgdal-dev libnetcdf-dev build-essential
+       pip install xhydro[raven]
+
+    This will install `ravenpy` and `raven-hydro` from `PyPI`. Alternatively, you can replace the last line and install `ravenpy` only, provided that you have your own Raven executable. For further guidance on installing these packages, refer to the official documentation of `ravenpy`_ and `raven-hydro`_.
+
+.. warning::
 
    On **Windows**, installing all the dependencies for `ravenpy` may require Administrator privileges, as some packages must be added to the system `PATH`. If you encounter issues, consider using the `Anaconda` installation method instead.
 
