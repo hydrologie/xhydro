@@ -67,8 +67,7 @@ dependencies:
   - sphinx-intl
   # Testing
   - tox >=4.24.1
-  - pip: # FIXME: Temporary fix to get xdatasets from a GitHub branch
-      - git+https://github.com/hydrologie/xdatasets.git@remove_pins
+  - xdatasets >=0.3.8
   # Notebooks
   - hvplot
   - xagg

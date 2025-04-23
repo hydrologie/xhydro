@@ -84,8 +84,7 @@ dev = [
   "pytest-xdist[psutil] >=3.2",
   "ruff >=0.9.0",
   "tox >=4.24.1",
-  "watchdog >=4.0.0",
-  "xdatasets @ git+https://github.com/hydrologie/xdatasets.git@remove_pins" # FIXME: Add xdatasets here once we have the new version
+  "watchdog >=4.0.0"
 ]
 docs = [
   # Documentation and examples
@@ -100,7 +99,8 @@ docs = [
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton",
   "sphinx-intl",
-  "xagg"
+  "xagg",
+  "xdatasets >=0.3.8"
 ]
 julia = [
   "juliacall >=0.9.20"
