@@ -347,7 +347,7 @@ def surface_properties(
     items = list(search.items())
 
     # Create a mosaic of
-    epsg = int(items[0].properties["proj:code"].split(":")[-1])
+    epsg = ProjectionExtension.ext(items[0])
     da = stackstac.stack(items, epsg=epsg)
     da = _flatten(
         da, dim="time"
@@ -417,7 +417,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
             dtype=np.uint8,
             fill_value=np.uint8(255),
             bounds_latlon=bbox_of_interest,
-            epsg=int(item.properties["proj:code"].split(":")[-1]),
+            epsg=ProjectionExtension.ext(item),
             sortby_date=False,
             rescale=False,
         )
@@ -449,7 +449,7 @@ def _count_pixels_from_bbox(
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
     merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
-    epsg = int(item.properties["proj:code"].split(":")[-1])
+    epsg = ProjectionExtension.ext(item)
 
     # Mask with polygon
     merged = merged.rio.write_crs(epsg).rio.clip([gdf.to_crs(epsg).iloc[idx].geometry])
