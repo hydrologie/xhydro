@@ -25,18 +25,24 @@ msgid ""
 "Data type cannot be displayed: application/javascript, "
 "application/vnd.holoviews_load.v0+json"
 msgstr ""
+"Type de données non affichable : application/javascript, "
+"application/vnd.holoviews_load.v0+json"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:589
 msgid ""
 "Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
 "application/javascript"
 msgstr ""
+"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
+"application/javascript"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:680
 msgid ""
 "Data type cannot be displayed: text/html, "
 "application/vnd.holoviews_exec.v0+json"
 msgstr ""
+"Type de données non affichable : text/html, "
+"application/vnd.holoviews_exec.v0+json"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:744
 msgid "Data extraction and preparation"

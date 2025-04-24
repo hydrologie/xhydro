@@ -344,10 +344,11 @@ def surface_properties(
         bbox=gdf.total_bounds,
     )
 
-    items = list(search.get_items())
+    items = list(search.items())
 
     # Create a mosaic of
-    da = stackstac.stack(items)
+    epsg = ProjectionExtension.ext(items[0]).epsg
+    da = stackstac.stack(items, epsg=epsg)
     da = _flatten(
         da, dim="time"
     )  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
@@ -356,7 +357,7 @@ def surface_properties(
         .coarsen({"y": 5, "x": 5}, boundary="trim")
         .mean()
         .to_dataset(name="elevation")
-        .rio.write_crs("epsg:4326", inplace=True)
+        .rio.write_crs(f"epsg:{epsg}", inplace=True)
         .rio.reproject(projected_crs)
         .isel(band=0)
     )
@@ -394,7 +395,7 @@ def surface_properties(
         output_dataset = output_dataset.swap_dims({"geometry": unique_id})
 
     if output_format in ("geopandas", "gpd.GeoDataFrame"):
-        output_dataset = output_dataset.drop("geometry").to_dataframe()
+        output_dataset = output_dataset.drop_vars("geometry").to_dataframe()
 
     return output_dataset
 
@@ -416,7 +417,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
             dtype=np.uint8,
             fill_value=np.uint8(255),
             bounds_latlon=bbox_of_interest,
-            epsg=item.properties["proj:epsg"],
+            epsg=ProjectionExtension.ext(item).epsg,
             sortby_date=False,
             rescale=False,
         )
@@ -448,7 +449,7 @@ def _count_pixels_from_bbox(
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
     merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
-    epsg = item.properties["proj:epsg"]
+    epsg = ProjectionExtension.ext(item).epsg
 
     # Mask with polygon
     merged = merged.rio.write_crs(epsg).rio.clip([gdf.to_crs(epsg).iloc[idx].geometry])

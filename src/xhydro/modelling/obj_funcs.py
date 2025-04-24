@@ -21,6 +21,8 @@ maximize instead of minimize a metric according to the needs of the optimizing
 algorithm.
 """
 # Import packages
+import warnings
+
 import numpy as np
 import xarray as xr
 
@@ -135,10 +137,26 @@ def get_objective_function(
     # If we got a dataset, change to np.array
     # FIXME: Implement a more flexible method
     if isinstance(qsim, xr.Dataset):
-        qsim = qsim["streamflow"]
+        if "streamflow" in qsim and "q" not in qsim:
+            warnings.warn(
+                "Default variable name has changed from 'streamflow' to 'q'. "
+                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                FutureWarning,
+            )
+            qsim = qsim.streamflow
+        else:
+            qsim = qsim.q
 
     if isinstance(qobs, xr.Dataset):
-        qobs = qobs["streamflow"]
+        if "streamflow" in qobs and "q" not in qobs:
+            warnings.warn(
+                "Default variable name has changed from 'streamflow' to 'q'. "
+                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                FutureWarning,
+            )
+            qobs = qobs.streamflow
+        else:
+            qobs = qobs.q
 
     # Basic error checking
     if qobs.shape[0] != qsim.shape[0]:

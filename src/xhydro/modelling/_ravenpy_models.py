@@ -4,11 +4,15 @@ import os
 import tempfile
 
 import numpy as np
-import ravenpy.config.emulators
 import xarray as xr
-from ravenpy import OutputReader
-from ravenpy.config import commands as rc
-from ravenpy.ravenpy import run
+
+try:
+    import ravenpy.config.emulators
+    from ravenpy import OutputReader
+    from ravenpy.config import commands as rc
+    from ravenpy.ravenpy import run
+except ImportError as e:
+    run = None
 
 from ._hm import HydrologicalModel
 
@@ -76,6 +80,11 @@ class RavenpyModel(HydrologicalModel):
         evaporation="PET_PRIESTLEY_TAYLOR",
         **kwargs,
     ):
+        if run is None:
+            raise ImportError(
+                "RavenPy is not installed. Please install it to use this class."
+            )
+
         if workdir is None:
             workdir = tempfile.mkdtemp(prefix=model_name)
         self.workdir = workdir
@@ -153,7 +162,7 @@ class RavenpyModel(HydrologicalModel):
         outputs = OutputReader(path=outputs_path)
 
         with xr.open_dataset(outputs.files["hydrograph"]) as ds:
-            qsim = ds.q_sim.to_dataset(name="qsim").rename({"qsim": "streamflow"})
+            qsim = ds.q_sim.to_dataset(name="qsim").rename({"qsim": "q"})
 
             if "nbasins" in qsim.dims:
                 qsim = qsim.squeeze()
