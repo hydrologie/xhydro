@@ -84,7 +84,8 @@ dev = [
   "pytest-xdist[psutil] >=3.2",
   "ruff >=0.9.0",
   "tox >=4.24.1",
-  "watchdog >=4.0.0"
+  "watchdog >=4.0.0",
+  "xdatasets >=0.3.8" # Needed for test_gis.py
 ]
 docs = [
   # Documentation and examples
@@ -99,8 +100,7 @@ docs = [
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton",
   "sphinx-intl",
-  "xagg",
-  "xdatasets >=0.3.8"
+  "xagg"
 ]
 julia = [
   "juliacall >=0.9.20"
