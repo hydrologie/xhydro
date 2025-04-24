@@ -64,18 +64,24 @@ msgid ""
 "Data type cannot be displayed: application/javascript, "
 "application/vnd.holoviews_load.v0+json"
 msgstr ""
+"Type de données non affichable : application/javascript, "
+"application/vnd.holoviews_load.v0+json"
 
 #: ../../notebooks/pmp.ipynb:597
 msgid ""
 "Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
 "application/javascript"
 msgstr ""
+"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
+"application/javascript"
 
 #: ../../notebooks/pmp.ipynb:686
 msgid ""
 "Data type cannot be displayed: text/html, "
 "application/vnd.holoviews_exec.v0+json"
 msgstr ""
+"Type de données non affichable : text/html, "
+"application/vnd.holoviews_exec.v0+json"
 
 #: ../../notebooks/pmp.ipynb:696
 msgid "Acquiring data"

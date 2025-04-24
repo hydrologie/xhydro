@@ -25,18 +25,24 @@ msgid ""
 "Data type cannot be displayed: application/javascript, "
 "application/vnd.holoviews_load.v0+json"
 msgstr ""
+"Type de données non affichable : application/javascript, "
+"application/vnd.holoviews_load.v0+json"
 
 #: ../../notebooks/climate_change.ipynb:603
 msgid ""
 "Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
 "application/javascript"
 msgstr ""
+"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
+"application/javascript""
 
 #: ../../notebooks/climate_change.ipynb:692
 msgid ""
 "Data type cannot be displayed: text/html, "
 "application/vnd.holoviews_exec.v0+json"
 msgstr ""
+"Type de données non affichable : text/html, "
+"application/vnd.holoviews_exec.v0+json"
 
 #: ../../notebooks/climate_change.ipynb:701
 msgid ""

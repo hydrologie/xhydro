@@ -2,12 +2,11 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2025-04-24 09:04-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,11 +28,11 @@ msgid ""
 "running the following commands in order to speed up the process:"
 msgstr ""
 "Nous recommandons fortement d'installer `xHydro` dans un environnement "
-"Python Anaconda. De plus, en raison de la complexité de certains packages, "
-"le solveur de dépendances par défaut peut prendre beaucoup de temps pour "
-"résoudre l'environnement. Si `mamba` n'est pas déjà votre solveur par "
-"défaut, nous vous conseillons d'exécuter les commandes suivantes pour "
-"accélérer le processus :"
+"Python Anaconda. De plus, en raison de la complexité de certaines "
+"librairies, le solveur de dépendances par défaut peut prendre beaucoup de "
+"temps pour résoudre l'environnement. Si `mamba` n'est pas déjà votre "
+"solveur par défaut, nous vous conseillons d'exécuter les commandes "
+"suivantes pour accélérer le processus :"
 
 #: ../../installation.rst:12
 msgid ""
@@ -43,99 +42,210 @@ msgstr ""
 "Si vous n'avez pas `pip`_ installé, ce `guide d'installation Python`_ "
 "peut vous aider à traverser le processus."
 
-#: ../../installation.rst:18
-msgid "Stable release"
-msgstr "Version stable"
-
 #: ../../installation.rst:19
 msgid ""
-"Some of the dependencies of `xHydro` can be difficult to install using "
-"`pip`. For this reason, we highly recommend installing `xHydro` using "
-"Anaconda. This will ensure that all dependencies are met and that the "
-"package will work as expected."
+"Some libraries used by `xHydro` or its dependencies may not function "
+"correctly unless the appropriate environment is activated. To avoid "
+"potential issues, it is **strongly recommended** to always activate your "
+"environment before running any Python code. You can do this with the "
+"following command:"
 msgstr ""
-"Certaines des dépendances de `xHydro` peuvent être difficiles à installer "
-"avec `pip`. Pour cette raison, nous recommandons vivement d'installer "
-"`xHydro` en utilisant Anaconda. Cela garantira que toutes les dépendances "
-"sont satisfaites et que la librairie fonctionnera comme prévu."
+"Certaines librairies utilisées par `xHydro` ou ses dépendances peuvent ne pas "
+"fonctionner correctement si l’environnement approprié n’est pas activé. Pour éviter "
+"tout problème potentiel, il est **fortement recommandé** d’activer systématiquement "
+"votre environnement avant d’exécuter du code Python. Vous pouvez le faire avec la "
+"commande suivante :"
 
 #: ../../installation.rst:25
 msgid ""
-"Alternatively, you can install `xHydro` using `pip`. All features in "
-"`xHydro` itself will work, but some libraries (`xscen` and `xESMF` in "
-"particular) might not be fully functional. If you are on Windows, "
-"installing through `pip` might not currently be possible because of "
-"`raven-hydro`."
+"This recommendation also applies to certain GUI applications, such as "
+"PyCharm, which may not automatically activate the project environment. In"
+" such cases, be sure to activate the environment before launching the "
+"application."
 msgstr ""
-"Alternativement, vous pouvez installer `xHydro` en utilisant `pip`. Toutes "
-"les fonctionnalités de `xHydro` fonctionneront, mais certaines librairies "
-"(`xscen` et `xESMF` en particulier) pourraient ne pas être complètement "
-"fonctionnelles. Si vous êtes sur Windows, l'installation via `pip` pourrait "
-"ne pas être possible en raison de `raven-hydro`."
+"Cette recommandation s’applique également à certaines applications avec interface graphique, "
+"comme PyCharm, qui n’activent pas automatiquement l’environnement du projet. Dans ce cas, "
+"veillez à activer l’environnement avant de lancer l’application."
+
+#: ../../installation.rst:27
+msgid ""
+"On Windows, this can be done by running the command above in the "
+"*Anaconda Prompt*, and then launching the application from that same "
+"prompt. Alternatively, you can launch the application via *Anaconda "
+"Navigator*, ensuring the correct environment is selected beforehand."
+msgstr ""
+"Sur Windows, cela peut être fait en exécutant la commande ci-dessus dans *Anaconda Prompt*, "
+"puis en lançant l’application depuis cette même fenêtre. Vous pouvez également lancer l’application "
+"via *Anaconda Navigator*, en veillant à ce que le bon environnement soit sélectionné au préalable."
+
+#: ../../installation.rst:30
+msgid "Stable release (Anaconda)"
+msgstr "Version stable (Anaconda)"
 
 #: ../../installation.rst:31
 msgid ""
-"Either of those will install the latest stable release of `xHydro` with "
-"all its dependencies, with two exception:"
+"Some of the dependencies of `xHydro` can be difficult to install using "
+"`pip`. For this reason, we strongly recommend installing `xHydro` using "
+"Anaconda. This will ensure that all dependencies are met and that the "
+"package will work as expected."
 msgstr ""
-"L'une ou l'autre de ces méthodes installera la dernière version stable de "
-"`xHydro` avec toutes ses dépendances, à deux exceptions près :"
+"Certaines dépendances de `xHydro` peuvent être difficiles à installer avec `pip`. "
+"C’est pourquoi nous recommandons fortement d’installer `xHydro` via Anaconda. "
+"Cela garantira que toutes les dépendances sont satisfaites et que le paquet fonctionnera correctement."
 
-#: ../../installation.rst:33
+#: ../../installation.rst:37
+msgid ""
+"This will install the latest stable release of `xHydro` with all its "
+"dependencies, with two exception:"
+msgstr ""
+"Cela installera la dernière version stable de `xHydro` avec toutes ses dépendances, "
+"à deux exceptions près :"
+
+#: ../../installation.rst:39
 msgid ""
 "If you wish to use the `extreme_value_analysis` module, which relies on "
 "the `Extremes.jl`_ Julia package, you will need to install the `julia` "
 "extra:"
 msgstr ""
-"Si vous souhaitez utiliser le module `extreme_value_analysis`, qui repose "
-"sur le package `Extremes.jl`_ de Julia, vous devrez installer l'extra "
+"Si vous souhaitez utiliser le module `extreme_value_analysis`, qui repose"
+" sur le package `Extremes.jl`_ de Julia, vous devrez installer l'extra "
 "`julia` :"
 
-#: ../../installation.rst:41
+#: ../../installation.rst:47
 msgid ""
 "If you wish to use the `frequency_analysis.regional` module, you will "
 "need to install the `lmoments3` library yourself. This library is "
-"available on both `PyPI` or `conda-forge`, but has a restricted license."
+"available on both `PyPI` or `conda-forge`, but has a restricted license. "
+"Note that if you installed `xHydro` using `conda`, you will need to "
+"install `lmoments3` using `conda` as well. If you installed `xHydro` "
+"using the `environment-dev.yml` file, `lmoments3` will have been added "
+"automatically."
 msgstr ""
-"Si vous souhaitez utiliser le module `frequency_analysis.regional`, vous "
-"devrez installer vous-même la librairie `lmoments3`. Cette librairie "
-"est disponible à la fois sur `PyPI` et `conda-forge`, mais possède une "
-"licence restreinte."
+"Si vous souhaitez utiliser le module `frequency_analysis.regional`, vous devrez installer vous-même la libaririe `lmoments3`. "
+"Celle-ci est disponible sur `PyPI` et `conda-forge`, mais elle est soumise à une licence restreinte. "
+"Notez que si vous avez installé `xHydro` via `conda`, vous devrez également installer `lmoments3` via `conda`. "
+"Si vous avez installé `xHydro` en utilisant le fichier `environment-dev.yml`, `lmoments3` aura été ajouté automatiquement."
 
-#: ../../installation.rst:48
+#: ../../installation.rst:54
+msgid "Stable release (PyPI)"
+msgstr "Version stable (PyPI)"
+
+#: ../../installation.rst:55
+msgid ""
+"Although not recommended, you can also install `xHydro` from `PyPI` using"
+" `pip`:"
+msgstr ""
+"Bien que cela ne soit pas recommandé, vous pouvez également installer `xHydro` depuis `PyPI` en utilisant `pip` :"
+
+#: ../../installation.rst:61
+msgid ""
+"Some dependencies of `xHydro` may not be fully functional when installed "
+"via `pip`. For example, packages like `xESMF` may require additional "
+"system-level configuration to work correctly."
+msgstr ""
+"Certaines dépendances de `xHydro` peuvent ne pas être entièrement fonctionnelles lorsqu’elles sont installées via `pip`. "
+"Par exemple, des paquets comme `xESMF` peuvent nécessiter une configuration système supplémentaire pour fonctionner correctement."
+
+#: ../../installation.rst:63
+msgid ""
+"The considerations mentioned above regarding the `extreme_value_analysis`"
+" and `frequency_analysis.regional` modules also apply to the `PyPI` "
+"installation, but with a few additional notes:"
+msgstr ""
+"Les considérations mentionnées ci-dessus concernant les modules `extreme_value_analysis` et `frequency_analysis.regional` "
+"s’appliquent également à l’installation via `PyPI`, avec quelques remarques supplémentaires :"
+
+#: ../../installation.rst:65
+msgid ""
+"The `julia` extra requires a working C++ compiler. Some users have "
+"reported segmentation faults when using the `juliacall` library with "
+"`xHydro` installed from `PyPI`, which we believe is due to the Julia "
+"environment not being launched with the correct C++ compiler. If you "
+"encounter this issue, we recommend using the `conda` installation method "
+"instead."
+msgstr ""
+"L’extra `julia` nécessite un compilateur C++ fonctionnel. Certains utilisateurs ont signalé des erreurs de segmentation "
+"lors de l’utilisation de la librairie `juliacall` avec `xHydro` installé depuis `PyPI`, ce que nous pensons être dû au fait que "
+"l’environnement Julia n’est pas lancé avec un compilateur C++ adéquat. Si vous rencontrez ce problème, nous vous recommandons "
+"d’utiliser plutôt la méthode d’installation via `conda`."
+
+#: ../../installation.rst:67
+msgid ""
+"The `raven` extra relies on the `ravenpy` and `raven-hydro` packages, "
+"which can be challenging to install in standard `pip` environments due to"
+" complex system-level dependencies. See the note below for more details. "
+"Unless you are familiar with the installation of these packages, we "
+"recommend using the `conda` installation method instead."
+msgstr ""
+"L’extra `raven` dépend des librairies `ravenpy` et `raven-hydro`, qui peuvent être difficiles à installer dans des environnements `pip` "
+"standards en raison de dépendances complexes au niveau du système. Consultez la note ci-dessous pour plus de détails. "
+"À moins d’être familier avec l’installation de ces librairies, nous recommandons d’utiliser plutôt la méthode d’installation via `conda`."
+
+#: ../../installation.rst:71
+msgid ""
+"We have not currently done extensive testing for installing the `raven` "
+"extra using `pip`, but the following commands are known to work on some "
+"Linux systems:"
+msgstr ""
+"Nous n’avons pas encore effectué de tests approfondis pour l’installation de l’extra `raven` via `pip`, "
+"mais les commandes suivantes sont connues pour fonctionner sur certains systèmes Linux :"
+
+#: ../../installation.rst:79
+msgid ""
+"This will install `ravenpy` and `raven-hydro` from `PyPI`. Alternatively,"
+" you can replace the last line and install `ravenpy` only, provided that "
+"you have your own Raven executable. For further guidance on installing "
+"these packages, refer to the official documentation of `ravenpy`_ and "
+"`raven-hydro`_."
+msgstr ""
+"Cela installera `ravenpy` et `raven-hydro` depuis `PyPI`. Vous pouvez aussi remplacer la dernière ligne et installer uniquement `ravenpy`, "
+"à condition d’avoir votre propre exécutable Raven. Pour plus d’informations sur l’installation de ces paquets, "
+"consultez la documentation officielle de `ravenpy`_ et `raven-hydro`_."
+
+#: ../../installation.rst:83
+msgid ""
+"On **Windows**, installing all the dependencies for `ravenpy` may require"
+" Administrator privileges, as some packages must be added to the system "
+"`PATH`. If you encounter issues, consider using the `Anaconda` "
+"installation method instead."
+msgstr ""
+"Sur **Windows**, l’installation de toutes les dépendances pour `ravenpy` peut nécessiter des privilèges administrateur, "
+"car certains paquets doivent être ajoutés au `PATH` du système. En cas de problème, envisagez d’utiliser plutôt la méthode d’installation via `Anaconda`."
+
+#: ../../installation.rst:89
 msgid "From sources"
 msgstr "Depuis les sources"
 
-#: ../../installation.rst:49
+#: ../../installation.rst:90
 msgid ""
 "`xHydro` is still under active development and the latest features might "
 "not yet be available on `PyPI` or `conda-forge`. If you want to use the "
 "latest features, or if you want to contribute to the development of "
 "`xHydro`, you can install it from the sources."
 msgstr ""
-"`xHydro` est toujours en développement actif et les dernières fonctionnalités "
-"peuvent ne pas être encore disponibles sur `PyPI` ou `conda-forge`. Si vous "
-"voulez utiliser les dernières fonctionnalités, ou si vous souhaitez contribuer "
-"au développement de `xHydro`, vous pouvez l'installer depuis les sources."
+"`xHydro` est toujours en développement actif et les dernières "
+"fonctionnalités peuvent ne pas être encore disponibles sur `PyPI` ou "
+"`conda-forge`. Si vous voulez utiliser les dernières fonctionnalités, ou "
+"si vous souhaitez contribuer au développement de `xHydro`, vous pouvez "
+"l'installer depuis les sources."
 
-#: ../../installation.rst:51
+#: ../../installation.rst:92
 msgid "The sources for xHydro can be downloaded from the `Github repo`_."
-msgstr ""
-"Les sources de xHydro peuvent être téléchargées depuis le `dépôt Github`_."
+msgstr "Les sources de xHydro peuvent être téléchargées depuis le `dépôt Github`_."
 
-#: ../../installation.rst:53
+#: ../../installation.rst:94
 msgid ""
 "Download the source code from the `Github repo`_ using one of the "
 "following methods:"
 msgstr ""
-"Téléchargez le code source depuis le `dépôt Github`_ en utilisant l'une des "
-"méthodes suivantes :"
+"Téléchargez le code source depuis le `dépôt Github`_ en utilisant l'une "
+"des méthodes suivantes :"
 
-#: ../../installation.rst:55
+#: ../../installation.rst:96
 msgid "Clone the public repository:"
 msgstr "Clonez le dépôt public :"
 
-#: ../../installation.rst:61
+#: ../../installation.rst:102
 msgid ""
 "Download the `tarball "
 "<https://github.com/hydrologie/xhydro/tarball/main>`_:"
@@ -143,19 +253,21 @@ msgstr ""
 "Téléchargez l'archive `tarball "
 "<https://github.com/hydrologie/xhydro/tarball/main>`_ :"
 
-#: ../../installation.rst:67
+#: ../../installation.rst:108
 msgid "Once you have a copy of the source, you can install it with:"
 msgstr ""
-"Une fois que vous avez une copie des sources, vous pouvez l'installer avec :"
+"Une fois que vous avez une copie des sources, vous pouvez l'installer "
+"avec :"
 
-#: ../../installation.rst:75
+#: ../../installation.rst:116
 msgid ""
 "If you are on Windows, replace the ``make dev`` command with the "
 "following:"
 msgstr ""
-"Si vous êtes sous Windows, remplacez la commande ``make dev`` par celle-ci :"
+"Si vous êtes sous Windows, remplacez la commande ``make dev`` par celle-"
+"ci :"
 
-#: ../../installation.rst:81
+#: ../../installation.rst:122
 msgid ""
 "Even if you do not intend to contribute to `xHydro`, we favor using "
 "`environment-dev.yml` over `environment.yml` because it includes "
@@ -165,23 +277,23 @@ msgid ""
 "requirements are not met*), only run the last command above."
 msgstr ""
 "Bien que vous ne souhaitiez pas contribuer à `xHydro`, nous privilégions "
-"l'utilisation de `environment-dev.yml` plutôt que `environment.yml` car il "
-"inclut des librairies supplémentaires nécessaires pour exécuter tous les "
-"exemples fournis dans la documentation. Si, pour une raison quelconque, vous "
-"souhaitez installer la version `PyPI` de `xHydro` dans un environnement "
-"Anaconda existant (*non recommandé si les exigences ne sont pas remplies*), "
-"exécutez uniquement la dernière commande ci-dessus."
+"l'utilisation de `environment-dev.yml` plutôt que `environment.yml` car "
+"il inclut des librairies supplémentaires nécessaires pour exécuter tous "
+"les exemples fournis dans la documentation. Si, pour une raison "
+"quelconque, vous souhaitez installer la version `PyPI` de `xHydro` dans "
+"un environnement Anaconda existant (*non recommandé si les exigences ne "
+"sont pas remplies*), exécutez uniquement la dernière commande ci-dessus."
 
-#: ../../installation.rst:83
+#: ../../installation.rst:124
 msgid ""
 "When new changes are made to the `Github repo`_, you can update your "
 "local copy using the following commands from the root of the repository:"
 msgstr ""
 "Lorsque de nouveaux changements sont apportés au `dépôt Github`_, vous "
-"pouvez mettre à jour votre copie locale en utilisant les commandes suivantes "
-"depuis la racine du dépôt :"
+"pouvez mettre à jour votre copie locale en utilisant les commandes "
+"suivantes depuis la racine du dépôt :"
 
-#: ../../installation.rst:94
+#: ../../installation.rst:135
 msgid ""
 "These commands should work most of the time, but if big changes are made "
 "to the repository, you might need to remove the environment and create it"
