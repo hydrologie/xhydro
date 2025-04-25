@@ -11,7 +11,6 @@ import numpy as np
 import xarray as xr
 import xclim as xc
 import xscen as xs
-from packaging.version import Version
 
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
