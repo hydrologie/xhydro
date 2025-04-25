@@ -534,7 +534,7 @@ class Hydrotel(HydrologicalModel):
             ds = ds.rename(
                 {
                     "idtroncon": "station_id",
-                    "debit_aval": "streamflow",
+                    "debit_aval": "q",
                 }
             )
 
@@ -543,18 +543,16 @@ class Hydrotel(HydrologicalModel):
             orig_attrs = dict()
             orig_attrs["_original_name"] = "debit_aval"
             for attr in ["standard_name", "long_name", "description"]:
-                if attr in ds["streamflow"].attrs:
-                    orig_attrs[f"_original_{attr}"] = ds["streamflow"].attrs[attr]
-            ds["streamflow"].attrs[
+                if attr in ds["q"].attrs:
+                    orig_attrs[f"_original_{attr}"] = ds["q"].attrs[attr]
+            ds["q"].attrs[
                 "standard_name"
             ] = "outgoing_water_volume_transport_along_river_channel"
-            ds["streamflow"].attrs["long_name"] = "Streamflow"
-            ds["streamflow"].attrs[
-                "description"
-            ] = "Streamflow at the outlet of the river reach"
-            ds["streamflow"] = xc.units.convert_units_to(ds["streamflow"], "m3 s-1")
+            ds["q"].attrs["long_name"] = "Streamflow"
+            ds["q"].attrs["description"] = "Streamflow at the outlet of the river reach"
+            ds["q"] = xc.units.convert_units_to(ds["q"], "m3 s-1")
             for attr in orig_attrs:
-                ds["streamflow"].attrs[attr] = orig_attrs[attr]
+                ds["q"].attrs[attr] = orig_attrs[attr]
 
             # Adjust global attributes
             if "initial_simulation_path" in ds.attrs:
@@ -571,7 +569,7 @@ class Hydrotel(HydrologicalModel):
                 rechunk=chunks,
                 netcdf_kwargs={
                     "encoding": {
-                        "streamflow": {"dtype": "float32", "zlib": True, "complevel": 1}
+                        "q": {"dtype": "float32", "zlib": True, "complevel": 1}
                     }
                 },
             )

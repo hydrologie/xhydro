@@ -1,21 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-18 14:16-0400\n"
-"PO-Revision-Date: 2023-12-12 15:39-0500\n"
-"Last-Translator: Thomas-Charles Fortier Filion <tcff_hydro@outlook.com>\n"
-"Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../../CONTRIBUTING.rst:3
 msgid "Contributing"
@@ -26,12 +25,12 @@ msgid ""
 "Contributions are welcome, and they are greatly appreciated! Every little"
 " bit helps, and credit will always be given."
 msgstr ""
-"Les contributions sont les bienvenues et sont très appréciées ! Chaque "
-"petite contribution est utile, et le crédit sera toujours accordé."
+"Les contributions sont les bienvenues et très appréciées ! Chaque petite"
+" contribution compte, et un crédit sera toujours donné."
 
 #: ../../../CONTRIBUTING.rst:7
 msgid "You can contribute in many ways:"
-msgstr "Vous pouvez contribuer de différentes manières :"
+msgstr "Vous pouvez contribuer de nombreuses manières :"
 
 #: ../../../CONTRIBUTING.rst:10
 msgid "Types of Contributions"
@@ -39,11 +38,11 @@ msgstr "Types de contributions"
 
 #: ../../../CONTRIBUTING.rst:13
 msgid "Report Bugs"
-msgstr "Signaler les bogues"
+msgstr "Signaler des bogues"
 
 #: ../../../CONTRIBUTING.rst:15
 msgid "Report bugs at https://github.com/hydrologie/xhydro/issues."
-msgstr "Signalez les bogues à https://github.com/hydrologie/xhydro/issues."
+msgstr "Signalez les bogues sur https://github.com/hydrologie/xhydro/issues."
 
 #: ../../../CONTRIBUTING.rst:17
 msgid "If you are reporting a bug, please include:"
@@ -58,25 +57,25 @@ msgid ""
 "Any details about your local setup that might be helpful in "
 "troubleshooting."
 msgstr ""
-"Tout détail sur votre installation locale qui pourrait être utile pour le"
-" dépannage."
+"Tous les détails concernant votre configuration locale qui pourraient être "
+"utiles pour résoudre le problème."
 
 #: ../../../CONTRIBUTING.rst:21
 msgid "Detailed steps to reproduce the bug."
-msgstr "Etapes détaillées pour reproduire le bogue."
+msgstr "Les étapes détaillées pour reproduire le bogue."
 
 #: ../../../CONTRIBUTING.rst:24
 msgid "Fix Bugs"
-msgstr "Corriger un bogue"
+msgstr "Corriger des bogues"
 
 #: ../../../CONTRIBUTING.rst:26
 msgid ""
 "Look through the GitHub issues for bugs. Anything tagged with \"bug\" and"
 " \"help wanted\" is open to whoever wants to implement it."
 msgstr ""
-"Recherchez les bogues dans les problèmes de GitHub. Tout ce qui est "
-"étiqueté avec \"bug\" et \"help wanted\" est ouvert à quiconque veut "
-"l'implémenter."
+"Consultez les problèmes sur GitHub pour rechercher des bogues. Tout ce qui "
+"est étiqueté \"bug\" et \"help wanted\" est ouvert à toute personne souhaitant "
+"le résoudre."
 
 #: ../../../CONTRIBUTING.rst:29
 msgid "Implement Features"
@@ -88,13 +87,13 @@ msgid ""
 "\"enhancement\" and \"help wanted\" is open to whoever wants to implement"
 " it."
 msgstr ""
-"Consultez les questions de GitHub pour trouver des fonctionnalités. Tout "
-"ce qui est étiqueté \"enhancement\" et \"help wanted\" est ouvert à "
-"quiconque veut l'implémenter."
+"Consultez les problèmes sur GitHub pour rechercher des fonctionnalités. Tout "
+"ce qui est étiqueté \"enhancement\" et \"help wanted\" est ouvert à toute "
+"personne souhaitant l'implémenter."
 
 #: ../../../CONTRIBUTING.rst:34
 msgid "Write Documentation"
-msgstr "Rédiger la documentation"
+msgstr "Rédiger de la documentation"
 
 #: ../../../CONTRIBUTING.rst:36
 msgid ""
@@ -102,21 +101,21 @@ msgid ""
 "official xHydro docs, in docstrings, or even on the web in blog posts, "
 "articles, and such."
 msgstr ""
-"xHydro pourrait toujours utiliser plus de documentation, que ce soit dans"
-" le cadre de la documentation officielle de xHydro, dans les docstrings, "
-"ou même sur le web dans des billets de blog, des articles, etc."
+"xHydro pourrait toujours bénéficier de plus de documentation, que ce soit "
+"en tant que partie des documents officiels de xHydro, dans les docstrings, ou "
+"même sur le web dans des articles de blog, des publications, etc."
 
 #: ../../../CONTRIBUTING.rst:39
 msgid "Submit Feedback"
-msgstr "Soumettre un retour d'information"
+msgstr "Soumettre des retours"
 
 #: ../../../CONTRIBUTING.rst:41
 msgid ""
 "The best way to send feedback is to file an issue at "
 "https://github.com/hydrologie/xhydro/issues."
 msgstr ""
-"La meilleure façon d'envoyer un retour d'information est de déposer un "
-"problème à l'adresse https://github.com/hydrologie/xhydro/issues."
+"La meilleure façon de soumettre un retour est de déposer un problème sur "
+"https://github.com/hydrologie/xhydro/issues."
 
 #: ../../../CONTRIBUTING.rst:43
 msgid "If you are proposing a feature:"
@@ -128,31 +127,31 @@ msgstr "Expliquez en détail comment cela fonctionnerait."
 
 #: ../../../CONTRIBUTING.rst:46
 msgid "Keep the scope as narrow as possible, to make it easier to implement."
-msgstr ""
-"Le champ d'application doit être aussi restreint que possible, afin de "
-"faciliter la mise en œuvre."
+msgstr "Gardez la portée aussi étroite que possible pour faciliter l'implémentation."
 
 #: ../../../CONTRIBUTING.rst:47
 msgid ""
 "Remember that this is a volunteer-driven project, and that contributions "
 "are welcome. :)"
 msgstr ""
-"N'oubliez pas qu'il s'agit d'un projet mené par des personnes volontaires"
-" et que les contributions sont les bienvenues :)"
+"Rappelez-vous que c'est un projet piloté par des bénévoles, et que les "
+"contributions sont les bienvenues. :)"
 
-#: ../../../CONTRIBUTING.rst:51
+#: ../../../CONTRIBUTING.rst:50
 msgid "Get Started!"
-msgstr "Démarrer !"
+msgstr "Commencez !"
 
-#: ../../../CONTRIBUTING.rst:55
+#: ../../../CONTRIBUTING.rst:54
 msgid ""
-"If you are new to using GitHub and `git`, please read `this guide "
-"<https://guides.github.com/activities/hello-world/>`_ first."
+"If you are new to using `GitHub <https://github.com/>`_ and ``git``, "
+"please read `this guide <https://guides.github.com/activities/hello-"
+"world/>`_ first."
 msgstr ""
-"Si vous n'avez jamais utilisé GitHub et `git`, veuillez d'abord lire `ce "
-"guide <https://guides.github.com/activities/hello-world/>`_."
+"Si vous êtes nouveau dans l'utilisation de `GitHub <https://github.com/>`_ et "
+"``git``, veuillez lire d'abord `ce guide <https://guides.github.com/activities/hello-"
+"world/>`_."
 
-#: ../../../CONTRIBUTING.rst:59
+#: ../../../CONTRIBUTING.rst:58
 msgid ""
 "Anaconda Python users: Due to the complexity of some packages, the "
 "default dependency solver can take a long time to resolve the "
@@ -160,11 +159,11 @@ msgid ""
 " the process:"
 msgstr ""
 "Utilisateurs d'Anaconda Python : En raison de la complexité de certains "
-"paquets, le solveur de dépendances par défaut peut prendre beaucoup de "
-"temps pour résoudre l'environnement. Envisagez d'exécuter les commandes "
-"suivantes afin d'accélérer le processus :"
+"packages, le résolveur de dépendances par défaut peut mettre du temps à résoudre "
+"l'environnement. Envisagez d'exécuter les commandes suivantes pour accélérer "
+"le processus :"
 
-#: ../../../CONTRIBUTING.rst:66
+#: ../../../CONTRIBUTING.rst:65
 msgid ""
 "For more information, please see the following link: "
 "https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community"
@@ -172,7 +171,7 @@ msgstr ""
 "Pour plus d'informations, veuillez consulter le lien suivant : "
 "https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community"
 
-#: ../../../CONTRIBUTING.rst:68
+#: ../../../CONTRIBUTING.rst:67
 msgid ""
 "Alternatively, you can use the `mamba "
 "<https://mamba.readthedocs.io/en/latest/index.html>`_ package manager, "
@@ -180,101 +179,83 @@ msgid ""
 "`mamba`, replace the following commands with ``mamba`` instead of "
 "``conda``."
 msgstr ""
-"Alternativement, vous pouvez utiliser le gestionnaire de paquets `mamba "
+"Alternativement, vous pouvez utiliser le gestionnaire de packages `mamba "
 "<https://mamba.readthedocs.io/en/latest/index.html>`_, qui est un "
-"remplacement direct de ``conda``. Si vous utilisez déjà ``mamba``, "
-"remplacez les commandes suivantes par ``mamba`` au lieu de ``conda``."
+"remplaçant direct de ``conda``. Si vous utilisez déjà `mamba`, remplacez "
+"les commandes suivantes par ``mamba`` au lieu de ``conda``."
 
-#: ../../../CONTRIBUTING.rst:70
+#: ../../../CONTRIBUTING.rst:69
 msgid ""
-"Ready to contribute? Here's how to set up ``xhydro`` for local "
+"Ready to contribute? Here's how to set up ``xHydro`` for local "
 "development."
 msgstr ""
-"Prêt à contribuer ? Voici comment mettre en place ``xhydro`` pour le "
+"Prêt à contribuer ? Voici comment configurer ``xHydro`` pour le "
 "développement local."
 
-#: ../../../CONTRIBUTING.rst:72
-msgid "First, clone the ``xhydro`` repo locally."
-msgstr "Tout d'abord, clonez le dépôt ``xhydro`` localement."
+#: ../../../CONTRIBUTING.rst:71
+msgid "First, clone the ``xHydro`` repo locally."
+msgstr "Tout d'abord, clonez le dépôt ``xHydro`` localement."
 
-#: ../../../CONTRIBUTING.rst:74
+#: ../../../CONTRIBUTING.rst:73
 msgid ""
-"If you are not an `xhydro` collaborator, fork the ``xhydro`` repo on "
-"GitHub:"
+"If you are not a ``xHydro`` collaborator, first fork the ``xHydro`` repo "
+"on GitHub, then clone your fork locally."
 msgstr ""
-"Si vous n'êtes pas un collaborateur de `xhydro`, créez un embranchement "
-"du dépôt ``xhydro`` sur GitHub."
+"Si vous n'êtes pas un collaborateur ``xHydro``, commencez par créer une fork du "
+"dépôt ``xHydro`` sur GitHub, puis clonez votre fork localement."
 
-#: ../../../CONTRIBUTING.rst:80
-msgid "Otherwise, if you are a collaborator, clone the ``xhydro`` repo locally:"
-msgstr ""
-"Sinon, si vous êtes un collaborateur de `xhydro`, clonez le dépôt "
-"``xhydro`` localement."
+#: ../../../CONTRIBUTING.rst:79
+msgid "If you are a ``xHydro`` collaborator, clone the ``xHydro`` repo directly."
+msgstr "Si vous êtes un collaborateur ``xHydro``, clonez directement le dépôt ``xHydro``."
 
-#: ../../../CONTRIBUTING.rst:86
+#: ../../../CONTRIBUTING.rst:85
 msgid ""
 "Install your local copy into a development environment. You can create a "
 "new Anaconda development environment with:"
 msgstr ""
-"Installez votre copie locale dans un environnement de développement. Vous"
-" pouvez créer un nouvel environnement de développement Anaconda avec :"
+"Installez votre copie locale dans un environnement de développement. Vous "
+"pouvez créer un nouvel environnement de développement Anaconda avec :"
 
-#: ../../../CONTRIBUTING.rst:94
+#: ../../../CONTRIBUTING.rst:93
 msgid ""
-"This installs ``xhydro`` in an \"editable\" state, meaning that changes "
+"If you are on Windows, replace the ``make dev`` command with the "
+"following:"
+msgstr ""
+"Si vous êtes sous Windows, remplacez la commande ``make dev`` par ce qui suit :"
+
+#: ../../../CONTRIBUTING.rst:100
+msgid ""
+"This installs ``xHydro`` in an \"editable\" state, meaning that changes "
 "to the code are immediately seen by the environment. To ensure a "
 "consistent coding style, `make dev` also installs the ``pre-commit`` "
-"hooks to your local clone."
+"hooks to your local clone. It also installs all the libraries necessary "
+"to run the ``Extremes.jl`` hooks of the ``extreme_value_analysis`` "
+"module."
 msgstr ""
-"Cela installe ``xhydro`` dans un état \"editable\", ce qui signifie que "
-"les modifications apportées au code sont immédiatement vues par "
-"l'environnement. Pour garantir un style de codage cohérent, `make dev` "
-"installe également les hooks ``pre-commit`` sur votre clone local."
+"Cela installe ``xHydro`` dans un état \"modifiable\", ce qui signifie que "
+"les changements apportés au code sont immédiatement visibles par l'environnement. "
+"Pour garantir un style de codage cohérent, `make dev` installe également les "
+"hooks ``pre-commit`` dans votre clone local. Il installe également toutes les "
+"librairies nécessaires pour exécuter les hooks ``Extremes.jl`` du module "
+"``extreme_value_analysis``."
 
-#: ../../../CONTRIBUTING.rst:96
-msgid ""
-"On commit, ``pre-commit`` will check that ``black``, ``blackdoc``, "
-"``isort``, ``flake8``, and ``ruff`` checks are passing, perform automatic"
-" fixes if possible, and warn of violations that require intervention. If "
-"your commit fails the checks initially, simply fix the errors, re-add the"
-" files, and re-commit."
-msgstr ""
-"Lors de la livraison, ``pre-commit`` vérifiera que les contrôles "
-"``black``, ``blackdoc``, ``isort`, ``flake8``, et ``ruff`` passent, "
-"effectuera des corrections automatiques si possible, et avertira des "
-"violations qui nécessitent une intervention. Si votre livraison échoue "
-"aux vérifications initiales, corrigez simplement les erreurs, ajoutez à "
-"nouveau les fichiers, et effectuez une nouvelle livraison."
-
-#: ../../../CONTRIBUTING.rst:98
-msgid "You can also run the hooks manually with:"
-msgstr "Vous pouvez également exécuter les hooks manuellement avec :"
-
-#: ../../../CONTRIBUTING.rst:104
-msgid ""
-"If you want to skip the ``pre-commit`` hooks temporarily, you can pass "
-"the `--no-verify` flag to `git commit`."
-msgstr ""
-"Si vous voulez ignorer temporairement les hooks ``pre-commit``, vous "
-"pouvez passer l'argument ``-no-verify`` à `git commit`."
-
-#: ../../../CONTRIBUTING.rst:106
+#: ../../../CONTRIBUTING.rst:102
 msgid "Create a branch for local development:"
-msgstr "Créer une branche pour le développement local :"
+msgstr "Créez une branche pour le développement local :"
 
-#: ../../../CONTRIBUTING.rst:112
-msgid "Now you can make your changes locally."
+#: ../../../CONTRIBUTING.rst:108
+msgid "You can now make your changes locally."
 msgstr "Vous pouvez maintenant effectuer vos modifications localement."
 
-#: ../../../CONTRIBUTING.rst:114
+#: ../../../CONTRIBUTING.rst:110
 msgid ""
 "When you're done making changes, we **strongly** suggest running the "
 "tests in your environment or with the help of ``tox``:"
 msgstr ""
-"Lorsque vous avez terminé les changements, nous suggérons **fortement** "
-"d'exécuter les tests dans votre environnement ou avec l'aide de ``tox`` :"
+"Une fois vos modifications terminées, nous vous **recommandons fortement** "
+"d'exécuter les tests dans votre environnement ou à l'aide de ``tox`` :"
 
-#: ../../../CONTRIBUTING.rst:125
+#: ../../../CONTRIBUTING.rst:121
 msgid ""
 "Running `pytest` or `tox` will automatically fetch and cache the testing "
 "data for the package to your local cache (using the `platformdirs` "
@@ -283,46 +264,57 @@ msgid ""
 " ``C:\\Users\\username\\AppData\\Local``). On MacOS, this is located at "
 "``~/Library/Caches``."
 msgstr ""
-"L'exécution de `pytest` ou `tox` récupérera et mettra automatiquement en "
-"cache les données de test du package dans votre cache local (en utilisant"
-" la librairie `platformdirs`). Sous Linux, celui-ci se trouve dans "
-"``XDG_CACHE_HOME`` (généralement ``~/.cache``). Sous Windows, il se "
-"trouve dans ``%LOCALAPPDATA%`` (généralement "
-"``C:\\Users\\username\\AppData\\Local``). Sur MacOS, celui-ci se trouve "
-"dans ``~/Library/Caches``."
+"L'exécution de `pytest` ou `tox` récupérera automatiquement et mettra en cache "
+"les données de test pour le package dans votre cache local (en utilisant la "
+"librairie `platformdirs`). Sur Linux, cela se trouve dans ``XDG_CACHE_HOME`` "
+"(généralement ``~/.cache``). Sur Windows, cela se trouve dans ``%LOCALAPPDATA%`` "
+"(généralement ``C:\\Users\\nom_utilisateur\\AppData\\Local``). Sur MacOS, "
+"cela se trouve dans ``~/Library/Caches``."
 
-#: ../../../CONTRIBUTING.rst:127
+#: ../../../CONTRIBUTING.rst:123
 msgid ""
 "If for some reason you wish to cache this data elsewhere, you can set the"
 " ``XHYDRO_DATA_DIR`` environment variable to a different location before "
 "running the tests. For example, to cache the data in the current working "
 "directory, run:"
 msgstr ""
-"Si pour une raison quelconque vous souhaitez mettre ces données en cache "
-"ailleurs, vous pouvez définir la variable d'environnement "
-"``XHYDRO_DATA_DIR`` à un emplacement différent avant d'exécuter les "
-"tests. Par exemple, pour mettre en cache les données dans le répertoire "
-"de travail actuel, exécutez :"
+"Si pour une raison quelconque vous souhaitez mettre en cache ces données ailleurs, "
+"vous pouvez définir la variable d'environnement ``XHYDRO_DATA_DIR`` à un autre emplacement "
+"avant d'exécuter les tests. Par exemple, pour mettre en cache les données dans le "
+"répertoire de travail actuel, exécutez :"
 
-#: ../../../CONTRIBUTING.rst:129
+#: ../../../CONTRIBUTING.rst:125
 msgid "export XHYDRO_DATA_DIR=$(pwd)/.cache"
 msgstr "export XHYDRO_DATA_DIR=$(pwd)/.cache"
 
-#: ../../../CONTRIBUTING.rst:131
+#: ../../../CONTRIBUTING.rst:127
 msgid "Commit your changes and push your branch to GitHub:"
-msgstr "Commetez vos modifications et envoyez votre branche sur GitHub :"
+msgstr "Validez vos modifications et poussez votre branche sur GitHub :"
 
-#: ../../../CONTRIBUTING.rst:139
+#: ../../../CONTRIBUTING.rst:135
 msgid ""
-"If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files"
-" to be committed, and re-committing your changes (or, if need be, you can"
-" skip them with `git commit --no-verify`)."
+"On commit, ``pre-commit`` will check that multiple standards checks are "
+"passing, perform automatic fixes if possible, and warn of violations that"
+" require manual intervention. If ``pre-commit`` hooks fail, try fixing "
+"the issues, re-staging the files to be committed, and re-committing your "
+"changes. If need be, you can skip them with `git commit --no-verify`, but"
+" note that those checks are also performed on GitHub and a branch that "
+"fails to pass them will not be able to be merged."
 msgstr ""
-"Si les hooks ``pre-commit`` échouent, essayez de re-commettre vos "
-"changements (ou, si nécessaire, vous pouvez les ignorer avec `git commit "
-"--no-verify`)."
+"Lors du commit, ``pre-commit`` vérifiera que plusieurs contrôles de "
+"standards sont réussis, effectuera des corrections automatiques si possible, "
+"et signalera les violations qui nécessitent une intervention manuelle. Si "
+"les hooks ``pre-commit`` échouent, essayez de corriger les problèmes, de "
+"réajuster les fichiers à valider et de re-committer vos modifications. Si "
+"besoin, vous pouvez les ignorer avec `git commit --no-verify`, mais notez "
+"que ces contrôles sont également effectués sur GitHub et qu'une branche qui "
+"échoue à les valider ne pourra pas être fusionnée."
 
-#: ../../../CONTRIBUTING.rst:141
+#: ../../../CONTRIBUTING.rst:137
+msgid "You can always run the hooks manually with:"
+msgstr "Vous pouvez toujours exécuter les hooks manuellement avec :"
+
+#: ../../../CONTRIBUTING.rst:143
 msgid ""
 "Submit a `Pull Request <https://docs.github.com/en/pull-requests"
 "/collaborating-with-pull-requests/proposing-changes-to-your-work-with-"
@@ -330,9 +322,9 @@ msgid ""
 msgstr ""
 "Soumettez une `Pull Request <https://docs.github.com/en/pull-requests"
 "/collaborating-with-pull-requests/proposing-changes-to-your-work-with-"
-"pull-requests/creating-a-pull-request>`_ via le site GitHub."
+"pull-requests/creating-a-pull-request>`_ via le site web GitHub."
 
-#: ../../../CONTRIBUTING.rst:143
+#: ../../../CONTRIBUTING.rst:145
 msgid ""
 "When pushing your changes to your branch on GitHub, the documentation "
 "will automatically be tested to reflect the changes in your Pull Request."
@@ -340,22 +332,22 @@ msgid ""
 "actively making changes that affect the documentation and wish to save "
 "time, you can compile and test your changes beforehand locally with:"
 msgstr ""
-"Lorsque vous apportez vos modifications à votre branche sur GitHub, la "
-"documentation sera automatiquement testée pour refléter les modifications"
-" de votre Pull Request. Ce processus de compilation peut parfois prendre "
-"plusieurs minutes. Si vous êtes en train de faire des changements qui "
-"affectent la documentation et que vous souhaitez gagner du temps, vous "
-"pouvez compiler et tester vos changements localement avec :"
+"Lorsque vous poussez vos modifications sur votre branche GitHub, la "
+"documentation sera automatiquement testée pour refléter les changements dans "
+"votre Pull Request. Ce processus de construction peut prendre plusieurs minutes. "
+"Si vous effectuez activement des modifications qui affectent la documentation "
+"et souhaitez gagner du temps, vous pouvez compiler et tester vos modifications "
+"au préalable localement avec :"
 
-#: ../../../CONTRIBUTING.rst:155
+#: ../../../CONTRIBUTING.rst:157
 msgid ""
 "If changes to your branch are made on GitHub, you can update your local "
 "branch with:"
 msgstr ""
-"Si des modifications sont apportées à votre branche sur GitHub, vous "
-"pouvez mettre à jour votre branche locale avec :"
+"Si des modifications sont apportées à votre branche sur GitHub, vous pouvez "
+"mettre à jour votre branche locale avec :"
 
-#: ../../../CONTRIBUTING.rst:163
+#: ../../../CONTRIBUTING.rst:165
 msgid ""
 "If you have merge conflicts, you might need to replace `git pull` with "
 "`git merge` and resolve the conflicts manually. Resolving conflicts from "
@@ -363,36 +355,32 @@ msgid ""
 " can ignore the last command and instead use a GUI like PyCharm or Visual"
 " Studio Code to merge the remote changes and resolve the conflicts."
 msgstr ""
-"Si vous avez des conflits de fusion, vous devrez peut-être remplacer `git"
-" pull` par `git merge` et résoudre les conflits manuellement. Résoudre "
-"les conflits depuis la ligne de commande peut être délicat. Si vous "
-"n'êtes pas à l'aise avec cela, vous pouvez ignorer la dernière commande "
-"et utiliser à la place une interface graphique comme PyCharm ou Visual "
-"Studio Code pour fusionner les modifications distantes et résoudre les "
-"conflits."
+"Si vous avez des conflits de fusion, vous devrez peut-être remplacer `git pull` "
+"par `git merge` et résoudre les conflits manuellement. Résoudre des conflits "
+"en ligne de commande peut être compliqué. Si vous n'êtes pas à l'aise avec cela, "
+"vous pouvez ignorer la dernière commande et utiliser un GUI comme PyCharm ou Visual "
+"Studio Code pour fusionner les modifications distantes et résoudre les conflits."
 
-#: ../../../CONTRIBUTING.rst:166
+#: ../../../CONTRIBUTING.rst:168
 msgid ""
 "Before merging, your Pull Request will need to be based on the `main` "
-"branch of the `xhydro` repository. If your branch is not up-to-date with "
-"the `main` branch, you can perform similar steps as above to update your "
-"branch:"
+"branch of the ``xHydro`` repository. If your branch is not up-to-date "
+"with the `main` branch, you can perform similar steps as above to update "
+"your branch:"
 msgstr ""
-"Avant la fusion, votre Pull Request devra être basée sur la branche "
-"`main` du dépôt `xhydro`. Si votre branche n'est pas à jour avec la "
-"branche `main`, vous pouvez effectuer les étapes similaires à celles ci-"
-"dessus pour mettre à jour votre branche :"
-
-#: ../../../CONTRIBUTING.rst:174
-msgid "See the previous step for more information on resolving conflicts."
-msgstr ""
-"Consultez l'étape précédente pour plus d'informations sur la résolution "
-"des conflits."
+"Avant de fusionner, votre Pull Request devra être basée sur la branche `main` "
+"du dépôt ``xHydro``. Si votre branche n'est pas à jour par rapport à la branche "
+"`main`, vous pouvez effectuer des étapes similaires à celles mentionnées ci-dessus "
+"pour mettre à jour votre branche :"
 
 #: ../../../CONTRIBUTING.rst:176
+msgid "See the previous step for more information on resolving conflicts."
+msgstr "Voir l'étape précédente pour plus d'informations sur la résolution des conflits."
+
+#: ../../../CONTRIBUTING.rst:178
 msgid ""
 "To prevent unnecessary testing of branches that are not ready for review,"
-" the `xhydro` repository is set up to run tests only when a Pull Request "
+" the `xHydro` repository is set up to run tests only when a Pull Request "
 "has been \"approved\" by a maintainer. Similarly, the notebooks within "
 "documentation will only be rebuilt when the Pull Request is \"approved\","
 " or if the Pull Request makes explicit changes to them. As such, "
@@ -400,213 +388,187 @@ msgid ""
 "Request is approved to ensure that the tests pass and the documentation "
 "can be built."
 msgstr ""
-"Pour éviter des tests inutiles sur des branches qui ne sont pas prêtes à "
-"être révisées, le dépôt `xhydro` est configuré pour exécuter des tests "
-"uniquement lorsqu'une Pull Request a été \"approved\" par un responsable."
-" De même, les notebooks de la documentation ne seront reconstruits que "
-"lorsque la Pull Request sera \"approved\", ou si la Pull Request leur "
-"apportera des modifications explicites. Ainsi, des modifications "
-"supplémentaires à la Pull Request peuvent être nécessaires une fois la "
-"Pull Request approuvée, afin de garantir la réussite des tests et la "
-"création de la documentation."
+"Pour éviter de tester inutilement des branches qui ne sont pas prêtes pour la révision, "
+"le dépôt `xHydro` est configuré pour exécuter des tests uniquement lorsqu'une Pull Request "
+"a été \"approuvée\" par un mainteneur. De même, les notebooks dans la documentation "
+"ne seront reconstruits que lorsque la Pull Request est \"approuvée\", ou si la Pull Request "
+"apporte des modifications explicites. Par conséquent, des modifications supplémentaires "
+"de la Pull Request peuvent être nécessaires après l'approbation pour s'assurer que les tests "
+"passent et que la documentation puisse être construite."
 
-#: ../../../CONTRIBUTING.rst:178
+#: ../../../CONTRIBUTING.rst:180
 msgid ""
 "Once your Pull Request has been accepted and merged to the `main` branch,"
 " several automated workflows will be triggered:"
 msgstr ""
-"Une fois que votre Pull Request a été acceptée et fusionnée dans la "
-"branche ``main``, plusieurs flux de travail automatisés seront déclenchés"
-" :"
-
-#: ../../../CONTRIBUTING.rst:180
-msgid ""
-"The ``bump-version.yml`` workflow will automatically bump the patch "
-"version when pull requests are pushed to the `main` branch on GitHub. "
-"**It is not recommended to manually bump the version in your branch when "
-"merging (non-release) pull requests (this will cause the version to be "
-"bumped twice).**"
-msgstr ""
-"Le workflow « bump-version.yml » modifiera automatiquement la version de "
-"la librairie lorsque les Pull Requests sont poussées vers la branche "
-"`main` sur GitHub. **Il n'est pas recommandé de modifier manuellement la "
-"version dans votre branche lors de la fusion de Pull Requests (non "
-"publiées). Cela entraînera une modification de la version deux fois.**"
-
-#: ../../../CONTRIBUTING.rst:181
-msgid ""
-"`ReadTheDocs` will automatically build the documentation and publish it "
-"to the `latest` branch of `xhydro` documentation website."
-msgstr ""
-"`ReadTheDocs` construira automatiquement la documentation et la publiera "
-"sur la branche `latest` du site de documentation `xhydro`."
+"Une fois que votre Pull Request a été acceptée et fusionnée dans la branche `main`, "
+"plusieurs workflows automatisés seront déclenchés :"
 
 #: ../../../CONTRIBUTING.rst:182
 msgid ""
-"If your branch is not a fork (ie: you are a maintainer), your branch will"
-" be automatically deleted."
+"The ``bump-version.yml`` workflow will automatically bump the library's "
+"version. **It is not recommended to manually bump the version in your "
+"branch when merging (non-release) pull requests. This would cause the "
+"version to be bumped twice.**"
 msgstr ""
-"Si votre branche n'est pas un embranchement (ie : vous êtes un "
-"mainteneur), votre branche sera automatiquement supprimée."
+"Le workflow ``bump-version.yml`` mettra automatiquement à jour la version de "
+"la librairie. **Il n'est pas recommandé de mettre à jour manuellement la version "
+"de votre branche lors de la fusion de pull requests (non-livraison). Cela entraînerait "
+"une mise à jour de la version deux fois.**"
+
+#: ../../../CONTRIBUTING.rst:183
+msgid ""
+"`ReadTheDocs` will automatically build the documentation and publish it "
+"to the `latest` branch of `xHydro` documentation website."
+msgstr ""
+"`ReadTheDocs` construira automatiquement la documentation et la publiera "
+"sur la branche `latest` du site Web de documentation de `xHydro`."
 
 #: ../../../CONTRIBUTING.rst:184
-msgid "You will have contributed to ``xhydro``!"
-msgstr "Vous aurez contribué à vos premiers changements dans ``xhydro`` !"
+msgid ""
+"If your branch is not a fork (i.e. you are a maintainer), your branch "
+"will be automatically deleted."
+msgstr ""
+"Si votre branche n'est pas un fork (c'est-à-dire si vous êtes un mainteneur), "
+"votre branche sera automatiquement supprimée."
 
-#: ../../../CONTRIBUTING.rst:188
+#: ../../../CONTRIBUTING.rst:186
+msgid "You will have contributed to ``xHydro``!"
+msgstr "Vous aurez contribué à ``xHydro`` !"
+
+#: ../../../CONTRIBUTING.rst:190
 msgid ""
 "If your Pull Request relies on modifications to the testing data of "
-"`xhydro`, you will need to update the testing data repository as well. As"
+"`xHydro`, you will need to update the testing data repository as well. As"
 " a preliminary testing measure, the branch of the testing data can be "
 "modified at testing time (from `main`) by setting the "
 "``XHYDRO_TESTDATA_BRANCH`` environment variable to the branch name of the"
 " ``xhydro-testdata`` repository."
 msgstr ""
-"Si votre Pull Request repose sur des modifications des données de test de"
-" `xhydro`, vous devrez également mettre à jour le dépôt de données de "
-"test. Comme mesure de test préliminaire, la branche des données de test "
-"peut être modifiée au moment du test (à partir de `main`) en définissant "
-"la variable d'environnement ``XHYDRO_TESTDATA_BRANCH`` au nom de la "
-"branche du dépôt ``xhydro-testdata``."
+"Si votre Pull Request dépend de modifications des données de test de "
+"`xHydro`, vous devrez également mettre à jour le dépôt des données de test. Comme "
+"mesure de test préliminaire, la branche des données de test peut être modifiée au moment "
+"des tests (depuis `main`) en définissant la variable d'environnement "
+"``XHYDRO_TESTDATA_BRANCH`` sur le nom de la branche du dépôt ``xhydro-testdata``."
 
-#: ../../../CONTRIBUTING.rst:190
+#: ../../../CONTRIBUTING.rst:192
 msgid ""
 "Be sure to consult the ReadMe found at https://github.com/hydrologie"
 "/xhydro-testdata as well."
 msgstr ""
-"Assurez-vous également de consulter le fichier ReadMe disponible sur "
-"https://github.com/hydrologie/xhydro-testdata."
-
-#: ../../../CONTRIBUTING.rst:193
-msgid "Pull Request Guidelines"
-msgstr "Lignes directrices pour les Pull requests"
+"N'oubliez pas de consulter le ReadMe trouvé sur https://github.com/hydrologie"
+"/xhydro-testdata également."
 
 #: ../../../CONTRIBUTING.rst:195
-msgid "Before you submit a pull request, check that it meets these guidelines:"
-msgstr ""
-"Avant de soumettre une Pull Request, vérifiez qu'elle respecte ces "
-"directives :"
+msgid "Pull Request Guidelines"
+msgstr "Directives de Pull Request"
 
 #: ../../../CONTRIBUTING.rst:197
+msgid "Before you submit a Pull Request, check that it meets these guidelines:"
+msgstr "Avant de soumettre une Pull Request, vérifiez qu'elle respecte ces directives :"
+
+#: ../../../CONTRIBUTING.rst:199
 msgid ""
-"The pull request should include tests and should aim to provide `code "
+"The Pull Request should include tests and should aim to provide `code "
 "coverage <https://en.wikipedia.org/wiki/Code_coverage>`_ for all new "
 "lines of code. You can use the `--cov-report html --cov xhydro` flags "
 "during the call to ``pytest`` to generate an HTML report and analyse the "
 "current test coverage."
 msgstr ""
-"La pull request doit inclure des tests et doit viser à fournir une "
-"`couverture de code <https://en.wikipedia.org/wiki/Code_coverage>`_ pour "
-"toutes les nouvelles lignes de code. Vous pouvez utiliser les arguments "
-"``--cov-report html --cov xhydro`` lors de l'appel à ``pytest`` pour "
-"générer un rapport HTML et analyser la couverture actuelle des tests."
+"La Pull Request doit inclure des tests et viser à fournir une `couverture de code "
+"<https://fr.wikipedia.org/wiki/Couverture_de_code>`_ pour toutes les nouvelles "
+"lignes de code. Vous pouvez utiliser les options `--cov-report html --cov xhydro` "
+"lors de l'appel à ``pytest`` pour générer un rapport HTML et analyser la couverture "
+"actuelle des tests."
 
-#: ../../../CONTRIBUTING.rst:199
+#: ../../../CONTRIBUTING.rst:201
 msgid ""
 "All functions should be documented with `docstrings` following the "
 "`numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_ "
 "format."
 msgstr ""
-"Toutes les fonctions doivent être documentées avec des « docstrings » "
-"suivant le format `numpydoc "
-"<https://numpydoc.readthedocs.io/en/latest/format.html>`_."
-
-#: ../../../CONTRIBUTING.rst:201
-msgid ""
-"If the pull request adds functionality, either update the documentation "
-"or create a new notebook in the `docs/notebooks` directory that "
-"demonstrates the feature. Library-defining features should also be listed"
-" in ``README.rst``."
-msgstr ""
-"Si la demande d'extraction ajoute des fonctionnalités, mettez à jour la "
-"documentation ou créez un nouveau Notebook dans le répertoire "
-"`docs/notebooks` qui illustre la fonctionnalité. Les fonctionnalités "
-"définissant la librairie doivent également être répertoriées dans "
-"``README.rst``."
+"Toutes les fonctions doivent être documentées avec des `docstrings` suivant le "
+"format `numpydoc <https://numpydoc.readthedocs.io/en/latest/format.html>`_."
 
 #: ../../../CONTRIBUTING.rst:203
+msgid ""
+"If the Pull Request adds a functionality, either update the documentation"
+" or create a new notebook that demonstrates the feature. Library-defining"
+" features should also be listed in ``README.rst``."
+msgstr ""
+"Si la Pull Request ajoute une fonctionnalité, mettez à jour la documentation "
+"ou créez un nouveau notebook qui montre la fonctionnalité. Les fonctionnalités "
+"définissant la librairie doivent également être listées dans ``README.rst``."
+
+#: ../../../CONTRIBUTING.rst:205
 msgid ""
 "The ChangeLog should be updated with a brief description of the changes "
 "made in the Pull Request. If this is your first contribution to the "
 "project, please add your name and information to the `AUTHORS.rst` and "
 "`.zenodo.json` files."
 msgstr ""
-"Le ChangeLog doit être mis à jour avec une brève description des "
-"modifications apportées dans la Pull Request. S'il s'agit de votre "
-"première contribution au projet, veuillez ajouter votre nom et vos "
-"informations aux fichiers `AUTHORS.rst` et `.zenodo.json`."
+"Le ChangeLog doit être mis à jour avec une brève description des modifications "
+"apportées dans la Pull Request. Si c'est votre première contribution au projet, "
+"ajoutez votre nom et vos informations dans les fichiers `AUTHORS.rst` et "
+"`.zenodo.json`."
 
-#: ../../../CONTRIBUTING.rst:205
+#: ../../../CONTRIBUTING.rst:207
 msgid ""
-"The pull request should work for all currently supported Python versions."
+"The Pull Request should work for all currently supported Python versions."
 " Check the `pyproject.toml` or `tox.ini` files for the supported "
-"versions."
+"versions. We aim to follow the support and drop schedule of Python "
+"versions as recommended by the NumPy NEP calendar: "
+"https://numpy.org/neps/nep-0029-deprecation_policy.html"
 msgstr ""
-"La pull request devrait fonctionner pour toutes les versions de Python "
-"actuellement prises en charge. Vérifiez les fichiers `pyproject.toml` ou "
-"`tox.ini` pour les versions prises en charge."
+"La Pull Request doit fonctionner pour toutes les versions actuellement prises en charge "
+"de Python. Vérifiez les fichiers `pyproject.toml` ou `tox.ini` pour les versions "
+"soutenues. Nous visons à suivre le calendrier de prise en charge et de retrait des versions "
+"de Python recommandé par le calendrier NumPy NEP : "
+"https://numpy.org/neps/nep-0029-deprecation_policy.html"
 
-#: ../../../CONTRIBUTING.rst:208
+#: ../../../CONTRIBUTING.rst:210
 msgid "Tips"
 msgstr "Conseils"
 
-#: ../../../CONTRIBUTING.rst:210
+#: ../../../CONTRIBUTING.rst:212
 msgid "To run a subset of tests:"
 msgstr "Pour exécuter un sous-ensemble de tests :"
 
-#: ../../../CONTRIBUTING.rst:216
+#: ../../../CONTRIBUTING.rst:218
 msgid "You can also directly call a specific test class or test function using:"
-msgstr ""
-"Vous pouvez également appeler directement une classe de test ou une "
-"fonction de test spécifique en utilisant :"
+msgstr "Vous pouvez également appeler directement une classe de test ou une fonction de test en utilisant :"
 
-#: ../../../CONTRIBUTING.rst:222
+#: ../../../CONTRIBUTING.rst:224
 msgid ""
 "For more information on running tests, see the `pytest documentation "
 "<https://docs.pytest.org/en/latest/usage.html>`_."
 msgstr ""
-"Pour plus d'informations sur l'exécution des tests, consultez la "
-"`documentation pytest <https://docs.pytest.org/en/latest/usage.html>`_."
+"Pour plus d'informations sur l'exécution des tests, consultez la documentation `pytest` "
+"<https://docs.pytest.org/en/latest/usage.html>`_."
 
-#: ../../../CONTRIBUTING.rst:224
-msgid "To run specific code style checks:"
-msgstr "Pour effectuer des contrôles de style de code spécifiques :"
-
-#: ../../../CONTRIBUTING.rst:234
-msgid ""
-"To get ``black``, ``isort``, ``blackdoc``, ``ruff``, and ``flake8`` (with"
-" plugins ``flake8-alphabetize`` and ``flake8-rst-docstrings``) simply "
-"install them with ``pip`` (or ``conda``) into your environment."
-msgstr ""
-"Pour obtenir ``black``, ``isort``, ``blackdoc``, ``ruff``, et ``flake8`` "
-"(avec les plugins ``flake8-alphabetize`` et ``flake8-rst-docstrings``), "
-"installez-les simplement avec ``pip`` (ou ``conda``) dans votre "
-"environnement."
-
-#: ../../../CONTRIBUTING.rst:237
+#: ../../../CONTRIBUTING.rst:227
 msgid "Translations"
 msgstr "Traductions"
 
-#: ../../../CONTRIBUTING.rst:239
+#: ../../../CONTRIBUTING.rst:229
 msgid ""
 "If you would like to contribute to the French translation of the "
 "documentation, you can do so by running the following command:"
 msgstr ""
-"Si vous souhaitez contribuer à la traduction française de la "
-"documentation, vous pouvez le faire en exécutant la commande suivante :"
+"Si vous souhaitez contribuer à la traduction française de la documentation, "
+"vous pouvez le faire en exécutant la commande suivante :"
 
-#: ../../../CONTRIBUTING.rst:245
+#: ../../../CONTRIBUTING.rst:235
 msgid ""
 "This will create or update the French translation files in the "
 "`docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` "
 "files in this directory to provide translations for the documentation."
 msgstr ""
-"Cela créera ou mettra à jour les fichiers de traduction française "
-"dans le répertoire `docs/locales/fr/LC_MESSAGES`. Vous pouvez ensuite "
-"éditer les fichiers `.po` dans ce répertoire pour fournir des traductions "
-"pour la documentation."
+"Cela créera ou mettra à jour les fichiers de traduction en français dans le "
+"répertoire `docs/locales/fr/LC_MESSAGES`. Vous pourrez ensuite éditer les fichiers `.po` "
+"de ce répertoire pour fournir des traductions pour la documentation."
 
-#: ../../../CONTRIBUTING.rst:247
+#: ../../../CONTRIBUTING.rst:237
 msgid ""
 "For convenience, you can use the `translator.py` script located in the "
 "`CI` directory to automatically translate the English documentation to "
@@ -614,34 +576,33 @@ msgid ""
 "requires the `deep-translator` package to be installed in your "
 "environment."
 msgstr ""
-"Pour plus de commodité, vous pouvez utiliser le script "
-"`translator.py` situé dans le répertoire `CI` pour traduire automatiquement la "
-"documentation anglaise vers le français, qui utilise Google Translate par défaut. "
-"Notez que ce script nécessite que le package `deep-translator` soit "
-"installé dans votre environnement."
+"Pour plus de commodité, vous pouvez utiliser le script `translator.py` situé dans le "
+"répertoire `CI` pour traduire automatiquement la documentation en anglais en "
+"français, en utilisant Google Translate par défaut. Notez que ce script "
+"nécessite l'installation du package `deep-translator` dans votre "
+"environnement."
 
-#: ../../../CONTRIBUTING.rst:253
+#: ../../../CONTRIBUTING.rst:243
 msgid ""
 "We aim to automate this process eventually but until then, we want to "
 "keep the French translation up-to-date with the English documentation at "
 "least when a new release is made."
 msgstr ""
-"Notre objectif est d'automatiser ce processus à terme, mais d'ici là, "
-"nous souhaitons maintenir la traduction française à jour avec la "
-"documentation anglaise au moins lorsqu'une nouvelle version est publiée."
+"Nous visons à automatiser ce processus éventuellement, mais en attendant, nous "
+"voulons garder la traduction française à jour avec la documentation en anglais au "
+"moins lors de chaque nouvelle version."
 
-#: ../../../CONTRIBUTING.rst:256
+#: ../../../CONTRIBUTING.rst:246
 msgid "Code of Conduct"
 msgstr "Code de conduite"
 
-#: ../../../CONTRIBUTING.rst:258
+#: ../../../CONTRIBUTING.rst:248
 msgid ""
 "Please note that this project is released with a `Contributor Code of "
 "Conduct "
-"<https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.rst>`_. "
-"By participating in this project you agree to abide by its terms."
+"<https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.md>`_. By"
+" participating in this project you agree to abide by its terms."
 msgstr ""
-"Veuillez noter que ce projet est publié avec un « Code de conduite des "
-"contributeurs "
-"<https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.rst>`_. "
-"En participant à ce projet, vous acceptez d'en respecter les termes."
+"Veuillez noter que ce projet est publié avec un `Code de conduite des contributeurs` "
+"<https://github.com/hydrologie/xhydro/blob/main/CODE_OF_CONDUCT.md>`_. En"
+" participant à ce projet, vous acceptez de respecter ses termes."

@@ -57,6 +57,8 @@ run correctly in all instances:
 Any comments are welcome!
 """
 
+import os
+import warnings
 from copy import deepcopy
 
 # Import packages
@@ -91,6 +93,9 @@ class SpotSetup:
     bounds_low : np.ndarray
         Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
         within these bounds. The size must be equal to the number of parameters to calibrate.
+    qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
+        Observed streamflow dataset (or path to it), used to compute the objective function.
+        If using a dataset, it must contain a "streamflow" variable.
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
@@ -133,6 +138,7 @@ class SpotSetup:
         model_config: dict,
         bounds_high: np.ndarray | list[float | int],
         bounds_low: np.ndarray | list[float | int],
+        qobs: os.PathLike | np.ndarray | xr.Dataset | xr.DataArray,
         obj_func: str | None = None,
         take_negative: bool = False,
         mask: np.ndarray | list[float | int] | None = None,
@@ -155,6 +161,15 @@ class SpotSetup:
             Must contain a key "model_name" with the name of the model to use: "Hydrotel".
             The required keys depend on the model being used. Use the function
             `xh.modelling.get_hydrological_model_inputs` to get the required keys for a given model.
+        bounds_high : np.ndarray
+            High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+            within these bounds. The size must be equal to the number of parameters to calibrate.
+        bounds_low : np.ndarray
+            Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
+            within these bounds. The size must be equal to the number of parameters to calibrate.
+        qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
+            Observed streamflow dataset (or path to it), used to compute the objective function.
+            If using a dataset, it must contain a "streamflow" variable.
         obj_func : str
             The objective function used for calibrating. Can be any one of these:
 
@@ -173,12 +188,6 @@ class SpotSetup:
                 - "rmse" : Root Mean Square Error
                 - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
                 - "rsr" : Ratio of RMSE to standard deviation.
-        bounds_high : np.ndarray
-            High bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
-            within these bounds. The size must be equal to the number of parameters to calibrate.
-        bounds_low : np.ndarray
-            Low bounds for the model parameters to be calibrated. Spotpy will sample parameter sets from
-            within these bounds. The size must be equal to the number of parameters to calibrate.
         evaluations : int
             Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
         algorithm : str
@@ -215,6 +224,48 @@ class SpotSetup:
             for i in range(0, len(bounds_high))
         ]
 
+        # Load the observations
+        if isinstance(qobs, np.ndarray):
+            self.qobs = qobs
+        else:
+            # FIXME: This should be more robust, and should be able to handle other names
+            if isinstance(qobs, xr.Dataset):
+                if "streamflow" in qobs and "q" not in qobs:
+                    warnings.warn(
+                        "Default variable name has changed from 'streamflow' to 'q'. "
+                        "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                        FutureWarning,
+                    )
+                    da = qobs.streamflow
+                else:
+                    da = qobs.q
+            elif isinstance(qobs, xr.DataArray):
+                da = qobs
+            elif isinstance(qobs, os.PathLike):
+                with xr.open_dataset(qobs) as ds:
+                    if "streamflow" in ds and "q" not in ds:
+                        warnings.warn(
+                            "Default variable name has changed from 'streamflow' to 'q'. "
+                            "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                            FutureWarning,
+                        )
+                        da = ds.streamflow
+                    else:
+                        da = ds.q
+            else:
+                raise ValueError(
+                    "qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file."
+                )
+            da = da.squeeze()
+
+            # Subset the observed streamflow to the calibration period
+            da = da.sel(
+                time=slice(
+                    self.model_config["start_date"], self.model_config["end_date"]
+                )
+            )
+            self.qobs = da.values
+
     def simulation(self, x):
         """Simulation function for spotpy.
 
@@ -240,7 +291,7 @@ class SpotSetup:
         qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["streamflow"].values
+        return qsim["q"].values
 
     def evaluation(self):
         """Evaluation function for spotpy.
@@ -260,11 +311,7 @@ class SpotSetup:
         array_like
             Observed streamflow.
         """
-        qobs = self.model_config["qobs"]
-        if isinstance(qobs, xr.Dataset):
-            qobs = qobs["qobs"]
-
-        return qobs
+        return self.qobs
 
     def objectivefunction(
         self,
@@ -307,6 +354,7 @@ def perform_calibration(
     bounds_high: np.ndarray | list[float | int],
     bounds_low: np.ndarray | list[float | int],
     evaluations: int,
+    qobs: os.PathLike | np.ndarray | xr.Dataset | xr.DataArray,
     algorithm: str = "DDS",
     mask: np.ndarray | list[float | int] | None = None,
     transform: str | None = None,
@@ -353,6 +401,9 @@ def perform_calibration(
         within these bounds. The size must be equal to the number of parameters to calibrate.
     evaluations : int
         Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
+    qobs : os.PathLike or np.ndarray or xr.Dataset or xr.DataArray
+        Observed streamflow dataset (or path to it), used to compute the objective function.
+        If using a dataset, it must contain a "streamflow" variable.
     algorithm : str
         The optimization algorithm to use. Currently, "DDS" and "SCEUA" are available, but more can be easily added.
     mask : np.array, optional
@@ -396,6 +447,7 @@ def perform_calibration(
     # Set up the spotpy object to prepare the calibration
     spotpy_setup = SpotSetup(
         model_config,
+        qobs=qobs,
         bounds_high=bounds_high,
         bounds_low=bounds_low,
         obj_func=obj_func,

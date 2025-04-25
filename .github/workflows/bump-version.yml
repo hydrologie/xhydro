@@ -55,7 +55,7 @@ jobs:
             pypi.org:443
       - name: Generate App Token
         id: token_generator
-        uses: actions/create-github-app-token@0d564482f06ca65fa9e77e2510873638c82206f2 # v1.11.5
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         with:
           app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
@@ -65,11 +65,11 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token_generator.outputs.token }}
       - name: Set up Python3
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: "3.x"
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5 # v6.2.0
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         with:
           gpg_private_key: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}

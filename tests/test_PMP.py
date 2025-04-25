@@ -34,10 +34,12 @@ class TestPMP:
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
 
-        precip_agg = pmp.spatial_average_storm_configurations(precip, 3).chunk(
+        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(
             dict(time=-1)
         )
-        result = pmp.major_precipitation_events(precip_agg, [1, 2], quantile=0.9)
+        result = pmp.major_precipitation_events(
+            precip_agg, windows=[1, 2], quantile=0.9
+        )
 
         assert "window" in result.dims
         np.testing.assert_array_equal(
@@ -68,9 +70,9 @@ class TestPMP:
     @pytest.mark.parametrize("beta_func", [True, False])
     def test_precipitable_water(self, era5_example, beta_func):
         result = pmp.precipitable_water(
-            era5_example.hus,
-            era5_example.zg,
-            era5_example.orog,
+            hus=era5_example.hus,
+            zg=era5_example.zg,
+            orog=era5_example.orog,
             windows=[1, 2],
             beta_func=beta_func,
             add_pre_lay=False,
@@ -132,9 +134,9 @@ class TestPMP:
     @pytest.mark.parametrize("add_pre_lay", [True, False])
     def test_precipitable_water_2(self, era5_example, add_pre_lay):
         result = pmp.precipitable_water(
-            era5_example.hus,
-            era5_example.zg,
-            era5_example.orog,
+            hus=era5_example.hus,
+            zg=era5_example.zg,
+            orog=era5_example.orog,
             windows=[1, 2],
             beta_func=True,
             add_pre_lay=add_pre_lay,
@@ -200,8 +202,12 @@ class TestPMP:
             np.random.rand(2000, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),
@@ -253,8 +259,12 @@ class TestPMP:
             np.random.rand(2000, 2),
             dims=["time", "conf"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "conf": ["1.1", "4.1"],
             },
@@ -277,8 +287,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "some_y", "some_x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "some_y": np.linspace(0, 5, 2),
                 "some_x": np.linspace(0, 5, 2),
@@ -289,7 +303,7 @@ class TestPMP:
         da["some_x"].attrs = {"axis": "X"}
 
         with pytest.raises(ValueError):
-            pmp.spatial_average_storm_configurations(da, 3)
+            pmp.spatial_average_storm_configurations(da, radius=3)
 
     def test_spatial_average_storm_configurations2(self):
         np.random.seed(42)
@@ -297,8 +311,12 @@ class TestPMP:
             np.random.rand(10, 2, 4),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 4),
@@ -308,7 +326,7 @@ class TestPMP:
         da["y"].attrs = {"axis": "Y"}
         da["x"].attrs = {"axis": "X"}
 
-        result = pmp.spatial_average_storm_configurations(da, 10)
+        result = pmp.spatial_average_storm_configurations(da, radius=10)
 
         np.testing.assert_array_equal(
             result.conf,
@@ -383,8 +401,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 100, 2),
                 "x": np.linspace(0, 100, 2),
@@ -393,7 +415,7 @@ class TestPMP:
         da["y"].attrs = {"axis": "Y"}
         da["x"].attrs = {"axis": "X"}
 
-        result = pmp.spatial_average_storm_configurations(da, 3000)
+        result = pmp.spatial_average_storm_configurations(da, radius=3000)
         np.testing.assert_array_almost_equal(
             result[:, 5, :, :].values,
             np.array(
@@ -425,8 +447,12 @@ class TestPMP:
             ),
             dims=["time"],
             coords={
-                "time": xr.cftime_range(
-                    start="2010-01-01", periods=1460, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2010-01-01",
+                    periods=1460,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
             },
         )
@@ -546,8 +572,12 @@ class TestPMP:
             np.random.rand(600, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=600, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=600,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),

@@ -16,7 +16,7 @@ class TestComputeVolume:
         tile = 365 if freq == "D" else 1
         da = timeseries(
             np.tile(np.arange(1, tile + 1), 3),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq=freq,
         )
@@ -32,7 +32,7 @@ class TestComputeVolume:
     def test_units(self):
         da = timeseries(
             np.tile(np.arange(1, 366), 3),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="D",
         )
@@ -49,7 +49,7 @@ class TestComputeVolume:
 class TestGetYearlyOp:
     ds = timeseries(
         np.arange(1, 365 * 3 + 1),
-        variable="streamflow",
+        variable="q",
         start="2001-01-01",
         freq="D",
         as_dataset=True,
@@ -66,49 +66,41 @@ class TestGetYearlyOp:
         }
 
         out = xh.indicators.get_yearly_op(self.ds, op=op, timeargs=timeargs)
-        assert all(["streamflow" in v for v in out.data_vars])
+        assert all(["q" in v for v in out.data_vars])
         assert len(out.data_vars) == len(timeargs)
 
         if op == "max":
             np.testing.assert_array_equal(
-                out.streamflow_max_annual,
+                out.q_max_annual,
                 np.add(np.tile(365, 3), np.array([0, 365, 365 * 2])),
             )
             np.testing.assert_array_equal(
-                out.streamflow_max_summer,
+                out.q_max_summer,
                 np.add(np.tile(300, 3), np.array([0, 365, 365 * 2])),
             )
             np.testing.assert_array_equal(
-                out.streamflow_max_winterdate,
+                out.q_max_winterdate,
                 np.add(
                     np.array([365 + 59, 365 + 59, 365]), np.array([0, 365, 365 * 2])
                 ),
             )
-            np.testing.assert_array_equal(
-                out.streamflow_max_winterdoy, out.streamflow_max_winterdate
-            )
-            np.testing.assert_array_equal(
-                out.streamflow_max_winterdjf, out.streamflow_max_winterdate
-            )
+            np.testing.assert_array_equal(out.q_max_winterdoy, out.q_max_winterdate)
+            np.testing.assert_array_equal(out.q_max_winterdjf, out.q_max_winterdate)
         elif op == "min":
             np.testing.assert_array_equal(
-                out.streamflow_min_annual,
+                out.q_min_annual,
                 np.add(np.tile(1, 3), np.array([0, 365, 365 * 2])),
             )
             np.testing.assert_array_equal(
-                out.streamflow_min_summer,
+                out.q_min_summer,
                 np.add(np.tile(200, 3), np.array([0, 365, 365 * 2])),
             )
             np.testing.assert_array_equal(
-                out.streamflow_min_winterdate,
+                out.q_min_winterdate,
                 np.add(np.tile(335, 3), np.array([0, 365, 365 * 2])),
             )
-            np.testing.assert_array_equal(
-                out.streamflow_min_winterdoy, out.streamflow_min_winterdate
-            )
-            np.testing.assert_array_equal(
-                out.streamflow_min_winterdjf, out.streamflow_min_winterdate
-            )
+            np.testing.assert_array_equal(out.q_min_winterdoy, out.q_min_winterdate)
+            np.testing.assert_array_equal(out.q_min_winterdjf, out.q_min_winterdate)
 
     def test_missing(self):
         timeargs = {"winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"}}
@@ -121,27 +113,27 @@ class TestGetYearlyOp:
         )
 
         np.testing.assert_array_equal(
-            out.streamflow_max_winterdate,
+            out.q_max_winterdate,
             np.add(np.array([365 + 59, 365 + 59, np.nan]), np.array([0, 365, 365 * 2])),
         )
 
     def test_window(self):
         out = xh.indicators.get_yearly_op(self.ds, op="max", window=2)
 
-        assert all(["streamflow2" in v for v in out.data_vars])
+        assert all(["q2" in v for v in out.data_vars])
         np.testing.assert_array_equal(
-            out.streamflow2_max_annual, np.array([364.5, 729.5, 1094.5])
+            out.q2_max_annual, np.array([364.5, 729.5, 1094.5])
         )
 
     def test_sum(self):
         ds = timeseries(
             np.arange(1, 365 * 3 + 1),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="D",
             as_dataset=True,
         )
-        ds["volume"] = xh.indicators.compute_volume(ds.streamflow)
+        ds["volume"] = xh.indicators.compute_volume(ds.q)
         ds["volume"] = ds["volume"].where(
             ~((ds.time.dt.month == 1) & (ds.time.dt.day == 3))
         )

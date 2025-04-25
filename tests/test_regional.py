@@ -345,7 +345,7 @@ class TestRegionalFrequencyAnalysisKappa:
     def test_calc_h_z_output_structure(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
-        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, sample_kappa3)
+        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert isinstance(result, xr.Dataset)
         assert "crit" in result.coords
 
@@ -358,14 +358,14 @@ class TestRegionalFrequencyAnalysisKappa:
         sample_ds_moments_groups = xr.concat(
             [sample_ds_moments_groups, sample_ds_moments_groups], dim="group_id"
         )
-        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, sample_kappa3)
+        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert result.group_id.count().values == 2
 
     def test_calc_h_z_values(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
         result = calc_h_z(
-            sample_ds_groups, sample_ds_moments_groups, sample_kappa3, seed=42
+            sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3, seed=42
         )
         np.testing.assert_almost_equal(0.42279565, result.sel(crit="H").Qp)
         np.testing.assert_almost_equal(0.2568702, result.sel(crit="Z").Qp)
@@ -374,7 +374,7 @@ class TestRegionalFrequencyAnalysisKappa:
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
         sample_ds_moments_groups = -sample_ds_moments_groups
-        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, sample_kappa3)
+        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
 
@@ -384,13 +384,13 @@ class TestRegionalFrequencyAnalysisKappa:
         a = np.empty((1, 3, 6))
         a[:] = np.nan
         sample_ds_moments_groups["Qp"] = (["group_id", "id", "lmom"], a)
-        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, sample_kappa3)
+        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
 
     def test_calculate_rp_from_afr(self, sample_ds_groups, sample_ds_moments_groups):
         result = calculate_rp_from_afr(
-            sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000]
+            sample_ds_groups, sample_ds_moments_groups, rp=[100, 1000, 10000]
         )
         np.testing.assert_almost_equal(
             197.83515837, result.Qp.sel(return_period=100, id="A")
@@ -404,7 +404,7 @@ class TestRegionalFrequencyAnalysisKappa:
     ):
         l1 = sample_ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all") * 1.1
         result = calculate_rp_from_afr(
-            sample_ds_groups, sample_ds_moments_groups, [100, 1000, 10000], l1=l1
+            sample_ds_groups, sample_ds_moments_groups, rp=[100, 1000, 10000], l1=l1
         )
         np.testing.assert_almost_equal(
             217.618674207, result.Qp.sel(return_period=100, id="A")

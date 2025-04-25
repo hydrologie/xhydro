@@ -6,28 +6,27 @@ import xarray as xr
 @pytest.mark.requires_julia
 class Testfit:
 
-    def test_stationary_grv(self, data_fre):
+    def test_stationary_gev(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.fit(
             data_fre, dist="genextreme", method="ml", variables=["SeaLevel"], dim="Year"
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
+
         np.testing.assert_array_equal(
-            p.coords["dparams"].values, np.array(["shape", "loc", "scale"])
+            p.coords["dparams"], np.array(["shape", "loc", "scale"])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [0.21742419, 1.48234111, 0.14127133],
@@ -42,23 +41,19 @@ class Testfit:
 
         p = evap.fit(
             data_fre, dist="gumbel_r", method="ml", variables=["SeaLevel"], dim="Year"
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
-        np.testing.assert_array_equal(
-            p.coords["dparams"].values, np.array(["loc", "scale"])
-        )
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
+        np.testing.assert_array_equal(p.coords["dparams"], np.array(["loc", "scale"]))
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [1.4662802, 0.13941243],
@@ -77,23 +72,19 @@ class Testfit:
             method="ml",
             variables=["Exceedance"],
             dim="Date",
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
-        np.testing.assert_array_equal(
-            p.coords["dparams"].values, np.array(["scale", "shape"])
-        )
+        assert p["Exceedance_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
+        np.testing.assert_array_equal(p.coords["dparams"], np.array(["scale", "shape"]))
         np.testing.assert_array_equal(
             list(p.data_vars), ["Exceedance", "Exceedance_lower", "Exceedance_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [7.44019083, 0.1844927],
@@ -113,24 +104,22 @@ class Testfit:
             variables=["SeaLevel"],
             dim="Year",
             locationcov=["Year"],
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_equal(
-            p.coords["dparams"].values,
+            p.coords["dparams"],
             np.array(["shape", "loc", "loc_Year_covariate", "scale"]),
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [1.25303152e-01, -2.47278806e00, 2.03216246e-03, 1.24325843e-01],
@@ -151,17 +140,15 @@ class Testfit:
             dim="Year",
             locationcov=["Year", "SOI"],
             scalecov=["Year", "SOI"],
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_equal(
-            p.coords["dparams"].values,
+            p.coords["dparams"],
             np.array(
                 [
                     "shape",
@@ -229,7 +216,7 @@ class Testfit:
                 locationcov=["Year", "SOI"],
                 scalecov=["Year2", "SOI2"],
                 shapecov=["Year3", "SOI3"],
-            )
+            ).compute(scheduler="processes")
 
     def test_fewer_entries_than_param_param(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -247,14 +234,14 @@ class Testfit:
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year", "SOI"],
-            )
+            ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
         assert list(p.coords) == ["dparams"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert np.isnan(p.to_array().values).all()
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(np.isnan(p.to_array()), True)
         np.testing.assert_array_equal(
-            p.coords["dparams"].values,
+            p.coords["dparams"],
             np.array(
                 [
                     "shape",
@@ -287,14 +274,14 @@ class Testfit:
                 dim="Year",
                 locationcov=["Year", "SOI"],
                 scalecov=["Year", "SOI"],
-            )
+            ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
-        assert np.isnan(p.to_array().values).all()
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
+        np.testing.assert_array_equal(np.isnan(p.to_array()), True)
         np.testing.assert_array_equal(
-            p.coords["return_level"].values, np.array([1897, 1898, 1899, 1900, 1901])
+            p.coords["Year"], np.array([1897, 1898, 1899, 1900, 1901])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
@@ -314,24 +301,22 @@ class TestRtnlv:
             variables=["SeaLevel"],
             dim="Year",
             return_period=100,
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert p.to_array().shape[1] == 1
         assert (
             (p["SeaLevel_lower"] < p["SeaLevel"])
             & (p["SeaLevel"] < p["SeaLevel_upper"])
         ).values.all()
-        np.testing.assert_array_equal(
-            p.coords["return_level"].values, np.array(["return_level"])
-        )
+        np.testing.assert_array_equal(p.coords["return_period"], np.array([100]))
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array().values, np.array([[1.89310525], [1.81018661], [1.9760239]])
+            p.to_array(), np.array([[1.89310525], [1.81018661], [1.9760239]])
         )
 
     def test_non_stationary_cov(self, data_fre):
@@ -345,24 +330,22 @@ class TestRtnlv:
             dim="Year",
             locationcov=["Year", "SOI"],
             return_period=100,
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_equal(
-            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["Year"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array()[:, :5].values,
+            p.to_array()[:, :5],
             np.array(
                 [
                     [1.74899368, 1.81870965, 1.79847143, 1.75642614, 1.79724773],
@@ -387,20 +370,20 @@ class TestRtnlv:
             dim="Year",
             locationcov=["Year", "SOI"],
             return_period=100,
-        )
+        ).compute(scheduler="processes")
 
         assert isinstance(p, xr.Dataset)
-        assert list(p.coords) == ["return_level"]
-        assert p.attrs["method"] == "Maximum likelihood"
+        assert list(p.coords) == ["Year", "return_period"]
+        assert p["SeaLevel_lower"].attrs["method"] == "Maximum likelihood"
         assert len(data_fre["SeaLevel"]) == p.to_array().shape[1]
         np.testing.assert_array_equal(
-            p.coords["return_level"].values[:3], np.array([1897, 1898, 1899])
+            p.coords["Year"].values[:3], np.array([1897, 1898, 1899])
         )
         np.testing.assert_array_equal(
             list(p.data_vars), ["SeaLevel", "SeaLevel_lower", "SeaLevel_upper"]
         )
         np.testing.assert_array_almost_equal(
-            p.to_array()[:, :7].values,
+            p.to_array()[:, :7],
             np.array(
                 [
                     [
@@ -443,14 +426,13 @@ class TestGEV:
 
         p = evap.fit(
             data_fre, dist="genextreme", method="ML", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
+
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [0.21742419, 1.48234111, 0.14127133],
@@ -469,12 +451,10 @@ class TestGEV:
             method="PWM",
             dim="Year",
             variables=["SeaLevel"],
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([0.19631625, 1.4807491, 0.13907873])
         )
@@ -488,24 +468,22 @@ class TestGEV:
             method="BAYES",
             dim="Year",
             variables=["SeaLevel"],
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
     def test_ml_rtnlv(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
             data_fre, dist="genextreme", method="ML", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_almost_equal(
             p.to_array().values, np.array([[1.89310525], [1.81018661], [1.9760239]])
         )
@@ -519,15 +497,13 @@ class TestGEV:
             method="PWM",
             dim="Year",
             variables=["SeaLevel"],
-        )
+        ).compute(scheduler="processes")
 
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([1.90204717])
         )
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
     def test_bayes_rtnlv(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -538,12 +514,12 @@ class TestGEV:
             method="BAYES",
             dim="Year",
             variables=["SeaLevel"],
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
 
 @pytest.mark.requires_julia
@@ -554,12 +530,10 @@ class TestGumbel:
 
         p = evap.fit(
             data_fre, dist="gumbel_r", method="ML", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_almost_equal(
             p.to_array().values,
             np.array(
@@ -576,12 +550,10 @@ class TestGumbel:
 
         p = evap.fit(
             data_fre, dist="gumbel_r", method="PWM", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([1.46903519, 0.1195187])
         )
@@ -595,26 +567,24 @@ class TestGumbel:
             method="BAYES",
             dim="Year",
             variables=["SeaLevel"],
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
     def test_ml_rtnlv(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
 
         p = evap.return_level(
             data_fre, dist="gumbel_r", method="ML", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
         np.testing.assert_array_almost_equal(
-            p.to_array().values, np.array([[2.10759817], [1.99555233], [2.21964401]])
+            p.to_array(), np.array([[2.10759817], [1.99555233], [2.21964401]])
         )
 
     def test_pwm_rtnlv(self, data_fre):
@@ -622,15 +592,13 @@ class TestGumbel:
 
         p = evap.return_level(
             data_fre, dist="gumbel_r", method="PWM", dim="Year", variables=["SeaLevel"]
-        )
+        ).compute(scheduler="processes")
 
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([2.01883904])
         )
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
     def test_bayes_rtnlv(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -641,12 +609,12 @@ class TestGumbel:
             method="BAYES",
             dim="Year",
             variables=["SeaLevel"],
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["SeaLevel_lower"] < p["SeaLevel"])
-            & (p["SeaLevel"] < p["SeaLevel_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["SeaLevel_lower"] < p["SeaLevel"], True)
+        np.testing.assert_array_equal(p["SeaLevel"] < p["SeaLevel_upper"], True)
 
 
 @pytest.mark.requires_julia
@@ -661,14 +629,12 @@ class TestPareto:
             method="ML",
             dim="Date",
             variables=["Exceedance"],
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array(
                 [
                     [7.44019083, 0.1844927],
@@ -687,12 +653,10 @@ class TestPareto:
             method="PWM",
             dim="Date",
             variables=["Exceedance"],
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([7.29901897, 0.19651587])
         )
@@ -706,12 +670,12 @@ class TestPareto:
             method="BAYES",
             variables=["Exceedance"],
             dim="Date",
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
 
     def test_ml_rtnlv(self, data_rain):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -725,14 +689,12 @@ class TestPareto:
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
-        )
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
         np.testing.assert_array_almost_equal(
-            p.to_array().values,
+            p.to_array(),
             np.array([[106.32558691], [65.48163774], [147.16953608]]),
         )
 
@@ -748,14 +710,12 @@ class TestPareto:
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
-        )
+        ).compute(scheduler="processes")
         np.testing.assert_array_almost_equal(
             p.to_array().values[0], np.array([107.99657119])
         )
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
 
     def test_bayes_rtnlv(self, data_rain):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -769,12 +729,12 @@ class TestPareto:
             threshold_pareto=30,
             nobs_pareto=17531,
             nobsperblock_pareto=365,
-        )
+            niter=50,
+            warmup=20,
+        ).compute(scheduler="processes")
 
-        assert (
-            (p["Exceedance_lower"] < p["Exceedance"])
-            & (p["Exceedance"] < p["Exceedance_upper"])
-        ).values.all()
+        np.testing.assert_array_equal(p["Exceedance_lower"] < p["Exceedance"], True)
+        np.testing.assert_array_equal(p["Exceedance"] < p["Exceedance_upper"], True)
 
 
 @pytest.mark.requires_julia
@@ -801,7 +761,7 @@ class TestError:
                 locationcov=["Year", "SOI"],
                 scalecov=["Year2", "SOI2"],
                 shapecov=["Year3", "SOI3"],
-            )
+            ).compute(scheduler="processes")
 
     def test_extremefit_rtnlv_error(self, data_rain):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -816,7 +776,9 @@ class TestError:
                 threshold_pareto=30,
                 nobs_pareto=17531,
                 nobsperblock_pareto=365,
-            )
+                niter=50,
+                warmup=20,
+            ).compute(scheduler="processes")
 
     def test_extremefit_param_error(self, data_rain):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -831,7 +793,7 @@ class TestError:
                 threshold_pareto=30,
                 nobs_pareto=17531,
                 nobsperblock_pareto=365,
-            )
+            ).compute(scheduler="processes")
 
     def test_confinc_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -845,7 +807,7 @@ class TestError:
                 method="ML",
                 variables=["SeaLevel"],
                 dim="Year",
-            )
+            ).compute(scheduler="processes")
 
         np.testing.assert_array_almost_equal(
             p.to_array().values,
@@ -868,9 +830,9 @@ class TestError:
                 dim="pos",
                 scalecov=["n2"],
                 variables=["n"],
-            )
+            ).compute(scheduler="processes")
             np.testing.assert_array_equal(
-                p.to_array().values,
+                p.to_array(),
                 np.array(
                     [
                         [np.nan, np.nan, np.nan],
@@ -896,10 +858,12 @@ class TestError:
                 dim="pos",
                 scalecov=["n2"],
                 variables=["n"],
-            )
+                niter=50,
+                warmup=20,
+            ).compute(scheduler="processes")
 
             np.testing.assert_array_equal(
-                p.to_array().values,
+                p.to_array(),
                 np.array(
                     [
                         [np.nan, np.nan, np.nan],
@@ -925,10 +889,12 @@ class TestError:
                 dim="pos",
                 scalecov=["n2"],
                 variables=["n"],
-            )
+                niter=50,
+                warmup=20,
+            ).compute(scheduler="processes")
 
             np.testing.assert_array_equal(
-                p.to_array().values,
+                p.to_array(),
                 np.array(
                     [
                         [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
@@ -944,7 +910,7 @@ class TestError:
         with pytest.raises(ValueError, match="Unrecognized distribution: XXX"):
             evap.fit(
                 data_fre, dist="XXX", method="ml", variables=["SeaLevel"], dim="Year"
-            )
+            ).compute(scheduler="processes")
 
     def test_method_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -956,7 +922,7 @@ class TestError:
                 method="YYY",
                 variables=["SeaLevel"],
                 dim="Year",
-            )
+            ).compute(scheduler="processes")
 
     def test_vars_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -965,7 +931,9 @@ class TestError:
             ValueError,
             match="XXXX is not a variable in the Dataset. Dataset variables are: \\['SOI', 'SeaLevel'\\]",
         ):
-            evap.fit(data_fre, dist="genextreme", variables=["XXXX"], dim="Year")
+            evap.fit(
+                data_fre, dist="genextreme", variables=["XXXX"], dim="Year"
+            ).compute(scheduler="processes")
 
     def test_conflev_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -980,7 +948,7 @@ class TestError:
                 variables=["SeaLevel"],
                 dim="Year",
                 confidence_level=2,
-            )
+            ).compute(scheduler="processes")
 
     def test_gumbel_cov_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -996,7 +964,7 @@ class TestError:
                 variables=["SeaLevel"],
                 dim="Year",
                 shapecov=["Year"],
-            )
+            ).compute(scheduler="processes")
 
     def test_pareto_cov_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -1012,7 +980,7 @@ class TestError:
                 variables=["SeaLevel"],
                 dim="Year",
                 locationcov=["Year"],
-            )
+            ).compute(scheduler="processes")
 
     def test_rtmper_error(self, data_fre):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -1027,7 +995,7 @@ class TestError:
                 variables=["SeaLevel"],
                 dim="Year",
                 return_period=-1,
-            )
+            ).compute(scheduler="processes")
 
     def test_para_pareto_error(self, data_rain):
         evap = pytest.importorskip("xhydro.extreme_value_analysis.parameterestimation")
@@ -1042,4 +1010,4 @@ class TestError:
                 method="ml",
                 variables=["Exceedance"],
                 dim="Date",
-            )
+            ).compute(scheduler="processes")

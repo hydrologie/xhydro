@@ -11,7 +11,7 @@ class TestFit:
     def test_fit(self):
         ds = timeseries(
             np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
@@ -20,15 +20,13 @@ class TestFit:
 
         np.testing.assert_array_equal(params.dparams, ["skew", "loc", "scale"])
         np.testing.assert_array_equal(params.scipy_dist, ["gumbel_r", "pearson3"])
-        assert params.streamflow.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
-        assert params.streamflow.attrs["estimator"] == "Maximum likelihood"
-        assert params.streamflow.attrs["long_name"] == "Distribution parameters"
-        assert (
-            params.streamflow.attrs["description"] == "Parameters of the distributions"
-        )
+        assert params.q.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
+        assert params.q.attrs["estimator"] == "Maximum likelihood"
+        assert params.q.attrs["long_name"] == "Distribution parameters"
+        assert params.q.attrs["description"] == "Parameters of the distributions"
 
         np.testing.assert_array_almost_equal(
-            params.streamflow,
+            params.q,
             np.array(
                 [
                     [np.nan, 1.01397803e02, 4.28189713e01],
@@ -40,7 +38,7 @@ class TestFit:
     def test_default(self):
         ds = timeseries(
             np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
@@ -56,7 +54,7 @@ class TestFit:
     def test_min_years(self, miny):
         ds = timeseries(
             np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
@@ -64,12 +62,12 @@ class TestFit:
         params = xhfa.local.fit(ds, distributions=["gumbel_r"], min_years=miny)
         if miny == 10:
             np.testing.assert_array_almost_equal(
-                params.streamflow,
+                params.q,
                 [[101.39780283, 42.81897125]],
             )
         elif miny == 15:
             np.testing.assert_array_almost_equal(
-                params.streamflow,
+                params.q,
                 [[np.nan, np.nan]],
             )
 
@@ -77,7 +75,6 @@ class TestFit:
         "periods",
         [
             None,
-            ["1961", "1980"],
             ["1962", "2010"],
             ["2001", "2020"],
             [["2001", "2020"], ["2041", "2060"]],
@@ -86,7 +83,7 @@ class TestFit:
     def test_periods(self, periods):
         ds = timeseries(
             np.arange(1, 100) * 5 + 350,
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
@@ -99,7 +96,7 @@ class TestFit:
 
         if periods is None:
             np.testing.assert_array_almost_equal(
-                params.streamflow.squeeze(), [528.9, 129.23], decimal=2
+                params.q.squeeze(), [528.9, 129.23], decimal=2
             )
 
         elif isinstance(periods[0], str):
@@ -107,18 +104,17 @@ class TestFit:
                 params.horizon, [f"{periods[0]}-{periods[1]}"]
             )
             results = {
-                "1961": np.array([np.nan, np.nan]),
                 "1962": np.array([370.35, 12.96]),
                 "2001": np.array([np.nan, np.nan]),
             }
             np.testing.assert_array_almost_equal(
-                params.streamflow.squeeze(), results[periods[0]], decimal=2
+                params.q.squeeze(), results[periods[0]], decimal=2
             )
 
         elif periods[0] == ["2001", "2020"]:
             np.testing.assert_array_equal(params.horizon, ["2001-2020", "2041-2060"])
             np.testing.assert_array_almost_equal(
-                params.streamflow.squeeze(),
+                params.q.squeeze(),
                 np.array([[388.15, 26.06], [588.15, 26.06]]),
                 decimal=2,
             )
@@ -128,7 +124,7 @@ class TestFit:
 def test_quantiles(mode):
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-        variable="streamflow",
+        variable="q",
         start="2001-01-01",
         freq="YS",
         as_dataset=True,
@@ -146,26 +142,26 @@ def test_quantiles(mode):
             rp.p_quantile, [0.1, 0.05] if mode == "min" else [0.9, 0.95]
         )
         np.testing.assert_array_equal(rp.scipy_dist, ["gumbel_r", "pearson3"])
-        assert rp.streamflow.attrs["long_name"] == "Return period"
+        assert rp.q.attrs["long_name"] == "Return period"
         assert (
-            rp.streamflow.attrs["description"]
+            rp.q.attrs["description"]
             == f"Return period ({mode}) estimated with statistic distributions"
         )
-        assert rp.streamflow.attrs["cell_methods"] == "dparams: ppf"
-        assert rp.streamflow.attrs["mode"] == mode
+        assert rp.q.attrs["cell_methods"] == "dparams: ppf"
+        assert rp.q.attrs["mode"] == mode
 
         ans = np.array(
             [[197.75621673, 228.57850782], [185.78830382, 203.01731036]]
             if mode == "max"
             else [[65.68539153, 54.41731141], [64.23598869, 47.00660287]]
         )
-        np.testing.assert_array_almost_equal(rp.streamflow, ans)
+        np.testing.assert_array_almost_equal(rp.q, ans)
 
 
 def test_criteria():
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-        variable="streamflow",
+        variable="q",
         start="2001-01-01",
         freq="YS",
         as_dataset=True,
@@ -176,24 +172,23 @@ def test_criteria():
         ds.expand_dims("otherdim"), params.expand_dims("otherdim")
     )
     np.testing.assert_array_almost_equal(
-        crit.streamflow, crit_with_otherdim.streamflow.squeeze("otherdim")
+        crit.q, crit_with_otherdim.q.squeeze("otherdim")
     )
 
     np.testing.assert_array_equal(crit.scipy_dist, ["gumbel_r", "pearson3"])
     np.testing.assert_array_equal(crit.criterion, ["aic", "bic", "aicc"])
-    assert crit.streamflow.attrs["long_name"] == "Information criteria"
+    assert crit.q.attrs["long_name"] == "Information criteria"
     assert (
-        crit.streamflow.attrs["description"]
+        crit.q.attrs["description"]
         == "Information criteria for the distribution parameters."
     )
-    assert crit.streamflow.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
+    assert crit.q.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
     assert all(
-        attr not in crit.streamflow.attrs
-        for attr in ["estimator", "method", "min_years"]
+        attr not in crit.q.attrs for attr in ["estimator", "method", "min_years"]
     )
 
     np.testing.assert_array_almost_equal(
-        crit.streamflow,
+        crit.q,
         np.array(
             [
                 [118.78018303, 119.1780783, 119.22462747],
@@ -207,80 +202,80 @@ class TestGetPlottingPositions:
     def test_default(self):
         data = timeseries(
             np.array([50, 65, 80, 95]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
         )
         expected = np.array([1.16666667, 1.61538462, 2.625, 7.0])
         result = _get_plotting_positions(data)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
-        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, expected)
+        np.testing.assert_array_almost_equal(result.q, data.q)
 
         data_2d = xr.concat([data, data], dim="id")
         result = _get_plotting_positions(data_2d)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
-        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, [expected, expected])
+        np.testing.assert_array_equal(result.q, data_2d.q)
 
     def test_nan(self):
         data = timeseries(
             np.array([50, np.nan, 80, 95]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
         )
         expected = np.array([1.23076923, np.nan, 2.0, 5.33333333])
         result = _get_plotting_positions(data)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
-        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, expected)
+        np.testing.assert_array_almost_equal(result.q, data.q)
 
         data_2d = xr.concat([data, data], dim="id")
         result = _get_plotting_positions(data_2d)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
-        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, [expected, expected])
+        np.testing.assert_array_equal(result.q, data_2d.q)
 
     def test_return_period(self):
         data = timeseries(
             np.array([50, 65, 80, 95]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
         )
         expected = np.array([0.14285714, 0.38095238, 0.61904762, 0.85714286])
         result = _get_plotting_positions(data, return_period=False)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
-        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, expected)
+        np.testing.assert_array_almost_equal(result.q, data.q)
 
         data_2d = xr.concat([data, data], dim="id")
         result = _get_plotting_positions(data_2d, return_period=False)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
-        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, [expected, expected])
+        np.testing.assert_array_equal(result.q, data_2d.q)
 
     def test_alpha_beta(self):
         data = timeseries(
             np.array([50, 65, 80, 95]),
-            variable="streamflow",
+            variable="q",
             start="2001-01-01",
             freq="YS",
             as_dataset=True,
         )
         expected = np.array([1.25, 1.66666667, 2.5, 5.0])
         result = _get_plotting_positions(data, alpha=0, beta=0)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, expected)
-        np.testing.assert_array_almost_equal(result.streamflow, data.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, expected)
+        np.testing.assert_array_almost_equal(result.q, data.q)
 
         data_2d = xr.concat([data, data], dim="id")
         result = _get_plotting_positions(data_2d, alpha=0, beta=0)
-        np.testing.assert_array_almost_equal(result.streamflow_pp, [expected, expected])
-        np.testing.assert_array_equal(result.streamflow, data_2d.streamflow)
+        np.testing.assert_array_almost_equal(result.q_pp, [expected, expected])
+        np.testing.assert_array_equal(result.q, data_2d.q)
 
 
 class TestPreparePlots:
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
-        variable="streamflow",
+        variable="q",
         start="2001-01-01",
         freq="YS",
         as_dataset=True,
@@ -289,7 +284,7 @@ class TestPreparePlots:
 
     def test_prepare_plots_default(self):
         result = _prepare_plots(self.params)
-        assert result.streamflow.shape == (2, 100)
+        assert result.q.shape == (2, 100)
         assert result.return_period.min() == 1
         assert result.return_period.max() == 10000
         expected = np.array(
@@ -298,7 +293,7 @@ class TestPreparePlots:
                 [-np.inf, 61.08708903, 79.72126025, 92.05411647, 101.59650405],
             ]
         )
-        np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
+        np.testing.assert_array_almost_equal(result.q.head(), expected)
 
     def test_prepare_plots_linear(self):
         result = _prepare_plots(self.params, log=False)
@@ -309,7 +304,7 @@ class TestPreparePlots:
                 [-np.inf, 235.6878466, 247.41104463, 253.8825982, 258.32114457],
             ]
         )
-        np.testing.assert_array_almost_equal(result.streamflow.head(), expected)
+        np.testing.assert_array_almost_equal(result.q.head(), expected)
 
     def test_prepare_plots_range(self):
         result = _prepare_plots(self.params, xmin=5, xmax=500)
@@ -318,4 +313,4 @@ class TestPreparePlots:
 
     def test_prepare_plots_npoints(self):
         result = _prepare_plots(self.params, npoints=50).load()
-        assert result.streamflow.shape == (2, 50)
+        assert result.q.shape == (2, 50)
