@@ -194,19 +194,19 @@ class TestFormatInputs:
 
         assert cfg["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"
         assert cfg["STATION_DIM_NAME"] == "station"
-        assert cfg["LATITUDE_NAME"] == "lat"
-        assert cfg["LONGITUDE_NAME"] == "lon"
-        assert cfg["ELEVATION_NAME"] == "orog"
+        assert cfg["LATITUDE_NAME"] == "latitude"
+        assert cfg["LONGITUDE_NAME"] == "longitude"
+        assert cfg["ELEVATION_NAME"] == "elevation"
         assert cfg["TIME_NAME"] == "time"
         assert cfg["TMIN_NAME"] == "tasmin"
         assert cfg["TMAX_NAME"] == "tasmax"
         assert cfg["PRECIP_NAME"] == "pr"
 
         assert "station" in ds_out.dims
-        assert ("lon" not in ds_out.dims) and ("lon" in ds_out.coords)
+        assert ("longitude" not in ds_out.dims) and ("longitude" in ds_out.coords)
         if lons == "180":
             np.testing.assert_array_equal(
-                ds_out.lon, np.tile([40, 70, 100, 130, 160], 2)
+                ds_out.longitude, np.tile([40, 70, 100, 130, 160], 2)
             )
             assert len(ds_out.station) == len(ds.lon) * len(ds.lat) - 2
             np.testing.assert_array_almost_equal(
@@ -223,7 +223,7 @@ class TestFormatInputs:
             )
         else:
             np.testing.assert_array_almost_equal(
-                ds_out.lon,
+                ds_out.longitude,
                 [
                     -33.464092,
                     -9.042494,
@@ -348,7 +348,7 @@ class TestFormatInputs:
             spatial = ["rlon", "rlat"]
             assert tuple(ds_out.tas.sizes.keys()) == (*spatial, "time")
         else:
-            spatial = ["lon", "lat"]
+            spatial = ["longitude", "latitude"]
             assert tuple(ds_out.tasmin.sizes.keys()) == (*spatial, "time")
             assert tuple(ds_out.tasmax.sizes.keys()) == (*spatial, "time")
         assert tuple(ds_out.pr.sizes.keys()) == (*spatial, "time")
@@ -356,31 +356,31 @@ class TestFormatInputs:
         if "rlon" in ds.dims:
             assert ("rlon" in ds_out.dims) and ("rlon" in ds_out.coords)
             assert ("rlat" in ds_out.dims) and ("rlat" in ds_out.coords)
-            assert ("lon" not in ds_out.dims) and ("lon" in ds_out.coords)
-            assert ("lat" not in ds_out.dims) and ("lat" in ds_out.coords)
+            assert ("longitude" not in ds_out.dims) and ("longitude" in ds_out.coords)
+            assert ("latitude" not in ds_out.dims) and ("latitude" in ds_out.coords)
             np.testing.assert_array_equal(
                 ds_out.rlon, np.tile([10, 40, 70, 100, 130, 160], 1)
             )
         else:
-            assert ("lon" in ds_out.dims) and ("lon" in ds_out.coords)
-            assert ("lat" in ds_out.dims) and ("lat" in ds_out.coords)
+            assert ("longitude" in ds_out.dims) and ("longitude" in ds_out.coords)
+            assert ("latitude" in ds_out.dims) and ("latitude" in ds_out.coords)
             np.testing.assert_array_equal(
-                ds_out.lon, np.tile([10, 40, 70, 100, 130, 160], 1)
+                ds_out.longitude, np.tile([10, 40, 70, 100, 130, 160], 1)
             )
 
         if lons == "180":
             assert ds_out.tasmin.attrs["units"] == "degC"
             assert ds_out.tasmax.attrs["units"] == "degC"
             np.testing.assert_array_almost_equal(
-                ds_loaded.isel(lon=2, lat=0).tasmax.values,
+                ds_loaded.isel(longitude=2, latitude=0).tasmax.values,
                 ds.isel(lon=2, lat=0).tasmax.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(lon=2, lat=0).tasmin.values,
+                ds_loaded.isel(longitude=2, latitude=0).tasmin.values,
                 ds.isel(lon=2, lat=0).tasminnn.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(lon=2, lat=0).pr.values,
+                ds_loaded.isel(longitude=2, latitude=0).pr.values,
                 ds.isel(lon=2, lat=0).precip.values * 86400,
             )
         else:
@@ -405,7 +405,11 @@ class TestFormatInputs:
         ds = ds.stack({"station": ("lon", "lat")})
         ds = ds.drop_vars(["lon", "lat"]).reset_coords()
         ds = ds.assign_coords(
-            {"station": np.arange(len(ds.station)), "lon": 0, "lat": 0}
+            {
+                "station": np.arange(len(ds.station)),
+                "lon": xr.DataArray(np.arange(len(ds.station)), dims="station"),
+                "lat": xr.DataArray(np.arange(len(ds.station)), dims="station"),
+            }
         )
 
         with pytest.raises(
@@ -419,14 +423,16 @@ class TestFormatInputs:
 
         assert all(
             var in ds_out
-            for var in ["station", "time", "tasmax", "tasmin", "pr", "orog"]
+            for var in ["station_id", "time", "tasmax", "tasmin", "pr", "elevation"]
         )
-        assert "time" not in ds_out.orog.dims
+        assert "time" not in ds_out.elevation.dims
 
         ds = ds.isel(station=0).expand_dims("station")
         ds["station"].attrs = {}
         ds_out2, _ = format_input(ds, "HBVEC", save_as=None)
-        assert all(var in ds_out2 for var in ["time", "tasmax", "tasmin", "pr", "orog"])
+        assert all(
+            var in ds_out2 for var in ["time", "tasmax", "tasmin", "pr", "elevation"]
+        )
         assert "station" not in ds_out2.dims
 
     @pytest.mark.parametrize("prlp", ["prlp", "thickness_of_rainfall_amount"])
@@ -544,7 +550,7 @@ class TestFormatInputs:
                 "tasmax",
                 "tasmin",
                 "pr",
-                "orog",
+                "elevation",
                 "prsn",
                 "prlp" if prlp == "thickness_of_rainfall_amount" else "precip_lp",
             ]

@@ -277,6 +277,9 @@ def format_input(  # noqa: C901
             f"{missing}."
         )
 
+    # Elevation as a coordinate
+    ds = ds.assign_coords({"elevation": ds.elevation})
+
     # Convert units
     # Precipitation first, since it is more complex
     def _is_rate(u):
@@ -500,9 +503,9 @@ def format_input(  # noqa: C901
         if is_1d:
             cfg["meteo_station_properties"] = {
                 "ALL": {
-                    "elevation": float(ds.elevation.values),
-                    "latitude": float(ds.latitude.values),
-                    "longitude": float(ds.longitude.values),
+                    "elevation": ds.elevation.values,
+                    "latitude": ds.latitude.values,
+                    "longitude": ds.longitude.values,
                 }
             }
         else:
