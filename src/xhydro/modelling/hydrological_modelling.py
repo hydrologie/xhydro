@@ -157,6 +157,7 @@ def format_input(  # noqa: C901
 
     - If using 1D time series, the station dimension should have an attribute `cf_role` set to "timeseries_id".
     - Units don't need to be canonical, but they should be convertible to the expected units and be understood by `xclim`.
+    - WARNING: Snowfall units should be in water equivalent (e.g. mm or kg/m²/s). It must NOT be a height (e.g. cm of fresh snow on the ground).
     - Be aware that the function will first try to detect the variables based on the attributes, and then the variable name.
     - The following attempts will be made to detect the variables:
         - Longitude:
@@ -171,6 +172,12 @@ def format_input(  # noqa: C901
         - Precipitation:
             - standard_name: "*precipitation*" (e.g. "lwe_thickness_of_precipitation_amount")
             - variable name: "pr", "precip", "precipitation"
+        - Rainfall:
+            - standard_name: "rainfall*" (e.g. "rainfall_flux", "rainfall_amount")
+            - variable name: "prlp", "rainfall", "rain", "precipitation_rain"
+        - Snowfall:
+            - standard_name: "snowfall*" (e.g. "snowfall_flux", "snowfall_amount")
+            - variable name: "prsn", "snowfall", "precipitation_snow"
         - Maximum temperature:
             - standard_name: "air_temperature"
             - cell_methods: "time: maximum"
@@ -185,7 +192,7 @@ def format_input(  # noqa: C901
             - variable name: "tas", "tmean", "t2m", "temperature_mean"
 
     Hydrotel requires the following variables: ["lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"].
-    Raven requires the following variables: ["lon", "lat", "orog", "time", "tasmax/tasmin" or "tas", "pr"].
+    Raven requires the following variables: ["lon", "lat", "orog", "time", "tasmax/tasmin" or "tas", "pr" or "prlp/prsn"].
     """
     ds = ds.copy()
     if model in ["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"]:
@@ -204,6 +211,14 @@ def format_input(  # noqa: C901
         "pr": {
             "standard_name": ".*precipitation.*",
             "names": ["pr", "precip", "precipitation"],
+        },
+        "prlp": {
+            "standard_name": ".*rainfall.*",
+            "names": ["prlp", "rainfall", "rain", "precipitation_rain"],
+        },
+        "prsn": {
+            "standard_name": ".*snowfall.*",
+            "names": ["prsn", "snowfall", "precipitation_snow"],
         },
         "tasmax": {
             "standard_name": "air_temperature",
@@ -226,21 +241,35 @@ def format_input(  # noqa: C901
         ds = _detect_variable(ds, attributes, names, return_ds=True)
 
     # Check if the dataset contains the required variables
-    required_vars = ["lon", "lat", "orog", "time", "pr"]
-    tmode = "tasmax"
+    required_vars = ["lon", "lat", "orog", "time"]
     if model in ["Raven"]:
+        if all(v in ds for v in ["prlp", "prsn", "pr"]) or all(
+            v in ds for v in ["tasmax", "tasmin", "tas"]
+        ):
+            warnings.warn(
+                "The dataset contains multiple variables for precipitation or temperature. "
+                "Please ensure that only the correct variables are used in 'data_type' and 'alt_names_meteo'."
+            )
         # Determine the data_type mode for Raven
-        if "tasmax" in ds:
+        if all(v in ds for v in ["tasmax", "tasmin"]):
             required_vars.extend(["tasmax", "tasmin"])
-        elif "tas" in ds:
+        if "tas" in ds:
             required_vars.extend(["tas"])
-            tmode = "tas"
-        else:
+        if not all(v in ds for v in ["tasmax", "tasmin"]) and "tas" not in ds:
             raise ValueError(
                 "The dataset is missing the required variables for Raven: 'tasmax/tasmin' or 'tas'."
             )
+        if "pr" in ds:
+            required_vars.extend(["pr"])
+        if all(v in ds for v in ["prlp", "prsn"]):
+            required_vars.extend(["prlp", "prsn"])
+        if not all(v in ds for v in ["prlp", "prsn"]) and "pr" not in ds:
+            raise ValueError(
+                "The dataset is missing the required variables for Raven: 'pr' or 'prlp/prsn'."
+            )
+
     elif model == "Hydrotel":
-        required_vars.extend(["tasmax", "tasmin"])
+        required_vars.extend(["tasmax", "tasmin", "pr"])
 
     if not all(v in ds for v in required_vars):
         missing = set(required_vars).difference(set(ds.variables))
@@ -255,19 +284,28 @@ def format_input(  # noqa: C901
         q = xc.core.units.str2pint(u)
         return q.dimensionality.get("[time]", 0) < 0
 
-    if _is_rate(ds["pr"].attrs.get("units", "")):
-        ds["pr"] = xc.units.rate2amount(ds["pr"])
-    ds["pr"] = xc.units.convert_units_to(ds["pr"], "mm", context="hydro")
+    for pr in {"pr", "prlp", "prsn"}.intersection(ds.variables):
+        if _is_rate(ds[pr].attrs.get("units", "")):
+            ds[pr] = xc.units.rate2amount(ds[pr])
+        if (
+            pr == "prsn"
+            and xc.core.units.str2pint(
+                ds[pr].attrs.get("units", "")
+            ).dimensionality.get("[mass]", 0)
+            > 0
+        ):
+            warnings.warn(
+                "The snowfall units contain mass. They will be converted to volume using the density of water (1000 kg/m³),"
+                " which is correct if the data is the liquid flux of the solid phase of precipitation (i.e. already in water equivalent). "
+                "If your data is anything else, please convert it to water equivalent before using this function."
+            )
+        ds[pr] = xc.units.convert_units_to(ds[pr], "mm", context="hydro")
 
     variables_and_units = {
         "orog": "m",
-        "pr": "mm",
     }
-    if tmode == "tasmax":
-        variables_and_units["tasmax"] = "degC"
-        variables_and_units["tasmin"] = "degC"
-    else:
-        variables_and_units["tas"] = "degC"
+    for t in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
+        variables_and_units[t] = "degC"
     ds = change_units(ds, variables_and_units)
     ds = change_units(
         ds, variables_and_units
@@ -286,18 +324,17 @@ def format_input(  # noqa: C901
 
     # Convert calendar
     if convert_calendar_missing is not False:
+        var_no_time = [v for v in ds.data_vars if "time" not in ds[v].dims]
         convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
         if isinstance(convert_calendar_missing, dict):
             missing_by_var = convert_calendar_missing
         elif convert_calendar_missing is True:
-            if tmode == "tasmax":
-                missing_by_var = {
-                    "tasmax": "interpolate",
-                    "tasmin": "interpolate",
-                    "pr": 0,
-                }
-            else:
-                missing_by_var = {"tas": "interpolate", "pr": 0}
+            # Interpolate missing values for temperature and fill with 0 for precipitation
+            missing_by_var = {}
+            for var in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
+                missing_by_var[var] = "interpolate"
+            for var in {"pr", "prlp", "prsn"}.intersection(ds.variables):
+                missing_by_var[var] = 0
         else:
             missing_by_var = None
             convert_calendar_kwargs["missing"] = convert_calendar_missing
@@ -317,8 +354,9 @@ def format_input(  # noqa: C901
             missing_by_var=missing_by_var,
         )
         # FIXME: Temporary fix until xscen>=0.13 or https://github.com/pydata/xarray/issues/10266
-        if "time" in ds["orog"].dims:
-            ds["orog"] = ds["orog"].isel(time=0).drop_vars("time")
+        for v in var_no_time:
+            if "time" in ds[v].dims:
+                ds[v] = ds[v].isel(time=0).drop_vars("time")
     elif model == "Hydrotel":
         # Hydrotel requires the calendar to be "standard"
         if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"]:
@@ -401,7 +439,7 @@ def format_input(  # noqa: C901
 
             ds = ds.transpose(x_name, y_name, "time")
 
-        elif len(ds["pr"].squeeze().dims) == 1 and "time" in ds["pr"].dims:
+        elif len(ds.squeeze().dims) == 1 and "time" in ds.dims:
             # 1D time series with no lat/lon dimensions, assume it's a single station
             ds = ds.squeeze()
 
@@ -411,20 +449,20 @@ def format_input(  # noqa: C901
                 "Cannot determine the spatial dimensions."
             )
 
-        if tmode == "tasmax":
-            cfg = {
-                "data_type": ["TEMP_MAX", "TEMP_MIN", "PRECIP"],
-                "alt_names_meteo": {
-                    "TEMP_MAX": "tasmax",
-                    "TEMP_MIN": "tasmin",
-                    "PRECIP": "pr",
-                },
-            }
-        else:
-            cfg = {
-                "data_type": ["TEMP_AVE", "PRECIP"],
-                "alt_names_meteo": {"TEMP_AVE": "tas", "PRECIP": "pr"},
-            }
+        # Prepare the configuration for Raven
+        # Reference: https://ravenpy.readthedocs.io/en/latest/_modules/ravenpy/config/defaults.html#
+        conv = {
+            "tasmax": "TEMP_MAX",
+            "tasmin": "TEMP_MIN",
+            "tas": "TEMP_AVE",
+            "pr": "PRECIP",
+            "prlp": "RAINFALL",
+            "prsn": "SNOWFALL",
+        }
+
+        cfg = dict()
+        cfg["data_type"] = [conv[v] for v in required_vars if v in conv]
+        cfg["alt_names_meteo"] = {conv[v]: v for v in required_vars if v in conv}
 
         if save_as:
             Path(save_as).parent.mkdir(parents=True, exist_ok=True)

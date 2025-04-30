@@ -429,6 +429,145 @@ class TestFormatInputs:
         assert all(var in ds_out2 for var in ["time", "tasmax", "tasmin", "pr", "orog"])
         assert "station" not in ds_out2.dims
 
+    @pytest.mark.parametrize("prlp", ["prlp", "thickness_of_rainfall_amount"])
+    def test_raven_variable(self, prlp):
+        ds = datablock_3d(
+            np.array(
+                np.tile(
+                    [[10, 11, 12, 13, 14, 15], [10, 11, 12, 13, 14, 15]],
+                    (365 * 3, 1, 1),
+                )
+            ),
+            "tasmax",
+            "lon",
+            10,
+            "lat",
+            15,
+            30,
+            30,
+            start="2000-01-01",
+            as_dataset=True,
+        )
+        ds["tasminnn"] = datablock_3d(
+            np.array(
+                np.tile(
+                    [[8, 9, 10, 11, 12, 13], [8, 9, 10, 11, 12, 13]], (365 * 3, 1, 1)
+                )
+            ),
+            "tasmin",
+            "lon",
+            10,
+            "lat",
+            15,
+            30,
+            30,
+            start="2000-01-01",
+        )
+        ds["precip"] = datablock_3d(
+            np.array(
+                np.tile(
+                    [
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                    ],
+                    (365 * 3, 1, 1),
+                )
+            ),
+            "pr",
+            "lon",
+            10,
+            "lat",
+            15,
+            30,
+            30,
+            start="2000-01-01",
+        )
+        ds["precip_sn"] = datablock_3d(
+            np.array(
+                np.tile(
+                    [
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                    ],
+                    (365 * 3, 1, 1),
+                )
+            ),
+            "prsn",
+            "lon",
+            10,
+            "lat",
+            15,
+            30,
+            30,
+            start="2000-01-01",
+        )
+        ds["precip_lp"] = datablock_3d(
+            np.array(
+                np.tile(
+                    [
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                        [0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006],
+                    ],
+                    (365 * 3, 1, 1),
+                )
+            ),
+            prlp,
+            "lon",
+            10,
+            "lat",
+            15,
+            30,
+            30,
+            start="2000-01-01",
+        )
+        # Add an elevation coordinate
+        ds["z"] = xr.ones_like(ds["tasmax"].isel(time=0)).drop_vars("time") * 100
+        ds = ds.assign_coords({"z": ds["z"]})
+        ds["z"].attrs = {
+            "units": "m",
+        }
+
+        if prlp == "thickness_of_rainfall_amount":
+            with pytest.warns(
+                UserWarning,
+                match="The dataset contains multiple variables",
+            ):
+                ds_out, cfg = format_input(ds, "HBVEC", save_as=None)
+        else:
+            ds_out, cfg = format_input(ds, "HBVEC", save_as=None)
+
+        # The function returns all variables regardless of if they are used or not
+        assert all(
+            var in ds_out
+            for var in [
+                "time",
+                "tasmax",
+                "tasmin",
+                "pr",
+                "orog",
+                "prsn",
+                "prlp" if prlp == "thickness_of_rainfall_amount" else "precip_lp",
+            ]
+        )
+        if prlp == "thickness_of_rainfall_amount":
+            assert all(
+                var in cfg["data_type"]
+                for var in ["PRECIP", "SNOWFALL", "RAINFALL", "TEMP_MIN", "TEMP_MAX"]
+            )
+            assert all(
+                var in cfg["alt_names_meteo"]
+                for var in ["PRECIP", "SNOWFALL", "RAINFALL", "TEMP_MIN", "TEMP_MAX"]
+            )
+        else:
+            # Rainfall is not recognized as a variable, so snowfall/rainfall is not in the config
+            assert all(
+                var in cfg["data_type"] for var in ["PRECIP", "TEMP_MIN", "TEMP_MAX"]
+            )
+            assert all(
+                var in cfg["alt_names_meteo"]
+                for var in ["PRECIP", "TEMP_MIN", "TEMP_MAX"]
+            )
+
     def test_raven_hbvec_calendars(self, tmpdir):
         ds = self.ds_bad_rotated.copy()
         ds = ds.convert_calendar("365_day")
