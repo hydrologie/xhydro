@@ -182,9 +182,9 @@ filelock==3.16.1 \
     # via
     #   tox
     #   virtualenv
-flit==3.11.0 \
-    --hash=sha256:58d0a07f684c315700c9c54a661a1130995798c3e495db0db53ce6e7d0121825 \
-    --hash=sha256:e4316b02fe6392e65dc489f78b561e635fd1c74652a52b95a8ce5939d688717e
+flit==3.12.0 \
+    --hash=sha256:1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740 \
+    --hash=sha256:2b4e7171dc22881fa6adc2dbf083e5ecc72520be3cd7587d2a803da94d6ef431
     # via -r CI/requirements_ci.in
 flit-core==3.12.0 \
     --hash=sha256:18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2 \
