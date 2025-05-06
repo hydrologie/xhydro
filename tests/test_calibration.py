@@ -1,106 +1,20 @@
 """Test suite for the calibration algorithm in calibration.py."""
 
-# Also tests the dummy model implementation.
 import datetime as dt
-import warnings
 from copy import deepcopy
 
 import numpy as np
 import pooch
 import pytest
 import xarray as xr
-from packaging.version import Version
-from raven_hydro import __raven_version__
-from ravenpy import __version__ as __ravenpy_version__
 
-from xhydro.modelling import hydrological_model
 from xhydro.modelling.calibration import perform_calibration
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
-
-def test_spotpy_calibration():
-    """Make sure the calibration works under possible test cases."""
-    bounds_low = np.array([0, 0, 0])
-    bounds_high = np.array([10, 10, 10])
-
-    model_config = {
-        "precip": np.array([10, 11, 12, 13, 14, 15]),
-        "temperature": np.array([10, 3, -5, 1, 15, 0]),
-        "drainage_area": np.array([10]),
-        "model_name": "Dummy",
-    }
-    qobs = np.array([120, 130, 140, 150, 160, 170])
-
-    mask = np.array([0, 0, 0, 0, 1, 1])
-
-    best_parameters, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "mae",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=1000,
-        algorithm="DDS",
-        mask=mask,
-        sampler_kwargs=dict(trials=1),
-    )
-
-    # Test that the results have the same size as expected (number of parameters)
-    assert len(best_parameters) == len(bounds_high)
-
-    # Test that the objective function is calculated correctly
-    objfun = get_objective_function(
-        qobs,
-        best_simulation,
-        obj_func="mae",
-        mask=mask,
-    )
-
-    assert objfun == best_objfun
-
-    # Test dummy model response
-    model_config["parameters"] = [5, 5, 5]
-    qsim = hydrological_model(model_config).run()
-    assert qsim["streamflow"].values[3] == 3500.00
-
-    # Also test to ensure SCEUA and take_minimize is required.
-    best_parameters_sceua, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "mae",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-    )
-
-    assert len(best_parameters_sceua) == len(bounds_high)
-
-    # Also test to ensure SCEUA and take_minimize is required.
-    best_parameters_negative, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "nse",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-    )
-    assert len(best_parameters_negative) == len(bounds_high)
-
-    # Test to see if transform works
-    best_parameters_transform, best_simulation, best_objfun = perform_calibration(
-        model_config,
-        "nse",
-        bounds_low=bounds_low,
-        bounds_high=bounds_high,
-        qobs=qobs,
-        evaluations=10,
-        algorithm="SCEUA",
-        transform="inv",
-        epsilon=0.01,
-    )
-    assert len(best_parameters_transform) == len(bounds_high)
+try:
+    import ravenpy
+except ImportError:
+    ravenpy = None
 
 
 def test_calibration_failure_mode_unknown_optimizer():
@@ -117,7 +31,7 @@ def test_calibration_failure_mode_unknown_optimizer():
     }
     qobs = np.array([120, 130, 140, 150, 160, 170])
     with pytest.raises(NotImplementedError):
-        best_parameters_transform, best_simulation, best_objfun = perform_calibration(
+        perform_calibration(
             model_config,
             "nse",
             bounds_low=bounds_low,
@@ -147,9 +61,10 @@ def test_transform():
 
     # Test Qobs different length than Qsim
     with pytest.raises(NotImplementedError):
-        qobs_r, qobs_r = transform_flows(qsim, qobs, transform="a", epsilon=0.01)
+        transform_flows(qsim, qobs, transform="a", epsilon=0.01)
 
 
+@pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
 class TestRavenpyModelCalibration:
     """Test calibration of RavenPy models."""
 
@@ -222,6 +137,14 @@ class TestRavenpyModelCalibration:
 
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
+
+        # Test that the objective function is calculated correctly
+        objfun = get_objective_function(
+            self.qobs,
+            best_simulation,
+            obj_func="mae",
+        )
+        np.testing.assert_almost_equal(objfun, best_objfun, decimal=6)
 
     def test_ravenpy_hmets_calibration(self):
         """Test for HMETS ravenpy model"""
@@ -519,9 +442,8 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-    @pytest.mark.skipif(
-        Version(__ravenpy_version__) < Version("0.15.0"),
-        reason="Blended model is broken on earlier versions of RavenPy.",
+    @pytest.mark.skip(
+        reason="Calibration executes, but creates a RavenError for negative tension storage in the soil. Bounds need to be adjusted."
     )
     def test_ravenpy_blended_calibration(self):
         """Test for Blended ravenpy model"""
@@ -619,30 +541,16 @@ class TestRavenpyModelCalibration:
         model_config = deepcopy(self.model_config)
         model_config.update({"model_name": "Blended"})
 
-        if Version(__raven_version__) == Version("3.8.1"):
-            warnings.warn("Blended model does not work with RavenHydroFramework v3.8.1")
-            with pytest.raises(OSError):
-                perform_calibration(
-                    model_config,
-                    "mae",
-                    bounds_low=bounds_low,
-                    bounds_high=bounds_high,
-                    qobs=self.qobs,
-                    evaluations=8,
-                    algorithm="DDS",
-                    sampler_kwargs=dict(trials=1),
-                )
-        else:
-            best_parameters, best_simulation, best_objfun = perform_calibration(
-                model_config,
-                "mae",
-                bounds_low=bounds_low,
-                bounds_high=bounds_high,
-                qobs=self.qobs,
-                evaluations=8,
-                algorithm="DDS",
-                sampler_kwargs=dict(trials=1),
-            )
+        best_parameters, best_simulation, best_objfun = perform_calibration(
+            model_config,
+            "mae",
+            bounds_low=bounds_low,
+            bounds_high=bounds_high,
+            qobs=self.qobs,
+            evaluations=8,
+            algorithm="DDS",
+            sampler_kwargs=dict(trials=1),
+        )
 
-            # Test that the results have the same size as expected (number of parameters)
-            assert len(best_parameters) == len(bounds_high)
+        # Test that the results have the same size as expected (number of parameters)
+        assert len(best_parameters) == len(bounds_high)

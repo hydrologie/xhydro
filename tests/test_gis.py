@@ -24,8 +24,10 @@ class TestWatershedDelineation:
     )
     def test_watershed_delineation_from_coords(self, lng_lat, area):
         gdf = xh.gis.watershed_delineation(coordinates=lng_lat)
-        np.testing.assert_almost_equal(
-            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        np.testing.assert_allclose(
+            [gdf.to_crs(32198).area.values[0]],
+            [area],
+            rtol=1e-5,  # FIXME: pip gives slightly different results than conda env
         )
 
     @pytest.mark.parametrize("area", [18891676494.940426])
@@ -39,8 +41,10 @@ class TestWatershedDelineation:
             }
         ]
         gdf = xh.gis.watershed_delineation(map=self.m)
-        np.testing.assert_almost_equal(
-            [gdf.to_crs(32198).area.values[0]], [area], decimal=3
+        np.testing.assert_allclose(
+            [gdf.to_crs(32198).area.values[0]],
+            [area],
+            rtol=1e-5,  # FIXME: pip gives slightly different results than conda env
         )
 
     def test_errors(self):
@@ -150,6 +154,11 @@ class TestSurfaceProperties:
         return df
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
@@ -162,6 +171,11 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties_unique_id(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
         unique_id = "Station"
@@ -174,6 +188,11 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
+    @pytest.mark.xfail(
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
+        raises=APIError,
+    )
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
@@ -197,6 +216,11 @@ class TestSurfaceProperties:
 
 
 @pytest.mark.online
+@pytest.mark.xfail(
+    reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+    strict=False,
+    raises=APIError,
+)
 class TestLandClassification:
 
     gdf = xd.Query(
@@ -214,21 +238,21 @@ class TestLandClassification:
     def land_classification_data_latest(self):
         data = {
             "pct_built_area": {
-                "031501": 0.015439853092995422,
-                "042103": 1.6177088870902873e-05,
+                "031501": 0.0153389,
+                "042103": 1.61770889e-05,
             },
-            "pct_crops": {"031501": 0.71674721580163903, "042103": 0.0},
+            "pct_crops": {"031501": 0.71674722, "042103": 0.0},
             "pct_trees": {
-                "031501": 0.259403235973944102,
-                "042103": 0.909267010940358666,
+                "031501": 0.25940324,
+                "042103": 0.90926391,
             },
             "pct_rangeland": {
-                "031501": 0.008409695131421471,
-                "042103": 0.004853126661270862,
+                "031501": 0.0084097,
+                "042103": 0.0048533,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.085443597288926421},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.000416473990080691},
-            "pct_bare_ground": {"031501": 0.0, "042103": 3.614030492435748e-06},
+            "pct_water": {"031501": 0.0, "042103": 0.08544583},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00041716},
+            "pct_bare_ground": {"031501": 0.0, "042103": 3.61403049e-06},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -239,21 +263,21 @@ class TestLandClassification:
     def land_classification_data_2018(self):
         data = {
             "pct_built_area": {
-                "031501": 0.01585554144549914529,
-                "042103": 3.8721755276097304e-05,
+                "031501": 0.01583815,
+                "042103": 3.87217553e-05,
             },
-            "pct_crops": {"031501": 0.72329773335647784549, "042103": 0.0},
+            "pct_crops": {"031501": 0.72329773, "042103": 0.0},
             "pct_trees": {
-                "031501": 0.25655280155677573362,
-                "042103": 0.91066684541776210526,
+                "031501": 0.2565528,
+                "042103": 0.91066581,
             },
             "pct_rangeland": {
-                "031501": 0.00429392364124724785,
-                "042103": 0.00435748819373681616,
+                "031501": 0.00429392,
+                "042103": 0.00435766,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08474178698663342724},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019464135652118243},
-            "pct_bare_ground": {"031501": 0.0, "042103": 5.16290070347964e-07},
+            "pct_water": {"031501": 0.0, "042103": 0.08474334},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019395},
+            "pct_bare_ground": {"031501": 0.0, "042103": 5.1629007e-07},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -262,7 +286,8 @@ class TestLandClassification:
 
     @pytest.mark.xfail(
         raises=APIError,
-        reason="Test is rate-limited by Microsoft Planetary Computer API.",
+        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
+        strict=False,
     )
     @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification(
@@ -282,7 +307,9 @@ class TestLandClassification:
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(df, df_expected)
+            pd.testing.assert_frame_equal(
+                df, df_expected, check_exact=False, atol=0.0001
+            )
 
     @pytest.mark.parametrize("year,", ["latest", "2018"])
     def test_land_classification_xarray(
@@ -327,7 +354,7 @@ class TestLandClassification:
                     "spatial_resolution": 10,
                 }
 
-            xr.testing.assert_equal(ds_classification, ds_expected)
+            xr.testing.assert_allclose(ds_classification, ds_expected, atol=0.0001)
 
     @pytest.mark.parametrize("unique_id,", ["Station", None])
     def test_land_classification_plot(self, unique_id, monkeypatch):

@@ -2,9 +2,17 @@
 Changelog
 =========
 
-v0.5.0 (unreleased)
+v0.6.0 (Unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
+Contributors to this version: Louise Arnal (:user:`lou-a`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
+
+v0.5.0 (2025-04-24)
+-------------------
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,12 +20,20 @@ New features and enhancements
   * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
   * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
   * You can use `pip install xhydro[julia]` to install the required dependencies.
+* Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, :pull:`293`).
+
+Bug fixes
+^^^^^^^^^
+* Patched the outputs of `xh.optimal_interpolation.execute` to remove a superfluous `station` dimension and to ensure that the `time` dimension has coordinates. (:pull:`274`).
+  * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
+* Added attributes to variables instead of global attributes in `xh.extreme_value_analysis`. Modified dimension names and introduced a new dimension, `return_period`, to the results of `xh.extreme_value_analysis.return_level()`. (:pull:`283`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
   * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
 * The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
+* Multiple functions in the `xhydro.frequency_analysis` and `xhydro.indicators.pmp` modules have been updated to require literal arguments instead of positional arguments. (:pull:`274`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -35,6 +51,9 @@ Internal changes
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
 * Reduced the number of tests performed on Notebooks. (:pull:`267`).
 * Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`233`).
+* Updated and fixed many dependencies. (:pull:`295`).
+* Added a workflow to test `pip` installations of `xhydro`. (:pull:`295`).
+* Removed steps involving ESMF installation from the `Makefile` and the `tox` configuration. (:pull:`295`).
 
 v0.4.1 (2024-11-07)
 -------------------

@@ -28,8 +28,16 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
     def test_cross_validation_execute(self, corrected_oi_data):
         """Test the cross validation of optimal interpolation."""
         # Get the required times only
-        qobs = corrected_oi_data["qobs"].sel(time=slice(self.start_date, self.end_date))
-        qsim = corrected_oi_data["qsim"].sel(time=slice(self.start_date, self.end_date))
+        qobs = (
+            corrected_oi_data["qobs"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"})
+        )
+        qsim = (
+            corrected_oi_data["qsim"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"})
+        )
 
         # Run the code and obtain the resulting flows.
         ds = opt.execute_interpolation(
@@ -51,14 +59,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
         # Test some output flow values
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             15.06389,
             1,
         )
@@ -69,8 +75,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         end_date = dt.datetime(2018, 12, 31)
 
         ds = opt.execute_interpolation(
-            corrected_oi_data["qobs"].sel(time=slice(start_date, end_date)),
-            corrected_oi_data["qsim"].sel(time=slice(start_date, end_date)),
+            corrected_oi_data["qobs"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            corrected_oi_data["qsim"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
             corrected_oi_data["station_correspondence"],
             corrected_oi_data["observation_stations"],
             ratio_var_bg=self.ratio_var_bg,
@@ -87,14 +97,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
         # Verify results
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.48871,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             14.98491,
             1,
         )
@@ -108,8 +116,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         """Test the parallel version of the optimal interpolation cross validation."""
         # Run the interpolation and obtain the resulting flows.
         ds = opt.execute_interpolation(
-            corrected_oi_data["qobs"].sel(time=slice(self.start_date, self.end_date)),
-            corrected_oi_data["qsim"].sel(time=slice(self.start_date, self.end_date)),
+            corrected_oi_data["qobs"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
+            corrected_oi_data["qsim"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
             corrected_oi_data["station_correspondence"],
             corrected_oi_data["observation_stations"],
             ratio_var_bg=self.ratio_var_bg,
@@ -126,14 +138,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
         # Test some output flow values
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             15.06389,
             1,
         )
@@ -143,8 +153,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         """Test the operational version of the optimal interpolation code."""
         # Run the interpolation and get flows
         ds = opt.execute_interpolation(
-            corrected_oi_data["qobs"].sel(time=slice(self.start_date, self.end_date)),
-            corrected_oi_data["qsim"].sel(time=slice(self.start_date, self.end_date)),
+            corrected_oi_data["qobs"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
+            corrected_oi_data["qsim"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
             corrected_oi_data["station_correspondence"],
             corrected_oi_data["observation_stations"],
             ratio_var_bg=self.ratio_var_bg,
@@ -161,14 +175,12 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
 
         # Test some output flow values
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=160, time=10, percentile=1).data,
+            ds["q"].isel(station_id=160, time=10, percentile=1).data,
             32.432376,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=160, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=160, time=slice(0, 20), percentile=1).data.mean(),
             26.801498,
             1,
         )
@@ -179,11 +191,15 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
         end_date = dt.datetime(2018, 12, 30)
 
         cr.compare(
-            qobs=corrected_oi_data["qobs"].sel(time=slice(start_date, end_date)),
-            qsim=corrected_oi_data["qsim"].sel(time=slice(start_date, end_date)),
-            flow_l1o=corrected_oi_data["flow_l1o"].sel(
-                time=slice(start_date, end_date)
-            ),
+            qobs=corrected_oi_data["qobs"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            qsim=corrected_oi_data["qsim"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            flow_l1o=corrected_oi_data["flow_l1o"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
             station_correspondence=corrected_oi_data["station_correspondence"],
             observation_stations=corrected_oi_data["observation_stations"],
             show_comparison=False,
@@ -192,8 +208,16 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
     def test_optimal_interpolation_single_time_dim(self, corrected_oi_data):
         """Test the OI for data with no time dimension such as indicators."""
         # Get the required times only
-        qobs = corrected_oi_data["qobs"].sel(time=dt.datetime(2018, 12, 20))
-        qsim = corrected_oi_data["qsim"].sel(time=dt.datetime(2018, 12, 20))
+        qobs = (
+            corrected_oi_data["qobs"]
+            .sel(time=dt.datetime(2018, 12, 20))
+            .rename({"streamflow": "q"})
+        )
+        qsim = (
+            corrected_oi_data["qsim"]
+            .sel(time=dt.datetime(2018, 12, 20))
+            .rename({"streamflow": "q"})
+        )
 
         # TODO: Generate better data to make sure results compute accurately
         # Run the code and ensure dataset is of correct size and code does not crash.
@@ -220,8 +244,18 @@ class TestOptimalInterpolationIntegrationCorrectedFiles:
     def test_optimal_interpolation_no_time_dim(self, corrected_oi_data):
         """Test the OI for data with no time dimension such as indicators."""
         # Get the required times only
-        qobs = corrected_oi_data["qobs"].isel(time=10).drop_vars("time")
-        qsim = corrected_oi_data["qsim"].isel(time=10).drop_vars("time")
+        qobs = (
+            corrected_oi_data["qobs"]
+            .isel(time=10)
+            .drop_vars("time")
+            .rename({"streamflow": "q"})
+        )
+        qsim = (
+            corrected_oi_data["qsim"]
+            .isel(time=10)
+            .drop_vars("time")
+            .rename({"streamflow": "q"})
+        )
 
         # TODO: Generate better data to make sure results compute accurately
         # Run the code and ensure dataset is of correct size and code does not crash.
@@ -265,8 +299,16 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
     def test_cross_validation_execute(self, oi_data):
         """Test the cross validation of optimal interpolation."""
         # Get the required times only
-        qobs = oi_data["qobs"].sel(time=slice(self.start_date, self.end_date))
-        qsim = oi_data["qsim"].sel(time=slice(self.start_date, self.end_date))
+        qobs = (
+            oi_data["qobs"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"})
+        )
+        qsim = (
+            oi_data["qsim"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"})
+        )
 
         # Run the code and obtain the resulting flows.
         ds = opt.execute_interpolation(
@@ -288,14 +330,12 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
         # Test some output flow values
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             15.06389,
             1,
         )
@@ -306,8 +346,12 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         end_date = dt.datetime(2018, 12, 31)
 
         ds = opt.execute_interpolation(
-            oi_data["qobs"].sel(time=slice(start_date, end_date)),
-            oi_data["qsim"].sel(time=slice(start_date, end_date)),
+            oi_data["qobs"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            oi_data["qsim"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
             oi_data["station_correspondence"],
             oi_data["observation_stations"],
             ratio_var_bg=self.ratio_var_bg,
@@ -324,14 +368,12 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
         # Verify results
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.48871,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             14.98491,
             1,
         )
@@ -345,8 +387,12 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         """Test the parallel version of the optimal interpolation cross validation."""
         # Run the interpolation and get flows
         ds = opt.execute_interpolation(
-            oi_data["qobs"].sel(time=slice(self.start_date, self.end_date)),
-            oi_data["qsim"].sel(time=slice(self.start_date, self.end_date)),
+            oi_data["qobs"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
+            oi_data["qsim"]
+            .sel(time=slice(self.start_date, self.end_date))
+            .rename({"streamflow": "q"}),
             oi_data["station_correspondence"],
             oi_data["observation_stations"],
             ratio_var_bg=self.ratio_var_bg,
@@ -363,14 +409,12 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
 
         # Test some output flow values
         np.testing.assert_almost_equal(
-            ds["streamflow"].isel(station_id=10, time=10, percentile=1).data,
+            ds["q"].isel(station_id=10, time=10, percentile=1).data,
             21.21767,
             1,
         )
         np.testing.assert_almost_equal(
-            ds["streamflow"]
-            .isel(station_id=10, time=slice(0, 20), percentile=1)
-            .data.mean(),
+            ds["q"].isel(station_id=10, time=slice(0, 20), percentile=1).data.mean(),
             15.06389,
             1,
         )
@@ -381,9 +425,15 @@ class TestOptimalInterpolationIntegrationOriginalDEHFiles:
         end_date = dt.datetime(2018, 12, 30)
 
         cr.compare(
-            qobs=oi_data["qobs"].sel(time=slice(start_date, end_date)),
-            qsim=oi_data["qsim"].sel(time=slice(start_date, end_date)),
-            flow_l1o=oi_data["flow_l1o"].sel(time=slice(start_date, end_date)),
+            qobs=oi_data["qobs"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            qsim=oi_data["qsim"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
+            flow_l1o=oi_data["flow_l1o"]
+            .sel(time=slice(start_date, end_date))
+            .rename({"streamflow": "q"}),
             station_correspondence=oi_data["station_correspondence"],
             observation_stations=oi_data["observation_stations"],
             show_comparison=False,

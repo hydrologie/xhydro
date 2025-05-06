@@ -522,6 +522,15 @@ def execute_interpolation(
             discharge=flow_quantiles,
         )
 
+    # FIXME: This is a quick and dirty fix to remove the "station" dimension from the dataset. It should be managed earlier.
+    if "station" in ds.dims:
+        ds = ds.assign_coords({"station_id": ds.station.values})
+        ds = ds.drop_dims("station")
+    # FIXME: This is an even dirtier fix to re-add the time dimension to the dataset. It gets dropped??
+    if "time" not in ds.coords and "time_bnds" in ds:
+        ds = ds.assign_coords({"time": ds.time_bnds.sel(nbnds=1).values})
+        ds = ds.drop_vars("time_bnds")
+
     return ds
 
 
@@ -586,16 +595,12 @@ def retrieve_data(
         # Search for data in the Qsim file
         index_in_sim = np.where(qsim["station_id"].values == station_code.data)[0]
         sup_sim = qsim["drainage_area"].values[index_in_sim]
-        selected_flow_sim[:, i] = (
-            qsim["streamflow"].isel(station=index_in_sim) / sup_sim
-        )
+        selected_flow_sim[:, i] = qsim["q"].isel(station=index_in_sim) / sup_sim
 
         # Get the flows from the Qsim file
         index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
         sup_obs = qobs["drainage_area"].values[index_in_obs]
-        selected_flow_obs[:, i] = (
-            qobs["streamflow"].isel(station=index_in_obs) / sup_obs
-        )
+        selected_flow_obs[:, i] = qobs["q"].isel(station=index_in_obs) / sup_obs
         drainage_area[i] = sup_obs
         centroid_lon[i] = qobs["centroid_lon"][index_in_obs].values
         centroid_lat[i] = qobs["centroid_lat"][index_in_obs].values
@@ -626,14 +631,14 @@ def retrieve_data(
 
     # Now we also need to make a new dataset that contains all the simulation stations.
     all_drainage_area = qsim["drainage_area"].values
-    all_flow_sim = np.empty(qsim["streamflow"].shape)
+    all_flow_sim = np.empty(qsim["q"].shape)
 
     if len(all_flow_sim.shape) == 1:
         all_flow_sim = all_flow_sim[:, np.newaxis]
 
     for j in range(0, len(all_drainage_area)):
         all_flow_sim[j, :] = np.log(
-            qsim["streamflow"].isel(station=j).values / all_drainage_area[j]
+            qsim["q"].isel(station=j).values / all_drainage_area[j]
         )
     centroid_lat = qsim["lat"].values
     centroid_lon = qsim["lon"].values

@@ -98,9 +98,10 @@ coverage: ## check code coverage quickly with the default Python
 autodoc: clean-docs ## create sphinx-apidoc files:
 	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
-initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files
+initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files (but not the API docs)
 	${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
+	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck
@@ -125,13 +126,9 @@ dist: clean ## builds source and wheel package
 release: dist ## package and upload a release
 	python -m flit publish dist/*
 
-ESMF_VERSION := $(shell cat $(ESMFMKFILE) | grep "ESMF_VERSION_STRING=" | awk -F= '{print $$2}' | tr -d "'")
-install-esmpy: clean ## install esmpy from git based on installed ESMF_VERSION
-	pip install git+https://github.com/esmf-org/esmf.git@v$(ESMF_VERSION)\#subdirectory=src/addon/esmpy
-
-install: install-esmpy ## install the package to the active Python's site-packages
+install: ## install the package to the active Python's site-packages
 	python -m pip install .
 
-dev: install-esmpy ## install the package to the active Python's site-packages
+dev: ## install the package to the active Python's site-packages
 	python -m pip install --editable .[all]
 	pre-commit install

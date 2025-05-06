@@ -37,7 +37,7 @@ __all__ = [
 
 
 def bootstrap_obs(
-    obs: xr.DataArray, n_samples: int, seed: int | None = None
+    obs: xr.DataArray, *, n_samples: int, seed: int | None = None
 ) -> xr.DataArray:
     """
     Generate bootstrap samples from observed data.
@@ -77,7 +77,7 @@ def bootstrap_obs(
 
 
 def bootstrap_dist(
-    ds_obs: xr.Dataset, ds_params: xr.Dataset, n_samples: int
+    ds_obs: xr.Dataset, ds_params: xr.Dataset, *, n_samples: int
 ) -> xr.Dataset:
     """
     Generate bootstrap samples from a fitted distribution.
@@ -179,6 +179,7 @@ def _calc_q_iter_da(
     bv: str,
     ds_groups: xr.Dataset,
     ds_moments_iter: xr.Dataset,
+    *,
     return_periods: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
@@ -317,7 +318,7 @@ def calc_q_iter(
         )
 
 
-def generate_combinations(da: xr.DataArray, n: int) -> list:
+def generate_combinations(da: xr.DataArray, *, n: int) -> list:
     """
     Generate combinations of indices omitting up to N indices.
 

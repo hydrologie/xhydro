@@ -75,24 +75,18 @@ def compare(
         # Search for data in the Qsim file
         index_in_sim = np.where(qsim["station_id"].values == station_code.data)[0]
         sup_sim = qsim["drainage_area"].values[index_in_sim]
-        selected_flow_sim[:, i] = (
-            qsim["streamflow"].isel(station=index_in_sim) / sup_sim
-        )
+        selected_flow_sim[:, i] = qsim["q"].isel(station=index_in_sim) / sup_sim
 
         # Get data in Qobs file
         index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
         sup_obs = qobs["drainage_area"].values[index_in_obs]
-        selected_flow_obs[:, i] = (
-            qobs["streamflow"].isel(station=index_in_obs) / sup_obs
-        )
+        selected_flow_obs[:, i] = qobs["q"].isel(station=index_in_obs) / sup_obs
 
         # Get data in Leave one out file
         index_in_l1o = np.where(flow_l1o["station_id"] == cv_station_id)[0]
         sup_l1o = qobs["drainage_area"].values[index_in_l1o]
         selected_flow_l1o[:, i] = (
-            flow_l1o["streamflow"]
-            .isel(station=index_in_l1o, percentile=idx_pct)
-            .squeeze()
+            flow_l1o["q"].isel(station=index_in_l1o, percentile=idx_pct).squeeze()
             / sup_l1o
         )
 

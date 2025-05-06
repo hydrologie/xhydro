@@ -1,24 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: xHydro 0.3.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-11 16:20-0400\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-04-04 11:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.14.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: ../../../README.rst:3
+msgid "xHydro |logo| |logo-light| |logo-dark|"
+msgstr "xHydro |logo| |logo-light| |logo-dark|"
+
+#: ../../../README.rst:72
 msgid "xHydro"
 msgstr "xHydro"
 
@@ -30,157 +32,166 @@ msgstr "Versions"
 msgid "|pypi| |versions|"
 msgstr "|pypi| |versions|"
 
-#: ../../../README.rst:73
+#: ../../../README.rst:99
 msgid "PyPI"
 msgstr "PyPI"
 
-#: ../../../README.rst:85
+#: ../../../README.rst:111
 msgid "Supported Python Versions"
 msgstr "Versions Python prises en charge"
 
 #: ../../../README.rst:8
 msgid "Documentation and Support"
-msgstr "Documentation et assistance"
+msgstr "Documentation et support"
 
 #: ../../../README.rst:8
 msgid "|docs|"
 msgstr "|docs|"
 
-#: ../../../README.rst:57
+#: ../../../README.rst:60
 msgid "Documentation Status"
-msgstr "Statut de la documentation"
+msgstr "État de la documentation"
 
 #: ../../../README.rst:10
 msgid "Open Source"
-msgstr "Open source"
+msgstr "Source ouverte"
 
 #: ../../../README.rst:10
-msgid "|license| |ossf|"
-msgstr "|license| |ossf|"
+msgid "|license| |ossf-score|"
+msgstr "|license| |ossf-score|"
 
-#: ../../../README.rst:61
+#: ../../../README.rst:68
 msgid "License"
 msgstr "Licence"
 
-#: ../../../README.rst:65
+#: ../../../README.rst:91
 msgid "OpenSSF Scorecard"
-msgstr "Tableau de bord OpenSSF"
+msgstr "OpenSSF Scorecard"
 
 #: ../../../README.rst:12
 msgid "Coding Standards"
 msgstr "Normes de codage"
 
 #: ../../../README.rst:12
-msgid "|black| |ruff| |pre-commit|"
-msgstr "|black| |ruff| |pre-commit|"
+msgid "|black| |isort| |ruff| |pre-commit|"
+msgstr "|black| |isort| |ruff| |pre-commit|"
 
-#: ../../../README.rst:40
+#: ../../../README.rst:43
 msgid "Python Black"
 msgstr "Python Black"
 
-#: ../../../README.rst:77
+#: ../../../README.rst:64
+msgid "Isort"
+msgstr "Isort"
+
+#: ../../../README.rst:103
 msgid "Ruff"
 msgstr "Ruff"
 
-#: ../../../README.rst:69
+#: ../../../README.rst:95
 msgid "pre-commit.ci Status"
-msgstr "pre-commit.ci Statut"
+msgstr "État de pre-commit.ci"
 
 #: ../../../README.rst:14
 msgid "Development Status"
-msgstr "Statut de développement"
+msgstr "État du développement"
 
 #: ../../../README.rst:14
 msgid "|status| |build| |coveralls|"
 msgstr "|status| |build| |coveralls|"
 
-#: ../../../README.rst:81
+#: ../../../README.rst:107
 msgid ""
 "Project Status: Active – The project has reached a stable, usable state "
 "and is being actively developed."
 msgstr ""
-"Statut du projet : Actif – Le projet a atteint un état stable et "
-"utilisable et est activement développé."
+"Statut du projet : Actif – Le projet a atteint un état stable et utilisable "
+"et est en développement actif."
 
-#: ../../../README.rst:44
+#: ../../../README.rst:47
 msgid "Build Status"
-msgstr "Build Status"
+msgstr "État de la construction"
 
-#: ../../../README.rst:48
+#: ../../../README.rst:51
 msgid "Coveralls"
 msgstr "Coveralls"
 
 #: ../../../README.rst:17
 msgid "Hydrological analysis library built with xarray"
-msgstr "Bibliothèque d'analyse hydrologique construite avec xarray"
+msgstr "Librairie d'analyse hydrologique construite avec xarray"
 
 #: ../../../README.rst:19
 msgid "Free software: Apache-2.0"
 msgstr "Logiciel libre : Apache-2.0"
 
 #: ../../../README.rst:20
-msgid "Documentation: https://xhydro.readthedocs.io."
-msgstr "Documentation: https://xhydro.readthedocs.io/fr"
+msgid "Documentation: https://xhydro.readthedocs.io/en/latest/"
+msgstr "Documentation anglaise : https://xhydro.readthedocs.io/en/latest/"
 
-#: ../../../README.rst:23
+#: ../../../README.rst:21
+msgid "Version française: https://xhydro.readthedocs.io/fr/latest/"
+msgstr "Version française : https://xhydro.readthedocs.io/fr/latest/"
+
+#: ../../../README.rst:24
 msgid "Features"
 msgstr "Fonctionnalités"
 
-#: ../../../README.rst:25
+#: ../../../README.rst:26
 msgid ""
-"Easily find and extract geospacial data from the Planetary Computer API "
+"Easily find and extract geospatial data from the Planetary Computer API "
 "and watershed boundaries from the HydroSHEDS API over any area of "
 "interest."
 msgstr ""
-"Trouvez et extrayez facilement des données géospatiales de l'API "
-"Planetary Computer et des limites de bassins versants de l'API HydroSHEDS sur "
-"n'importe quelle zone d'intérêt."
-
-#: ../../../README.rst:26
-msgid "Calibrate and execute Hydrotel and Raven-emulated hydrological models."
-msgstr ""
-"Calibrez et exécutez des modèles hydrologiques Hydrotel et émulés par "
-"Raven."
+"Trouvez et extrayez facilement des données géospatiales depuis l'API Planetary Computer "
+"et les frontières des bassins versants depuis l'API HydroSHEDS sur n'importe quelle zone d'intérêt."
 
 #: ../../../README.rst:27
+msgid "Calibrate and execute Hydrotel and Raven-emulated hydrological models."
+msgstr "Calibrez et exécutez les modèles hydrologiques Hydrotel et émulés par Raven."
+
+#: ../../../README.rst:28
 msgid ""
 "Perform optimal interpolation on hydrological data (daily streamflow and "
 "indices)."
 msgstr ""
-"Effectuez une interpolation optimale sur les données "
-"hydrologiques (débit journalier et indicateurs)."
+"Effectuez une interpolation optimale sur les données hydrologiques (débit quotidien et indices)."
 
-#: ../../../README.rst:28
+#: ../../../README.rst:29
 msgid ""
 "Compute hydrological indicators (e.g. n-day peak flow, annual maximum "
 "series, low flow, average flow, etc.) over custom date ranges."
 msgstr ""
-"Calculez les indicateurs hydrologiques (par exemple, débit de "
-"pointe sur n jours, séries maximales annuelles, étiages, débit moyen, etc.) "
-"sur des plages de dates personnalisées."
-
-#: ../../../README.rst:29
-msgid ""
-"Perform frequency analysis on hydrological indicators using a variety of "
-"methods (e.g. Gumbel, GEV, etc.)."
-msgstr ""
-"Effectuez une analyse fréquentielle sur les indicateurs "
-"hydrologiques en utilisant diverses méthodes (par exemple Gumbel, GEV, etc.)."
+"Calculez des indicateurs hydrologiques (par exemple, débit de crue sur n jours, série maximale annuelle, "
+"débit de base, débit moyen, etc.) sur des plages de dates personnalisées."
 
 #: ../../../README.rst:30
-msgid "Perform climate change impact analysis of hydrological data."
+msgid ""
+"Perform frequency analyses on hydrological indicators using a variety of "
+"methods (e.g. Gumbel, GEV, etc.)."
 msgstr ""
-"Effectuez une analyse de l’impact du changement climatique sur les "
-"données hydrologiques."
+"Effectuez des analyses fréquentielles sur des indicateurs hydrologiques en utilisant diverses méthodes "
+"(par exemple, Gumbel, GEV, etc.)."
 
-#: ../../../README.rst:33
+#: ../../../README.rst:31
+msgid "Perform climate change impact analyses of hydrological data."
+msgstr "Effectuez des analyses d'impact du changement climatique sur les données hydrologiques."
+
+#: ../../../README.rst:34
 msgid "Credits"
 msgstr "Crédits"
 
-#: ../../../README.rst:35
+#: ../../../README.rst:36
 msgid ""
 "This package was created with Cookiecutter_ and the `Ouranosinc"
 "/cookiecutter-pypackage`_ project template."
 msgstr ""
-"Ce paquet a été créé avec Cookiecutter_ et le modèle de projet "
-"`Ouranosinc/cookiecutter-pypackage`_."
+"Cette libraire a été créée avec Cookiecutter_ et le modèle de projet `Ouranosinc"
+"/cookiecutter-pypackage`_."
+
+#: ../../../README.rst:38
+msgid ""
+"This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal"
+" (@lou-a), with inputs from the `xHydro` team."
+msgstr ""
+"Ce logo a été conçu par Élyse Fournier (@elysefounier) et Louise Arnal"
+" (@lou-a), avec la contribution de l'équipe `xHydro`."

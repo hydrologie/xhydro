@@ -58,7 +58,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -66,7 +66,7 @@ jobs:
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt
       - name: Environment Caching
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
             .tox
@@ -134,7 +134,6 @@ jobs:
       - name: Check versions
         run: |
           micromamba list
-          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
         run: |
@@ -214,7 +213,6 @@ jobs:
       - name: Check versions
         run: |
           micromamba list
-          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test with pytest
         run: |
@@ -226,6 +224,50 @@ jobs:
           CI: "1"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: run-Python${{ matrix.python-version }}-conda
+          COVERALLS_PARALLEL: true
+          COVERALLS_SERVICE_NAME: github
+
+  test-pypi:
+    name: Test with Python${{ matrix.python-version }} (tox, ${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        python-version: [ "3.12" ]
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        with:
+          disable-sudo: true
+          egress-policy: audit
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Set up Python${{ matrix.python-version }}
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install CI libraries
+        run: |
+          python -m pip install --require-hashes -r CI/requirements_ci.txt
+      - name: Environment Caching
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            .tox
+          key: ${{ matrix.os }}-Python${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'tox.ini') }}
+      - name: Test with tox
+        run: |
+          python -m tox -e ${{ matrix.python-version }}-coverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: run-Python${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
           COVERALLS_SERVICE_NAME: github
 
@@ -297,7 +339,6 @@ jobs:
       - name: Check versions
         run: |
           micromamba list
-          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
           python -m pip check || true
       - name: Test Notebooks (no Julia)
         if: ${{ matrix.julia == false }}
@@ -308,57 +349,10 @@ jobs:
         run: |
           make test-notebooks-lax-onlyextremes
 
-#  test-ESMF-source:
-#    name: Tests using ESMF from sources (Python${{ matrix.python-version }})
-#    needs: lint
-#    if: |
-#      contains(github.event.pull_request.labels.*.name, 'approved') ||
-#      (github.event.review.state == 'approved') ||
-#      (github.event_name == 'push')
-#    runs-on: ubuntu-latest
-#    env:
-#      ESMF_VERSION: "v8.5.0"
-#    strategy:
-#      matrix:
-#        include:
-#          - python-version: "3.9"
-#    steps:
-#      - uses: actions/checkout@v4.1.1
-#      - name: Install NetCDF
-#        run: |
-#          sudo apt-get -y update
-#          sudo apt install libnetcdf-dev libnetcdff-dev
-#      - name: Install ESMF
-#        uses: esmf-org/install-esmf-action@v1
-#        env:
-#          ESMF_NETCDF: nc-config
-#        with:
-#          cache: true
-#          version: ${{ env.ESMF_VERSION }}
-#      - name: Set up Python${{ matrix.python-version }}
-#        uses: actions/setup-python@v4.7.1
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Install xhydro (with esmpy)
-#        run: |
-#          python -m pip install flit
-#          make dev
-#        env:
-#          ESMF_VERSION: ${{ env.ESMF_VERSION }}
-#      - name: Check versions
-#        run: |
-#          python -m pip list
-#          echo ESMF_VERSION=$(cat $ESMFMKFILE | grep "ESMF_VERSION_STRING=" | awk -F= '{print $2}' | tr -d "'")
-#          python -m pip check || true
-#      - name: Test with pytest
-#        run: |
-#          make test
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   finish:
     needs:
       - test-conda
+      - test-pypi
       - test-notebooks
     runs-on: ubuntu-latest
     steps:
