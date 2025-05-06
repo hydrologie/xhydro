@@ -234,7 +234,7 @@ def _calc_q_iter_da(
     )
     # With obs and moments  of same dims, we calculate
     qt = calculate_rp_from_afr(
-        ds_groups.to_dataset(), ds_moments_groups.to_dataset(), return_periods, l1=l1
+        ds_groups.to_dataset(), ds_moments_groups.to_dataset(), rp=return_periods, l1=l1
     )
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
