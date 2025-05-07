@@ -307,14 +307,19 @@ def calc_q_iter(
                 bv,
                 groups[var],
                 moments_iter[var],
-                return_periods,
-                small_regions_threshold,
-                l1,
-            )
+                return_periods=return_periods,
+                small_regions_threshold=small_regions_threshold,
+                l1=l1,
+            ).expand_dims("id")
         return ds
     else:
         return _calc_q_iter_da(
-            bv, groups, moments_iter, return_periods, small_regions_threshold, l1
+            bv,
+            groups,
+            moments_iter,
+            return_periods=return_periods,
+            small_regions_threshold=small_regions_threshold,
+            l1=l1,
         )
 
 
