@@ -320,7 +320,7 @@ def calc_q_iter(
             return_periods=return_periods,
             small_regions_threshold=small_regions_threshold,
             l1=l1,
-        )
+        ).expand_dims("id")
 
 
 def generate_combinations(da: xr.DataArray, *, n: int) -> list:
