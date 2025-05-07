@@ -282,7 +282,6 @@ def test_calc_q_iter():
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
     result = calc_q_iter(
         "S1",
-        "streamflow",
         ds_groups,
         ds_moments_iter,
         return_periods=[100, 1000],
