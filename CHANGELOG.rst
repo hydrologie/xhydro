@@ -4,11 +4,12 @@ Changelog
 
 v0.6.0 (Unreleased)
 -------------------
-Contributors to this version: Louise Arnal (:user:`lou-a`).
+Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
+* Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
 
 v0.5.0 (2025-04-24)
 -------------------
