@@ -177,8 +177,8 @@ def calc_moments_iter(ds_samples: xr.Dataset) -> xr.Dataset:
 
 def _calc_q_iter_da(
     bv: str,
-    ds_groups: xr.Dataset,
-    ds_moments_iter: xr.Dataset,
+    da_groups: xr.DataArray,
+    da_moments_iter: xr.DataArray,
     *,
     return_periods: np.array,
     small_regions_threshold: int | None = 5,
@@ -191,11 +191,9 @@ def _calc_q_iter_da(
     ----------
     bv : str
         The basin identifier or 'all' to proceed on all bv (needed for ungauged).
-    var : str
-        The variable name.
-    ds_groups : xarray.Dataset
+    da_groups: xr.DataArray,
         The grouped data.
-    ds_moments_iter : xarray.Dataset
+    da_moments_iter: xr.DataArray
         The L-moments for each bootstrap sample.
     return_periods : array-like
         The return periods to calculate quantiles for.
@@ -212,29 +210,29 @@ def _calc_q_iter_da(
     """
     # We select groups for all or one id
     if bv == "all":
-        ds_temp = ds_groups.dropna("group_id", how="all")
+        ds_temp = da_groups.dropna("group_id", how="all")
     else:
-        ds_temp = ds_groups.sel(id=bv).dropna("group_id", how="all")
+        ds_temp = da_groups.sel(id=bv).dropna("group_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it
     for group_id in ds_temp.group_id.values:
-        id_list = ds_groups.sel(group_id=group_id).dropna("id", how="all").id.values
+        id_list = da_groups.sel(group_id=group_id).dropna("id", how="all").id.values
         # We use moments with ressample previously done, and we create ds_moment_group with iterations
         ds_mom.append(
-            ds_moments_iter.sel(id=id_list)
+            da_moments_iter.sel(id=id_list)
             .assign_coords(group_id=group_id)
             .expand_dims("group_id")
         )
 
     # Concat along group_id
     ds_moments_groups = xr.concat(ds_mom, dim="group_id")
-    ds_groups = ds_groups.sel(group_id=ds_moments_groups.group_id.values).dropna(
+    da_groups = da_groups.sel(group_id=ds_moments_groups.group_id.values).dropna(
         dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
     qt = calculate_rp_from_afr(
-        ds_groups.to_dataset(), ds_moments_groups.to_dataset(), rp=return_periods, l1=l1
+        da_groups.to_dataset(), ds_moments_groups.to_dataset(), rp=return_periods, l1=l1
     )
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
