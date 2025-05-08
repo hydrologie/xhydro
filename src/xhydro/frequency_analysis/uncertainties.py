@@ -227,7 +227,7 @@ def _calc_q_iter_da(
 
     # Concat along group_id
     ds_moments_groups = xr.concat(ds_mom, dim="group_id")
-    da_groups = da_groups.sel(group_id=ds_moments_groups.group_id.values).dropna(
+    da_groups = da_groups.sel(group_id=ds_moments_groups.group_id).dropna(
         dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
