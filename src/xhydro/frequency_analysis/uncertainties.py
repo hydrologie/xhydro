@@ -286,7 +286,7 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
         and moments_iter are Datasets, otherwise returns a DataArray.
     """
-    if type(groups) is xr.DataArray and type(moments_iter) is xr.DataArray:
+    if all(isinstance(input, xr.DataArray) for input in [groups, moments_iter]):
         ds = False
     elif all(isinstance(input, xr.Dataset) for input in [groups, moments_iter]):
         ds = True
