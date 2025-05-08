@@ -4,12 +4,14 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.frequency_analysis as xhfa
-from xhydro.frequency_analysis.uncertainties import (bootstrap_dist,
-                                                     bootstrap_obs,
-                                                     calc_moments_iter,
-                                                     calc_q_iter,
-                                                     fit_boot_dist,
-                                                     generate_combinations)
+from xhydro.frequency_analysis.uncertainties import (
+    bootstrap_dist,
+    bootstrap_obs,
+    calc_moments_iter,
+    calc_q_iter,
+    fit_boot_dist,
+    generate_combinations,
+)
 
 
 def test_bootstrap_obs():

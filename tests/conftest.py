@@ -12,8 +12,11 @@ import xarray as xr
 from xclim.testing.helpers import test_timeseries as timeseries
 from xclim.testing.utils import nimbus as _nimbus
 
-from xhydro.testing.helpers import (TESTDATA_BRANCH, TESTDATA_CACHE_DIR,
-                                    TESTDATA_REPO_URL)
+from xhydro.testing.helpers import (
+    TESTDATA_BRANCH,
+    TESTDATA_CACHE_DIR,
+    TESTDATA_REPO_URL,
+)
 from xhydro.testing.helpers import deveraux as _deveraux
 
 

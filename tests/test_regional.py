@@ -13,10 +13,14 @@ except ImportError:
     warnings.warn("lmoments3 is not installed. Please install it")
     KappaGen = None
 
-from xhydro.frequency_analysis.regional import (_moment_l_vector, calc_h_z,
-                                                calculate_rp_from_afr,
-                                                cluster_indices, fit_pca,
-                                                get_group_from_fit)
+from xhydro.frequency_analysis.regional import (
+    _moment_l_vector,
+    calc_h_z,
+    calculate_rp_from_afr,
+    cluster_indices,
+    fit_pca,
+    get_group_from_fit,
+)
 
 
 @pytest.fixture

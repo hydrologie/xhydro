@@ -11,7 +11,9 @@ try:
 
     from xhydro.extreme_value_analysis.julia_import import Extremes, jl
     from xhydro.extreme_value_analysis.structures.conversions import (
-        jl_vector_to_py_list, py_variable_to_jl_variable)
+        jl_vector_to_py_list,
+        py_variable_to_jl_variable,
+    )
     from xhydro.extreme_value_analysis.structures.dataitem import Variable
 except ImportError as e:
     from xhydro.extreme_value_analysis import JULIA_WARNING

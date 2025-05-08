@@ -36,8 +36,9 @@ def update_history(
     str
         The combine history of all inputs starting with `hist_str`.
     """
-    from xhydro import \
-        __version__  # pylint: disable=cyclic-import,import-outside-toplevel
+    from xhydro import (  # pylint: disable=cyclic-import,import-outside-toplevel
+        __version__,
+    )
 
     merged_history = merge_attributes(
         "history",
