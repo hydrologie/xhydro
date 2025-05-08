@@ -209,18 +209,19 @@ def _calc_q_iter_da(
         Quantiles for each bootstrap sample and group.
     """
     # We select groups for all or one id
+    id_dim = da_groups.cf.cf_roles["timeseries_id"][0]
     if bv == "all":
         ds_temp = da_groups.dropna("group_id", how="all")
     else:
-        ds_temp = da_groups.sel(id=bv).dropna("group_id", how="all")
+        ds_temp = da_groups.sel(**{id_dim: bv}).dropna("group_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it
     for group_id in ds_temp.group_id.values:
-        id_list = da_groups.sel(group_id=group_id).dropna("id", how="all").id.values
+        id_list = da_groups.sel(group_id=group_id).dropna(id_dim, how="all").id.values
         # We use moments with ressample previously done, and we create ds_moment_group with iterations
         ds_mom.append(
-            da_moments_iter.sel(id=id_list)
+            da_moments_iter.sel(**{id_dim: id_list})
             .assign_coords(group_id=group_id)
             .expand_dims("group_id")
         )
@@ -247,7 +248,7 @@ def _calc_q_iter_da(
         return (
             qt.rename({"samples": "obs_samples"})
             .stack(samples=["group_id", "obs_samples"])
-            .sel(id=bv)
+            .sel(**{id_dim: bv})
             .to_dataarray()
             .squeeze()
         )
