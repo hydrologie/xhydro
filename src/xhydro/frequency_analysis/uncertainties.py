@@ -255,8 +255,8 @@ def _calc_q_iter_da(
 
 def calc_q_iter(
     bv: str,
-    groups: xr.Dataset,
-    moments_iter: xr.Dataset,
+    groups: xr.DataArray | xr.Dataset,
+    moments_iter: xr.DataArray | xr.Dataset,
     return_periods: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
