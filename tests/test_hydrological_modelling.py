@@ -8,11 +8,8 @@ import pytest
 import xarray as xr
 from xscen.testing import datablock_3d
 
-from xhydro.modelling import (
-    format_input,
-    get_hydrological_model_inputs,
-    hydrological_model,
-)
+from xhydro.modelling import (format_input, get_hydrological_model_inputs,
+                              hydrological_model)
 
 
 class TestHydrologicalModelling:

@@ -69,11 +69,9 @@ from spotpy import analyser
 from spotpy.parameter import Uniform
 
 from xhydro.modelling import hydrological_model
-from xhydro.modelling.obj_funcs import (
-    _get_objfun_minimize_or_maximize,
-    _get_optimizer_minimize_or_maximize,
-    get_objective_function,
-)
+from xhydro.modelling.obj_funcs import (_get_objfun_minimize_or_maximize,
+                                        _get_optimizer_minimize_or_maximize,
+                                        get_objective_function)
 
 __all__ = ["perform_calibration"]
 

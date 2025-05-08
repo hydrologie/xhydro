@@ -14,23 +14,12 @@ try:
     from juliacall import JuliaError
 
     from xhydro.extreme_value_analysis import Extremes, jl
-    from xhydro.extreme_value_analysis.structures.conversions import (
-        py_list_to_jl_vector,
-    )
+    from xhydro.extreme_value_analysis.structures.conversions import \
+        py_list_to_jl_vector
     from xhydro.extreme_value_analysis.structures.util import (
-        DIST_NAMES,
-        METHOD_NAMES,
-        change_sign_param,
-        create_nan_mask,
-        exponentiate_logscale,
-        insert_covariates,
-        jl_variable_fit_parameters,
-        param_cint,
-        recover_nan,
-        remove_nan,
-        return_level_cint,
-        return_nan,
-    )
+        DIST_NAMES, METHOD_NAMES, change_sign_param, create_nan_mask,
+        exponentiate_logscale, insert_covariates, jl_variable_fit_parameters,
+        param_cint, recover_nan, remove_nan, return_level_cint, return_nan)
 except (ImportError, ModuleNotFoundError) as e:
     from xhydro.extreme_value_analysis import JULIA_WARNING
 

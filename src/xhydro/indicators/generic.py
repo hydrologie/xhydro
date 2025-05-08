@@ -5,7 +5,6 @@ import warnings
 import xarray as xr
 import xclim as xc
 from xclim.core.units import rate2amount
-
 # Special imports from xscen
 from xscen import compute_indicators
 from xscen.utils import clean_up

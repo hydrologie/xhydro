@@ -3,10 +3,8 @@
 import numpy as np
 import pytest
 
-from xhydro.modelling.obj_funcs import (
-    _get_objfun_minimize_or_maximize,
-    get_objective_function,
-)
+from xhydro.modelling.obj_funcs import (_get_objfun_minimize_or_maximize,
+                                        get_objective_function)
 
 
 def test_obj_funcs():
