@@ -288,7 +288,7 @@ def calc_q_iter(
     """
     if type(groups) is xr.DataArray and type(moments_iter) is xr.DataArray:
         ds = False
-    elif type(groups) is xr.Dataset and type(moments_iter) is xr.Dataset:
+    elif all(isinstance(input, xr.Dataset) for input in [groups, moments_iter]):
         ds = True
     else:
         raise TypeError(
