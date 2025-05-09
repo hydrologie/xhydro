@@ -714,7 +714,9 @@ def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
     id_dim = ds.cf.cf_roles["timeseries_id"][0]
     ds_groups = xr.concat(
         [
-            ds.sel(**{id_dim: groups[i]}).assign_coords(group_id=i).expand_dims("group_id")
+            ds.sel(**{id_dim: groups[i]})
+            .assign_coords(group_id=i)
+            .expand_dims("group_id")
             for i in range(len(groups))
         ],
         dim="group_id",
