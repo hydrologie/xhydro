@@ -269,7 +269,8 @@ def calc_q_iter(
     Parameters
     ----------
     bv : str
-        The basin identifier or 'all' to proceed on all bv (needed for ungauged).
+        The basin identifier or 'all' to proceed on all basins (needed for ungauged).
+        The associated dimension must have a 'cf_role: timeseries_id' attribute.
     groups : xr.DataArray or xr.Dataset
         The grouped data.
     moments_iter : xr.DataArray or xr.Dataset
