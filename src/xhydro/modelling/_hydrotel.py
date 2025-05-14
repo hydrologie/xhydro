@@ -26,11 +26,11 @@ class Hydrotel(HydrologicalModel):
 
     Parameters
     ----------
-    project_dir : str or os.PathLike
+    project_dir : str or Path
         Path to the project folder.
     project_file : str
         Name of the project file (e.g. 'projet.csv').
-    executable : str or os.PathLike
+    executable : str or Path
         Command to execute Hydrotel.
         On Windows, this should be the path to Hydrotel.exe.
     project_config : dict, optional
