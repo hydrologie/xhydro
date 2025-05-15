@@ -149,9 +149,10 @@ def format_input(  # noqa: C901
 
     Notes
     -----
-    The input dataset should ideally be CF-compliant.
-    This function will attempt to detect the variables based on the standard_name attribute, the cell_methods attribute, or the variable name
-    (AMIP column) taken from https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html.
+    The input dataset should ideally be CF-compliant and follow CMIP6's Controlled Vocabulary, but this function will attempt to detect the
+    variables based on the standard_name attribute, the cell_methods attribute, or the variable name.
+    More information on those attributes can be found here: https://wcrp-cmip.org/cmip-model-and-experiment-documentation/, and specifically
+    the 'CMIP6 MIP table' link provided in the 'Search for variables' section.
 
     Specifically:
 
@@ -174,7 +175,7 @@ def format_input(  # noqa: C901
             - variable name: "pr", "precip", "precipitation"
         - Rainfall:
             - standard_name: "*rainfall*" (e.g. "rainfall_flux", "rainfall_amount")
-            - variable name: "prlp", "prra", "rainfall", "rain", "precipitation_rain"
+            - variable name: "prra", "prlp", "rainfall", "rain", "precipitation_rain"
         - Snowfall:
             - standard_name: "*snowfall*" (e.g. "snowfall_flux", "snowfall_amount")
             - variable name: "prsn", "snowfall", "precipitation_snow"
@@ -219,9 +220,9 @@ def format_input(  # noqa: C901
             "standard_name": ".*precipitation.*",
             "names": ["pr", "precip", "precipitation"],
         },
-        "prlp": {
+        "prra": {
             "standard_name": ".*rainfall.*",
-            "names": ["prlp", "prra", "rainfall", "rain", "precipitation_rain"],
+            "names": ["prra", "prlp", "rainfall", "rain", "precipitation_rain"],
         },
         "prsn": {
             "standard_name": ".*snowfall.*",
@@ -280,14 +281,14 @@ def format_input(  # noqa: C901
         # Precipitation could be either pr or rainfall/snowfall
         if "pr" in ds:
             required_vars.extend(["pr"])
-        if all(v in ds for v in ["prlp", "prsn"]):
-            required_vars.extend(["prlp", "prsn"])
-        if not all(v in ds for v in ["prlp", "prsn"]) and "pr" not in ds:
+        if all(v in ds for v in ["prra", "prsn"]):
+            required_vars.extend(["prra", "prsn"])
+        if not all(v in ds for v in ["prra", "prsn"]) and "pr" not in ds:
             raise ValueError(
-                "The dataset is missing the required variables for Raven: 'pr' or 'prlp/prsn'."
+                "The dataset is missing the required variables for Raven: 'pr' or 'prra/prsn'."
             )
 
-        if all(v in ds for v in ["prlp", "prsn", "pr"]) or all(
+        if all(v in ds for v in ["prra", "prsn", "pr"]) or all(
             v in ds for v in ["tasmax", "tasmin", "tas"]
         ):
             warnings.warn(
@@ -313,7 +314,7 @@ def format_input(  # noqa: C901
         q = xc.core.units.str2pint(u)
         return q.dimensionality.get("[time]", 0) < 0
 
-    for pr in {"pr", "prlp", "prsn"}.intersection(ds.variables):
+    for pr in {"pr", "prra", "prsn"}.intersection(ds.variables):
         if _is_rate(ds[pr].attrs.get("units", "")):
             ds[pr] = xc.units.rate2amount(ds[pr])
         if (
@@ -365,7 +366,7 @@ def format_input(  # noqa: C901
             for var in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
                 missing_by_var[var] = "interpolate"
             # Fill missing values with 0 for precipitation
-            for var in {"pr", "prlp", "prsn"}.intersection(ds.variables):
+            for var in {"pr", "prra", "prsn"}.intersection(ds.variables):
                 missing_by_var[var] = 0
         else:
             missing_by_var = None
@@ -408,6 +409,88 @@ def format_input(  # noqa: C901
         ds = ds.assign_coords({"elevation": ds.elevation})
         ds["elevation"].attrs["standard_name"] = "height"
 
+    # Manage the spatial dimensions
+    # Case 1: Time series with no spatial dimension
+    if set(ds.squeeze().dims) == {"time"}:
+        ds = ds.squeeze()
+        # Add a station dimension
+        ds = ds.expand_dims("station_id").assign_coords(
+            station_id=("station_id", ["0"]),
+        )
+        ds["station_id"].attrs = {"cf_role": "timeseries_id"}
+        for c in ["longitude", "latitude", "elevation"]:
+            if c in ds:
+                ds[c] = ds[c].expand_dims("station_id")
+
+        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
+        ds = ds.transpose("station_id", "time")
+
+    # Case 2: Time series with a station dimension
+    elif (
+        ds.cf.axes.get("X") is None and ds.cf.cf_roles.get("timeseries_id") is not None
+    ) or len(ds.squeeze().dims) == 2:
+        station_d = ds.cf.cf_roles.get("timeseries_id")
+        if station_d is None:
+            station_d = list(set(ds.squeeze().dims).difference({"time"}))
+            warnings.warn(
+                f"The dataset does not contain a dimension with the cf_role 'timeseries_id'. "
+                f"Using '{station_d}' as the station dimension.",
+                UserWarning,
+            )
+        station_d = station_d[0]
+
+        # Format the dataset to have an easier matching with Raven
+        ds = ds.rename({station_d: "station_id"})
+        ds["station_id"] = ds["station_id"].astype(
+            str
+        )  # Raven needs the station dimension to be a string
+        ds["station_id"].attrs["cf_role"] = "timeseries_id"
+
+        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
+        ds = ds.transpose("station_id", "time")
+
+    # Case 3: Time series with a gridded dataset
+    elif (ds.cf.axes.get("X") is not None) or len(ds.squeeze().dims) == 3:
+        x_name = ds.cf.axes.get("X")
+        y_name = ds.cf.axes.get("Y")
+
+        # Try to get the x/y dimensions
+        if any(d is None for d in [x_name, y_name]):
+            if any(d in ds.dims for d in ["lon", "longitude", "x", "rlon"]):
+                x_name = [d for d in ds.dims if d in ["lon", "longitude", "x", "rlon"]]
+                ds[x_name[0]].attrs["axis"] = "X"
+            if any(d in ds.dims for d in ["lat", "latitude", "y", "rlat"]):
+                y_name = [d for d in ds.dims if d in ["lat", "latitude", "y", "rlat"]]
+                ds[y_name[0]].attrs["axis"] = "Y"
+            if x_name is None or y_name is None:
+                raise ValueError(
+                    "The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined."
+                )
+
+        if model == "Hydrotel":
+            # Hydrotel is faster with 1D time series
+            mask = ~ds.pr.isnull().all(dim="time")
+            if xc.core.utils.uses_dask(mask):
+                mask = mask.compute()
+            ds = stack_drop_nans(ds, mask=mask, new_dim="station_id")
+
+            # Add station ID
+            ds = ds.assign_coords(station=("station_id", np.arange(len(ds.station_id))))
+            ds["station_id"].attrs = {
+                "cf_role": "timeseries_id",
+            }
+
+        else:
+            # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
+            # Raven is faster with gridded inputs than with stations
+            ds = ds.transpose(x_name[0], y_name[0], "time")
+
+    else:
+        raise ValueError(
+            "The dataset does not contain a dimension with the cf_role 'timeseries_id' or the axes 'X' and 'Y'. "
+            "Cannot determine the spatial dimensions."
+        )
+
     # Additional data processing specific to Hydrotel
     if model == "Hydrotel":
         # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
@@ -424,30 +507,9 @@ def format_input(  # noqa: C901
             attrs={"units": "days since 1970-01-01 00:00:00"},
         )
 
-        # Hydrotel is faster with 1D time series
-        if (len(ds["latitude"].dims) == 2) or ("latitude" in ds.dims):
-            mask = ~ds.pr.isnull().all(dim="time")
-            if xc.core.utils.uses_dask(mask):
-                mask = mask.compute()
-            ds = stack_drop_nans(ds, mask=mask, new_dim="station")
-
-            # Add station ID
-            ds = ds.assign_coords(station=("station", np.arange(len(ds.station))))
-            ds["station"].attrs = {
-                "long_name": "Station data",
-                "cf_role": "timeseries_id",
-            }
-
-        try:
-            station_dim = ds.cf.cf_roles["timeseries_id"][0]
-        except KeyError:
-            raise ValueError(
-                "The dataset does not contain a dimension with the cf_role 'timeseries_id'. Cannot determine the station dimension."
-            )
-
         cfg = {
             "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
-            "STATION_DIM_NAME": station_dim,
+            "STATION_DIM_NAME": "station_id",
             "LATITUDE_NAME": "latitude",
             "LONGITUDE_NAME": "longitude",
             "ELEVATION_NAME": "elevation",
@@ -468,74 +530,6 @@ def format_input(  # noqa: C901
 
     # Additional data processing specific to Raven
     if model == "Raven":
-        # Case 1: Time series with no spatial dimension
-        if set(ds.squeeze().dims) == {"time"}:
-            ds = ds.squeeze()
-            # Add a station dimension
-            ds = ds.expand_dims("station_id").assign_coords(
-                station_id=("station_id", ["0"]),
-            )
-            ds["station_id"].attrs = {"cf_role": "timeseries_id"}
-            for c in ["longitude", "latitude", "elevation"]:
-                if c in ds:
-                    ds[c] = ds[c].expand_dims("station_id")
-
-        # Case 2: Time series with a station dimension
-        elif (
-            ds.cf.axes.get("X") is None
-            and ds.cf.cf_roles.get("timeseries_id") is not None
-        ) or len(ds.squeeze().dims) == 2:
-            station_d = ds.cf.cf_roles.get("timeseries_id")
-            if station_d is None:
-                station_d = list(set(ds.squeeze().dims).difference({"time"}))
-                warnings.warn(
-                    f"The dataset does not contain a dimension with the cf_role 'timeseries_id'. "
-                    f"Using '{station_d}' as the station dimension."
-                )
-            station_d = station_d[0]
-
-            # Format the dataset to have an easier matching with Raven
-            ds = ds.rename({station_d: "station_id"})
-            ds["station_id"] = ds["station_id"].astype(
-                str
-            )  # Raven needs the station dimension to be a string
-            ds["station_id"].attrs["cf_role"] = "timeseries_id"
-
-            # Reorder dimensions to match Raven's expectations for .rvt (station, t)
-            ds = ds.transpose("station_id", "time")
-
-        # Case 3: Time series with a gridded dataset
-        elif (ds.cf.axes.get("X") is not None) or len(ds.squeeze().dims) == 3:
-            x_name = ds.cf.axes.get("X")
-            y_name = ds.cf.axes.get("Y")
-
-            # Try to get the x/y dimensions
-            if any(d is None for d in [x_name, y_name]):
-                if any(d in ds.dims for d in ["lon", "longitude", "x", "rlon"]):
-                    x_name = [
-                        d for d in ds.dims if d in ["lon", "longitude", "x", "rlon"]
-                    ]
-                    ds[x_name[0]].attrs["axis"] = "X"
-                if any(d in ds.dims for d in ["lat", "latitude", "y", "rlat"]):
-                    y_name = [
-                        d for d in ds.dims if d in ["lat", "latitude", "y", "rlat"]
-                    ]
-                    ds[y_name[0]].attrs["axis"] = "Y"
-                if x_name is None or y_name is None:
-                    raise ValueError(
-                        "The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined."
-                    )
-
-            # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
-            # Raven is faster with gridded inputs than with stations
-            ds = ds.transpose(x_name[0], y_name[0], "time")
-
-        else:
-            raise ValueError(
-                "The dataset does not contain a dimension with the cf_role 'timeseries_id' or the axes 'X' and 'Y'. "
-                "Cannot determine the spatial dimensions."
-            )
-
         # Prepare the configuration for Raven
         # Reference: https://github.com/CSHS-CWRA/RavenPy/blob/master/src/ravenpy/config/conventions.py
         conv = {
@@ -543,7 +537,7 @@ def format_input(  # noqa: C901
             "tasmin": "TEMP_MIN",
             "tas": "TEMP_AVE",
             "pr": "PRECIP",
-            "prlp": "RAINFALL",
+            "prra": "RAINFALL",
             "prsn": "SNOWFALL",
         }
 

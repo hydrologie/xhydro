@@ -13,6 +13,7 @@ from xhydro.modelling import (
     get_hydrological_model_inputs,
     hydrological_model,
 )
+from xhydro.modelling.hydrological_modelling import _detect_variable
 
 
 class TestHydrologicalModelling:
@@ -38,7 +39,7 @@ class TestHydrologicalModelRequirements:
     @pytest.mark.parametrize("model_name", ["Hydrotel", "GR4JCN"])
     def test_get_model_requirements(self, model_name):
         """Test for required inputs for models"""
-        expected_keys = {"Hydrotel": (8, 4), "GR4JCN": (5, 5)}
+        expected_keys = {"Hydrotel": (8, 4), "GR4JCN": (13, 2)}
 
         all_config, _ = get_hydrological_model_inputs(model_name)
         assert len(all_config.keys()) == expected_keys[model_name][0]
@@ -193,7 +194,7 @@ class TestFormatInputs:
         assert Path(tmpdir / "meteo.nc.config").is_file()
 
         assert cfg["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"
-        assert cfg["STATION_DIM_NAME"] == "station"
+        assert cfg["STATION_DIM_NAME"] == "station_id"
         assert cfg["LATITUDE_NAME"] == "latitude"
         assert cfg["LONGITUDE_NAME"] == "longitude"
         assert cfg["ELEVATION_NAME"] == "elevation"
@@ -202,7 +203,7 @@ class TestFormatInputs:
         assert cfg["TMAX_NAME"] == "tasmax"
         assert cfg["PRECIP_NAME"] == "pr"
 
-        assert "station" in ds_out.dims
+        assert "station_id" in ds_out.dims
         assert ("longitude" not in ds_out.dims) and ("longitude" in ds_out.coords)
         if lons == "180":
             np.testing.assert_array_equal(
@@ -210,15 +211,15 @@ class TestFormatInputs:
             )
             assert len(ds_out.station) == len(ds.lon) * len(ds.lat) - 2
             np.testing.assert_array_almost_equal(
-                ds_loaded.isel(station=1).tasmax.values,
+                ds_loaded.isel(station_id=1).tasmax.values,
                 ds.isel(lon=2, lat=0).tasmax.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(station=1).tasmin.values,
+                ds_loaded.isel(station_id=1).tasmin.values,
                 ds.isel(lon=2, lat=0).tasminnn.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(station=1).pr.values,
+                ds_loaded.isel(station_id=1).pr.values,
                 ds.isel(lon=2, lat=0).precip.values * 86400,
             )
         else:
@@ -238,15 +239,15 @@ class TestFormatInputs:
                 ],
             )
             np.testing.assert_array_almost_equal(
-                ds_loaded.isel(station=1).tasmax.values,
+                ds_loaded.isel(station_id=1).tasmax.values,
                 ds.isel(rlon=2, rlat=0).tasmax.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(station=1).tasmin.values,
+                ds_loaded.isel(station_id=1).tasmin.values,
                 ds.isel(rlon=2, rlat=0).tasminnn.values - 273.15,
             )
             np.testing.assert_array_equal(
-                ds_loaded.isel(station=1).pr.values,
+                ds_loaded.isel(station_id=1).pr.values,
                 ds.isel(rlon=2, rlat=0).precip.values * 86400,
             )
         assert ds_out.tasmax.attrs["units"] == "degC"
@@ -272,12 +273,16 @@ class TestFormatInputs:
             match="NaNs will need to be filled manually",
         ):
             ds_out, _ = format_input(ds, "Hydrotel")
-        np.testing.assert_array_equal(ds_out.tasmin.isel(station=1, time=59), np.nan)
-        np.testing.assert_array_equal(ds_out.tasmin.isel(station=1).isnull().sum(), 1)
+        np.testing.assert_array_equal(ds_out.tasmin.isel(station_id=1, time=59), np.nan)
+        np.testing.assert_array_equal(
+            ds_out.tasmin.isel(station_id=1).isnull().sum(), 1
+        )
 
         ds_out2, _ = format_input(ds, "Hydrotel", convert_calendar_missing=999)
-        np.testing.assert_array_equal(ds_out2.tasmin.isel(station=1, time=59), 999)
-        np.testing.assert_array_equal(ds_out2.tasmin.isel(station=1).isnull().sum(), 0)
+        np.testing.assert_array_equal(ds_out2.tasmin.isel(station_id=1, time=59), 999)
+        np.testing.assert_array_equal(
+            ds_out2.tasmin.isel(station_id=1).isnull().sum(), 0
+        )
 
         ds_out3, _ = format_input(
             ds,
@@ -285,17 +290,19 @@ class TestFormatInputs:
             convert_calendar_missing={"tasmin": "interpolate", "tasmax": 999, "pr": 0},
         )
         np.testing.assert_array_equal(
-            ds_out3.tasmin.isel(station=1, time=59),
+            ds_out3.tasmin.isel(station_id=1, time=59),
             np.mean(
                 [
-                    ds_out3.tasmin.isel(station=1, time=58),
-                    ds_out3.tasmin.isel(station=1, time=60),
+                    ds_out3.tasmin.isel(station_id=1, time=58),
+                    ds_out3.tasmin.isel(station_id=1, time=60),
                 ]
             ),
         )
-        np.testing.assert_array_equal(ds_out3.tasmax.isel(station=1, time=59), 999)
-        np.testing.assert_array_equal(ds_out3.pr.isel(station=1, time=59), 0)
-        np.testing.assert_array_equal(ds_out3.tasmin.isel(station=1).isnull().sum(), 0)
+        np.testing.assert_array_equal(ds_out3.tasmax.isel(station_id=1, time=59), 999)
+        np.testing.assert_array_equal(ds_out3.pr.isel(station_id=1, time=59), 0)
+        np.testing.assert_array_equal(
+            ds_out3.tasmin.isel(station_id=1).isnull().sum(), 0
+        )
 
         assert format_input(
             ds,
@@ -412,8 +419,8 @@ class TestFormatInputs:
             }
         )
 
-        with pytest.raises(
-            ValueError,
+        with pytest.warns(
+            UserWarning,
             match="The dataset does not contain a dimension with t",
         ):
             format_input(ds, "HBVEC")
@@ -434,6 +441,65 @@ class TestFormatInputs:
             var in ds_out2 for var in ["time", "tasmax", "tasmin", "pr", "elevation"]
         )
         assert "station" not in ds_out2.dims
+
+    def test_missing_lon(self):
+        ds = self.ds_bad.copy()
+        ds = ds.stack({"station": ("lon", "lat")})
+        ds = ds.drop_vars(["lon", "lat"]).reset_coords()
+        ds = ds.assign_coords(
+            {
+                "station": np.arange(len(ds.station)),
+            }
+        )
+        ds["station"].attrs["cf_role"] = "timeseries_id"
+
+        with pytest.raises(
+            ValueError,
+            match="The dataset is missing the following required ",
+        ):
+            format_input(ds, "HBVEC")
+
+        ds = ds.isel(station=0)
+        with pytest.warns(
+            UserWarning,
+            match="The dataset is missing one or many of:",
+        ):
+            format_input(ds, "HBVEC")
+
+    def test_spatial_no_attrs(self):
+        ds = self.ds_bad.copy()
+        ds["lon"].attrs = {}
+        ds["lat"].attrs = {}
+
+        out, _ = format_input(ds, "HBVEC")
+        np.testing.assert_array_equal(ds["lon"], out["longitude"])
+        np.testing.assert_array_equal(ds["lat"], out["latitude"])
+
+    def test_unrecog_1dspatial(self):
+        ds = self.ds_bad.copy()
+        ds = ds.stack({"station": ("lon", "lat")})
+        ds = ds.drop_vars(["lon", "lat"]).reset_coords()
+        ds = ds.assign_coords(
+            {
+                "station": np.arange(len(ds.station)),
+                "lon": xr.DataArray(np.arange(len(ds.station)), dims="station"),
+                "lat": xr.DataArray(np.arange(len(ds.station)), dims="station"),
+            }
+        )
+        ds = ds.expand_dims({"foo": np.arange(10)})
+
+        with pytest.raises(
+            ValueError,
+            match="The dataset appears to be gridded, but the",
+        ):
+            format_input(ds, "HBVEC")
+
+        ds = ds.expand_dims({"bar": np.arange(10)})
+        with pytest.raises(
+            ValueError,
+            match="The dataset does not contain a dimension with the cf_role",
+        ):
+            format_input(ds, "HBVEC")
 
     @pytest.mark.parametrize("prlp", ["prlp", "thickness_of_rainfall_amount"])
     def test_raven_variable(self, prlp):
@@ -534,6 +600,13 @@ class TestFormatInputs:
         }
 
         if prlp == "thickness_of_rainfall_amount":
+            with pytest.raises(
+                ValueError,
+                match="The dataset is missing the required variables for Raven",
+            ):
+                ds_just_snow = ds.drop_vars(["precip_lp", "precip"])
+                format_input(ds_just_snow, "HBVEC")
+
             with pytest.warns(
                 UserWarning,
                 match="The dataset contains multiple variables",
@@ -552,7 +625,7 @@ class TestFormatInputs:
                 "pr",
                 "elevation",
                 "prsn",
-                "prlp" if prlp == "thickness_of_rainfall_amount" else "precip_lp",
+                "prra" if prlp == "thickness_of_rainfall_amount" else "precip_lp",
             ]
         )
         if prlp == "thickness_of_rainfall_amount":
@@ -595,3 +668,31 @@ class TestFormatInputs:
             NotImplementedError, match="The model 'BadModel' is not recognized."
         ):
             _ = format_input(ds, "BadModel")
+
+    def test_detect_others(self):
+        ds = self.ds_bad_rotated.copy()
+        assert (
+            _detect_variable(
+                ds, attributes={"standard_name": ".*precipitation.*"}, names=["pr"]
+            )
+            == ""
+        )
+
+        ds["precip"].attrs["standard_name"] = "precipitation_amount"
+        assert (
+            _detect_variable(
+                ds, attributes={"standard_name": ".*precipitation.*"}, names=["pr"]
+            )
+            == "precip"
+        )
+
+        ds = ds.rename({"tasminnn": "pr"})
+        with pytest.raises(
+            ValueError,
+            match="Multiple variables found",
+        ):
+            _detect_variable(
+                ds,
+                attributes={"standard_name": ".*precipitation.*"},
+                names=["pr"],
+            )
