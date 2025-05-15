@@ -52,7 +52,7 @@ class RavenpyModel(HydrologicalModel):
         - HRU_ID: The ID of the HRU (required for gridded data, optional for station data).
         If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs. Unless the input is the
         path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
-    meteo_file : os.PathLike, optional
+    meteo_file : str | Path, optional
         Path to the file containing the observed meteorological data. Only optional if the project files already exist.
         Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain the following coordinates:
         - elevation: The elevation of the station / grid cell, in meters.
@@ -93,7 +93,7 @@ class RavenpyModel(HydrologicalModel):
             | None
         ) = None,
         hru: gpd.GeoDataFrame | os.PathLike | None = None,
-        meteo_file: os.PathLike | None = None,
+        meteo_file: os.PathLike | str | None = None,
         data_type: list[str] | None = None,
         start_date: dt.datetime | str | None = None,
         end_date: dt.datetime | str | None = None,
@@ -173,7 +173,7 @@ class RavenpyModel(HydrologicalModel):
             - HRU_ID: The ID of the HRU (required for gridded data, optional for station data).
             If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs. Unless the input
             is the path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
-        meteo_file : os.PathLike
+        meteo_file : str | Path
             Path to the file containing the observed meteorological data.
             Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain the following coordinates:
             - elevation: The elevation of the station / grid cell, in meters.

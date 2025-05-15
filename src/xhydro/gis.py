@@ -78,7 +78,7 @@ def watershed_delineation(
             "The `map` argument is deprecated and will be removed in a future version. Use `m` instead.",
             FutureWarning,
         )
-        if m is not None:
+        if m is None:
             m = map
 
     # level 12 HydroBASINS polygons dataset url (North America only at the moment)
@@ -171,7 +171,7 @@ def watershed_properties(
     projected_crs : int | str
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
         If a string is provided, it should be a valid Geodetic CRS for the `gpd.estimate_utm_crs()` method.
-        If None, the function will use the `gpd.estimate_utm_crs()` default (WGS 84 UTM zone).
+        If None, the function will use the `gpd.estimate_utm_crs()` default (WGS 84).
         Default is an estimated CRS based on NAD83.
     output_format : str
         One of either `xarray` (or `xr.Dataset`) or `geopandas` (or `gpd.GeoDataFrame`).
@@ -181,7 +181,7 @@ def watershed_properties(
     gpd.GeoDataFrame or xr.Dataset
         Output dataset containing the watershed properties.
     """
-    if projected_crs is None:
+    if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
             "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
@@ -237,6 +237,7 @@ def watershed_properties(
                 "area (m2)": "area",
                 "perimeter (m)": "perimeter",
                 "gravelius (m/m)": "gravelius",
+                "estimated_area_diff (%)": "estimated_area_diff",
             }
         )
 
@@ -260,6 +261,10 @@ def watershed_properties(
             "units": "degrees_north",
             "standard_name": "latitude",
             "long_name": "Latitude of the centroid of the watershed",
+        }
+        output_dataset["estimated_area_diff"].attrs = {
+            "units": "%",
+            "long_name": "Estimated difference between the calculated area and the original source",
         }
 
         return output_dataset
@@ -397,7 +402,7 @@ def surface_properties(
     projected_crs : int | str
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
         If a string is provided, it should be a valid Geodetic CRS for the `gpd.estimate_utm_crs()` method.
-        If None, the function will use the `gpd.estimate_utm_crs()` default (WGS 84 UTM zone).
+        If None, the function will use the `gpd.estimate_utm_crs()` default (WGS 84).
         Default is an estimated CRS based on NAD83.
     operation : str
         Aggregation statistics such as `mean` or `sum`.
@@ -417,7 +422,7 @@ def surface_properties(
     --------
     This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
-    if projected_crs is None:
+    if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
             "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
@@ -772,7 +777,7 @@ def land_use_plot(
 
 
 def watershed_to_raven_hru(
-    watershed: gpd.GeoDataFrame | os.PathLike | tuple,
+    watershed: gpd.GeoDataFrame | tuple | str | os.PathLike,
     *,
     unique_id: str | None = None,
     projected_crs: int | str | None = "NAD83",
@@ -782,13 +787,14 @@ def watershed_to_raven_hru(
 
     Parameters
     ----------
-    watershed : gpd.GeoDataFrame | os.PathLike | tuple
+    watershed : gpd.GeoDataFrame | tuple | str | Path
         The input, which is either:
         - A gpd.GeoDataFrame containing watershed polygons with a defined .crs attribute.
         - The path to such a gpd.GeoDataFrame.
         - Coordinates (longitude, latitude) for the location from where watershed delineation will be conducted.
     unique_id : str, optional
         The column name in the GeoDataFrame that serves as a unique identifier.
+        Ignored if the input is a coordinate tuple.
     projected_crs : int | str
         The projected coordinate reference system (crs) to utilize for calculations, such as determining watershed area.
         If a string is provided, it should be a valid Geodetic CRS for the `gpd.estimate_utm_crs()` method.
@@ -812,12 +818,14 @@ def watershed_to_raven_hru(
     Furthermore, still for gridded meteorological data, RavenPy requires a shapefile with a valid geometry. Until a method
     is implemented to convert the geometry to something valid in xarray, the function will only return GeoDataFrames.
     """
-    if isinstance(watershed, os.PathLike):
+    if isinstance(watershed, str | os.PathLike):
         watershed = gpd.read_file(watershed)
-    elif isinstance(watershed, list | tuple):
-        unique_id = (
-            "HYBAS_ID" if unique_id is None else unique_id
-        )  # We know that the unique_id will be HYBAS_ID
+    elif isinstance(watershed, tuple):
+        if unique_id is not None and unique_id != "HYBAS_ID":
+            warnings.warn(
+                "The unique_id argument is ignored when using coordinates to delineate a watershed."
+            )
+        unique_id = "HYBAS_ID"  # We know that the unique_id will be HYBAS_ID
         watershed = watershed_delineation(coordinates=watershed)
 
     if len(watershed) != 1:
@@ -825,7 +833,7 @@ def watershed_to_raven_hru(
             "The input must be a single watershed or a single coordinate to delineate."
         )
 
-    # TODO: Explore the possibility of using cf_xarray.geometry.encode/decode_geometry to add a 'output_format' argument
+    # TODO: Explore the possibility of using cf_xarray.geometry.encode/decode_geometry to allow for a 'output_format' argument
     wprops = watershed_properties(
         watershed, unique_id=unique_id, projected_crs=projected_crs
     )
