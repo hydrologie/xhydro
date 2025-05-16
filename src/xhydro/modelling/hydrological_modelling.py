@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 import xclim as xc
+from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 from xscen.utils import change_units, clean_up, stack_drop_nans
 
 from ._hydrotel import Hydrotel
@@ -342,18 +343,6 @@ def format_input(  # noqa: C901
         ds, variables_and_units
     )  # FIXME: Until xscen>=0.13, run twice to ensure all variables have the exact units requested
 
-    # Ensure that longitude is in the range [-180, 180]
-    # This tries guessing if lons are wrapped around at 180+ but without much information, this might not be true
-    if "longitude" in ds:
-        if np.min(ds["longitude"]) >= -180 and np.max(ds["longitude"]) <= 180:
-            pass
-        elif np.min(ds["longitude"]) >= 0 and np.max(ds["longitude"]) <= 360:
-            warnings.warn(
-                "Longitude values appear to be in the range [0, 360]. They will be converted to [-180, 180]."
-            )
-            with xr.set_options(keep_attrs=True):
-                ds["longitude"] = ds["longitude"] - 180
-
     # Convert calendar
     if convert_calendar_missing is not False:
         var_no_time = [v for v in ds.data_vars if "time" not in ds[v].dims]
@@ -408,6 +397,10 @@ def format_input(  # noqa: C901
     if ds.cf.coordinates.get("vertical") is None and "elevation" in ds:
         ds = ds.assign_coords({"elevation": ds.elevation})
         ds["elevation"].attrs["standard_name"] = "height"
+
+    # Ensure that longitude is in the range [-180, 180]
+    if "longitude" in ds:
+        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
 
     # Manage the spatial dimensions
     # Case 1: Time series with no spatial dimension

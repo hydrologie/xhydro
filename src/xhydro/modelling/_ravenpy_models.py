@@ -199,6 +199,7 @@ class RavenpyModel(HydrologicalModel):
             This has not been tested for multiple stations or gridded data.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
+            Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
         \*\*kwargs : dict, optional
             Additional parameters to pass to the RavenPy emulator, to modify the default modules used by a given hydrological model.
             Typical entries include RainSnowFraction or Evaporation.
@@ -209,12 +210,17 @@ class RavenpyModel(HydrologicalModel):
                 "RavenPy is not installed. Please install it to use this class."
             )
 
-        # Remove any existing .rv* files in the project directory
+        # Remove any existing files in the project directory
         if Path.is_file(self.workdir / f"{self.run_name}.rvt"):
-            if not overwrite:
+            if overwrite:
+                for file in self.workdir.rglob(f"{self.run_name}*.*"):
+                    file.unlink()
+            else:
                 raise FileExistsError(
                     f"Project {self.run_name} in {self.workdir} already exists, but 'overwrite' is set to False."
                 )
+
+        global_parameter = global_parameter or {}
 
         # Get the meteorological data type
         meteo_file = Path(meteo_file)
@@ -228,7 +234,7 @@ class RavenpyModel(HydrologicalModel):
 
                 # Other required properties
                 station_len = (
-                    len(ds.cf.cf_roles["timeseries_id"])
+                    len(ds[ds.cf.cf_roles["timeseries_id"][0]])
                     if ds.cf.cf_roles.get("timeseries_id") is not None
                     else 1
                 )
@@ -266,7 +272,7 @@ class RavenpyModel(HydrologicalModel):
                         "SubId": [hru.get("SubId", 1)],
                         "DowSubId": [hru.get("DowSubId", -1)],
                     },
-                    geometry=hru["geometry"],
+                    geometry=[hru["geometry"]],
                     crs=hru["crs"],
                 )
                 hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
@@ -404,8 +410,18 @@ class RavenpyModel(HydrologicalModel):
         """
         # TODO: Compare the tagged version of the files with the raven-hydro version
         # TODO: Allow running the model through the command line
+        # FIXME: overwrite is currently not working as intended in RavenPy. Remove this once it is fixed.
+        if overwrite is False and Path.is_file(
+            self.workdir / "output" / f"{self.run_name}_Hydrographs.nc"
+        ):
+            raise FileExistsError(
+                f"Output files already exist in {self.workdir / 'output'}. Use 'overwrite=True' to overwrite them."
+            )
+
         run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
 
+        # TODO: Actually reformat the output files
+        # TODO: Add metadata to the output files (e.g. the version of Raven used, the emulator used, etc.)
         return self.get_streamflow()
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
