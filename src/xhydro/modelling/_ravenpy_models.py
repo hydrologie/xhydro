@@ -54,7 +54,9 @@ class RavenpyModel(HydrologicalModel):
         path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
     meteo_file : str | Path, optional
         Path to the file containing the observed meteorological data. Only optional if the project files already exist.
-        Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain the following coordinates:
+        The meteorological data can be either station or gridded data. Use the 'xhydro.modelling.format_input' function to ensure the data
+        is in the correct format. Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain
+        the following coordinates:
         - elevation: The elevation of the station / grid cell, in meters.
         - latitude: The latitude of the station / grid cell centroid.
         - longitude: The longitude of the station / grid cell centroid.
@@ -174,8 +176,10 @@ class RavenpyModel(HydrologicalModel):
             If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs. Unless the input
             is the path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
         meteo_file : str | Path
-            Path to the file containing the observed meteorological data.
-            Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain the following coordinates:
+            Path to the file containing the observed meteorological data. Only optional if the project files already exist.
+            The meteorological data can be either station or gridded data. Use the 'xhydro.modelling.format_input' function to ensure the data
+            is in the correct format. Unless the input is a single station accompanied by 'meteo_station_properties', the file should contain
+            the following coordinates:
             - elevation: The elevation of the station / grid cell, in meters.
             - latitude: The latitude of the station / grid cell centroid.
             - longitude: The longitude of the station / grid cell centroid.
