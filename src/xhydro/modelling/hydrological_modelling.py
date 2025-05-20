@@ -398,10 +398,6 @@ def format_input(  # noqa: C901
         ds = ds.assign_coords({"elevation": ds.elevation})
         ds["elevation"].attrs["standard_name"] = "height"
 
-    # Ensure that longitude is in the range [-180, 180]
-    if "longitude" in ds:
-        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
-
     # Manage the spatial dimensions
     # Case 1: Time series with no spatial dimension
     if set(ds.squeeze().dims) == {"time"}:
@@ -519,8 +515,6 @@ def format_input(  # noqa: C901
                     f.write(f"{k}; {v}\n")
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
-        return ds, cfg
-
     # Additional data processing specific to Raven
     if model == "Raven":
         # Prepare the configuration for Raven
@@ -543,7 +537,11 @@ def format_input(  # noqa: C901
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
             cfg["meteo_file"] = str(Path(save_as).with_suffix(".nc"))
 
-        return ds, cfg
+    # Ensure that longitude is in the range [-180, 180]
+    if "longitude" in ds:
+        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
+
+    return ds, cfg
 
 
 def _detect_variable(
