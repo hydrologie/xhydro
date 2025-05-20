@@ -72,7 +72,7 @@ def test_calc_moments_iter():
     assert len(result.samples) == n_samples
 
 
-def test_calc_q_iter():
+def test_calc_q_iter_ds():
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
         variable="streamflow",
@@ -282,7 +282,6 @@ def test_calc_q_iter():
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
     result = calc_q_iter(
         "S1",
-        "streamflow",
         ds_groups,
         ds_moments_iter,
         return_periods=[100, 1000],
@@ -293,6 +292,229 @@ def test_calc_q_iter():
     np.testing.assert_almost_equal(
         260.68926104,
         result.streamflow.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
+    )
+
+
+def test_calc_q_iter_da():
+    ds = timeseries(
+        np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
+        variable="streamflow",
+        start="2001-01-01",
+        freq="YS",
+        as_dataset=True,
+    )
+
+    n_samples = 1000
+    bo = (
+        bootstrap_obs(ds, n_samples=n_samples, seed=42)
+        .assign_coords(id="S1")
+        .expand_dims("id")
+    )
+    ds_moments_iter = calc_moments_iter(bo)
+    time = pd.date_range("2020-01-01", periods=54)
+    data = np.array(
+        [
+            [
+                np.array(
+                    [
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        190.0,
+                        82.3,
+                        84.0,
+                        81.0,
+                        92.2,
+                        81.9,
+                        65.7,
+                        86.4,
+                        115.0,
+                        64.3,
+                        53.8,
+                        65.0,
+                        69.7,
+                        95.67,
+                        91.2,
+                        96.42,
+                        68.79,
+                        93.95,
+                        93.35,
+                        125.1,
+                        51.88,
+                        75.86,
+                        114.9,
+                        143.7,
+                        74.74,
+                        121.2,
+                        157.4,
+                        87.05,
+                        112.5,
+                        182.7,
+                        150.1,
+                        137.0,
+                        159.3,
+                        89.38,
+                        71.53,
+                        99.27,
+                        62.36,
+                        68.75,
+                        100.3,
+                        139.9,
+                        112.0,
+                        102.5,
+                        69.8,
+                        68.45,
+                        105.4,
+                    ]
+                ),
+                np.array(
+                    [
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        52.52,
+                        47.39,
+                        49.46,
+                        33.54,
+                        31.47,
+                        38.14,
+                        28.91,
+                        29.95,
+                        50.08,
+                        54.95,
+                        39.66,
+                        38.66,
+                        22.52,
+                        41.65,
+                        30.85,
+                    ]
+                ),
+                np.array(
+                    [
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        np.nan,
+                        353.0,
+                        246.0,
+                        166.0,
+                        213.0,
+                        427.0,
+                        100.0,
+                        140.0,
+                        234.0,
+                        171.0,
+                        307.2,
+                        317.1,
+                        266.5,
+                        141.6,
+                        np.nan,
+                        316.0,
+                        197.1,
+                        87.83,
+                        140.1,
+                        221.6,
+                        157.3,
+                        136.1,
+                        262.4,
+                        247.3,
+                        153.2,
+                        216.2,
+                        332.3,
+                        260.2,
+                        177.1,
+                        244.2,
+                        223.8,
+                        132.2,
+                        163.1,
+                        121.5,
+                        180.3,
+                        181.5,
+                        231.6,
+                        208.2,
+                        204.7,
+                        111.8,
+                        133.8,
+                        186.1,
+                    ]
+                ),
+            ]
+        ]
+    )
+    ds_groups = xr.Dataset(
+        {"streamflow": (("group_id", "id", "time"), data)},
+        coords={"time": time, "id": ["S1", "B", "C"], "group_id": ["G1"]},
+    )
+    ds_groups["id"].attrs["cf_role"] = "timeseries_id"
+    ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
+    ds_moments_iter = xr.concat(
+        [ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id"
+    )
+    ds_moments_iter["id"] = ["S1", "B", "C"]
+    ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
+    result = calc_q_iter(
+        "S1",
+        ds_groups.streamflow,
+        ds_moments_iter.streamflow,
+        return_periods=[100, 1000],
+        small_regions_threshold=1,
+    )
+    assert "obs_samples" in result.coords
+    assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
+    np.testing.assert_almost_equal(
+        260.68926104,
+        result.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
     )
 
 

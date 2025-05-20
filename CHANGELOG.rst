@@ -4,11 +4,12 @@ Changelog
 
 v0.6.0 (Unreleased)
 -------------------
-Contributors to this version: Louise Arnal (:user:`lou-a`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
+* Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
 * New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
 * The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:pull:`303`).
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
