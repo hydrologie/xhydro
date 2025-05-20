@@ -702,6 +702,7 @@ def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
     ----------
     ds : xr.Dataset
         The input dataset to be grouped.
+        The associated dimension must have a 'cf_role: timeseries_id' attribute.
     groups : list
         A list of groups to be used for grouping the dataset.
 
@@ -710,9 +711,12 @@ def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
     xr.Dataset
         A new dataset with the grouped data.
     """
+    id_dim = ds.cf.cf_roles["timeseries_id"][0]
     ds_groups = xr.concat(
         [
-            ds.sel(id=groups[i]).assign_coords(group_id=i).expand_dims("group_id")
+            ds.sel(**{id_dim: groups[i]})
+            .assign_coords(group_id=i)
+            .expand_dims("group_id")
             for i in range(len(groups))
         ],
         dim="group_id",
