@@ -4,11 +4,27 @@ Changelog
 
 v0.6.0 (Unreleased)
 -------------------
-Contributors to this version: Louise Arnal (:user:`lou-a`).
+Contributors to this version: Louise Arnal (:user:`lou-a`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
+* New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
+* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:pull:`303`).
+* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
+* The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
+
+Bug fixes
+^^^^^^^^^
+* A warning will now appear if the calculated area in `xh.gis.watershed_properties` differs from the theoretical area from HydroBASINS. (:pull:`303`).
+* Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The `map` argument in `xh.gis.watershed_delineation` has been renamed to `m` to avoid confusion with the built-in function. (:pull:`303`).
+* The default CRS in `xh.gis.watershed_properties` and `surface_properties` has been changed to a call to `geopandas.estimate_utm_crs` instead of an hardcoded value. (:pull:`303`).
+* The `RavenpyModel` class has abandoned the `longitude`, `latitude`, `drainage_area` and `elevation` arguments in favor of a `hru` argument. (:pull:`303`).
+* The `RavenpyModel` class has abandoned the explicit `evaporation` and `rain_snow_fraction`, but they can still be passed as kwargs. (:pull:`303`).
 
 v0.5.0 (2025-04-24)
 -------------------
