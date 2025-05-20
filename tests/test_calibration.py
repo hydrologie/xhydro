@@ -93,24 +93,25 @@ class TestRavenpyModelCalibration:
     alt_names_meteo = {"TEMP_MIN": "tmin", "TEMP_MAX": "tmax", "PRECIP": "pr"}
     alt_names_flow = "qobs"
 
+    hru = {"area": 100, "elevation": 250.5, "latitude": 46.0, "longitude": -80.75}
+
     model_config = {
         "meteo_file": meteo_file,
-        "drainage_area": np.array([100.0]),
-        "elevation": np.array([250.5]),
-        "latitude": np.array([46.0]),
-        "longitude": np.array([-80.75]),
+        "hru": hru,
         "start_date": start_date,
         "end_date": end_date,
         "data_type": data_type,
         "alt_names_meteo": alt_names_meteo,
+        "RainSnowFraction": "RAINSNOW_DINGMAN",
+        "Evaporation": "PET_PRIESTLEY_TAYLOR",
     }
 
     # Station properties. Using the same as for the catchment, but could be different.
     meteo_station_properties = {
         "ALL": {
-            "elevation": model_config["elevation"],
-            "latitude": model_config["latitude"],
-            "longitude": model_config["longitude"],
+            "elevation": 250.5,
+            "latitude": 46.0,
+            "longitude": -80.75,
         }
     }
 

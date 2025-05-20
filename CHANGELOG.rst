@@ -11,13 +11,14 @@ New features and enhancements
 * Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
 * Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
 * New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
-* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:pull:`303`).
+* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`).
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
 
 Bug fixes
 ^^^^^^^^^
 * A warning will now appear if the calculated area in `xh.gis.watershed_properties` differs from the theoretical area from HydroBASINS. (:pull:`303`).
+* If returning a GeoDataFrame in `xh.gis.watershed_properties`, column names have been changed to include the units. (:issue:`266`, :pull:`303`).
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
 
 Breaking changes
