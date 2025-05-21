@@ -126,7 +126,7 @@ class RavenpyModel(HydrologicalModel):
                 logger.info("Project already exists, but will be overwritten.")
 
             # Create the project files
-            self.write_rv(
+            self.create_rv(
                 model_name=model_name,
                 meteo_file=meteo_file,
                 start_date=start_date,
@@ -141,7 +141,7 @@ class RavenpyModel(HydrologicalModel):
                 **kwargs,
             )
 
-    def write_rv(  # noqa: C901
+    def create_rv(  # noqa: C901
         self,
         model_name: Literal[
             "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"
@@ -215,7 +215,7 @@ class RavenpyModel(HydrologicalModel):
             )
 
         # Remove any existing files in the project directory
-        if Path.is_file(self.workdir / f"{self.run_name}.rvt"):
+        if len([f for f in self.workdir.rglob(f"{self.run_name}.rv*")]) > 0:
             if overwrite:
                 for file in self.workdir.rglob(f"{self.run_name}*.*"):
                     file.unlink()
