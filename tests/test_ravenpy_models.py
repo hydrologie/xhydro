@@ -140,8 +140,8 @@ class TestRavenpyModels:
         config2 = model_config.copy()
         config2.pop("workdir")
         with pytest.raises(FileExistsError):
-            rpm.write_rv(**config2)
-        rpm.write_rv(overwrite=True, **config2)
+            rpm.create_rv(**config2)
+        rpm.create_rv(overwrite=True, **config2)
 
         # Through RavenpyModel, both should work
         RavenpyModel(**model_config, overwrite=True).run(overwrite=True)

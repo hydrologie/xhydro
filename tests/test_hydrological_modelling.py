@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
+from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 from xscen.testing import datablock_3d
 
 from xhydro.modelling import (
@@ -61,11 +62,11 @@ class TestFormatInputs:
         ),
         "tasmax",
         "lon",
-        10,
+        -80,
         "lat",
-        15,
-        30,
-        30,
+        45,
+        1,
+        1,
         start="2000-01-01",
         as_dataset=True,
     )
@@ -75,11 +76,11 @@ class TestFormatInputs:
         ),
         "tasmin",
         "lon",
-        10,
+        -80,
         "lat",
-        15,
-        30,
-        30,
+        45,
+        1,
+        1,
         start="2000-01-01",
     )
     ds_bad["precip"] = datablock_3d(
@@ -94,11 +95,11 @@ class TestFormatInputs:
         ),
         "pr",
         "lon",
-        10,
+        -80,
         "lat",
-        15,
-        30,
-        30,
+        45,
+        1,
+        1,
         start="2000-01-01",
     )
     ds_bad["precip"].attrs = {"units": "kg m-2 s-1"}
@@ -123,8 +124,8 @@ class TestFormatInputs:
         10,
         "rlat",
         15,
-        30,
-        30,
+        1,
+        1,
         start="2000-01-01",
         as_dataset=True,
     )
@@ -138,8 +139,8 @@ class TestFormatInputs:
         10,
         "rlat",
         15,
-        30,
-        30,
+        1,
+        1,
         start="2000-01-01",
     )
 
@@ -158,8 +159,8 @@ class TestFormatInputs:
         10,
         "rlat",
         15,
-        30,
-        30,
+        1,
+        1,
         start="2000-01-01",
     )
 
@@ -179,8 +180,7 @@ class TestFormatInputs:
     def test_hydrotel(self, tmpdir, lons, ds):
         ds = ds.copy()
         if lons == "360":
-            with xr.set_options(keep_attrs=True):
-                ds["lon"] = ds["lon"] + 180
+            ds = cf_convert_between_lon_frames(ds, (0, 360))[0]
 
         ds_out, cfg = format_input(ds, "Hydrotel", save_as=tmpdir / "meteo.nc")
 
@@ -207,9 +207,9 @@ class TestFormatInputs:
         assert ("longitude" not in ds_out.dims) and ("longitude" in ds_out.coords)
         if lons == "180":
             np.testing.assert_array_equal(
-                ds_out.longitude, np.tile([40, 70, 100, 130, 160], 2)
+                ds_out.longitude, np.tile([-79, -78, -77, -76, -75], 2)
             )
-            assert len(ds_out.station) == len(ds.lon) * len(ds.lat) - 2
+            assert len(ds_out.station_id) == len(ds.lon) * len(ds.lat) - 2
             np.testing.assert_array_almost_equal(
                 ds_loaded.isel(station_id=1).tasmax.values,
                 ds.isel(lon=2, lat=0).tasmax.values - 273.15,
@@ -226,16 +226,16 @@ class TestFormatInputs:
             np.testing.assert_array_almost_equal(
                 ds_out.longitude,
                 [
-                    -33.464092,
-                    -9.042494,
-                    10.730389,
-                    32.514941,
-                    60.663006,
-                    11.873653,
-                    21.311321,
-                    33.950654,
-                    49.820166,
-                    69.003495,
+                    -74.71661004,
+                    -72.83004516,
+                    -70.97570143,
+                    -69.15479027,
+                    -67.36827842,
+                    -74.10266786,
+                    -72.17349777,
+                    -70.27934532,
+                    -68.42143668,
+                    -66.60072406,
                 ],
             )
             np.testing.assert_array_almost_equal(
@@ -333,8 +333,7 @@ class TestFormatInputs:
         ds = ds.copy()
 
         if lons == "360":
-            with xr.set_options(keep_attrs=True):
-                ds["lon"] = ds["lon"] + 180
+            ds = cf_convert_between_lon_frames(ds, (0, 360))[0]
 
             # Change temperature to tmean
             ds = ds.rename({"tasmax": "tmean"})
@@ -366,13 +365,13 @@ class TestFormatInputs:
             assert ("longitude" not in ds_out.dims) and ("longitude" in ds_out.coords)
             assert ("latitude" not in ds_out.dims) and ("latitude" in ds_out.coords)
             np.testing.assert_array_equal(
-                ds_out.rlon, np.tile([10, 40, 70, 100, 130, 160], 1)
+                ds_out.rlon, np.tile([10, 11, 12, 13, 14, 15], 1)
             )
         else:
             assert ("longitude" in ds_out.dims) and ("longitude" in ds_out.coords)
             assert ("latitude" in ds_out.dims) and ("latitude" in ds_out.coords)
             np.testing.assert_array_equal(
-                ds_out.longitude, np.tile([10, 40, 70, 100, 130, 160], 1)
+                ds_out.longitude, np.tile([-80, -79, -78, -77, -76, -75], 1)
             )
 
         if lons == "180":

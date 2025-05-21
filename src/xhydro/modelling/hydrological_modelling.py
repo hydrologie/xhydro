@@ -11,6 +11,7 @@ import numpy as np
 import xarray as xr
 import xclim as xc
 from clisops.utils.dataset_utils import cf_convert_between_lon_frames
+from xscen.spatial import get_grid_mapping
 from xscen.utils import change_units, clean_up, stack_drop_nans
 
 from ._hydrotel import Hydrotel
@@ -464,10 +465,24 @@ def format_input(  # noqa: C901
             ds = stack_drop_nans(ds, mask=mask, new_dim="station_id")
 
             # Add station ID
-            ds = ds.assign_coords(station=("station_id", np.arange(len(ds.station_id))))
+            ds = ds.assign_coords(
+                station_id=("station_id", np.arange(len(ds.station_id)))
+            )
             ds["station_id"].attrs = {
                 "cf_role": "timeseries_id",
             }
+
+            # Remove gridmapping information
+            gridmap = get_grid_mapping(ds)
+            if len(gridmap) > 0:
+                ds = ds.drop_vars(gridmap)
+                for v in ds.data_vars:
+                    if ds[v].attrs.get("grid_mapping") is not None:
+                        ds[v].attrs.pop("grid_mapping")
+            if x_name[0] != "longitude":
+                ds = ds.drop_vars(x_name)
+            if y_name[0] != "latitude":
+                ds = ds.drop_vars(y_name)
 
         else:
             # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
@@ -479,6 +494,10 @@ def format_input(  # noqa: C901
             "The dataset does not contain a dimension with the cf_role 'timeseries_id' or the axes 'X' and 'Y'. "
             "Cannot determine the spatial dimensions."
         )
+
+    # Ensure that longitude is in the range [-180, 180]
+    if "longitude" in ds:
+        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
 
     # Additional data processing specific to Hydrotel
     if model == "Hydrotel":
@@ -516,7 +535,7 @@ def format_input(  # noqa: C901
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
     # Additional data processing specific to Raven
-    if model == "Raven":
+    else:
         # Prepare the configuration for Raven
         # Reference: https://github.com/CSHS-CWRA/RavenPy/blob/master/src/ravenpy/config/conventions.py
         conv = {
@@ -536,10 +555,6 @@ def format_input(  # noqa: C901
             Path(save_as).parent.mkdir(parents=True, exist_ok=True)
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
             cfg["meteo_file"] = str(Path(save_as).with_suffix(".nc"))
-
-    # Ensure that longitude is in the range [-180, 180]
-    if "longitude" in ds:
-        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
 
     return ds, cfg
 

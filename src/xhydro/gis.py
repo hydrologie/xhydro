@@ -237,7 +237,6 @@ def watershed_properties(
                 "area (m2)": "area",
                 "perimeter (m)": "perimeter",
                 "gravelius (m/m)": "gravelius",
-                "estimated_area_diff (%)": "estimated_area_diff",
             }
         )
 
@@ -262,10 +261,14 @@ def watershed_properties(
             "standard_name": "latitude",
             "long_name": "Latitude of the centroid of the watershed",
         }
-        output_dataset["estimated_area_diff"].attrs = {
-            "units": "%",
-            "long_name": "Estimated difference between the calculated area and the original source",
-        }
+        if "estimated_area_diff (%)" in output_dataset:
+            output_dataset = output_dataset.rename(
+                {"estimated_area_diff (%)": "estimated_area_diff"}
+            )
+            output_dataset["estimated_area_diff"].attrs = {
+                "units": "%",
+                "long_name": "Estimated difference between the calculated area and the original source",
+            }
 
         return output_dataset
 
