@@ -118,11 +118,12 @@ class RavenpyModel(HydrologicalModel):
             self.workdir = Path(workdir)
             self.workdir.mkdir(parents=True, exist_ok=True)
 
-        if Path.is_file(self.workdir / f"{self.run_name}.rvt") and not overwrite:
+        files = [f for f in self.workdir.rglob(f"{self.run_name}.rv*")]
+        if len(files) > 0 and not overwrite:
             logger.info("Project already exists and files will not be overwritten.")
             return
         else:
-            if Path.is_file(self.workdir / f"{self.run_name}.rvt"):
+            if len(files) > 0:
                 logger.info("Project already exists, but will be overwritten.")
 
             # Create the project files
