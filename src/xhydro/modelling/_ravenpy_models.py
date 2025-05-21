@@ -263,6 +263,7 @@ class RavenpyModel(HydrologicalModel):
             hru_file = hru
             hru = gpd.read_file(hru)
 
+        # FIXME: Replace this with ravenpy.extractors.BasinMakerExtractor
         if meteo_type == "grid":
             if isinstance(hru, dict):
                 # If the meteo type is grid, we need to convert it to a GeoDataFrame and save it as a shapefile
