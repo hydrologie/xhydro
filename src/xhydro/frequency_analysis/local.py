@@ -144,7 +144,12 @@ def parametric_quantiles(
             dist_obj = xclim.indices.stats.get_dist(d)
             shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
             dist_params = shape_params + ["loc", "scale"]
-            da = p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
+            da = (
+                p[v]
+                .sel(scipy_dist=[d], dparams=dist_params)
+                .squeeze("scipy_dist")
+                .transpose("dparams", ...)
+            )
             da.attrs["scipy_dist"] = d
             qt = (
                 xclim.indices.stats.parametric_quantile(da, q=q)
@@ -229,7 +234,10 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
             dist_params = shape_params + ["loc", "scale"]
             da = ds[v].transpose("time", ...)
             params = (
-                p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
+                p[v]
+                .sel(scipy_dist=[d], dparams=dist_params)
+                .squeeze("scipy_dist")
+                .transpose("dparams", ...)
             )
 
             if len(da.dims) == 1:
