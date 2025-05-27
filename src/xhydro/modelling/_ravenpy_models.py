@@ -19,20 +19,11 @@ try:
     from ravenpy.config.commands import GridWeights
     from ravenpy.extractors import GridWeightExtractor
     from ravenpy.ravenpy import run
-except ImportError as e:
+
+    ravenpy_err_msg = None
+except (ImportError, RuntimeError) as e:
     run = None
-except RuntimeError as e:
-    if "Could not find raven binary" in str(e):
-        # This is raised when RavenPy is installed, but the Raven executable is not found
-        # (e.g., if the environment variable RAVENPY_RAVEN_BINARY_PATH is not set because the environment is not activated).
-        warnings.warn(
-            "RavenPy is installed, but the Raven executable is not found. This may be due to the environment not being activated. "
-            f"Original error: {e}",
-            UserWarning,
-        )
-        run = None
-    else:
-        raise e
+    ravenpy_err_msg = e
 
 from ._hm import HydrologicalModel
 
@@ -225,6 +216,7 @@ class RavenpyModel(HydrologicalModel):
         if run is None:
             raise RuntimeError(
                 "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
+                f" Original error: {ravenpy_err_msg}"
             )
 
         # Remove any existing files in the project directory
