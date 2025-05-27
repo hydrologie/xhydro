@@ -19,8 +19,11 @@ try:
     from ravenpy.config.commands import GridWeights
     from ravenpy.extractors import GridWeightExtractor
     from ravenpy.ravenpy import run
-except ImportError as e:
+
+    ravenpy_err_msg = None
+except (ImportError, RuntimeError) as e:
     run = None
+    ravenpy_err_msg = e
 
 from ._hm import HydrologicalModel
 
@@ -211,8 +214,9 @@ class RavenpyModel(HydrologicalModel):
             See https://raven.uwaterloo.ca/Downloads.html for the latest Raven documentation. Currently, model templates are listed in Appendix F.
         """
         if run is None:
-            raise ImportError(
-                "RavenPy is not installed. Please install it to use this class."
+            raise RuntimeError(
+                "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
+                f" Original error: {ravenpy_err_msg}"
             )
 
         # Remove any existing files in the project directory
