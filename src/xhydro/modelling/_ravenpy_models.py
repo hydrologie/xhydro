@@ -21,6 +21,18 @@ try:
     from ravenpy.ravenpy import run
 except ImportError as e:
     run = None
+except RuntimeError as e:
+    if "Could not find raven binary" in str(e):
+        # This is raised when RavenPy is installed, but the Raven executable is not found
+        # (e.g., if the environment variable RAVENPY_RAVEN_BINARY_PATH is not set because the environment is not activated).
+        warnings.warn(
+            "RavenPy is installed, but the Raven executable is not found. This may be due to the environment not being activated. "
+            f"Original error: {e}",
+            UserWarning,
+        )
+        run = None
+    else:
+        raise e
 
 from ._hm import HydrologicalModel
 
@@ -211,8 +223,8 @@ class RavenpyModel(HydrologicalModel):
             See https://raven.uwaterloo.ca/Downloads.html for the latest Raven documentation. Currently, model templates are listed in Appendix F.
         """
         if run is None:
-            raise ImportError(
-                "RavenPy is not installed. Please install it to use this class."
+            raise RuntimeError(
+                "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
             )
 
         # Remove any existing files in the project directory
