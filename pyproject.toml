@@ -73,7 +73,7 @@ dev = [
   "flake8 >=7.1.1",
   "flake8-rst-docstrings >=0.3.0",
   "flit >=3.10.1,<4.0",
-  "isort ==6.0.0",
+  "isort ==6.0.1",
   "mypy >=1.14.1",
   "numpydoc >=1.8.0",
   "packaging >=23.0",
