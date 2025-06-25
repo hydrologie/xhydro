@@ -4,7 +4,7 @@ Changelog
 
 v0.6.0 (Unreleased)
 -------------------
-Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -14,6 +14,7 @@ New features and enhancements
 * The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`).
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
+* The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:pull:`315`).
 
 Bug fixes
 ^^^^^^^^^
