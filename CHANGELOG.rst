@@ -14,14 +14,14 @@ New features and enhancements
 * The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`).
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
-* The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:pull:`315`).
+* The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
 
 Bug fixes
 ^^^^^^^^^
 * A warning will now appear if the calculated area in `xh.gis.watershed_properties` differs from the theoretical area from HydroBASINS. (:pull:`303`).
 * If returning a GeoDataFrame in `xh.gis.watershed_properties`, column names have been changed to include the units. (:issue:`266`, :pull:`303`).
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
-* Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
+* Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`292`, :pull:`306`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
