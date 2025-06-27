@@ -154,14 +154,16 @@ def parametric_quantiles(
             qt = (
                 xclim.indices.stats.parametric_quantile(da, q=q)
                 .rename({"quantile": "return_period"})
-                .assign_coords(scipy_dist=d, return_period=t)
+                .assign_coords(scipy_dist=d, return_period=return_period)
                 .expand_dims("scipy_dist")
             )
             quantiles.append(qt)
         quantiles = xr.concat(quantiles, dim="scipy_dist")
 
         # Add the quantile as a new coordinate
-        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": t})
+        da_q = xr.DataArray(
+            q, dims="return_period", coords={"return_period": return_period}
+        )
         da_q.attrs["long_name"] = (
             "Probability of exceedance"
             if mode == "max"
