@@ -518,11 +518,11 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     return new_ds
 
 
-def calculate_rp_from_afr(
+def calculate_return_period_from_afr(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     *,
-    rp: np.array,
+    return_period: np.array,
     l1: xr.DataArray | None = None,
 ) -> xr.DataArray:
     """
@@ -534,7 +534,7 @@ def calculate_rp_from_afr(
         Dataset containing grouped flow data.
     ds_moments_groups : xr.Dataset
         Dataset containing L-moments for grouped data.
-    rp : array-like
+    return_period : array-like
         Return periods to calculate.
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
@@ -555,7 +555,7 @@ def calculate_rp_from_afr(
     if l1 is None:
         station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
         l1 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
-    ds = _calculate_ic_from_afr(ds_groups, ds_moments_groups, rp) * l1
+    ds = _calculate_ic_from_afr(ds_groups, ds_moments_groups, return_period) * l1
     for v in ds.var():
         ds[v].attrs["long_name"] = "Return period"
         ds[v].attrs[
@@ -567,7 +567,7 @@ def calculate_rp_from_afr(
 
 
 def _calculate_ic_from_afr(
-    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset, rp: list
+    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset, return_period: list
 ) -> xr.Dataset:
 
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
@@ -585,7 +585,9 @@ def _calculate_ic_from_afr(
     xi = lambda_r_1 + (alpha * (term - 1)) / kappa
 
     # Calculating wanted return periods
-    t = xr.DataArray(data=rp, dims="return_period").assign_coords(return_period=rp)
+    t = xr.DataArray(data=return_period, dims="return_period").assign_coords(
+        return_period=rp
+    )
 
     # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
     q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** kappa) / kappa
