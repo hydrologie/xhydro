@@ -586,7 +586,7 @@ def _calculate_ic_from_afr(
 
     # Calculating wanted return periods
     t = xr.DataArray(data=return_period, dims="return_period").assign_coords(
-        return_period=rp
+        return_period=return_period
     )
 
     # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
