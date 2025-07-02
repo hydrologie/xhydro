@@ -284,7 +284,7 @@ def test_calc_q_iter_ds():
         "S1",
         ds_groups,
         ds_moments_iter,
-        return_periods=[100, 1000],
+        return_period=[100, 1000],
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
@@ -507,7 +507,7 @@ def test_calc_q_iter_da():
         "S1",
         ds_groups.streamflow,
         ds_moments_iter.streamflow,
-        return_periods=[100, 1000],
+        return_period=[100, 1000],
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
