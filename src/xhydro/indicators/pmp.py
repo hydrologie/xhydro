@@ -199,8 +199,9 @@ def precipitable_water_100y(
     *,
     dist: str,
     method: str,
-    mf: float = 0.2,
-    rebuild_time: bool = True,
+    mf: float | None,
+    n: int | None,
+    rebuild_time: bool | None,
 ):
     """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
 
@@ -216,6 +217,9 @@ def precipitable_water_100y(
     mf : float
         Maximum majoration factor of the 100-year event compared to the maximum of the timeseries.
         Used as an upper limit for the frequency analysis.
+    n : int
+        Minimum number of data points for each month required to fit the statistical distribution.
+        If a given month contains fewer data points than this value, `pw100` is set to the maximum value of `pw` for that month.
     rebuild_time : bool
         Whether or not to reconstruct a timeseries with the same time dimensions as `pw`.
 
@@ -237,8 +241,15 @@ def precipitable_water_100y(
     params = fit(pw_m, dist=dist, method=method)
     pw100_m = parametric_quantile(params, q=1 - 1 / 100).squeeze()
 
+    count = pw_m.count(dim="time")
+    # Set PW100 to max when data count is less than n
+    if n is not None:
+        cond = count < n
+        pw100_m = xr.where(cond, pw_m.max(dim="time"), pw100_m)
+
     # Add a limit to PW100 to limit maximization factors.
-    pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
+    if mf is not None:
+        pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
     if rebuild_time:
         hour = np.unique(pw.time.dt.hour)
@@ -275,6 +286,26 @@ def precipitable_water_100y(
             pw100_m.reindex_like(pw)
             .ffill(dim="time")
             .drop_vars(["month", "year", "stacked_coords"])
+        )
+
+        # Set NaN for NaN months in pw100_m when NaN rebuild_time=True
+        def _mask_pw100_by_zero_count(pw_v, count_v, time_months):
+            # Get zero-count months
+            zero_months = (
+                np.where(count_v == 0)[0] + 1
+            )  # assuming month index is 0-based
+            return np.where(np.isin(time_months, zero_months), np.nan, pw_v)
+
+        pw100_m = xr.apply_ufunc(
+            _mask_pw100_by_zero_count,
+            pw100_m.chunk(dict(time=-1)),
+            count,
+            pw100_m["time"].dt.month,
+            input_core_dims=[["time"], ["month"], ["time"]],
+            output_core_dims=[["time"]],
+            vectorize=True,
+            dask="parallelized",
+            output_dtypes=[pw100_m.dtype],
         )
 
     pw100_m.name = "precipitable_water_monthly_100y"
