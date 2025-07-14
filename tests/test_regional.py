@@ -16,7 +16,7 @@ except ImportError:
 from xhydro.frequency_analysis.regional import (
     _moment_l_vector,
     calc_h_z,
-    calculate_rp_from_afr,
+    calculate_return_period_from_afr,
     cluster_indices,
     fit_pca,
     get_group_from_fit,
@@ -388,9 +388,11 @@ class TestRegionalFrequencyAnalysisKappa:
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
 
-    def test_calculate_rp_from_afr(self, sample_ds_groups, sample_ds_moments_groups):
-        result = calculate_rp_from_afr(
-            sample_ds_groups, sample_ds_moments_groups, rp=[100, 1000, 10000]
+    def test_calculate_return_period_from_afr(
+        self, sample_ds_groups, sample_ds_moments_groups
+    ):
+        result = calculate_return_period_from_afr(
+            sample_ds_groups, sample_ds_moments_groups, return_period=[100, 1000, 10000]
         )
         np.testing.assert_almost_equal(
             197.83515837, result.Qp.sel(return_period=100, id="A")
@@ -399,12 +401,15 @@ class TestRegionalFrequencyAnalysisKappa:
             98.87950615, result.Qp.sel(return_period=1000, id="B")
         )
 
-    def test_calculate_rp_from_afr_with_l1(
+    def test_calculate_return_period_from_afr_with_l1(
         self, sample_ds_groups, sample_ds_moments_groups
     ):
         l1 = sample_ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all") * 1.1
-        result = calculate_rp_from_afr(
-            sample_ds_groups, sample_ds_moments_groups, rp=[100, 1000, 10000], l1=l1
+        result = calculate_return_period_from_afr(
+            sample_ds_groups,
+            sample_ds_moments_groups,
+            return_period=[100, 1000, 10000],
+            l1=l1,
         )
         np.testing.assert_almost_equal(
             217.618674207, result.Qp.sel(return_period=100, id="A")
