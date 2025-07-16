@@ -132,6 +132,7 @@ def get_objective_function(
         "rrmse": _rrmse,
         "rsr": _rsr,
         "volume_error": _volume_error,
+        #test
     }
 
     # If we got a dataset, change to np.array
