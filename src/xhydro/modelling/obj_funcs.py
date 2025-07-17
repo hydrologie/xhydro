@@ -79,7 +79,7 @@ def get_objective_function(
         - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
         - "rsr" : Ratio of RMSE to standard deviation.
         - "volume_error": Total volume error over the period.
-
+        - "volumetric_efficiency" : Fraction of volume delivered at the proper time
         The default is 'rmse'.
     take_negative : bool
         Used to force the objective function to be multiplied by minus one (-1)
@@ -133,7 +133,7 @@ def get_objective_function(
         "rrmse": _rrmse,
         "rsr": _rsr,
         "volume_error": _volume_error,
-        #test
+        "volumetric_efficiency" : _volumetric_efficiency
     }
 
     # If we got a dataset, change to np.array
@@ -236,6 +236,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "kge_mod",
         "nse",
         "r2",
+        "volumetric_efficiency"
     ]:
         maximize = True
 
@@ -838,7 +839,6 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 """
 ADD OBJECTIVE FUNCTIONS HERE
 """
-
 
 def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """Volumetric efficiency
