@@ -79,6 +79,7 @@ def get_objective_function(
         - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
         - "rsr" : Ratio of RMSE to standard deviation.
         - "volume_error": Total volume error over the period.
+
         The default is 'rmse'.
     take_negative : bool
         Used to force the objective function to be multiplied by minus one (-1)
@@ -837,3 +838,30 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 """
 ADD OBJECTIVE FUNCTIONS HERE
 """
+
+
+def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Volumetric efficiency
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        Volumetric efficiency (VE) ranges from -inf to 1 and
+        Represents the fraction of water delivered at the proper time.
+        For values= 0 : Simulation error equals total observed flow
+        For negative values : Simulation error exceeds observed volume.
+        Ref: Criss, R. E., & Winston, W. E. (2008). Do Nash values have value? Discussion and alternate proposals. Hydrological Processes, 22(14), 2723-2725. http://dx.doi.org/10.1002/hyp.7072.
+
+        It is important to multiply by the duration of the time-step to obtain actual volumes.
+    Notes
+    -----
+    The Volumetric efficiency should be MAXIMIZED
+    """
+    return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
