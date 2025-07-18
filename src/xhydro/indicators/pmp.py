@@ -13,7 +13,10 @@ from xscen.utils import unstack_dates
 
 
 def major_precipitation_events(
-    da: xr.DataArray, *, windows: list[int], quantile: float = 0.9
+    da: xr.DataArray,
+    *,
+    windows: list[int],
+    quantile: float | None = None,
 ):
     """
     Get precipitation events that exceed a given quantile for a given time step accumulation. Based on Clavet-Gaumont et al. (2017).
@@ -24,8 +27,9 @@ def major_precipitation_events(
         DataArray containing the precipitation values.
     windows : list of int
         List of the number of time steps to accumulate precipitation.
-    quantile : float
-        Threshold that limits the events to those that exceed this quantile. Defaults to 0.9.
+    quantile : float, optional
+        Threshold that limits the events to those that exceed this quantile.
+        If `quantile` is None, the function returns all the accumulated values.
 
     Returns
     -------
@@ -36,7 +40,7 @@ def major_precipitation_events(
     -----
     https://doi.org/10.1016/j.ejrh.2017.07.003
     """
-    da_exp = xr.concat(
+    events = xr.concat(
         [
             da.rolling({"time": window}, center=False)
             .sum(keep_attrs=True)
@@ -46,18 +50,19 @@ def major_precipitation_events(
         dim="window",
     )
 
-    events = (
-        da_exp.chunk(dict(time=-1))
-        .groupby("time.year")
-        .map(_keep_highest_values, quantile=quantile)
-    )
+    if quantile is not None:
+        events = (
+            events.chunk(dict(time=-1))
+            .groupby("time.year")
+            .map(_keep_highest_values, quantile=quantile)
+        )
+        events.attrs["long_name"] = "Major precipitation events"
+        events.attrs["description"] = (
+            f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
+        )
 
     # Add attributes
-    events.name = "rainfall_events"
-    events.attrs["long_name"] = "Major precipitation events"
-    events.attrs["description"] = (
-        f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
-    )
+    events.name = "precipitation_events"
 
     return events
 
@@ -199,9 +204,9 @@ def precipitable_water_100y(
     *,
     dist: str,
     method: str,
-    mf: float | None,
-    n: int | None,
-    rebuild_time: bool | None,
+    mf: float | None = None,
+    n: int | None = None,
+    rebuild_time: bool | None = None,
 ):
     """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
 
