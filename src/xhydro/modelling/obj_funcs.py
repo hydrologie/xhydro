@@ -74,6 +74,7 @@ def get_objective_function(
         - "mse" : Mean Square Error metric
         - "nse": Nash-Sutcliffe Efficiency metric
         - "pbias" : Percent bias (relative bias)
+        - "Persistence_index" : Measure of the relative magnitude of the residual variance to the variance of the errors
         - "r2" : r-squared, i.e. square of correlation_coeff.
         - "rmse" : Root Mean Square Error
         - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
@@ -128,6 +129,7 @@ def get_objective_function(
         "mse": _mse,
         "nse": _nse,
         "pbias": _pbias,
+        "persistence_index": _persistence_index,
         "r2": _r2,
         "rmse": _rmse,
         "rrmse": _rrmse,
@@ -235,6 +237,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "kge",
         "kge_mod",
         "nse",
+        "persistence_index",
         "r2",
         "volumetric_efficiency"
     ]:
@@ -839,6 +842,46 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 """
 ADD OBJECTIVE FUNCTIONS HERE
 """
+
+
+def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Persistence index or persistence model efficiency
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+        obtained by the use of a simple persistence model that assumes “tomorrow's flow will be the same as today's”;
+        the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+
+        Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models: comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143. http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+
+    Notes
+    -----
+    The Persistence index should be MAXIMIZED
+    """
+    if len(qobs) < 2:
+        raise ValueError("At least 2 timesteps are needed to compute persistence index.")
+
+    # Remove any rows with NaNs
+    valid = ~np.isnan(qsim) & ~np.isnan(qobs)
+    qsim = qsim[valid]
+    qobs = qobs[valid]
+
+    # Align arrays: ignore the first time step
+    qsim = qsim[1:]
+    qobs_now = qobs[1:]
+    qobs_prev = qobs[:-1]
+
+    return 1 - np.sum((qsim - qobs_now) ** 2) / np.sum((qobs_prev - qobs_now) ** 2)
+
 
 def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """Volumetric efficiency
