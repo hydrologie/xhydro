@@ -70,7 +70,8 @@ def get_objective_function(
         - "kge" : Kling Gupta Efficiency metric (2009 version)
         - "kge_inv" : Kling-Gupta efficiency metric inversed for low-flows (2009 version adapted in 2017).
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
-        - "kge_2021" Kling-Gupta Efficiency (2021 version)
+        - "kge_2021" : Kling-Gupta Efficiency (2021 version)
+        - "LCE" : Least-squares combined efficiency
         - "mae": Mean Absolute Error metric
         - "mare": Mean Absolute Relative Error metric
         - "mse" : Mean Square Error metric
@@ -128,6 +129,7 @@ def get_objective_function(
         "kge_inv": _kge_inv,
         "kge_mod": _kge_mod,
         "kge_2021" : _kge_2021,
+        "LCE" : _LCE,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
@@ -242,6 +244,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "kge_inv"
         "kge_mod",
         "kge_2021",
+        "LCE",
         "nse",
         "persistence_index",
         "r2",
@@ -927,6 +930,42 @@ def _kge_inv(qsim: np.ndarray, qobs: np.ndarray) -> float:
     kge_inv = 1 - np.sqrt((r - 1) ** 2 + (a - 1) ** 2 + (b - 1) ** 2)
 
     return kge_inv
+
+
+def _LCE(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """ Least-squares combined efficiency
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The least-squares combined efficiency.
+        It produces values from -inf to 1 (best case).
+        ref : Lee, J. S., & Choi, H. I. (2022). A rebalanced performance criterion for hydrological model calibration. Journal of Hydrology, 606, 127372. https://doi.org/10.1016/j.jhydrol.2021.127372
+    Notes
+    -----
+    The LCE should be MAXIMIZED.
+    """
+    # These pop up a lot, precalculate
+    qsim_mean = np.mean(qsim)
+    qobs_mean = np.mean(qobs)
+
+    # Calc LCE components
+    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
+    r = r_num / r_den
+    b = np.mean(qsim) / np.mean(qobs)
+    a = np.std(qsim) / np.std(qobs)
+
+    # Calc the LCE metric
+    LCE = 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
+
+    return LCE
 
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
