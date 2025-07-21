@@ -69,6 +69,7 @@ def get_objective_function(
         - "correlation_coeff": Correlation coefficient
         - "kge" : Kling Gupta Efficiency metric (2009 version)
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+        - "kge_2021" Kling-Gupta Efficiency (2021 version)
         - "mae": Mean Absolute Error metric
         - "mare": Mean Absolute Relative Error metric
         - "mse" : Mean Square Error metric
@@ -124,6 +125,7 @@ def get_objective_function(
         "correlation_coeff": _correlation_coeff,
         "kge": _kge,
         "kge_mod": _kge_mod,
+        "kge_2021" : _kge_2021,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
@@ -236,6 +238,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "correlation_coeff",
         "kge",
         "kge_mod",
+        "kge_2021",
         "nse",
         "persistence_index",
         "r2",
@@ -908,3 +911,40 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     The Volumetric efficiency should be MAXIMIZED
     """
     return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
+
+
+def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Kling-Gupta efficiency metric version of Tang et al. (2021)
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The modified Kling-Gupta Efficiency (KGE) modified metric of 2021: KGE".
+        It can take values from -inf to 1 (best case).
+        ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
+    Notes
+    -----
+    The kge_2021 should be MAXIMIZED.
+    """
+
+    # These pop up a lot, precalculate
+    qsim_mean = np.mean(qsim)
+    qobs_mean = np.mean(qobs)
+
+    # Calc KGE" components
+    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
+    r = r_num / r_den
+    a = np.std(qsim) / np.std(qobs)
+    b_n = (np.mean(qsim) - np.mean(qobs)) / np.std(qobs)
+
+    # Calc the KGE" metric
+    kge_2021 = 1 - np.sqrt((a - 1) ** 2 + (b_n) ** 2 + (r - 1) ** 2)
+
+    return kge_2021
