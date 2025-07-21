@@ -68,6 +68,7 @@ def get_objective_function(
         - "bias" : Bias metric
         - "correlation_coeff": Correlation coefficient
         - "kge" : Kling Gupta Efficiency metric (2009 version)
+        - "kge_inv" : Kling-Gupta efficiency metric inversed for low-flows (2009 version adapted in 2017).
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
         - "kge_2021" Kling-Gupta Efficiency (2021 version)
         - "mae": Mean Absolute Error metric
@@ -124,6 +125,7 @@ def get_objective_function(
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
         "kge": _kge,
+        "kge_inv": _kge_inv,
         "kge_mod": _kge_mod,
         "kge_2021" : _kge_2021,
         "mae": _mae,
@@ -237,6 +239,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "agreement_index",
         "correlation_coeff",
         "kge",
+        "kge_inv"
         "kge_mod",
         "kge_2021",
         "nse",
@@ -846,6 +849,85 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 ADD OBJECTIVE FUNCTIONS HERE
 """
 
+def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Kling-Gupta efficiency metric version of Tang et al. (2021)
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The modified Kling-Gupta Efficiency (KGE) modified metric of 2021: KGE".
+        It can take values from -inf to 1 (best case).
+        ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
+    Notes
+    -----
+    The kge_2021 should be MAXIMIZED.
+    """
+
+    # These pop up a lot, precalculate
+    qsim_mean = np.mean(qsim)
+    qobs_mean = np.mean(qobs)
+
+    # Calc KGE" components
+    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
+    r = r_num / r_den
+    a = np.std(qsim) / np.std(qobs)
+    b_n = (np.mean(qsim) - np.mean(qobs)) / np.std(qobs)
+
+    # Calc the KGE" metric
+    kge_2021 = 1 - np.sqrt((a - 1) ** 2 + (b_n) ** 2 + (r - 1) ** 2)
+
+    return kge_2021
+
+
+def _kge_inv(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Kling-Gupta efficiency metric inversed for low-flows (2009 version adapted in 2017).
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The Kling-Gupta Efficiency (KGE) metric of 2009, ajusted to KGE(1/Q), which puts more weight on low flow
+        It can take values from -inf to 1 (best case).
+        Ref: Perrin, C., Oudin, L., Andréassian, V., Rojas-Serna, C., Braud, I., & Vaquez, J. (2017). Which objective function for calibrating rainfall–runoff models for low-flow simulations? Hydrological Sciences Journal, 62(14), 2369–2381. https://doi.org/10.1080/02626667.2017.1308511
+
+    Notes
+    -----
+    The KGE should be MAXIMIZED.
+    """
+    eps = 0.01 * np.mean(qobs)
+    # small number to avoid division by zero
+    qsim_inv = 1.0 / (qsim + eps)
+    qobs_inv = 1.0 / (qobs + eps)
+
+    # This pops up a lot, precalculate.
+    qsim_mean = np.mean(qsim_inv)
+    qobs_mean = np.mean(qobs_inv)
+
+    # Calculate the components of KGE
+    r_num = np.sum((qsim_inv - qsim_mean) * (qobs_inv - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim_inv - qsim_mean) ** 2) * np.sum((qobs_inv - qobs_mean) ** 2))
+    r = r_num / r_den
+    a = np.std(qsim_inv) / np.std(qobs_inv)
+    b = np.sum(qsim_inv) / np.sum(qobs_inv)
+
+    # Calculate the KGE
+    kge_inv = 1 - np.sqrt((r - 1) ** 2 + (a - 1) ** 2 + (b - 1) ** 2)
+
+    return kge_inv
+
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """Persistence index or persistence model efficiency
@@ -912,39 +994,3 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
 
-
-def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """Kling-Gupta efficiency metric version of Tang et al. (2021)
-    Parameters
-    ----------
-    qsim : array_like
-        Simulated streamflow vector.
-    qobs : array_like
-        Observed streamflow vector.
-
-    Returns
-    -------
-    float
-        The modified Kling-Gupta Efficiency (KGE) modified metric of 2021: KGE".
-        It can take values from -inf to 1 (best case).
-        ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
-    Notes
-    -----
-    The kge_2021 should be MAXIMIZED.
-    """
-
-    # These pop up a lot, precalculate
-    qsim_mean = np.mean(qsim)
-    qobs_mean = np.mean(qobs)
-
-    # Calc KGE" components
-    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
-    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
-    r = r_num / r_den
-    a = np.std(qsim) / np.std(qobs)
-    b_n = (np.mean(qsim) - np.mean(qobs)) / np.std(qobs)
-
-    # Calc the KGE" metric
-    kge_2021 = 1 - np.sqrt((a - 1) ** 2 + (b_n) ** 2 + (r - 1) ** 2)
-
-    return kge_2021
