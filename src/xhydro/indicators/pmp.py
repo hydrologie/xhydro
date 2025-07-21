@@ -707,3 +707,87 @@ def spatial_average_storm_configurations(da, *, radius):
         confi_ds.attrs["units"] = da.attrs["units"]
 
     return confi_ds
+
+
+def pw_snowfall(
+    pw: xr.DataArray,
+    method: str,
+    snow_events: xr.DataArray,
+    snw_threshold: float,
+    rainfall_events: xr.DataArray | None = None,
+    rf_threshold: float | None = None,
+    prec_events: xr.DataArray | None = None,
+):
+    """
+    Estimate precipitable water associated with snowfall events using various filtering methods, based on Klein et al. (2017).
+
+    Parameters
+    ----------
+    pw : xr.DataArray
+        DataArray containing the precipitable water.
+    method : {"m1", "m2", "m3"}
+        Method used to identify snowfall-associated precipitable water:
+        - m1:Selects time steps with at least `snw_threshold` snowfall and less than or equal to `rf_threshold` rainfall.
+        - m1:Selects time steps with snowfall greater than `snw_threshold`, regardless of rainfall.
+        - m3:Starts from m2 selection, but if rainfall exceeds `rf_threshold`, the precipitable water is scaled by
+        the ratio of snowfall to total precipitation (`snow_events / prec_events`).
+    snow_events : xr.DataArray
+        DataArray containing snowfall event amounts.
+    snw_threshold :  float
+        Minimum snowfall threshold used to filter events.
+    rainfall_events : xr.DataArray, optional
+        Required for methods "m1" and "m3". DataArray containing rainfall event amounts.
+    rf_threshold : float, optional
+        Required for methods "m1" and "m3".
+        - For "m1": maximum rainfall allowed.
+        - For "m3": minimum rainfall required for scaling.
+    prec_events : xr.DataArray, optional
+        Required for method "m3". DataArray containing total precipitation used to compute the snowfall ratio.
+
+    Returns
+    -------
+    xr.DataArray
+        DataArray containing filtered precipitable water values corresponding to snowfall events.
+
+    Notes
+    -----
+    https://doi.org/10.1016/j.jhydrol.2016.03.031
+    """
+    warnings.warn(
+        "This function does not support different threshold values for different time windows.",
+        UserWarning,
+    )
+
+    if method not in ["m1", "m2", "m3"]:
+        raise ValueError(f"Invalid method '{method}'. Choose from ['m1', 'm2', 'm3'].")
+
+    if snow_events is None or snw_threshold is None:
+        raise ValueError("Both 'snow_events' and 'snw_threshold' must be provided.")
+
+    if method in ["m1", "m3"] and (rainfall_events is None or rf_threshold is None):
+        raise ValueError(
+            f"'rainfall_events' and 'rf_threshold' are required for method '{method}'."
+        )
+
+    if method == "m3" and prec_events is None:
+        raise ValueError("'prec_events' is required for method 'm3'.")
+
+    if method == "m1":
+        pw_snowfall_m1 = pw.where(
+            (rainfall_events < rf_threshold) & (snow_events > snw_threshold)
+        )
+        pw_snowfall_m1.name = "precipitable_water_m1"
+        return pw_snowfall_m1
+
+    pw_snowfall_m2 = pw.where(snow_events > snw_threshold)
+    if method == "m2":
+        pw_snowfall_m2.name = "precipitable_water_m2"
+        return pw_snowfall_m2
+
+    where_m3 = (snow_events > snw_threshold) & (rainfall_events > rf_threshold)
+    ratio_snowfall = snow_events / prec_events
+
+    pw_snowfall_m3 = xr.where(where_m3, pw_snowfall_m2 * ratio_snowfall, pw_snowfall_m2)
+
+    pw_snowfall_m3.name = "precipitable_water_m3"
+    return pw_snowfall_m3
