@@ -210,11 +210,11 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
 
         llf = np.nansum(dist.logpdf(da, *params), axis=0)  # log-likelihood
         nobs = np.sum(np.isfinite(da), axis=0)
-        df_modelwc = len(p)
+        df_modelwc = params.shape[0]
         dof_eff = nobs - df_modelwc - 1.0
 
-        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=len(p))
-        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=len(p))
+        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
+        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
         # Custom AICC, because the one in statsmodels does not support multiple dimensions
         aicc = np.where(
             dof_eff > 0, -2.0 * llf + 2.0 * df_modelwc * nobs / dof_eff, np.nan
