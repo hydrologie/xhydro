@@ -206,7 +206,7 @@ def precipitable_water_100y(
     method: str,
     mf: float | None = None,
     n: int | None = None,
-    rebuild_time: bool | None = None,
+    rebuild_time: bool = True,
 ):
     """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
 
