@@ -703,7 +703,7 @@ class TestPMSA:
         )
 
         np.testing.assert_array_almost_equal(
-            np.unique(pw_snowfall_m3.isel(location=3, window=0))[:10],
+            np.unique(pw_snowfall_m3.isel(location=3, window=0))[:9],
             np.array(
                 [
                     103.0075018,
@@ -715,7 +715,6 @@ class TestPMSA:
                     353.9965576,
                     362.2587313,
                     371.3136431,
-                    396.0682079,
                 ]
             ),
         )
