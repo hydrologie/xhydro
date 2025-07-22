@@ -83,8 +83,8 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
 # It was not necessary to add a dependency dictionary as we only need Extremes.jl, however this mechanism is more
 # scalable in case we need to add many other julia dependencies in the future
 deps = {
-    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "=1.11.0"},
-    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "=1.0.3"},
+    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "1.0.5"},
+    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "1.13.2"},
 }
 for dependency, info in deps.items():
     juliapkg.add(dependency, info["uuid"], version=info.get("version"))
