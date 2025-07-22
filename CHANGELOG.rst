@@ -15,6 +15,7 @@ New features and enhancements
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
+* To compute the Probable Maximum Snowfall Accumulation (PMSA), a new function `xhydro.indicators.pmp.pw_snowfall` has been added, and the existing functions `xhydro.indicators.pmp.precipitable_water_100y` and `xhydro.indicators.pmp.major_precipitation_events` have been adapted. (:pull:`328`).
 
 Bug fixes
 ^^^^^^^^^
