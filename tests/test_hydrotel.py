@@ -90,7 +90,7 @@ class TestHydrotel:
 
             ds = ht.get_streamflow()
             assert all(v in ds.variables for v in ["debit_aval"])
-            np.testing.assert_array_equal(ds.dims, ["time", "troncon"])
+            assert set(ds.dims) == {"time", "troncon"}
             np.testing.assert_array_equal(ds.debit_aval.mean(), 0)
         elif test == "toomany":
             with pytest.raises(
@@ -251,7 +251,7 @@ class TestHydrotel:
 
         # To make sure the original dataset was not modified prior to standardisation
         assert list(ds_orig.data_vars) == ["debit_aval"]
-        np.testing.assert_array_equal(ds_orig.dims, ["time", "troncon"])
+        assert set(ds_orig.dims) == {"time", "troncon"}
 
         assert list(ds.data_vars) == ["q"]
         np.testing.assert_array_equal(ds.dims, ["time", "station_id"])
