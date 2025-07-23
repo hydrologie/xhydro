@@ -67,7 +67,8 @@ class Hydrotel(HydrologicalModel):
             warnings.warn(
                 "The 'use_defaults' parameter is deprecated and will be ignored. It will be removed in a future version. "
                 "Please refer to the DemoProject in https://github.com/INRS-Modelisation-hydrologique/hydrotel "
-                "to get an idea of the configuration options to use."
+                "to get an idea of the configuration options to use.",
+                FutureWarning,
             )
 
         """Initialize the Hydrotel simulation."""
@@ -225,12 +226,14 @@ class Hydrotel(HydrologicalModel):
         if check_missing is not None:
             warnings.warn(
                 "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The Hydrotel executable already performs checks on the input files."
+                "The Hydrotel executable already performs checks on the input files.",
+                FutureWarning,
             )
         if xr_open_kwargs_in is not None:
             warnings.warn(
                 "The 'xr_open_kwargs_in' parameter is deprecated and will be ignored. "
-                "It is not used anymore."
+                "It is not used anymore.",
+                FutureWarning,
             )
 
         if os.name == "nt" and Path(self.executable).suffix != ".exe":
@@ -406,7 +409,13 @@ class Hydrotel(HydrologicalModel):
             # Adjust global attributes
             if "initial_simulation_path" in ds.attrs:
                 del ds.attrs["initial_simulation_path"]
-            ds.attrs["Hydrotel_version"] = self.simulation_config[
+            stdout = subprocess.check_output(  # noqa: S603
+                [self.executable],
+            )
+            ds.attrs["Hydrotel_version"] = (
+                str(stdout).split("HYDROTEL ")[1].split("\\n")[0]
+            )
+            ds.attrs["Hydrotel_config_version"] = self.simulation_config[
                 "SIMULATION HYDROTEL VERSION"
             ]
 
