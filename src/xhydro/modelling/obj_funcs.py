@@ -72,7 +72,8 @@ def get_objective_function(
         - "kge_inv" : Kling-Gupta efficiency metric inversed for low-flows (2009 version adapted in 2017).
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
         - "kge_2021" : Kling-Gupta Efficiency (2021 version)
-        - "LCE" : Least-squares combined efficiency
+        - "lce" : Least-squares combined efficiency
+        - "low_flow_rel_error" : Low flow relative error
         - "mae": Mean Absolute Error metric
         - "mare": Mean Absolute Relative Error metric
         - "mse" : Mean Square Error metric
@@ -131,7 +132,8 @@ def get_objective_function(
         "kge_inv": _kge_inv,
         "kge_mod": _kge_mod,
         "kge_2021" : _kge_2021,
-        "LCE" : _LCE,
+        "lce" : _lce,
+        "low_flow_rel_error" : _low_flow_rel_error,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
@@ -246,7 +248,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "kge_inv"
         "kge_mod",
         "kge_2021",
-        "LCE",
+        "lce",
         "nse",
         "persistence_index",
         "r2",
@@ -972,7 +974,7 @@ def _kge_inv(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return kge_inv
 
 
-def _LCE(qsim: np.ndarray, qobs: np.ndarray) -> float:
+def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """ Least-squares combined efficiency
     Parameters
     ----------
@@ -1002,11 +1004,44 @@ def _LCE(qsim: np.ndarray, qobs: np.ndarray) -> float:
     b = np.mean(qsim) / np.mean(qobs)
     a = np.std(qsim) / np.std(qobs)
 
-    # Calc the LCE metric
-    LCE = 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
+    return 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
 
-    return LCE
 
+def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) -> float:
+    """
+    High Flow Relative Error.
+    Relative error error in flow that is exceeded 90 % of the time.
+
+    Parameters
+    ----------
+    qsim : np.array
+        Daily Simulated streamflow data.
+    qobs : np.array
+        Daily Observed streamflow data.
+    percentile : int
+        frequency percentile for low flows, default is 90%.
+
+    Returns
+    -------
+    float:
+        Relative error error in flow that is exceeded 90 % of the time.
+        ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
+
+    Notes
+    -----
+    Low Flow Relative Error should AIM TO BE ZERO
+
+    """
+
+    threshold = np.nanpercentile(qobs, 100 - percentile)
+
+    # Select only high flow time steps
+    mask = qobs >= threshold
+
+    qsim_low = qsim.where(mask, drop=True)
+    qobs_low = qobs.where(mask, drop=True)
+
+    return (np.sum(qsim_low - qobs_low) / np.sum(qobs_low))
 
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
