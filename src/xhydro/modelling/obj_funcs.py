@@ -67,6 +67,7 @@ def get_objective_function(
         - "agreement_index": Index of agreement
         - "bias" : Bias metric
         - "correlation_coeff": Correlation coefficient
+        - "high_flow_rel_error" : High flow relative error
         - "kge" : Kling Gupta Efficiency metric (2009 version)
         - "kge_inv" : Kling-Gupta efficiency metric inversed for low-flows (2009 version adapted in 2017).
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
@@ -125,6 +126,7 @@ def get_objective_function(
         "agreement_index": _agreement_index,
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
+        "high_flow_rel_error": _high_flow_rel_error,
         "kge": _kge,
         "kge_inv": _kge_inv,
         "kge_mod": _kge_mod,
@@ -852,6 +854,44 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 ADD OBJECTIVE FUNCTIONS HERE
 """
 
+
+def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) -> float:
+    """
+    High Flow Relative Error.
+    Relative error error in flow that is exceeded 10 % of the time.
+
+    Parameters
+    ----------
+    qsim : np.array
+        Daily Simulated streamflow data.
+    qobs : np.array
+        Daily Observed streamflow data.
+    percentile : int
+        frequency percentile for high flows, default is 10%.
+
+    Returns
+    -------
+    float:
+        Relative error error in flow that is exceeded 10 % of the time.
+        ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
+
+    Notes
+    -----
+    High Flow Relative Error should AIM TO BE ZERO
+
+    """
+
+    threshold = np.nanpercentile(qobs, 100 - percentile)
+
+    # Select only high flow time steps
+    mask = qobs >= threshold
+
+    qsim_high = qsim.where(mask, drop=True)
+    qobs_high = qobs.where(mask, drop=True)
+
+    return (np.sum(qsim_high - qobs_high) / np.sum(qobs_high))
+
+
 def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """Kling-Gupta efficiency metric version of Tang et al. (2021)
     Parameters
@@ -966,6 +1006,7 @@ def _LCE(qsim: np.ndarray, qobs: np.ndarray) -> float:
     LCE = 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
 
     return LCE
+
 
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
