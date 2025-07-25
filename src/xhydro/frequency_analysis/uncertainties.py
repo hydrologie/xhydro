@@ -270,7 +270,7 @@ def calc_q_iter(
     return_period: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
-    return_periods: np.array | None = None,
+    return_periods: np.ndarray | None = None,
 ) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
