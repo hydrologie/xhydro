@@ -112,7 +112,7 @@ def parametric_quantiles(
     p: xr.Dataset,
     return_period: float | list[float],
     mode: str = "max",
-    t: float = None | list[float],
+    t: float | list[float] | None = None,
 ) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 
