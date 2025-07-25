@@ -570,7 +570,7 @@ def calculate_return_period_from_afr(
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
-    rp: np.array | None = None,
+    rp: np.array = None,
 ) -> xr.DataArray:
     """
     Calculate return periods from Annual Flow Regime (AFR) analysis.
