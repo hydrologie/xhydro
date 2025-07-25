@@ -15,6 +15,7 @@ Functions:
     generate_combinations: Generate combinations of indices for sensitivity analysis.
 """
 
+import warnings
 from itertools import combinations
 
 import numpy as np
@@ -269,6 +270,7 @@ def calc_q_iter(
     return_period: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
+    return_periods: np.array | None = None,
 ) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
@@ -289,6 +291,8 @@ def calc_q_iter(
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If `None`, values are taken from ds_moments_iter.
+    return_periods :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
@@ -296,6 +300,12 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
         and moments_iter are Datasets, otherwise returns a DataArray.
     """
+    if return_periods is not None:
+        warnings.warn(
+            "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            FutureWarning,
+        )
+        return_period = return_periods
     if all(isinstance(input, xr.DataArray) for input in [groups, moments_iter]):
         ds = False
     elif all(isinstance(input, xr.Dataset) for input in [groups, moments_iter]):

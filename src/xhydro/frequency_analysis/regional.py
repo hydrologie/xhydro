@@ -518,12 +518,13 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     return new_ds
 
 
-def calculate_return_period_from_afr(
+def calculate_rp_from_afr(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
+    rp: np.array | None = None,
 ) -> xr.DataArray:
     """
     Calculate return periods from Annual Flow Regime (AFR) analysis.
@@ -539,6 +540,8 @@ def calculate_return_period_from_afr(
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If None, values are taken from ds_moments_groups.
+    rp : array-like, optional
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
@@ -552,6 +555,59 @@ def calculate_return_period_from_afr(
     The function internally calls calculate_ic_from_AFR to compute the flood index.
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
+    warnings.warn(
+        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_return_period_from_afr instead.",
+        FutureWarning,
+    )
+    return calculate_return_period_from_afr(
+        ds_groups, ds_moments_groups, return_period, l1, rp
+    )
+
+
+def calculate_return_period_from_afr(
+    ds_groups: xr.Dataset,
+    ds_moments_groups: xr.Dataset,
+    *,
+    return_period: np.array,
+    l1: xr.DataArray | None = None,
+    rp: np.array | None = None,
+) -> xr.DataArray:
+    """
+    Calculate return periods from Annual Flow Regime (AFR) analysis.
+
+    Parameters
+    ----------
+    ds_groups : xr.Dataset
+        Dataset containing grouped flow data.
+    ds_moments_groups : xr.Dataset
+        Dataset containing L-moments for grouped data.
+    return_period : array-like
+        Return periods to calculate.
+    l1 : xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If None, values are taken from ds_moments_groups.
+    rp : array-like, optional
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
+
+    Returns
+    -------
+    xr.DataArray
+        Calculated return periods for each group and specified return period.
+
+    Notes
+    -----
+    This function calculates return periods using the Annual Flow Regime method.
+    If l1 is not provided, it uses the first L-moment from ds_moments_groups.
+    The function internally calls calculate_ic_from_AFR to compute the flood index.
+    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
+    """
+    if rp is not None:
+        warnings.warn(
+            "The 'rp' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            FutureWarning,
+        )
+        return_period = rp
+
     if l1 is None:
         station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
         l1 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")

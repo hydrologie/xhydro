@@ -1,6 +1,7 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
+import warnings
 
 import numpy as np
 import statsmodels
@@ -108,7 +109,10 @@ def fit(
 
 
 def parametric_quantiles(
-    p: xr.Dataset, return_period: float | list[float], mode: str = "max"
+    p: xr.Dataset,
+    return_period: float | list[float],
+    mode: str = "max",
+    t: float = None | list[float],
 ) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 
@@ -121,12 +125,20 @@ def parametric_quantiles(
         Return period(s) in years.
     mode : {'max', 'min'}
         Whether the return period is the probability of exceedance (max) or non-exceedance (min).
+    t :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.Dataset
         Dataset containing the quantiles of the distributions.
     """
+    if t is not None:
+        warnings.warn(
+            "The 't' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            FutureWarning,
+        )
+        return_period = t
     distributions = list(p["scipy_dist"].values)
 
     return_period = np.atleast_1d(return_period)
