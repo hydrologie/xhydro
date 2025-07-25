@@ -13,7 +13,10 @@ from xscen.utils import unstack_dates
 
 
 def major_precipitation_events(
-    da: xr.DataArray, *, windows: list[int], quantile: float = 0.9
+    da: xr.DataArray,
+    *,
+    windows: list[int],
+    quantile: float | None = None,
 ):
     """
     Get precipitation events that exceed a given quantile for a given time step accumulation. Based on Clavet-Gaumont et al. (2017).
@@ -24,8 +27,9 @@ def major_precipitation_events(
         DataArray containing the precipitation values.
     windows : list of int
         List of the number of time steps to accumulate precipitation.
-    quantile : float
-        Threshold that limits the events to those that exceed this quantile. Defaults to 0.9.
+    quantile : float, optional
+        Threshold that limits the events to those that exceed this quantile.
+        If `quantile` is None, the function returns all the accumulated values.
 
     Returns
     -------
@@ -36,7 +40,7 @@ def major_precipitation_events(
     -----
     https://doi.org/10.1016/j.ejrh.2017.07.003
     """
-    da_exp = xr.concat(
+    events = xr.concat(
         [
             da.rolling({"time": window}, center=False)
             .sum(keep_attrs=True)
@@ -46,18 +50,19 @@ def major_precipitation_events(
         dim="window",
     )
 
-    events = (
-        da_exp.chunk(dict(time=-1))
-        .groupby("time.year")
-        .map(_keep_highest_values, quantile=quantile)
-    )
+    if quantile is not None:
+        events = (
+            events.chunk(dict(time=-1))
+            .groupby("time.year")
+            .map(_keep_highest_values, quantile=quantile)
+        )
+        events.attrs["long_name"] = "Major precipitation events"
+        events.attrs["description"] = (
+            f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
+        )
 
     # Add attributes
-    events.name = "rainfall_events"
-    events.attrs["long_name"] = "Major precipitation events"
-    events.attrs["description"] = (
-        f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
-    )
+    events.name = "precipitation_events"
 
     return events
 
@@ -199,7 +204,8 @@ def precipitable_water_100y(
     *,
     dist: str,
     method: str,
-    mf: float = 0.2,
+    mf: float | None = None,
+    n: int | None = None,
     rebuild_time: bool = True,
 ):
     """Compute the 100-year return period of precipitable water for each month. Based on Clavet-Gaumont et al. (2017).
@@ -216,6 +222,9 @@ def precipitable_water_100y(
     mf : float
         Maximum majoration factor of the 100-year event compared to the maximum of the timeseries.
         Used as an upper limit for the frequency analysis.
+    n : int
+        Minimum number of data points for each month required to fit the statistical distribution.
+        If a given month contains fewer data points than this value, `pw100` is set to the maximum value of `pw` for that month.
     rebuild_time : bool
         Whether or not to reconstruct a timeseries with the same time dimensions as `pw`.
 
@@ -237,8 +246,15 @@ def precipitable_water_100y(
     params = fit(pw_m, dist=dist, method=method)
     pw100_m = parametric_quantile(params, q=1 - 1 / 100).squeeze()
 
+    count = pw_m.count(dim="time")
+    # Set PW100 to max when data count is less than n
+    if n is not None:
+        cond = count < n
+        pw100_m = xr.where(cond, pw_m.max(dim="time"), pw100_m)
+
     # Add a limit to PW100 to limit maximization factors.
-    pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
+    if mf is not None:
+        pw100_m = pw100_m.clip(max=(pw_m.max(dim="time") * (1.0 + mf)))
 
     if rebuild_time:
         hour = np.unique(pw.time.dt.hour)
@@ -275,6 +291,26 @@ def precipitable_water_100y(
             pw100_m.reindex_like(pw)
             .ffill(dim="time")
             .drop_vars(["month", "year", "stacked_coords"])
+        )
+
+        # Set NaN for NaN months in pw100_m when NaN rebuild_time=True
+        def _mask_pw100_by_zero_count(pw_v, count_v, time_months):
+            # Get zero-count months
+            zero_months = (
+                np.where(count_v == 0)[0] + 1
+            )  # assuming month index is 0-based
+            return np.where(np.isin(time_months, zero_months), np.nan, pw_v)
+
+        pw100_m = xr.apply_ufunc(
+            _mask_pw100_by_zero_count,
+            pw100_m.chunk(dict(time=-1)),
+            count,
+            pw100_m["time"].dt.month,
+            input_core_dims=[["time"], ["month"], ["time"]],
+            output_core_dims=[["time"]],
+            vectorize=True,
+            dask="parallelized",
+            output_dtypes=[pw100_m.dtype],
         )
 
     pw100_m.name = "precipitable_water_monthly_100y"
@@ -671,3 +707,87 @@ def spatial_average_storm_configurations(da, *, radius):
         confi_ds.attrs["units"] = da.attrs["units"]
 
     return confi_ds
+
+
+def pw_snowfall(
+    pw: xr.DataArray,
+    method: str,
+    snow_events: xr.DataArray,
+    snw_threshold: float,
+    rainfall_events: xr.DataArray | None = None,
+    rf_threshold: float | None = None,
+    prec_events: xr.DataArray | None = None,
+):
+    """
+    Estimate precipitable water associated with snowfall events using various filtering methods, based on Klein et al. (2017).
+
+    Parameters
+    ----------
+    pw : xr.DataArray
+        DataArray containing the precipitable water.
+    method : {"m1", "m2", "m3"}
+        Method used to identify snowfall-associated precipitable water:
+        - m1:Selects time steps with at least `snw_threshold` snowfall and less than or equal to `rf_threshold` rainfall.
+        - m1:Selects time steps with snowfall greater than `snw_threshold`, regardless of rainfall.
+        - m3:Starts from m2 selection, but if rainfall exceeds `rf_threshold`, the precipitable water is scaled by
+        the ratio of snowfall to total precipitation (`snow_events / prec_events`).
+    snow_events : xr.DataArray
+        DataArray containing snowfall event amounts.
+    snw_threshold :  float
+        Minimum snowfall threshold used to filter events.
+    rainfall_events : xr.DataArray, optional
+        Required for methods "m1" and "m3". DataArray containing rainfall event amounts.
+    rf_threshold : float, optional
+        Required for methods "m1" and "m3".
+        - For "m1": maximum rainfall allowed.
+        - For "m3": minimum rainfall required for scaling.
+    prec_events : xr.DataArray, optional
+        Required for method "m3". DataArray containing total precipitation used to compute the snowfall ratio.
+
+    Returns
+    -------
+    xr.DataArray
+        DataArray containing filtered precipitable water values corresponding to snowfall events.
+
+    Notes
+    -----
+    https://doi.org/10.1016/j.jhydrol.2016.03.031
+    """
+    warnings.warn(
+        "This function does not support different threshold values for different time windows.",
+        UserWarning,
+    )
+
+    if method not in ["m1", "m2", "m3"]:
+        raise ValueError(f"Invalid method '{method}'. Choose from ['m1', 'm2', 'm3'].")
+
+    if snow_events is None or snw_threshold is None:
+        raise ValueError("Both 'snow_events' and 'snw_threshold' must be provided.")
+
+    if method in ["m1", "m3"] and (rainfall_events is None or rf_threshold is None):
+        raise ValueError(
+            f"'rainfall_events' and 'rf_threshold' are required for method '{method}'."
+        )
+
+    if method == "m3" and prec_events is None:
+        raise ValueError("'prec_events' is required for method 'm3'.")
+
+    if method == "m1":
+        pw_snowfall_m1 = pw.where(
+            (rainfall_events < rf_threshold) & (snow_events > snw_threshold)
+        )
+        pw_snowfall_m1.name = "precipitable_water_m1"
+        return pw_snowfall_m1
+
+    pw_snowfall_m2 = pw.where(snow_events > snw_threshold)
+    if method == "m2":
+        pw_snowfall_m2.name = "precipitable_water_m2"
+        return pw_snowfall_m2
+
+    where_m3 = (snow_events > snw_threshold) & (rainfall_events > rf_threshold)
+    ratio_snowfall = snow_events / prec_events
+
+    pw_snowfall_m3 = xr.where(where_m3, pw_snowfall_m2 * ratio_snowfall, pw_snowfall_m2)
+
+    pw_snowfall_m3.name = "precipitable_water_m3"
+    return pw_snowfall_m3
