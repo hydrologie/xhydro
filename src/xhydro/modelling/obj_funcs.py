@@ -879,7 +879,7 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) 
 
     Notes
     -----
-    High Flow Relative Error should AIM TO BE ZERO
+    High Flow Relative Error should AIM TO BE ZERO, therefor it cannot be used for optimization
 
     """
 
@@ -1029,7 +1029,7 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
 
     Notes
     -----
-    Low Flow Relative Error should AIM TO BE ZERO
+    Low Flow Relative Error should AIM TO BE ZERO, therefor it cannot be used for optimization
 
     """
 
