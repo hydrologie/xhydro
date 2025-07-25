@@ -15,6 +15,7 @@ Functions:
     generate_combinations: Generate combinations of indices for sensitivity analysis.
 """
 
+import warnings
 from itertools import combinations
 
 import numpy as np
@@ -24,7 +25,11 @@ from scipy import stats
 
 import xhydro.frequency_analysis as xhfa
 
-from .regional import calc_moments, calculate_rp_from_afr, remove_small_regions
+from .regional import (
+    calc_moments,
+    calculate_return_period_from_afr,
+    remove_small_regions,
+)
 
 __all__ = [
     "bootstrap_dist",
@@ -180,7 +185,7 @@ def _calc_q_iter_da(
     da_groups: xr.DataArray,
     da_moments_iter: xr.DataArray,
     *,
-    return_periods: np.array,
+    return_period: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
 ) -> xr.DataArray:
@@ -196,7 +201,7 @@ def _calc_q_iter_da(
         The grouped data.
     da_moments_iter: xr.DataArray
         The L-moments for each bootstrap sample.
-    return_periods : array-like
+    return_period : array-like
         The return periods to calculate quantiles for.
     small_regions_threshold : int, optional
         The threshold for removing small regions. Default is 5.
@@ -233,8 +238,11 @@ def _calc_q_iter_da(
         dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
-    qt = calculate_rp_from_afr(
-        da_groups.to_dataset(), ds_moments_groups.to_dataset(), rp=return_periods, l1=l1
+    qt = calculate_return_period_from_afr(
+        da_groups.to_dataset(),
+        ds_moments_groups.to_dataset(),
+        return_period=return_period,
+        l1=l1,
     )
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
@@ -259,9 +267,10 @@ def calc_q_iter(
     bv: str,
     groups: xr.DataArray | xr.Dataset,
     moments_iter: xr.DataArray | xr.Dataset,
-    return_periods: np.array,
+    return_period: np.array,
     small_regions_threshold: int | None = 5,
     l1: xr.DataArray | None = None,
+    return_periods: np.ndarray | None = None,
 ) -> xr.DataArray:
     """
     Calculate quantiles for each bootstrap sample and group.
@@ -275,13 +284,15 @@ def calc_q_iter(
         The grouped data.
     moments_iter : xr.DataArray or xr.Dataset
         The L-moments for each bootstrap sample.
-    return_periods : array-like
+    return_period : array-like
         The return periods to calculate quantiles for.
     small_regions_threshold : int, optional
         The threshold for removing small regions. Default is 5.
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If `None`, values are taken from ds_moments_iter.
+    return_periods :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
@@ -289,6 +300,12 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
         and moments_iter are Datasets, otherwise returns a DataArray.
     """
+    if return_periods is not None:
+        warnings.warn(
+            "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            FutureWarning,
+        )
+        return_period = return_periods
     if all(isinstance(input, xr.DataArray) for input in [groups, moments_iter]):
         ds = False
     elif all(isinstance(input, xr.Dataset) for input in [groups, moments_iter]):
@@ -308,7 +325,7 @@ def calc_q_iter(
                 bv,
                 groups[var],
                 moments_iter[var],
-                return_periods=return_periods,
+                return_period=return_period,
                 small_regions_threshold=small_regions_threshold,
                 l1=l1,
             ).expand_dims("id")
@@ -318,7 +335,7 @@ def calc_q_iter(
             bv,
             groups,
             moments_iter,
-            return_periods=return_periods,
+            return_period=return_period,
             small_regions_threshold=small_regions_threshold,
             l1=l1,
         ).expand_dims("id")
