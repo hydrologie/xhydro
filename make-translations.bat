@@ -2,7 +2,7 @@
 rem Batch script to handle translation work
 
 rem Remove French locale .mo files
-del /q docs\locales\fr\LC_MESSAGES\*.mo
+del /s /q docs\locales\fr\LC_MESSAGES\*.mo
 
 rem Temporarily set the environment variable to skip notebooks
 set SKIP_NOTEBOOKS=1
