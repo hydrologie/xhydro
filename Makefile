@@ -99,7 +99,7 @@ autodoc: clean-docs ## create sphinx-apidoc files:
 	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
 initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files (but not the API docs)
-	${MAKE} -C docs gettext
+	env SKIP_NOTEBOOKS=1 ${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
 	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 
