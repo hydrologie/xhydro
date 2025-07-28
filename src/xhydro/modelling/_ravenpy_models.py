@@ -5,19 +5,21 @@ import logging
 import os
 import tempfile
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Literal
 
 import geopandas as gpd
 import numpy as np
 import xarray as xr
+from xclim.core.units import convert_units_to
 
 try:
     import ravenpy.config.emulators
     from ravenpy import OutputReader
     from ravenpy.config import commands as rc
     from ravenpy.config.commands import GridWeights
-    from ravenpy.extractors import GridWeightExtractor
+    from ravenpy.extractors import BasinMakerExtractor, GridWeightExtractor
     from ravenpy.ravenpy import run
 
     ravenpy_err_msg = None
@@ -72,8 +74,6 @@ class RavenpyModel(HydrologicalModel):
         The last date of the simulation. Only optional if the project files already exist.
     parameters : np.ndarray | list[float], optional
         The model parameters for simulation or calibration. Only optional if the project files already exist.
-    global_parameter : dict, optional
-        A dictionary of global parameters for the model.
     alt_names_meteo : dict, optional
         A dictionary that allows users to link the names of meteorological variables in their dataset to Raven-compliant names.
         The keys should be the Raven names as listed in the data_type parameter.
@@ -81,9 +81,19 @@ class RavenpyModel(HydrologicalModel):
         Additional properties of the weather stations providing the meteorological data. Only required if absent from the 'meteo_file'.
         For single stations, the format is {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}.
         This has not been tested for multiple stations or gridded data.
+    qobs_file : str | Path, optional
+        Path to the file containing the observed streamflow data.
+    alt_name_flow : str, optional
+        Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
+    minimum_lake_area : str, optional
+        Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
+        If not provided, all lakes will be considered as reservoirs. Only applicable for the HBVEC model.
+    output_reaches : {"all", "qobs"}, optional
+        If "all", all reaches will be outputted. If "qobs", only the reaches with observed flow will be outputted.
+        Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
     \*\*kwargs : dict, optional
         Additional parameters to pass to the RavenPy emulator, to modify the default modules used by a given hydrological model.
-        Typical entries include RainSnowFraction or Evaporation.
+        Typical entries include RainSnowFraction, Evaporation, GlobalParameters, etc.
         See https://raven.uwaterloo.ca/Downloads.html for the latest Raven documentation. Currently, model templates are listed in Appendix F.
     """
 
@@ -103,17 +113,17 @@ class RavenpyModel(HydrologicalModel):
         start_date: dt.datetime | str | None = None,
         end_date: dt.datetime | str | None = None,
         parameters: np.ndarray | list[float] | None = None,
-        global_parameter: dict | None = None,
         alt_names_meteo: dict | None = None,
         meteo_station_properties: dict | None = None,
+        qobs_file: str | Path | None = None,
+        alt_name_flow: str = "q",
+        minimum_lake_area: str | None = None,
+        output_reaches: Literal["all", "qobs"] | None = None,
         **kwargs,
     ):
         """Initialize the RavenPy model class."""
         # Set a few variables
         self.run_name = run_name or "raven"
-        self.emulator_config = (
-            {}
-        )  # TODO: This is currently not used, but could probably be used to store the emulator configuration.
 
         if workdir is None:
             self.workdir = Path(tempfile.mkdtemp(prefix="raven-hydro_"))
@@ -136,11 +146,14 @@ class RavenpyModel(HydrologicalModel):
                 start_date=start_date,
                 end_date=end_date,
                 parameters=parameters,
-                global_parameter=global_parameter,
                 hru=hru,
                 data_type=data_type,
                 alt_names_meteo=alt_names_meteo,
                 meteo_station_properties=meteo_station_properties,
+                qobs_file=qobs_file,
+                alt_name_flow=alt_name_flow,
+                minimum_lake_area=minimum_lake_area,
+                output_reaches=output_reaches,
                 overwrite=overwrite,
                 **kwargs,
             )
@@ -157,9 +170,12 @@ class RavenpyModel(HydrologicalModel):
         start_date: dt.datetime | str,
         end_date: dt.datetime | str,
         parameters: np.ndarray | list[float],
-        global_parameter: dict | None = None,
         alt_names_meteo: dict | None = None,
         meteo_station_properties: dict | None = None,
+        qobs_file: str | Path | None = None,
+        alt_name_flow: str = "q",
+        minimum_lake_area: str | None = None,
+        output_reaches: Literal["all", "qobs"] | None = None,
         overwrite: bool = False,
         **kwargs,
     ):
@@ -196,8 +212,6 @@ class RavenpyModel(HydrologicalModel):
             The last date of the simulation.
         parameters : np.ndarray | list[float]
             The model parameters for simulation or calibration.
-        global_parameter : dict, optional
-            A dictionary of global parameters for the model.
         alt_names_meteo : dict, optional
             A dictionary that allows users to link the names of meteorological variables in their dataset to Raven-compliant names.
             The keys should be the Raven names as listed in the data_type parameter.
@@ -205,6 +219,16 @@ class RavenpyModel(HydrologicalModel):
             Additional properties of the weather stations providing the meteorological data. Only required if absent from the 'meteo_file'.
             For single stations, the format is {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}.
             This has not been tested for multiple stations or gridded data.
+        qobs_file : str | Path, optional
+            Path to the file containing the observed streamflow data.
+        alt_name_flow : str, optional
+            Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
+        minimum_lake_area : str, optional
+            Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
+            If not provided, all lakes will be considered as reservoirs. Only applicable for the HBVEC model.
+        output_reaches : {"all", "qobs"}, optional
+            If "all", all reaches will be outputted. If "qobs", only the reaches with observed flow will be outputted.
+            Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
@@ -218,6 +242,7 @@ class RavenpyModel(HydrologicalModel):
                 "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
                 f" Original error: {ravenpy_err_msg}"
             )
+        kwargs = deepcopy(kwargs)
 
         # Remove any existing files in the project directory
         if len([f for f in self.workdir.rglob(f"{self.run_name}.rv*")]) > 0:
@@ -229,7 +254,37 @@ class RavenpyModel(HydrologicalModel):
                     f"Project {self.run_name} in {self.workdir} already exists, but 'overwrite' is set to False."
                 )
 
-        global_parameter = global_parameter or {}
+        # Add the observed streamflow data if provided
+        obs_basin_ids = None
+        obs_station_ids = None
+        if qobs_file is not None:
+            with xr.open_dataset(qobs_file) as ds_qobs:
+                ds_qobs = ds_qobs.squeeze()
+                if len(ds_qobs.dims) == 1:
+                    # If the dataset is 1D, it is a single station
+                    obs_basin_ids = [1]
+                    obs_station_ids = ["0"]
+                else:
+                    # If the dataset is 2D, it contains multiple stations
+                    if "basin_id" not in ds_qobs:
+                        raise ValueError(
+                            "The observed streamflow dataset must contain a 'basin_id' variable."
+                        )
+                    obs_basin_ids = [int(i) for i in ds_qobs.basin_id]
+                    if "station_id" not in ds_qobs:
+                        obs_station_ids = [str(i) for i in range(len(obs_basin_ids))]
+                    else:
+                        obs_station_ids = ds_qobs.station_id.astype(str).values.tolist()
+
+            kwargs["ObservationData"] = [
+                rc.ObservationData.from_nc(
+                    qobs_file,
+                    alt_names=alt_name_flow,
+                    station_idx=i + 1,
+                    uid=obs_basin_ids[i],
+                )
+                for i in range(len(obs_basin_ids))
+            ]
 
         # Get the meteorological data type
         meteo_file = Path(meteo_file)
@@ -267,68 +322,130 @@ class RavenpyModel(HydrologicalModel):
             hru_file = hru
             hru = gpd.read_file(hru)
 
-        # FIXME: Replace this with ravenpy.extractors.BasinMakerExtractor
-        if meteo_type == "grid":
-            if isinstance(hru, dict):
-                # If the meteo type is grid, we need to convert it to a GeoDataFrame and save it as a shapefile
-                hru = gpd.GeoDataFrame(
+        rvh_config = BasinMakerExtractor(hru).extract()
+
+        # # FIXME: Replace this with ravenpy.extractors.BasinMakerExtractor
+        # if meteo_type == "grid":
+        #     if isinstance(hru, dict):
+        #         # If the meteo type is grid, we need to convert it to a GeoDataFrame and save it as a shapefile
+        #         hru = gpd.GeoDataFrame(
+        #             {
+        #                 "area": [hru["area"]],
+        #                 "elevation": [hru["elevation"]],
+        #                 "latitude": [hru["latitude"]],
+        #                 "longitude": [hru["longitude"]],
+        #                 "hru_type": [hru.get("hru_type", "land")],
+        #                 "HRU_ID": [hru.get("HRU_ID", "1")],
+        #                 "SubId": [hru.get("SubId", 1)],
+        #                 "DowSubId": [hru.get("DowSubId", -1)],
+        #             },
+        #             geometry=[hru["geometry"]],
+        #             crs=hru["crs"],
+        #         )
+        #         hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
+        #         Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
+        #         hru.to_file(
+        #             str(hru_file),
+        #         )
+        #     else:
+        #         # If the HRU is a GeoDataFrame, we need to check if it contains the required additional properties
+        #         if "geometry" not in hru:
+        #             raise ValueError(
+        #                 "The HRU dataset must contain a geometry when the meteorological data is gridded."
+        #             )
+        #         if "SubId" not in hru:
+        #             hru_file = None
+        #             hru["SubId"] = 1
+        #         if "DowSubId" not in hru:
+        #             hru_file = None
+        #             hru["DowSubId"] = -1
+        #         if "HRU_ID" not in hru:
+        #             hru_file = None
+        #             hru["HRU_ID"] = "1"
+        #         if hru_file is None:
+        #             # If None, then we need to create a shapefile
+        #             hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
+        #             Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
+        #             hru.to_file(
+        #                 str(hru_file),
+        #             )
+
+        # if isinstance(hru, gpd.GeoDataFrame):
+        #     if len(hru) != 1:
+        #         raise ValueError("The HRU dataset must contain only one watershed.")
+        #     hru = hru.reset_index()
+        #     hru = hru.squeeze().to_dict()
+
+        # # HRU input for the Raven emulator
+        # hru_info = {
+        #     "area": hru["area"],
+        #     "elevation": hru["elevation"],
+        #     "latitude": hru["latitude"],
+        #     "longitude": hru["longitude"],
+        #     "hru_type": hru.get("hru_type", "land"),
+        # }
+        # if "HRU_ID" in hru:
+        #     hru_info["hru_id"] = hru["HRU_ID"]
+
+        # TODO: Add a control on which subbasins to include in the output
+
+        # Special considerations for distributed models (currently only HBVEC)
+        if model_name == "HBVEC":
+            # Additional spatial information
+            kwargs["sub_basins"] = rvh_config["sub_basins"]
+            kwargs["sub_basin_group"] = rvh_config["sub_basin_group"]
+            kwargs["channel_profile"] = rvh_config["channel_profile"]
+
+            # Sub-basin reference flow
+            records = []
+            for i in range(len(rvh_config["sub_basins"])):
+                subid = rvh_config["sub_basins"][i]["subbasin_id"]
+                records.append(
                     {
-                        "area": [hru["area"]],
-                        "elevation": [hru["elevation"]],
-                        "latitude": [hru["latitude"]],
-                        "longitude": [hru["longitude"]],
-                        "hru_type": [hru.get("hru_type", "land")],
-                        "HRU_ID": [hru.get("HRU_ID", "1")],
-                        "SubId": [hru.get("SubId", 1)],
-                        "DowSubId": [hru.get("DowSubId", -1)],
-                    },
-                    geometry=[hru["geometry"]],
-                    crs=hru["crs"],
+                        "sb_id": subid,
+                        "values": (hru.loc[hru["SubId"] == subid, "Q_Mean"].mean(),),
+                    }
                 )
-                hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
-                Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
-                hru.to_file(
-                    str(hru_file),
-                )
-            else:
-                # If the HRU is a GeoDataFrame, we need to check if it contains the required additional properties
-                if "geometry" not in hru:
-                    raise ValueError(
-                        "The HRU dataset must contain a geometry when the meteorological data is gridded."
-                    )
-                if "SubId" not in hru:
-                    hru_file = None
-                    hru["SubId"] = 1
-                if "DowSubId" not in hru:
-                    hru_file = None
-                    hru["DowSubId"] = -1
-                if "HRU_ID" not in hru:
-                    hru_file = None
-                    hru["HRU_ID"] = "1"
-                if hru_file is None:
-                    # If None, then we need to create a shapefile
-                    hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
-                    Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
-                    hru.to_file(
-                        str(hru_file),
-                    )
+            kwargs["SubBasinProperties"] = {
+                "parameters": ["Q_REFERENCE"],
+                "records": records,
+            }
 
-        if isinstance(hru, gpd.GeoDataFrame):
-            if len(hru) != 1:
-                raise ValueError("The HRU dataset must contain only one watershed.")
-            hru = hru.reset_index()
-            hru = hru.squeeze().to_dict()
+            # Manage the reaches to output
+            if output_reaches is not None:
+                if output_reaches == "qobs":
+                    for subbasin in rvh_config["sub_basins"]:
+                        if subbasin["subbasin_id"] in obs_basin_ids:
+                            subbasin["gauged"] = True
+                            subbasin["gauge_id"] = obs_station_ids[
+                                obs_basin_ids.index(subbasin["subbasin_id"])
+                            ]
+                        else:
+                            subbasin["gauged"] = False
+                            subbasin["gauge_id"] = ""
+                elif output_reaches == "all":
+                    for subbasin in rvh_config["sub_basins"]:
+                        subbasin["gauged"] = True
+                        subbasin["gauge_id"] = ""
 
-        # HRU input for the Raven emulator
-        hru_info = {
-            "area": hru["area"],
-            "elevation": hru["elevation"],
-            "latitude": hru["latitude"],
-            "longitude": hru["longitude"],
-            "hru_type": hru.get("hru_type", "land"),
-        }
-        if "HRU_ID" in hru:
-            hru_info["hru_id"] = hru["HRU_ID"]
+            # Only keep lakes above a certain area to represent explicitly as reservoirs
+            reservoirs = rvh_config["reservoirs"]
+            if minimum_lake_area is not None:
+                minimum_lake_area = convert_units_to(minimum_lake_area, "m2")
+                reservoirs = [
+                    r for r in reservoirs if r["lake_area"] >= minimum_lake_area
+                ]
+            kwargs["reservoirs"] = reservoirs
+
+            # Initial lake storage at 1000 mm
+            hru_state_variable_table = [
+                {
+                    "hru_id": rvh_config["reservoirs"][j]["hru_id"],
+                    "data": {"LAKE_STORAGE": 1000},
+                }
+                for j in range(len(rvh_config["reservoirs"]))
+            ]
+            kwargs["hru_state_variable_table"] = hru_state_variable_table
 
         # Prepare the meteorological data
         if meteo_type == "station":
@@ -339,7 +456,7 @@ class RavenpyModel(HydrologicalModel):
                     UserWarning,
                 )
 
-            meteo_data = [
+            kwargs["Gauge"] = [
                 rc.Gauge.from_nc(
                     meteo_file,  # File path to the meteorological data
                     data_type=data_type,  # List of all the useful meteorological variables in the file
@@ -370,7 +487,7 @@ class RavenpyModel(HydrologicalModel):
             weight_file.write_text(gw_cmd.to_rv() + "\n")
 
             # Meteo configuration
-            meteo_data = [
+            kwargs["GriddedForcing"] = [
                 rc.GriddedForcing.from_nc(
                     meteo_file,  # Path to the file containing meteorological variables
                     data_type=v,  # List of all the variables
@@ -389,13 +506,10 @@ class RavenpyModel(HydrologicalModel):
         # Create the emulator configuration
         self.emulator_config = dict(
             RunName=self.run_name,
-            HRUs=[hru_info],
+            HRUs=rvh_config["hrus"],
             params=parameters,
-            global_parameter=global_parameter,
             StartDate=start_date,
             EndDate=end_date,
-            Gauge=meteo_data if meteo_type == "station" else None,
-            GriddedForcing=meteo_data if meteo_type == "grid" else None,
             **kwargs,
         )
         model = getattr(ravenpy.config.emulators, model_name)(
