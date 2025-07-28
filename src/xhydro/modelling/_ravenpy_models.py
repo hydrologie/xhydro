@@ -321,75 +321,59 @@ class RavenpyModel(HydrologicalModel):
             hru = Path(hru)
             hru_file = hru
             hru = gpd.read_file(hru)
+        if isinstance(hru, dict):
+            gpd_info = {k: [v] for k, v in hru.items() if k not in ["geometry", "crs"]}
+            hru = gpd.GeoDataFrame(
+                gpd_info,
+                geometry=[hru.get("geometry")],
+                crs=hru.get("crs"),
+            )
+        if hru_file is None:
+            hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
 
-        rvh_config = BasinMakerExtractor(hru).extract()
+        # Extract the basin properties
+        try:
+            rvh_config = BasinMakerExtractor(hru).extract()
+            kwargs["HRUs"] = rvh_config["hrus"]
 
-        # # FIXME: Replace this with ravenpy.extractors.BasinMakerExtractor
-        # if meteo_type == "grid":
-        #     if isinstance(hru, dict):
-        #         # If the meteo type is grid, we need to convert it to a GeoDataFrame and save it as a shapefile
-        #         hru = gpd.GeoDataFrame(
-        #             {
-        #                 "area": [hru["area"]],
-        #                 "elevation": [hru["elevation"]],
-        #                 "latitude": [hru["latitude"]],
-        #                 "longitude": [hru["longitude"]],
-        #                 "hru_type": [hru.get("hru_type", "land")],
-        #                 "HRU_ID": [hru.get("HRU_ID", "1")],
-        #                 "SubId": [hru.get("SubId", 1)],
-        #                 "DowSubId": [hru.get("DowSubId", -1)],
-        #             },
-        #             geometry=[hru["geometry"]],
-        #             crs=hru["crs"],
-        #         )
-        #         hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
-        #         Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
-        #         hru.to_file(
-        #             str(hru_file),
-        #         )
-        #     else:
-        #         # If the HRU is a GeoDataFrame, we need to check if it contains the required additional properties
-        #         if "geometry" not in hru:
-        #             raise ValueError(
-        #                 "The HRU dataset must contain a geometry when the meteorological data is gridded."
-        #             )
-        #         if "SubId" not in hru:
-        #             hru_file = None
-        #             hru["SubId"] = 1
-        #         if "DowSubId" not in hru:
-        #             hru_file = None
-        #             hru["DowSubId"] = -1
-        #         if "HRU_ID" not in hru:
-        #             hru_file = None
-        #             hru["HRU_ID"] = "1"
-        #         if hru_file is None:
-        #             # If None, then we need to create a shapefile
-        #             hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
-        #             Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
-        #             hru.to_file(
-        #                 str(hru_file),
-        #             )
+        # Manage simplistic HRU inputs that do not contain all the required properties
+        except KeyError:
+            if len(hru) != 1:
+                raise ValueError(
+                    "If using multiple HRUs, the HRU GeoDataFrame must contain every property required by the BasinMakerExtractor."
+                )
 
-        # if isinstance(hru, gpd.GeoDataFrame):
-        #     if len(hru) != 1:
-        #         raise ValueError("The HRU dataset must contain only one watershed.")
-        #     hru = hru.reset_index()
-        #     hru = hru.squeeze().to_dict()
+            hru["HRU_ID"] = hru.get("HRU_ID", "1")
+            hru["hru_type"] = hru.get("hru_type", "land")
+            hru["SubId"] = hru.get(
+                "SubId", 1
+            )  # These two are only required for gridded meteorological data
+            hru["DowSubId"] = hru.get("DowSubId", -1)
 
-        # # HRU input for the Raven emulator
-        # hru_info = {
-        #     "area": hru["area"],
-        #     "elevation": hru["elevation"],
-        #     "latitude": hru["latitude"],
-        #     "longitude": hru["longitude"],
-        #     "hru_type": hru.get("hru_type", "land"),
-        # }
-        # if "HRU_ID" in hru:
-        #     hru_info["hru_id"] = hru["HRU_ID"]
+            if meteo_type == "grid":
+                if hru.get("geometry") is None or hru.crs is None:
+                    raise ValueError(
+                        "The HRU dataset must contain a geometry and a CRS when the meteorological data is gridded."
+                    )
+                # The GridWeightExtractor requires a file on disk, so we save the HRU as a shapefile.
+                Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
+                hru.to_file(
+                    str(hru_file),
+                )
 
-        # TODO: Add a control on which subbasins to include in the output
+            hru = hru.reset_index().squeeze()
+            kwargs["HRUs"] = [
+                {
+                    "area": hru["area"],
+                    "elevation": hru["elevation"],
+                    "latitude": hru["latitude"],
+                    "longitude": hru["longitude"],
+                    "hru_type": hru["hru_type"],
+                    "hru_id": hru["HRU_ID"],
+                }
+            ]
 
-        # Special considerations for distributed models (currently only HBVEC)
+        # Special considerations for distributed models (currently, only HBVEC)
         if model_name == "HBVEC":
             # Additional spatial information
             kwargs["sub_basins"] = rvh_config["sub_basins"]
@@ -506,7 +490,6 @@ class RavenpyModel(HydrologicalModel):
         # Create the emulator configuration
         self.emulator_config = dict(
             RunName=self.run_name,
-            HRUs=rvh_config["hrus"],
             params=parameters,
             StartDate=start_date,
             EndDate=end_date,
