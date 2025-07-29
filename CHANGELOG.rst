@@ -34,7 +34,7 @@ Breaking changes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* Running the translation no longer executes the notebooks. (:pull:`330`).
+* Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
 
 v0.5.0 (2025-04-24)
 -------------------
