@@ -62,7 +62,7 @@ def cluster_indices(
     return np.where(labels_array == clust_num)[0]
 
 
-def get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
+def _get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
     """
     Get indices of groups from a clustering result, excluding the group labeled -1.
 
@@ -105,12 +105,43 @@ def get_group_from_fit(
     list :
         List of indices for each non-excluded group.
     """
+    warnings.warn(
+        "This function is deprecated and will be removed in xhydro v0.6.0. Use get_clusters instead.",
+        FutureWarning,
+    )
+    return get_clusters(
+        model,
+        param,
+        sample,
+    )
+
+
+def get_clusters(
+    model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
+) -> list:
+    """
+    Get indices of groups from a fit using the specified model and parameters.
+
+    Parameters
+    ----------
+    model : callable
+        Model class or instance with a fit method.
+    param : dict
+        Parameters for the model.
+    sample : xr.Dataset or xr.DataArray
+        Data sample to fit the model.
+
+    Returns
+    -------
+    list :
+        List of indices for each non-excluded group.
+    """
     sample = (
         sample.to_dataframe(name="value")
         .reset_index()
         .pivot(index="Station", columns="components")
     )
-    return get_groups_indices(model(**param).fit(sample), sample)
+    return _get_groups_indices(model(**param).fit(sample), sample)
 
 
 def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
