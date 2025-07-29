@@ -36,7 +36,7 @@ class Hydrotel(HydrologicalModel):
     project_config : dict, optional
         Dictionary of configuration options to overwrite in the project file.
     simulation_config : dict, optional
-        Dictionary of configuration options to overwrite in the simulation file (simulation.csv).
+        Dictionary of configuration options to overwrite in the simulation file. See the Notes section for more details.
     output_config : dict, optional
         Dictionary of configuration options to overwrite in the output file (output.csv).
     use_defaults : bool
@@ -45,6 +45,8 @@ class Hydrotel(HydrologicalModel):
 
     Notes
     -----
+    The name of the simulation file must match the name of the 'SIMULATION COURANTE' option in the project file.
+
     This class is designed to handle the execution of Hydrotel simulations, with the ability to overwrite configuration options,
     but it does not handle the creation of the project folder itself. The project folder must be created beforehand.
 
@@ -147,7 +149,7 @@ class Hydrotel(HydrologicalModel):
         project_config : dict, optional
             Dictionary of configuration options to overwrite in the project file.
         simulation_config : dict, optional
-            Dictionary of configuration options to overwrite in the simulation file (simulation.csv).
+            Dictionary of configuration options to overwrite in the simulation file.
         output_config : dict, optional
             Dictionary of configuration options to overwrite in the output file (output.csv).
         """
@@ -238,6 +240,11 @@ class Hydrotel(HydrologicalModel):
 
         if os.name == "nt" and Path(self.executable).suffix != ".exe":
             raise ValueError("You must specify the path to Hydrotel.exe")
+        if "hydrotel" not in self.executable.lower():
+            raise ValueError(
+                "The executable command does not seem to be a valid Hydrotel command. "
+                "Please check the 'executable' parameter."
+            )
 
         # Make sure that the files reflect the configuration
         self.update_config(
@@ -409,9 +416,16 @@ class Hydrotel(HydrologicalModel):
             # Adjust global attributes
             if "initial_simulation_path" in ds.attrs:
                 del ds.attrs["initial_simulation_path"]
-            stdout = subprocess.check_output(  # noqa: S603
-                [self.executable],
-            )
+            if "hydrotel" not in self.executable.lower():
+                warnings.warn(
+                    "The executable command is suspicious and will not be executed.",
+                    UserWarning,
+                )
+                stdout = "HYDROTEL version unspecified"
+            else:
+                stdout = subprocess.check_output(  # noqa: S603
+                    [self.executable],
+                )
             ds.attrs["Hydrotel_version"] = (
                 str(stdout).split("HYDROTEL ")[1].split("\\n")[0]
             )

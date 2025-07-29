@@ -74,7 +74,12 @@ class TestHydrotel:
             simulation_config=simulation_config,
         )
         if test in ["station", "grid"]:
-            ds = ht.get_inputs()
+            ds = ht.get_inputs(return_config=True if test == "station" else False)
+            if isinstance(ds, tuple):
+                ds, config = ds
+                assert config["STATION_DIM_NAME"] == "stations"
+                assert config["TMAX_NAME"] == "tasmax"
+
             assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
             np.testing.assert_array_equal(ds.tasmin, np.zeros([1, 365 * 2]))
             np.testing.assert_array_equal(ds.tasmax.mean(), 1)
@@ -139,7 +144,6 @@ class TestHydrotel:
             project_dir=tmpdir,
             project_file="SLNO.csv",
             executable="command",
-            use_defaults=True,
             simulation_config=simulation_config,
         )
 
@@ -151,90 +155,10 @@ class TestHydrotel:
             assert ds.time.min().dt.strftime("%Y-%m-%d").item() == "2001-01-01"
             assert ds.time.max().dt.strftime("%Y-%m-%d").item() == "2010-12-29"
 
-    @pytest.mark.parametrize("test", ["ok", "file", "health"])
-    def test_basic(self, tmpdir, test):
-        meteo = True
-        if test == "health":
-            meteo = timeseries(
-                np.zeros(365 * 2),
-                start="2001-01-01",
-                freq="D",
-                variable="tasmin",
-                as_dataset=True,
-                units="K",
-            )
-            meteo["tasmax"] = timeseries(
-                np.ones(365 * 2),
-                start="2001-01-01",
-                freq="D",
-                variable="tasmax",
-                units="degC",
-            )
-            meteo["pr"] = timeseries(
-                np.ones(365 * 2) * 10,
-                start="2001-01-01",
-                freq="D",
-                variable="pr",
-                units="mm",
-            )
-            meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
-            meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77})
-            for c in ["lat", "lon"]:
-                meteo[c] = meteo[c].expand_dims("stations")
-            meteo = meteo.squeeze()
-            meteo = meteo.convert_calendar("noleap")
-            meteo = xr.concat(
-                (
-                    meteo.sel(time=slice("2001-01-01", "2001-12-30")),
-                    meteo.sel(time=slice("2002-01-01", "2002-12-30")),
-                ),
-                dim="time",
-            )
-
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
-        date_debut = "2001-10-01" if test != "health" else "1999-01-01"
-        simulation_config = {
-            "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
-            "DATE DEBUT": date_debut,
-            "DATE FIN": "2002-12-30",
-            "PAS DE TEMPS": 24,
-        }
-        if test == "file":
-            Path(tmpdir / "simulation" / "simulation" / "lecture_tempsol.csv").unlink()
-
-        ht = Hydrotel(
-            project_dir=tmpdir,
-            project_file="SLNO.csv",
-            executable="command",
-            use_defaults=True,
-            simulation_config=simulation_config,
-        )
-
-        if test == "ok":
-            ht._basic_checks()
-        elif test == "file":
-            with pytest.raises(
-                FileNotFoundError,
-                match="lecture_tempsol.csv is mentioned in the configuration, but does not exist.",
-            ):
-                ht._basic_checks()
-        elif test == "health":
-            with pytest.warns(
-                UserWarning,
-                match="The following health checks failed:\n  "
-                "- The dimension 'stations' is missing.\n  "
-                "- The coordinate 'z' is missing.\n  "
-                "- The calendar is not 'standard'. Received 'noleap'.\n  "
-                "- The start date is not at least 1999-01-01 00:00:00. Received 2001-01-01 00:00:00.\n  "
-                "- The variable 'tasmin' does not have the expected units 'degC'. Received 'K'.\n  "
-                "- The timesteps are irregular or cannot be inferred by xarray.",
-            ):
-                ht._basic_checks()
-
     def test_standard(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, debit_aval=True)
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=True)
+        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command")
         with ht.get_streamflow() as ds_tmp:
             ds_orig = deepcopy(ds_tmp)
         ht._standardise_outputs()
@@ -260,6 +184,9 @@ class TestHydrotel:
         for k, v in correct_attrs.items():
             assert ds.q.attrs[k] == v
 
+        assert ds.attrs["Hydrotel_version"] == "version unspecified"
+        assert ds.attrs["Hydrotel_config_version"] == ""
+
         assert "initial_simulation_path" not in ds.attrs
 
     def test_simname(self, tmpdir):
@@ -269,22 +196,23 @@ class TestHydrotel:
                 tmpdir,
                 "SLNO.csv",
                 executable="command",
-                use_defaults=False,
                 project_config={"SIMULATION COURANTE": "test"},
             )
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
+        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command")
         with pytest.raises(ValueError, match="folder does not exist"):
             ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
         Path(tmpdir / "simulation" / "simulation").rename(
             tmpdir / "simulation" / "test",
         )
+        Path(tmpdir / "simulation" / "test" / "simulation.csv").rename(
+            tmpdir / "simulation" / "test" / "test.csv",
+        )
         Hydrotel(
             tmpdir,
             "SLNO.csv",
             executable="command",
-            use_defaults=True,
             project_config={"SIMULATION COURANTE": "test"},
         )
 
@@ -294,25 +222,25 @@ class TestHydrotel:
             tmpdir,
             "SLNO.csv",
             executable="command",
-            use_defaults=True,
             simulation_config={"DATE DEBUT": "2001-01-01", "DATE FIN": "2001-12-31 12"},
         )
         assert ht.simulation_config["DATE DEBUT"] == "2001-01-01 00:00"
         assert ht.simulation_config["DATE FIN"] == "2001-12-31 12:00"
 
-    @pytest.mark.parametrize("test", ["ok", "pdt", "cfg"])
+    @pytest.mark.parametrize("test", ["ok", "pdt", "cfg", "raise"])
     def test_run(self, tmpdir, test):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True)
         ht = Hydrotel(
             tmpdir,
             "SLNO.csv",
-            executable="command",
-            use_defaults=False,
+            executable="hydrotel" if test != "raise" else "command",
             simulation_config={
                 "DATE DEBUT": "2001-01-01",
                 "DATE FIN": "2001-12-31",
                 "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
-                "PAS DE TEMPS": 24 if test != "pdt" else None,
+                "PAS DE TEMPS": (
+                    24 if test != "pdt" else None
+                ),  # xHydro no longer checks the configuration files
             },
         )
 
@@ -322,88 +250,35 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
         else:
-            if test == "ok":
+            if test in ["ok", "pdt"]:
                 command = ht.run(dry_run=True)
-                assert command == f"command {ht.config_files['project']} -t 1"
-            elif test == "pdt":
-                with pytest.raises(
-                    ValueError,
-                    match="You must specify 'DATE DEBUT', 'DATE FIN', and 'PAS DE TEMPS'",
-                ):
-                    ht.run(dry_run=True)
+                assert command == f"hydrotel {ht.config_files['project']} -t 1"
             elif test == "cfg":
-                cfg = (
-                    pd.read_csv(
-                        tmpdir / "meteo" / "SLNO_meteo_GC3H.nc.config",
-                        sep=";",
-                        header=None,
-                        index_col=0,
+                run_options = ["-t 10", "-c", "-s"]
+                check_missing = True
+                xr_open_kwargs_in = {"chunks": {"time": 10}}
+                with pytest.warns(
+                    FutureWarning,
+                ) as w:
+                    command = ht.run(
+                        dry_run=True,
+                        run_options=run_options,
+                        check_missing=check_missing,
+                        xr_open_kwargs_in=xr_open_kwargs_in,
                     )
-                    .replace([np.nan], [None])
-                    .squeeze()
-                    .to_dict()
-                )
-                # 1: missing entry
-                cfg_bad = deepcopy(cfg)
-                cfg_bad["LATITUDE_NAME"] = ""
-                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
-                    tmpdir / "meteo" / "SLNO_meteo_GC3H.nc.config",
-                    sep=";",
-                    header=False,
-                    columns=[0],
-                )
-                with pytest.raises(
-                    ValueError, match="The configuration file is missing some entries:"
-                ):
-                    ht.run(dry_run=True)
-
-                # 2: bad type
-                cfg_bad = deepcopy(cfg)
-                cfg_bad["TYPE (STATION/GRID/GRID_EXTENT)"] = "fake"
-                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
-                    tmpdir / "meteo" / "SLNO_meteo_GC3H.nc.config",
-                    sep=";",
-                    header=False,
-                    columns=[0],
-                )
+                assert len(w) == 2
+                assert command == (f"hydrotel {ht.config_files['project']} -t 10 -c -s")
+            elif test == "raise":
                 with pytest.raises(
                     ValueError,
-                    match="The configuration file must specify the type of data",
+                    match="The executable command does not seem to be a valid Hydrotel command",
                 ):
                     ht.run(dry_run=True)
-
-                # 3: bad station name
-                cfg_bad = deepcopy(cfg)
-                cfg_bad["TYPE (STATION/GRID/GRID_EXTENT)"] = "GRID"
-                cfg_bad["STATION_DIM_NAME"] = "stations"
-                pd.DataFrame.from_dict(cfg_bad, orient="index").to_csv(
-                    tmpdir / "meteo" / "SLNO_meteo_GC3H.nc.config",
-                    sep=";",
-                    header=False,
-                    columns=[0],
-                )
-                with pytest.raises(
-                    ValueError,
-                    match="STATION_DIM_NAME must be specified if and only if",
-                ):
-                    ht.run(dry_run=True)
-
-    def test_copypaste(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
-        # Remove simulation.csv
-        Path(tmpdir / "simulation" / "simulation" / "simulation.csv").unlink()
-        Hydrotel(
-            tmpdir,
-            "SLNO.csv",
-            executable="command",
-            use_defaults=True,
-        )
-        assert Path(tmpdir / "simulation" / "simulation" / "simulation.csv").exists()
 
     def test_errors(self, tmpdir):
         # Missing project folder
         with pytest.raises(ValueError, match="The project folder does not exist."):
-            Hydrotel("fake", "SLNO.csv", executable="command", use_defaults=True)
+            Hydrotel("fake", "SLNO.csv", executable="command")
 
         # Missing project name
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
@@ -415,33 +290,34 @@ class TestHydrotel:
             ValueError,
             match="'SIMULATION COURANTE' must be specified",
         ):
-            Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
+            Hydrotel(tmpdir, "SLNO.csv", executable="command")
 
-    def test_bad_config(self, tmpdir):
+        # Simulation does not match project name
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
-        # overwrite output.csv with simulation.csv
-        shutil.copy(
-            tmpdir / "simulation" / "simulation" / "simulation.csv",
-            tmpdir / "simulation" / "simulation" / "output.csv",
+        project_config = {
+            "SIMULATION COURANTE": "abc",
+        }
+        Path(tmpdir / "simulation" / "simulation").rename(
+            tmpdir / "simulation" / "abc",
         )
-        # Multiple warnings should be raised, so we use a list
-        with pytest.warns(UserWarning) as record:
-            Hydrotel(tmpdir, "SLNO.csv", executable="command", use_defaults=False)
-        assert len(record) == 2
-        assert (
-            "configuration file on disk has some entries that might not be valid."
-            in record[0].message.args[0]
-        )
-        assert (
-            "file on disk has a different number of entries than the template."
-            in record[1].message.args[0]
-        )
+        with pytest.raises(
+            FileNotFoundError,
+            match="/abc/abc.csv",
+        ):
+            Hydrotel(
+                tmpdir, "SLNO.csv", executable="command", project_config=project_config
+            )
+
+        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+        # Remove simulation.csv
+        Path(tmpdir / "simulation" / "simulation" / "simulation.csv").unlink()
+        with pytest.raises(FileNotFoundError):
+            Hydrotel(tmpdir, "SLNO.csv", executable="command")
 
     def test_bad_overwrite(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
-        # overwrite output.csv with simulation.csv
         with pytest.raises(
-            ValueError, match="Could not find the following keys in the template file"
+            ValueError, match="Could not find the following keys in the file"
         ):
             _overwrite_csv(
                 tmpdir / "simulation" / "simulation" / "output.csv",
