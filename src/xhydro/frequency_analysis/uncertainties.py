@@ -301,7 +301,7 @@ def calc_q_iter(
         and moments_iter are Datasets, otherwise returns a DataArray.
     """
     warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_quantiles_over_boostraped_groups instead.",
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_quantiles_over_boostraped_groups instead.",
         FutureWarning,
     )
     return calculate_quantiles_over_boostraped_groups(

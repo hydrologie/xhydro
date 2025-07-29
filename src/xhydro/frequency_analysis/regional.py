@@ -106,7 +106,7 @@ def get_group_from_fit(
         List of indices for each non-excluded group.
     """
     warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.6.0. Use get_clusters instead.",
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use get_clusters instead.",
         FutureWarning,
     )
     return get_clusters(
@@ -587,7 +587,7 @@ def calculate_rp_from_afr(
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_return_period instead.",
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.",
         FutureWarning,
     )
     return calculate_return_period(ds_groups, ds_moments_groups, return_period, l1, rp)
