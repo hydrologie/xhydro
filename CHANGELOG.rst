@@ -32,6 +32,10 @@ Breaking changes
 * The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from `xhfa.regional.calculate_rp_from_afr` and `return_periods` from `xhfa.uncertainties.calc_q_iter` all renamed `return_period`. (:issue:`269`, :pull:`317`).
 * The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
 
+Internal changes
+^^^^^^^^^^^^^^^^
+* Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
+
 v0.5.0 (2025-04-24)
 -------------------
 Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
