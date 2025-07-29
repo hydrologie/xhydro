@@ -300,6 +300,58 @@ def calc_q_iter(
         Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
         and moments_iter are Datasets, otherwise returns a DataArray.
     """
+    warnings.warn(
+        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_quantiles_over_boostraped_groups instead.",
+        FutureWarning,
+    )
+    return calculate_quantiles_over_boostraped_groups(
+        bv,
+        groups,
+        moments_iter,
+        return_period,
+        small_regions_threshold,
+        l1,
+        return_periods,
+    )
+
+
+def calculate_quantiles_over_boostraped_groups(
+    bv: str,
+    groups: xr.DataArray | xr.Dataset,
+    moments_iter: xr.DataArray | xr.Dataset,
+    return_period: np.array,
+    small_regions_threshold: int | None = 5,
+    l1: xr.DataArray | None = None,
+    return_periods: np.ndarray | None = None,
+) -> xr.DataArray:
+    """
+    Calculate quantiles for each bootstrap sample and group.
+
+    Parameters
+    ----------
+    bv : str
+        The basin identifier or 'all' to proceed on all basins (needed for ungauged).
+        The associated dimension must have a 'cf_role: timeseries_id' attribute.
+    groups : xr.DataArray or xr.Dataset
+        The grouped data.
+    moments_iter : xr.DataArray or xr.Dataset
+        The L-moments for each bootstrap sample.
+    return_period : array-like
+        The return periods to calculate quantiles for.
+    small_regions_threshold : int, optional
+        The threshold for removing small regions. Default is 5.
+    l1 : xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If `None`, values are taken from ds_moments_iter.
+    return_periods :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
+
+    Returns
+    -------
+    xr.DataArray or xr.Dataset
+        Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
+        and moments_iter are Datasets, otherwise returns a DataArray.
+    """
     if return_periods is not None:
         warnings.warn(
             "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in a future release.",
