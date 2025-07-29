@@ -382,7 +382,7 @@ class TestRavenpyModels:
                 **cfg,
             )
 
-        with pytest.raises(ValueError, match="The HRU dataset must contain only one"):
+        with pytest.raises(ValueError, match="If using multiple HRUs,"):
             hru_error2 = hru.copy()
             hru_error2 = pd.concat([hru_error2, hru_error2]).reset_index(drop=True)
 
