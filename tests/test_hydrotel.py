@@ -24,15 +24,17 @@ class TestHydrotel:
             model_name="Hydrotel",
             project_dir=tmpdir / "fake",
             project_file="SLNO.csv",
-            executable="command",
             use_defaults=True,
+            executable="command",
             project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
             simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
             output_config={"TMAX_JOUR": "1"},
         )
-        ht = hydrological_model(
-            model_config=model_config,
-        )
+
+        with pytest.warns(FutureWarning, match="Please refer to the DemoProject in"):
+            ht = hydrological_model(
+                model_config=model_config,
+            )
 
         assert ht.simulation_dir.name == "simulation"
         assert ht.project_dir.name == "fake"
@@ -49,16 +51,6 @@ class TestHydrotel:
         assert ht.output_config["TMAX_JOUR"] == "1"
         df = _read_csv(ht.config_files["output"])
         assert ht.output_config == df
-
-        ht2 = Hydrotel(
-            project_dir=tmpdir / "fake",
-            project_file="SLNO.csv",
-            executable="command",
-            use_defaults=False,
-        )
-        assert ht2.project_config == ht.project_config
-        assert ht2.simulation_config == ht.simulation_config
-        assert ht2.output_config == ht.output_config
 
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
     def test_get_data(self, tmpdir, test):
@@ -79,7 +71,6 @@ class TestHydrotel:
             project_dir=tmpdir,
             project_file="SLNO.csv",
             executable="command",
-            use_defaults=True,
             simulation_config=simulation_config,
         )
         if test in ["station", "grid"]:
