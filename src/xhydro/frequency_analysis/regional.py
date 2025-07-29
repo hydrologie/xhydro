@@ -41,7 +41,7 @@ from xhydro import __version__
 from xhydro.utils import update_history
 
 
-def cluster_indices(
+def _cluster_indices(
     clust_num: int | np.ndarray, labels_array: int | np.ndarray
 ) -> np.ndarray:
     """
@@ -79,7 +79,7 @@ def _get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
         Indices for each non-excluded group.
     """
     grouped: list = [
-        sample.index.to_numpy()[cluster_indices(i, cluster.labels_)]
+        sample.index.to_numpy()[_cluster_indices(i, cluster.labels_)]
         for i in range(np.max(cluster.labels_) + 1)
     ]
     return grouped
