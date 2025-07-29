@@ -29,6 +29,12 @@ Breaking changes
 * The default CRS in `xh.gis.watershed_properties` and `surface_properties` has been changed to a call to `geopandas.estimate_utm_crs` instead of an hardcoded value. (:pull:`303`).
 * The `RavenpyModel` class has abandoned the `longitude`, `latitude`, `drainage_area` and `elevation` arguments in favor of a `hru` argument. (:pull:`303`).
 * The `RavenpyModel` class has abandoned the explicit `evaporation` and `rain_snow_fraction`, but they can still be passed as kwargs. (:pull:`303`).
+* The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from `xhfa.regional.calculate_rp_from_afr` and `return_periods` from `xhfa.uncertainties.calc_q_iter` all renamed `return_period`. (:issue:`269`, :pull:`317`).
+* The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
 
 v0.5.0 (2025-04-24)
 -------------------
