@@ -587,15 +587,13 @@ def calculate_rp_from_afr(
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_return_period_from_afr instead.",
+        "This function is deprecated and will be removed in xhydro v0.6.0. Use calculate_return_period instead.",
         FutureWarning,
     )
-    return calculate_return_period_from_afr(
-        ds_groups, ds_moments_groups, return_period, l1, rp
-    )
+    return calculate_return_period(ds_groups, ds_moments_groups, return_period, l1, rp)
 
 
-def calculate_return_period_from_afr(
+def calculate_return_period(
     ds_groups: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     *,
@@ -604,7 +602,7 @@ def calculate_return_period_from_afr(
     rp: np.ndarray | None = None,
 ) -> xr.DataArray:
     """
-    Calculate return periods from Annual Flow Regime (AFR) analysis.
+    Calculate return periods from the regional frequency analysis.
 
     Parameters
     ----------
