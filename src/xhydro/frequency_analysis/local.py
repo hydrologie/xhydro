@@ -1,6 +1,7 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
+import warnings
 
 import numpy as np
 import statsmodels
@@ -108,7 +109,10 @@ def fit(
 
 
 def parametric_quantiles(
-    p: xr.Dataset, t: float | list[float], mode: str = "max"
+    p: xr.Dataset,
+    return_period: float | list[float],
+    mode: str = "max",
+    t: float | list[float] | None = None,
 ) -> xr.Dataset:
     """Compute quantiles from fitted distributions.
 
@@ -117,23 +121,31 @@ def parametric_quantiles(
     p : xr.Dataset
         Dataset containing the parameters of the fitted distributions.
         Must have a dimension `dparams` containing the parameter names and a dimension `scipy_dist` containing the distribution names.
-    t : float or list of float
+    return_period : float or list of float
         Return period(s) in years.
     mode : {'max', 'min'}
         Whether the return period is the probability of exceedance (max) or non-exceedance (min).
+    t :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.Dataset
         Dataset containing the quantiles of the distributions.
     """
+    if t is not None:
+        warnings.warn(
+            "The 't' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            FutureWarning,
+        )
+        return_period = t
     distributions = list(p["scipy_dist"].values)
 
-    t = np.atleast_1d(t)
+    return_period = np.atleast_1d(return_period)
     if mode == "max":
-        q = 1 - 1.0 / t
+        q = 1 - 1.0 / return_period
     elif mode == "min":
-        q = 1.0 / t
+        q = 1.0 / return_period
     else:
         raise ValueError(f"'mode' must be 'max' or 'min', got '{mode}'.")
 
@@ -154,14 +166,16 @@ def parametric_quantiles(
             qt = (
                 xclim.indices.stats.parametric_quantile(da, q=q)
                 .rename({"quantile": "return_period"})
-                .assign_coords(scipy_dist=d, return_period=t)
+                .assign_coords(scipy_dist=d, return_period=return_period)
                 .expand_dims("scipy_dist")
             )
             quantiles.append(qt)
         quantiles = xr.concat(quantiles, dim="scipy_dist")
 
         # Add the quantile as a new coordinate
-        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": t})
+        da_q = xr.DataArray(
+            q, dims="return_period", coords={"return_period": return_period}
+        )
         da_q.attrs["long_name"] = (
             "Probability of exceedance"
             if mode == "max"
@@ -210,11 +224,11 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
 
         llf = np.nansum(dist.logpdf(da, *params), axis=0)  # log-likelihood
         nobs = np.sum(np.isfinite(da), axis=0)
-        df_modelwc = len(p)
+        df_modelwc = params.shape[0]
         dof_eff = nobs - df_modelwc - 1.0
 
-        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=len(p))
-        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=len(p))
+        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
+        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
         # Custom AICC, because the one in statsmodels does not support multiple dimensions
         aicc = np.where(
             dof_eff > 0, -2.0 * llf + 2.0 * df_modelwc * nobs / dof_eff, np.nan
