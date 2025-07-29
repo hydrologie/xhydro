@@ -416,7 +416,10 @@ class Hydrotel(HydrologicalModel):
             # Adjust global attributes
             if "initial_simulation_path" in ds.attrs:
                 del ds.attrs["initial_simulation_path"]
-            if "hydrotel" not in self.executable.lower():
+            if (
+                "hydrotel" not in self.executable.lower()
+                or not Path(self.executable).is_file()
+            ):
                 warnings.warn(
                     "The executable command is suspicious and will not be executed.",
                     UserWarning,
