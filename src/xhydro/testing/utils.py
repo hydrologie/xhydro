@@ -54,9 +54,7 @@ def fake_hydrotel_project(
     ):
         struct = yaml.safe_load(f)["structure"]
 
-    default_csv = (
-        Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults"
-    )
+    default_csv = Path(__file__).parent.joinpath("data")
 
     project_dir.mkdir(exist_ok=True, parents=True)
     for k, v in struct.items():
@@ -69,7 +67,7 @@ def fake_hydrotel_project(
                     (project_dir / k / file).touch()
     for file in struct["_main"]:
         if file in ["SLNO.csv"]:
-            shutil.copy(default_csv / "project.csv", project_dir / file)
+            shutil.copy(default_csv / "SLNO.csv", project_dir / file)
         elif file is not None:
             (project_dir / file).touch()
 
