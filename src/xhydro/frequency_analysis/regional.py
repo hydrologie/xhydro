@@ -62,9 +62,9 @@ def _cluster_indices(
     return np.where(labels_array == clust_num)[0]
 
 
-def _get_groups_indices(cluster: list, sample: xr.Dataset) -> list:
+def _get_clusters_indices(cluster: list, sample: xr.Dataset) -> list:
     """
-    Get indices of groups from a clustering result, excluding the group labeled -1.
+    Get indices from a clustering result, excluding the cluster labeled -1.
 
     Parameters
     ----------
@@ -141,7 +141,7 @@ def get_clusters(
         .reset_index()
         .pivot(index="Station", columns="components")
     )
-    return _get_groups_indices(model(**param).fit(sample), sample)
+    return _get_clusters_indices(model(**param).fit(sample), sample)
 
 
 def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
