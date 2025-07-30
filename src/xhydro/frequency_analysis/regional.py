@@ -268,7 +268,7 @@ def _moment_l(x: np.array) -> list:
 
 
 def calc_h_z(
-    ds_groups: xr.Dataset,
+    ds_regions: xr.Dataset,
     ds_moments_groups: xr.Dataset,
     *,
     kap: object,
@@ -279,10 +279,10 @@ def calc_h_z(
 
     Parameters
     ----------
-    ds_groups : xr.Dataset
-        Dataset containing grouped data.
+    ds_regions : xr.Dataset
+        Dataset containing regions.
     ds_moments_groups : xr.Dataset
-        Dataset containing L-moments for grouped data.
+        Dataset containing L-moments for ds_regions.
     kap : scipy.stats.kappa3
         Kappa3 distribution object.
     seed : int, optional
@@ -291,7 +291,7 @@ def calc_h_z(
     Returns
     -------
     xr.Dataset
-        Dataset containing calculated H values and Z-scores for each group.
+        Dataset containing calculated H values and Z-scores for each region.
 
     Notes
     -----
@@ -304,9 +304,9 @@ def calc_h_z(
     tau = ds_moments_groups.sel(lmom="tau").load()
     tau3 = ds_moments_groups.sel(lmom="tau3").load()
     tau4 = ds_moments_groups.sel(lmom="tau4").load()
-    longeur = ds_groups.copy().count(dim="time").load()
+    longeur = ds_regions.copy().count(dim="time").load()
 
-    station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
+    station_dim = ds_regions.cf.cf_roles["timeseries_id"][0]
 
     ds_h, ds_b4, ds_sigma4, ds_tau4_r = xr.apply_ufunc(
         _heterogeneite_et_score_z,
@@ -327,7 +327,7 @@ def calc_h_z(
         output_core_dims=[[], [], [], []],
         vectorize=True,
     )
-    ds_tau4 = _calculate_gev_tau4(ds_groups.load(), ds_moments_groups.load())
+    ds_tau4 = _calculate_gev_tau4(ds_regions.load(), ds_moments_groups.load())
 
     z_score = (ds_tau4 - ds_tau4_r + ds_b4) / ds_sigma4
 
