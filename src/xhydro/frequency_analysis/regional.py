@@ -352,12 +352,10 @@ def _calculate_gev_tau4(
     # H&W
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
 
-    kappa = _calc_kappa(lambda_r_2, lambda_r_3)
+    k = _calc_k(lambda_r_2, lambda_r_3)
 
     # Hosking et Wallis, eq. A53
-    tau4 = (5 * (1 - 4**-kappa) - 10 * (1 - 3**-kappa) + 6 * (1 - 2**-kappa)) / (
-        1 - 2**-kappa
-    )
+    tau4 = (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k)
     return tau4
 
 
@@ -659,15 +657,15 @@ def _calculate_ic_from_afr(
 
     # alpha = location
     # xi    = scale
-    # kappa = shape
+    # k = shape
 
-    kappa = _calc_kappa(lambda_r_2, lambda_r_3)
+    k = _calc_k(lambda_r_2, lambda_r_3)
 
-    term = xr.apply_ufunc(_calc_gamma, (1 + kappa), vectorize=True)
+    term = xr.apply_ufunc(_calc_gamma, (1 + k), vectorize=True)
 
     # Hosking et Wallis, eq. A56. et Anctil et al. 1998, eq. 7 et 8.
-    alpha = (lambda_r_2 * kappa) / ((1 - (2**-kappa)) * term)
-    xi = lambda_r_1 + (alpha * (term - 1)) / kappa
+    alpha = (lambda_r_2 * k) / ((1 - (2**-k)) * term)
+    xi = lambda_r_1 + (alpha * (term - 1)) / k
 
     # Calculating wanted return periods
     t = xr.DataArray(data=return_period, dims="return_period").assign_coords(
@@ -675,7 +673,7 @@ def _calculate_ic_from_afr(
     )
 
     # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
-    q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** kappa) / kappa
+    q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** k) / k
 
     return q_rt
 
@@ -710,14 +708,14 @@ def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
     return ds
 
 
-def _calc_kappa(lambda_r_2, lambda_r_3):
+def _calc_k(lambda_r_2, lambda_r_3):
 
     # Hosking et Wallis, éq. A55
     c = (2 / (3 + (lambda_r_3 / lambda_r_2))) - (np.log(2) / np.log(3))
 
     # Hosking et Wallis, éq. A55 (generally acceptable approximation)
-    kappa = 7.8590 * c + 2.9554 * (c**2)
-    return kappa
+    k = 7.8590 * c + 2.9554 * (c**2)
+    return k
 
 
 def _calc_lambda_r(
