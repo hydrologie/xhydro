@@ -3,11 +3,13 @@
 import warnings
 from copy import deepcopy
 from itertools import product
+from typing import Literal
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim
+from xclim.core import Quantified, calendar, units
 from xclim.indices.stats import fit, parametric_quantile
 from xscen.utils import unstack_dates
 
@@ -58,7 +60,12 @@ def major_precipitation_events(
         )
         events.attrs["long_name"] = "Major precipitation events"
         events.attrs["description"] = (
-            f"Major precipitation events defined as the {quantile * 100}% highest precipitation events for the given accumulation days."
+            f"Top {quantile * 100}% of the accumulated precipitation over the specified number of time steps."
+        )
+    else:
+        events.attrs["long_name"] = "Precipitation events"
+        events.attrs["description"] = (
+            f"Precipitation events for the accumulation of the given number of time steps."
         )
 
     # Add attributes
@@ -138,8 +145,8 @@ def precipitable_water(
     """
     windows = windows or [1]
 
-    zg = xclim.core.units.convert_units_to(zg, "m")
-    orog = xclim.core.units.convert_units_to(orog, "m")
+    zg = units.convert_units_to(zg, "m")
+    orog = units.convert_units_to(orog, "m")
     if hus.attrs.get("units") not in ["1", "", "kg kg-1", "kg/kg"]:
         warnings.warn(
             "Specific humidity units does not appear to be in kg/kg. Results may be incorrect."
@@ -180,7 +187,7 @@ def precipitable_water(
         "description": "Precipitable water computed from the specific humidity and geopotential height.",
         "units": "m",
     }
-    pw = xclim.core.units.convert_units_to(pw, "mm")
+    pw = units.convert_units_to(pw, "mm")
 
     # Compute the precipitable water for the given window.
     out = xr.concat(
@@ -219,10 +226,10 @@ def precipitable_water_100y(
     method : {"ML" or "MLE", "MM", "PWM", "APP"}
         Fitting method, either maximum likelihood (ML or MLE), method of moments (MM) or approximate method (APP).
         Can also be the probability weighted moments (PWM), also called L-Moments, if a compatible `dist` object is passed.
-    mf : float
+    mf : float, optional
         Maximum majoration factor of the 100-year event compared to the maximum of the timeseries.
         Used as an upper limit for the frequency analysis.
-    n : int
+    n : int, optional
         Minimum number of data points for each month required to fit the statistical distribution.
         If a given month contains fewer data points than this value, `pw100` is set to the maximum value of `pw` for that month.
     rebuild_time : bool
@@ -276,7 +283,7 @@ def precipitable_water_100y(
             )
         elif isinstance(pw.indexes["time"], xr.coding.cftimeindex.CFTimeIndex):
             time_coord = [
-                xclim.core.calendar.datetime_classes[pw.time.dt.calendar](y, m, 1, hour)
+                calendar.datetime_classes[pw.time.dt.calendar](y, m, 1, hour)
                 for y, m in zip(
                     pw100_m.year.values,
                     pw100_m.month.values,
@@ -293,7 +300,7 @@ def precipitable_water_100y(
             .drop_vars(["month", "year", "stacked_coords"])
         )
 
-        # Set NaN for NaN months in pw100_m when NaN rebuild_time=True
+        # Set NaN for months where pw100_m is missing. This occurs when working with solid precipitation
         def _mask_pw100_by_zero_count(pw_v, count_v, time_months):
             # Get zero-count months
             zero_months = (
@@ -354,7 +361,7 @@ def compute_spring_and_summer_mask(
         spring and summer criteria are met and 0 where they are not.
     """
     attrs = deepcopy(snw.attrs)
-    snw = xclim.core.units.convert_units_to(snw, "mm", context="hydro")
+    snw = units.convert_units_to(snw, "mm", context="hydro")
     # xclim expects precipitation and thus writes wrong attributes.
     snw.attrs.update(attrs)
     snw.attrs["units"] = "mm"
@@ -711,12 +718,13 @@ def spatial_average_storm_configurations(da, *, radius):
 
 def pw_snowfall(
     pw: xr.DataArray,
-    method: str,
-    snow_events: xr.DataArray,
-    snw_threshold: float,
-    rainfall_events: xr.DataArray | None = None,
-    rf_threshold: float | None = None,
-    prec_events: xr.DataArray | None = None,
+    *,
+    method: Literal["m1", "m2", "m3"],
+    prsn_events: xr.DataArray,
+    prsn_threshold: Quantified,
+    prra_events: xr.DataArray | None = None,
+    prra_threshold: Quantified | None = None,
+    pr_events: xr.DataArray | None = None,
 ):
     """
     Estimate precipitable water associated with snowfall events using various filtering methods, based on Klein et al. (2017).
@@ -727,21 +735,21 @@ def pw_snowfall(
         DataArray containing the precipitable water.
     method : {"m1", "m2", "m3"}
         Method used to identify snowfall-associated precipitable water:
-        - m1:Selects time steps with at least `snw_threshold` snowfall and less than or equal to `rf_threshold` rainfall.
+        - m1:Selects time steps with at least `snw_threshold` snowfall and less than or equal to `prra_threshold` rainfall.
         - m1:Selects time steps with snowfall greater than `snw_threshold`, regardless of rainfall.
-        - m3:Starts from m2 selection, but if rainfall exceeds `rf_threshold`, the precipitable water is scaled by
-        the ratio of snowfall to total precipitation (`snow_events / prec_events`).
-    snow_events : xr.DataArray
+        - m3:Starts from m2 selection, but if rainfall exceeds `prra_threshold`, the precipitable water is scaled by
+        the ratio of snowfall to total precipitation (`prsn_events / pr_events`).
+    prsn_events : xr.DataArray
         DataArray containing snowfall event amounts.
-    snw_threshold :  float
+    prsn_threshold :  Quantified, optional
         Minimum snowfall threshold used to filter events.
-    rainfall_events : xr.DataArray, optional
+    prra_events : xr.DataArray, optional
         Required for methods "m1" and "m3". DataArray containing rainfall event amounts.
-    rf_threshold : float, optional
+    prra_threshold : Quantified, optional
         Required for methods "m1" and "m3".
         - For "m1": maximum rainfall allowed.
         - For "m3": minimum rainfall required for scaling.
-    prec_events : xr.DataArray, optional
+    pr_events : xr.DataArray, optional
         Required for method "m3". DataArray containing total precipitation used to compute the snowfall ratio.
 
     Returns
@@ -753,41 +761,56 @@ def pw_snowfall(
     -----
     https://doi.org/10.1016/j.jhydrol.2016.03.031
     """
-    warnings.warn(
-        "This function does not support different threshold values for different time windows.",
-        UserWarning,
-    )
+    if "window" in pw.dims and len(pw.window) != 1:
+        raise ValueError("This function supports only a single time window.")
 
-    if method not in ["m1", "m2", "m3"]:
-        raise ValueError(f"Invalid method '{method}'. Choose from ['m1', 'm2', 'm3'].")
+    if prsn_events is None or prsn_threshold is None:
+        raise ValueError("Both 'prsn_events' and 'prsn_threshold ' must be provided.")
 
-    if snow_events is None or snw_threshold is None:
-        raise ValueError("Both 'snow_events' and 'snw_threshold' must be provided.")
-
-    if method in ["m1", "m3"] and (rainfall_events is None or rf_threshold is None):
+    if method in ["m1", "m3"] and (prra_events is None or prra_threshold is None):
         raise ValueError(
-            f"'rainfall_events' and 'rf_threshold' are required for method '{method}'."
+            f"'prra_events' and 'prra_threshold' are required for method '{method}'."
         )
 
-    if method == "m3" and prec_events is None:
-        raise ValueError("'prec_events' is required for method 'm3'.")
+    if method == "m3" and pr_events is None:
+        raise ValueError("'pr_events' is required for method 'm3'.")
+
+    # Convert thresholds to match the data's units
+    prsn_threshold_converted = units.convert_units_to(prsn_threshold, prsn_events)
+    if method in ["m1", "m3"]:
+        rf_threshold_converted = units.convert_units_to(prra_threshold, prra_events)
 
     if method == "m1":
-        pw_snowfall_m1 = pw.where(
-            (rainfall_events < rf_threshold) & (snow_events > snw_threshold)
+        pw_snowfall = pw.where(
+            (prra_events < rf_threshold_converted)
+            & (prsn_events > prsn_threshold_converted)
         )
-        pw_snowfall_m1.name = "precipitable_water_m1"
-        return pw_snowfall_m1
+    elif method == "m2":
+        pw_snowfall = pw.where(prsn_events > prsn_threshold_converted)
+    elif method == "m3":
 
-    pw_snowfall_m2 = pw.where(snow_events > snw_threshold)
-    if method == "m2":
-        pw_snowfall_m2.name = "precipitable_water_m2"
-        return pw_snowfall_m2
+        if prsn_events.attrs.get("units") != pr_events.attrs.get("units"):
+            raise ValueError(f"`prsn_events`and `pr_events` must have the same units.")
+        else:
+            pw_snowfall_m2 = pw.where(prsn_events > prsn_threshold_converted)
+            where_m3 = (prsn_events > prsn_threshold_converted) & (
+                prra_events > rf_threshold_converted
+            )
+            ratio_snowfall = prsn_events / pr_events
+            pw_snowfall = xr.where(
+                where_m3, pw_snowfall_m2 * ratio_snowfall, pw_snowfall_m2
+            )
+            pw_snowfall.attrs["units"] = pw_snowfall_m2.attrs["units"]
+    else:
+        raise ValueError(f"Invalid method '{method}'. Choose from ['m1', 'm2', 'm3'].")
 
-    where_m3 = (snow_events > snw_threshold) & (rainfall_events > rf_threshold)
-    ratio_snowfall = snow_events / prec_events
+    pw_snowfall.name = f"precipitable_water_snowfall"
+    pw_snowfall.attrs["method"] = method
+    pw_snowfall.attrs["long_name"] = (
+        "Precipitable water associated with snowfall events."
+    )
+    pw_snowfall.attrs["description"] = (
+        f"Estimated precipitable water associated with snowfall events using method {method}, based on Klein et al. (2017): https://doi.org/10.1016/j.jhydrol.2016.03.031."
+    )
 
-    pw_snowfall_m3 = xr.where(where_m3, pw_snowfall_m2 * ratio_snowfall, pw_snowfall_m2)
-
-    pw_snowfall_m3.name = "precipitable_water_m3"
-    return pw_snowfall_m3
+    return pw_snowfall

@@ -621,6 +621,10 @@ class TestPMSA:
         era5_example["prsn"] = era5_example["prsn"] * 86400
         era5_example["rf"] = era5_example["rf"] * 86400
 
+        era5_example.pr.attrs["units"] = "mm"
+        era5_example.prsn.attrs["units"] = "mm"
+        era5_example.rf.attrs["units"] = "mm"
+
         pw = pmp.precipitable_water(
             hus=era5_example.hus,
             zg=era5_example.zg,
@@ -629,39 +633,39 @@ class TestPMSA:
             add_pre_lay=True,
         )
 
-        snw_threshold = 1
-        rf_threshold = 0.4
+        prsn_threshold = "1 mm"
+        prra_threshold = "0.4 mm"
 
         pw_snowfall_m1 = pmp.pw_snowfall(
             pw,
             method="m1",
-            snow_events=era5_example.prsn.isel(plev=0),
-            snw_threshold=snw_threshold,
-            rainfall_events=era5_example.rf.isel(plev=0),
-            rf_threshold=rf_threshold,
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
+            prra_events=era5_example.rf.isel(plev=0),
+            prra_threshold=prra_threshold,
         )
         pw_snowfall_m2 = pmp.pw_snowfall(
             pw,
             method="m2",
-            snow_events=era5_example.prsn.isel(plev=0),
-            snw_threshold=snw_threshold,
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
         )
         pw_snowfall_m3 = pmp.pw_snowfall(
             pw,
             method="m3",
-            snow_events=era5_example.prsn.isel(plev=0),
-            snw_threshold=snw_threshold,
-            rainfall_events=era5_example.rf.isel(plev=0),
-            rf_threshold=rf_threshold,
-            prec_events=era5_example.pr.isel(plev=0),
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
+            prra_events=era5_example.rf.isel(plev=0),
+            prra_threshold=prra_threshold,
+            pr_events=era5_example.pr.isel(plev=0),
         )
 
         assert isinstance(pw_snowfall_m3, xr.DataArray)
         assert isinstance(pw_snowfall_m2, xr.DataArray)
         assert isinstance(pw_snowfall_m1, xr.DataArray)
-        assert pw_snowfall_m1.name == "precipitable_water_m1"
-        assert pw_snowfall_m2.name == "precipitable_water_m2"
-        assert pw_snowfall_m3.name == "precipitable_water_m3"
+        assert pw_snowfall_m1.name == "precipitable_water_snowfall"
+        assert pw_snowfall_m2.name == "precipitable_water_snowfall"
+        assert pw_snowfall_m3.name == "precipitable_water_snowfall"
         assert set(pw_snowfall_m3.dims) == {"window", "location", "time"}
         assert set(pw_snowfall_m2.dims) == {"window", "location", "time"}
         assert set(pw_snowfall_m1.dims) == {"window", "location", "time"}
@@ -747,3 +751,11 @@ class TestPMSA:
 
         assert (count_m1 < count_m2).all()
         assert (count_m3 == count_m2).all()
+
+        with pytest.raises(ValueError):
+            pmp.pw_snowfall(
+                pw,
+                method="XXXX",
+                prsn_events=era5_example.prsn.isel(plev=0),
+                prsn_threshold=prsn_threshold,
+            )
