@@ -588,7 +588,9 @@ def calculate_rp_from_afr(
         "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.",
         FutureWarning,
     )
-    return calculate_return_period(ds_regions, ds_moments_regions, return_period, l1, rp)
+    return calculate_return_period(
+        ds_regions, ds_moments_regions, return_period, l1, rp
+    )
 
 
 def calculate_return_period(
