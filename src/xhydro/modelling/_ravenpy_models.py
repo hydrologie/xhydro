@@ -85,9 +85,9 @@ class RavenpyModel(HydrologicalModel):
         Path to the file containing the observed streamflow data.
     alt_name_flow : str, optional
         Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
-    minimum_lake_area : str, optional
+    minimum_reservoir_area : str, optional
         Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
-        If not provided, all lakes will be considered as reservoirs. Only applicable for the HBVEC model.
+        If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
     output_reaches : {"all", "qobs"}, optional
         If "all", all reaches will be outputted. If "qobs", only the reaches with observed flow will be outputted.
         Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
@@ -117,7 +117,7 @@ class RavenpyModel(HydrologicalModel):
         meteo_station_properties: dict | None = None,
         qobs_file: str | Path | None = None,
         alt_name_flow: str = "q",
-        minimum_lake_area: str | None = None,
+        minimum_reservoir_area: str | None = None,
         output_reaches: Literal["all", "qobs"] | None = None,
         **kwargs,
     ):
@@ -152,7 +152,7 @@ class RavenpyModel(HydrologicalModel):
                 meteo_station_properties=meteo_station_properties,
                 qobs_file=qobs_file,
                 alt_name_flow=alt_name_flow,
-                minimum_lake_area=minimum_lake_area,
+                minimum_reservoir_area=minimum_reservoir_area,
                 output_reaches=output_reaches,
                 overwrite=overwrite,
                 **kwargs,
@@ -174,7 +174,7 @@ class RavenpyModel(HydrologicalModel):
         meteo_station_properties: dict | None = None,
         qobs_file: str | Path | None = None,
         alt_name_flow: str = "q",
-        minimum_lake_area: str | None = None,
+        minimum_reservoir_area: str | None = None,
         output_reaches: Literal["all", "qobs"] | None = None,
         overwrite: bool = False,
         **kwargs,
@@ -223,12 +223,13 @@ class RavenpyModel(HydrologicalModel):
             Path to the file containing the observed streamflow data.
         alt_name_flow : str, optional
             Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
-        minimum_lake_area : str, optional
+        minimum_reservoir_area : str, optional
             Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
-            If not provided, all lakes will be considered as reservoirs. Only applicable for the HBVEC model.
+            If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
         output_reaches : {"all", "qobs"}, optional
-            If "all", all reaches will be outputted. If "qobs", only the reaches with observed flow will be outputted.
-            Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
+            If "all", all reaches will be outputted.
+            If "qobs", reaches with observed flow will be outputted, as defined by the basin IDs in the observed streamflow data.
+            Leave as None to use the value as defined in the HRU file ('Has_Gauge' column). Only applicable for the HBVEC model.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
@@ -316,11 +317,8 @@ class RavenpyModel(HydrologicalModel):
                 raise ValueError("Could not determine the type of meteorological data.")
 
         # Prepare the HRUs
-        hru_file = None
         if isinstance(hru, str | os.PathLike):
-            hru = Path(hru)
-            hru_file = hru
-            hru = gpd.read_file(hru)
+            hru = gpd.read_file(Path(hru))
         if isinstance(hru, dict):
             gpd_info = {k: [v] for k, v in hru.items() if k not in ["geometry", "crs"]}
             hru = gpd.GeoDataFrame(
@@ -328,13 +326,34 @@ class RavenpyModel(HydrologicalModel):
                 geometry=[hru.get("geometry")],
                 crs=hru.get("crs"),
             )
-        if hru_file is None:
-            hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
+        hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
 
         # Extract the basin properties
         try:
+            # Manage a few things while we still have a GeoDataFrame
+            if output_reaches is not None:
+                if output_reaches == "qobs":
+                    hru["Has_Gauge"] = (hru["SubId"].isin(obs_basin_ids)).astype(int)
+                    for s in obs_basin_ids:
+                        hru.loc[hru["SubId"] == s, "Obs_NM"] = obs_station_ids[
+                            obs_basin_ids.index(s)
+                        ]
+                elif output_reaches == "all":
+                    hru["Has_Gauge"] = 1
+                    hru["Obs_NM"] = hru["Obs_NM"].fillna("")
+                else:
+                    raise ValueError(
+                        f"The 'output_reaches' parameter must be either 'all' or 'qobs'. Got '{output_reaches}' instead."
+                    )
+
             rvh_config = BasinMakerExtractor(hru).extract()
             kwargs["HRUs"] = rvh_config["hrus"]
+
+            # The GridWeightExtractor requires a file on disk, so we save the HRU as a shapefile.
+            Path(hru_file.parent).mkdir(parents=True, exist_ok=True)
+            hru.to_file(
+                str(hru_file),
+            )
 
         # Manage simplistic HRU inputs that do not contain all the required properties
         except KeyError:
@@ -375,61 +394,82 @@ class RavenpyModel(HydrologicalModel):
 
         # Special considerations for distributed models (currently, only HBVEC)
         if model_name == "HBVEC":
-            # Additional spatial information
-            kwargs["sub_basins"] = rvh_config["sub_basins"]
-            kwargs["sub_basin_group"] = rvh_config["sub_basin_group"]
-            kwargs["channel_profile"] = rvh_config["channel_profile"]
+            # Additional information from the BasinMakerExtractor
+            for key in rvh_config.keys():
+                if key != "hrus" and len(rvh_config[key]) > 0:
+                    kwargs[key] = rvh_config[key]
 
-            # Sub-basin reference flow
-            records = []
-            for i in range(len(rvh_config["sub_basins"])):
-                subid = rvh_config["sub_basins"][i]["subbasin_id"]
-                records.append(
-                    {
-                        "sb_id": subid,
-                        "values": (hru.loc[hru["SubId"] == subid, "Q_Mean"].mean(),),
+            if "sub_basins" in kwargs:
+                # Add the subbasin reference flow
+                if (
+                    not any(
+                        k in kwargs
+                        for k in ["SubBasinProperties", "sub_basin_properties"]
+                    )
+                    and "Q_Mean" in hru.columns
+                ):
+                    # Warning: This entry will completely overwrite the default SubBasinProperties, so we need to copy the existing ones
+                    # and add REFERENCE_Q to it.
+                    default_sub_basin_properties = (
+                        ravenpy.config.emulators.HBVEC.model_fields[
+                            "sub_basin_properties"
+                        ].default
+                    )
+                    sb_parameters = default_sub_basin_properties["parameters"].copy()
+                    records_values = default_sub_basin_properties["records"][0][
+                        "values"
+                    ]
+
+                    kwargs["sub_basin_properties"] = {
+                        "parameters": sb_parameters + ["Q_REFERENCE"],
+                        "records": [
+                            {
+                                "sb_id": subid["subbasin_id"],
+                                "values": tuple(
+                                    list(records_values)
+                                    + [
+                                        hru.loc[
+                                            hru["SubId"] == subid["subbasin_id"],
+                                            "Q_Mean",
+                                        ].mean()
+                                    ]
+                                ),
+                            }
+                            for subid in kwargs["sub_basins"]
+                        ],
                     }
-                )
-            kwargs["SubBasinProperties"] = {
-                "parameters": ["Q_REFERENCE"],
-                "records": records,
-            }
 
-            # Manage the reaches to output
-            if output_reaches is not None:
-                if output_reaches == "qobs":
-                    for subbasin in rvh_config["sub_basins"]:
-                        if subbasin["subbasin_id"] in obs_basin_ids:
-                            subbasin["gauged"] = True
-                            subbasin["gauge_id"] = obs_station_ids[
-                                obs_basin_ids.index(subbasin["subbasin_id"])
-                            ]
-                        else:
-                            subbasin["gauged"] = False
-                            subbasin["gauge_id"] = ""
-                elif output_reaches == "all":
-                    for subbasin in rvh_config["sub_basins"]:
-                        subbasin["gauged"] = True
-                        subbasin["gauge_id"] = ""
+            if "reservoirs" in kwargs:
+                # Initial storage at 1000 mm
+                if "hru_state_variable_table" not in kwargs:
+                    storage_name = (
+                        kwargs.get("LakeStorage")
+                        or kwargs.get("lake_storage")
+                        or "SOIL[2]"
+                    )
+                    kwargs["hru_state_variable_table"] = [
+                        {
+                            "hru_id": res["hru_id"],
+                            "data": {storage_name: 1000},
+                        }
+                        for res in kwargs["reservoirs"]
+                    ]
 
-            # Only keep lakes above a certain area to represent explicitly as reservoirs
-            reservoirs = rvh_config["reservoirs"]
-            if minimum_lake_area is not None:
-                minimum_lake_area = convert_units_to(minimum_lake_area, "m2")
-                reservoirs = [
-                    r for r in reservoirs if r["lake_area"] >= minimum_lake_area
-                ]
-            kwargs["reservoirs"] = reservoirs
-
-            # Initial lake storage at 1000 mm
-            hru_state_variable_table = [
-                {
-                    "hru_id": rvh_config["reservoirs"][j]["hru_id"],
-                    "data": {"LAKE_STORAGE": 1000},
-                }
-                for j in range(len(rvh_config["reservoirs"]))
-            ]
-            kwargs["hru_state_variable_table"] = hru_state_variable_table
+                # Filter the reservoirs based on the minimum reservoir area, but after setting an initial storage on all lakes
+                if minimum_reservoir_area is not None:
+                    minimum_reservoir_area = convert_units_to(
+                        minimum_reservoir_area, "m2"
+                    )
+                    reservoirs = hru.loc[
+                        (hru["LakeArea"] >= minimum_reservoir_area)
+                        & (hru["Lake_Cat"] > 0),
+                        "SubId",
+                    ].unique()
+                    kwargs["reservoirs"] = [
+                        r
+                        for r in kwargs["reservoirs"]
+                        if r["subbasin_id"] in reservoirs
+                    ]
 
         # Prepare the meteorological data
         if meteo_type == "station":

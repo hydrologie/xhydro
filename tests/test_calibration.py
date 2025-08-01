@@ -8,6 +8,7 @@ import pooch
 import pytest
 import xarray as xr
 
+import xhydro as xh
 from xhydro.modelling.calibration import perform_calibration
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
@@ -116,6 +117,21 @@ class TestRavenpyModelCalibration:
     }
 
     model_config.update({"meteo_station_properties": meteo_station_properties})
+
+    # Temporary test until this is properly implemented in xhydro
+    def test_ravenpy_qobs(self):
+        model_config = deepcopy(self.model_config)
+        model_config.update({"model_name": "GR4JCN"})
+        model_config["parameters"] = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+        model_config["qobs_file"] = self.qobs_path
+        model_config["alt_name_flow"] = self.alt_names_flow
+
+        hm = xh.modelling.RavenpyModel(**model_config)
+        rvt = hm.workdir / f"{hm.run_name}.rvt"
+        with rvt.open("r") as f:
+            lines = f.readlines()
+        assert len([line for line in lines if "HYDROGRAPH" in line]) == 1
+        assert len([line for line in lines if ":VarNameNC            qobs" in l]) == 1
 
     def test_ravenpy_gr4jcn_calibration(self):
         """Test for GR4JCN ravenpy model"""

@@ -268,6 +268,10 @@ class TestRavenpyModels:
         ds = ds.drop_vars(["height", "prsn"])
         ds = ds.isel(plev=0)
         meteo, cfg = xhm.format_input(ds, model="GR4JCN", save_as=tmp_path / "test.nc")
+        if input_type == "gpd":
+            meteo["longitude"].attrs = {}
+            meteo["latitude"].attrs = {}
+            meteo.to_netcdf(tmp_path / "test_bad.nc")
 
         hru = Polygon(
             [
@@ -297,6 +301,28 @@ class TestRavenpyModels:
 
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
+
+        if input_type == "gpd":
+            cfg2 = cfg.copy()
+            cfg2["meteo_file"] = tmp_path / "test_bad.nc"
+            with pytest.raises(
+                ValueError, match="Could not determine the type of meteorological data"
+            ):
+                qsim = RavenpyModel(
+                    model_name="GR4JCN",
+                    parameters=parameters,
+                    hru=hru,
+                    start_date="2010-01-02",
+                    end_date="2010-10-03",
+                    workdir=tmp_path,
+                    meteo_station_properties=self.meteo_station_properties,
+                    rain_snow_fraction=self.rain_snow_fraction,
+                    evaporation=self.evaporation,
+                    global_parameter=global_parameter,
+                    overwrite=True,
+                    **cfg2,
+                ).run()
+
         qsim = RavenpyModel(
             model_name="GR4JCN",
             parameters=parameters,
@@ -400,3 +426,100 @@ class TestRavenpyModels:
                 overwrite=True,
                 **cfg,
             )
+
+
+@pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
+class TestDistributedRavenpy:
+    @pytest.fixture(scope="class")
+    def gridded_meteo(self, deveraux):
+        ds = xr.open_zarr(
+            Path(
+                deveraux.fetch(
+                    "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.day.gn.zarr.zip",
+                    pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+        ds_fx = xr.open_zarr(
+            Path(
+                deveraux.fetch(
+                    "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.fx.gn.zarr.zip",
+                    pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+        ds["orog"] = ds_fx["orog"]
+        ds["pr"].attrs = {"units": "mm", "long_name": "precipitation"}
+        ds = ds.drop_vars(["height", "prsn"])
+        ds = ds.isel(plev=0)
+        meteo, cfg = xhm.format_input(ds, model="HBVEC")
+        return meteo, cfg
+
+    def test_hbvec_basic(self, tmp_path, gridded_meteo):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        df = gpd.read_file(
+            Path(__file__).parents[2]
+            / "xhydro-testdata"
+            / "data"
+            / "ravenpy"
+            / "hru_subset.shp"
+        )
+
+        df.loc[:, "VEG_C"] = "VEG_ALL"  # RavenPy default is VEG_ALL, so we use that.
+        df.loc[:, "LAND_USE_C"] = "LU_ALL"  # RavenPy default is
+        df.loc[:, "SOIL_PROF"] = "DEFAULT_P"  # RavenPy default is DEFAULT_P
+
+        # Model parameters: X01 to X21
+        parameters = {
+            "rainsnow_temp": -0.15,
+            "melt_factor": 3.5,
+            "refreeze_factor": 3.0,
+            "snow_swi": 0.07,
+            "porosity": 0.4,
+            "field_capacity": 0.8,
+            "hbv_beta": 1,
+            "max_perc_rate": 4.0,
+            "baseflow_coeff_fastres": 0.5,
+            "baseflow_coeff_slowres": 0.1,
+            "time_conc": 1,
+            "precip_lapse": 5.0,
+            "adiabatic_lapse": 4.8,
+            "sat_wilt": 0.1,
+            "baseflow_n": 1.0,
+            "max_cap_rise_rate": 22.0,
+            "topsoil_thickness": 0.5,
+            "hbv_melt_for_corr": 0.1,
+            "glac_storage_coeff": 0.0,
+            "rain_corr": 1.0,
+            "snow_corr": 1.0,
+        }
+
+        # Additional modifications to the model
+        kwargs = {}
+
+        # Distributed models require a global parameter for the average annual runoff
+        kwargs["global_parameter"] = {
+            "AVG_ANNUAL_RUNOFF": 500
+        }  # This is added on top of default global parameters, so this is fine.
+
+        qsim = RavenpyModel(
+            model_name="HBVEC",
+            parameters=(
+                parameters
+                if isinstance(parameters, list)
+                else np.array(list(parameters.values()))
+            ),
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_reaches="all",
+            **cfg | kwargs,
+        ).run()
+        print(qsim)
+
+        assert qsim["q"].shape == (275,)
