@@ -27,7 +27,7 @@ import xhydro.frequency_analysis as xhfa
 
 from .regional import (
     calc_moments,
-    calculate_return_period_from_afr,
+    calculate_return_period,
     remove_small_regions,
 )
 
