@@ -347,10 +347,10 @@ def calc_h_z(
 
 
 def _calculate_gev_tau4(
-    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset
+    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset
 ) -> xr.Dataset:
     # H&W
-    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
+    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
 
     k = _calc_k(lambda_r_2, lambda_r_3)
 
@@ -513,7 +513,7 @@ def mask_h_z(
     Parameters
     ----------
     ds : xr.Dataset
-        Dataset containing H and Z values for each group.
+        Dataset containing H and Z values for each region.
     thresh_h : float, optional
         Threshold for the heterogeneity measure H. Default is 1.
     thresh_z : float, optional
@@ -522,7 +522,7 @@ def mask_h_z(
     Returns
     -------
     xr.DataArray
-        Boolean mask where True indicates groups that meet both threshold criteria.
+        Boolean mask where True indicates regions that meet both threshold criteria.
     """
     ds_out = (ds.sel(crit="H") < thresh_h) & (abs(ds.sel(crit="Z")) < thresh_z)
     for v in ds_out.var():
@@ -548,8 +548,8 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
 
 
 def calculate_rp_from_afr(
-    ds_groups: xr.Dataset,
-    ds_moments_groups: xr.Dataset,
+    ds_regions: xr.Dataset,
+    ds_moments_regions: xr.Dataset,
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
@@ -560,27 +560,27 @@ def calculate_rp_from_afr(
 
     Parameters
     ----------
-    ds_groups : xr.Dataset
-        Dataset containing grouped flow data.
-    ds_moments_groups : xr.Dataset
-        Dataset containing L-moments for grouped data.
+    ds_regions : xr.Dataset
+        Dataset containing region flow data.
+    ds_moments_regions : xr.Dataset
+        Dataset containing L-moments for region data.
     return_period : array-like
         Return periods to calculate.
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
-        If None, values are taken from ds_moments_groups.
+        If None, values are taken from ds_moments_regions.
     rp : array-like, optional
         Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.DataArray
-        Calculated return periods for each group and specified return period.
+        Calculated return periods for each region and specified return period.
 
     Notes
     -----
     This function calculates return periods using the Annual Flow Regime method.
-    If l1 is not provided, it uses the first L-moment from ds_moments_groups.
+    If l1 is not provided, it uses the first L-moment from ds_moments_regions.
     The function internally calls calculate_ic_from_AFR to compute the flood index.
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
@@ -588,12 +588,12 @@ def calculate_rp_from_afr(
         "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.",
         FutureWarning,
     )
-    return calculate_return_period(ds_groups, ds_moments_groups, return_period, l1, rp)
+    return calculate_return_period(ds_regions, ds_moments_regions, return_period, l1, rp)
 
 
 def calculate_return_period(
-    ds_groups: xr.Dataset,
-    ds_moments_groups: xr.Dataset,
+    ds_regions: xr.Dataset,
+    ds_moments_regions: xr.Dataset,
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
@@ -604,27 +604,27 @@ def calculate_return_period(
 
     Parameters
     ----------
-    ds_groups : xr.Dataset
-        Dataset containing grouped flow data.
-    ds_moments_groups : xr.Dataset
-        Dataset containing L-moments for grouped data.
+    ds_regions : xr.Dataset
+        Dataset containing region flow data.
+    ds_moments_regions : xr.Dataset
+        Dataset containing L-moments for region data.
     return_period : array-like
         Return periods to calculate.
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
-        If None, values are taken from ds_moments_groups.
+        If None, values are taken from ds_moments_regions.
     rp : array-like, optional
         Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.DataArray
-        Calculated return periods for each group and specified return period.
+        Calculated return periods for each region and specified return period.
 
     Notes
     -----
     This function calculates return periods using the Annual Flow Regime method.
-    If l1 is not provided, it uses the first L-moment from ds_moments_groups.
+    If l1 is not provided, it uses the first L-moment from ds_moments_regions.
     The function internally calls calculate_ic_from_AFR to compute the flood index.
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
@@ -636,24 +636,24 @@ def calculate_return_period(
         return_period = rp
 
     if l1 is None:
-        station_dim = ds_moments_groups.cf.cf_roles["timeseries_id"][0]
-        l1 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
-    ds = _calculate_ic_from_afr(ds_groups, ds_moments_groups, return_period) * l1
+        station_dim = ds_moments_regions.cf.cf_roles["timeseries_id"][0]
+        l1 = ds_moments_regions.sel(lmom="l1").dropna(dim=station_dim, how="all")
+    ds = _calculate_ic_from_afr(ds_regions, ds_moments_regions, return_period) * l1
     for v in ds.var():
         ds[v].attrs["long_name"] = "Return period"
         ds[v].attrs[
             "description"
-        ] = "Calculated return periods for each group and specified return period."
+        ] = "Calculated return periods for each region and specified return period."
         ds[v].attrs["history"] = update_history("Computed return periods", ds[v])
-        ds[v].attrs["units"] = ds_groups[v].attrs["units"]
+        ds[v].attrs["units"] = ds_regions[v].attrs["units"]
     return ds
 
 
 def _calculate_ic_from_afr(
-    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset, return_period: list
+    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, return_period: list
 ) -> xr.Dataset:
 
-    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_groups, ds_moments_groups)
+    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
 
     # alpha = location
     # xi    = scale
@@ -699,12 +699,12 @@ def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
         The dataset with small regions removed.
     """
     station_dim = ds.cf.cf_roles["timeseries_id"][0]
-    for gr in ds.group_id:
+    for gr in ds.region_id:
         if (
-            len(ds.sel(group_id=gr).dropna(dim=station_dim, how="all")[station_dim])
+            len(ds.sel(region_id=gr).dropna(dim=station_dim, how="all")[station_dim])
             < thresh
         ):
-            ds = ds.drop_sel(group_id=gr)
+            ds = ds.drop_sel(region_id=gr)
     return ds
 
 
@@ -719,17 +719,17 @@ def _calc_k(lambda_r_2, lambda_r_3):
 
 
 def _calc_lambda_r(
-    ds_groups: xr.Dataset, ds_moments_groups: xr.Dataset
+    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset
 ) -> tuple[int, xr.Dataset, xr.Dataset]:
-    station_dim = ds_groups.cf.cf_roles["timeseries_id"][0]
+    station_dim = ds_regions.cf.cf_roles["timeseries_id"][0]
 
-    nr = ds_moments_groups.count(dim=station_dim).isel(lmom=0)
-    nk = ds_groups.dropna(dim=station_dim, how="all").count(dim="time")
+    nr = ds_moments_regions.count(dim=station_dim).isel(lmom=0)
+    nk = ds_regions.dropna(dim=station_dim, how="all").count(dim="time")
     wk = (nk * nr) / (nk + nr)
 
-    lambda_k0 = ds_moments_groups.sel(lmom="l1").dropna(dim=station_dim, how="all")
-    lambda_k1 = ds_moments_groups.sel(lmom="l2").dropna(dim=station_dim, how="all")
-    lambda_k2 = ds_moments_groups.sel(lmom="l3").dropna(dim=station_dim, how="all")
+    lambda_k0 = ds_moments_regions.sel(lmom="l1").dropna(dim=station_dim, how="all")
+    lambda_k1 = ds_moments_regions.sel(lmom="l2").dropna(dim=station_dim, how="all")
+    lambda_k2 = ds_moments_regions.sel(lmom="l3").dropna(dim=station_dim, how="all")
 
     l2 = (lambda_k1 / lambda_k0) * wk
     l3 = (lambda_k2 / lambda_k0) * wk
