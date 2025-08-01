@@ -468,9 +468,9 @@ class TestDistributedRavenpy:
             / "hru_subset.shp"
         )
 
-        df.loc[:, "VEG_C"] = "VEG_ALL"  # RavenPy default is VEG_ALL, so we use that
-        df.loc[:, "LAND_USE_C"] = "LU_ALL"  # RavenPy default is
-        df.loc[:, "SOIL_PROF"] = "DEFAULT_P"  # RavenPy default is DEFAULT_P
+        df.loc[:, "VEG_C"] = "VEG_ALL"
+        df.loc[:, "LAND_USE_C"] = "LU_ALL"
+        df.loc[:, "SOIL_PROF"] = "DEFAULT_P"
 
         # Model parameters: X01 to X21
         parameters = {
