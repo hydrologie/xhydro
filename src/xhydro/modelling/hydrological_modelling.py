@@ -515,6 +515,7 @@ def format_input(  # noqa: C901
             attrs={"units": "days since 1970-01-01 00:00:00"},
         )
 
+        # Prepare the information for the .nc.config file
         cfg = {
             "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
             "STATION_DIM_NAME": "station_id",
@@ -532,6 +533,8 @@ def format_input(  # noqa: C901
             with Path(save_as).with_suffix(".nc.config").open("w") as f:
                 for k, v in cfg.items():
                     f.write(f"{k}; {v}\n")
+
+            ds = ds.chunk({"station_id": 1, "time": -1})
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
     # Additional data processing specific to Raven
