@@ -273,8 +273,8 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
     # Check for the metrics that exist but cannot be used for optimization
     elif obj_func in ["bias", "pbias", "volume_error"]:
         raise ValueError(
-            "The bias, pbias and volume_error metrics cannot be minimized or maximized. \
-                 Please use the abs_bias, abs_pbias and abs_volume_error instead."
+            "The bias, pbias, volume_error, high_flow_rel_error, low_flow_rel_error metrics cannot be minimized or maximized. \
+                 Please use the abs_bias, abs_pbias and abs_volume_error instead or note the high_flow_rel_error, low_flow_rel_error metrics cannot be used for optimization."
         )
     else:
         raise NotImplementedError("The objective function is unknown.")
