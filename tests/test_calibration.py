@@ -131,7 +131,9 @@ class TestRavenpyModelCalibration:
         with rvt.open("r") as f:
             lines = f.readlines()
         assert len([line for line in lines if "HYDROGRAPH" in line]) == 1
-        assert len([line for line in lines if ":VarNameNC            qobs" in l]) == 1
+        assert (
+            len([line for line in lines if ":VarNameNC            qobs" in line]) == 1
+        )
 
     def test_ravenpy_gr4jcn_calibration(self):
         """Test for GR4JCN ravenpy model"""

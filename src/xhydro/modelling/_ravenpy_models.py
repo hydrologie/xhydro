@@ -88,8 +88,8 @@ class RavenpyModel(HydrologicalModel):
     minimum_reservoir_area : str, optional
         Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
         If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
-    output_reaches : {"all", "qobs"}, optional
-        If "all", all reaches will be outputted. If "qobs", only the reaches with observed flow will be outputted.
+    output_subbasins : {"all", "qobs"}, optional
+        If "all", all subbasins will be outputted. If "qobs", only the subbasins with observed flow will be outputted.
         Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
     \*\*kwargs : dict, optional
         Additional parameters to pass to the RavenPy emulator, to modify the default modules used by a given hydrological model.
@@ -118,7 +118,7 @@ class RavenpyModel(HydrologicalModel):
         qobs_file: str | Path | None = None,
         alt_name_flow: str = "q",
         minimum_reservoir_area: str | None = None,
-        output_reaches: Literal["all", "qobs"] | None = None,
+        output_subbasins: Literal["all", "qobs"] | None = None,
         **kwargs,
     ):
         """Initialize the RavenPy model class."""
@@ -153,7 +153,7 @@ class RavenpyModel(HydrologicalModel):
                 qobs_file=qobs_file,
                 alt_name_flow=alt_name_flow,
                 minimum_reservoir_area=minimum_reservoir_area,
-                output_reaches=output_reaches,
+                output_subbasins=output_subbasins,
                 overwrite=overwrite,
                 **kwargs,
             )
@@ -175,7 +175,7 @@ class RavenpyModel(HydrologicalModel):
         qobs_file: str | Path | None = None,
         alt_name_flow: str = "q",
         minimum_reservoir_area: str | None = None,
-        output_reaches: Literal["all", "qobs"] | None = None,
+        output_subbasins: Literal["all", "qobs"] | None = None,
         overwrite: bool = False,
         **kwargs,
     ):
@@ -221,14 +221,17 @@ class RavenpyModel(HydrologicalModel):
             This has not been tested for multiple stations or gridded data.
         qobs_file : str | Path, optional
             Path to the file containing the observed streamflow data.
+            If using a distributed model, the file must contain a 'basin_id' dimension that matches the 'SubId' column in the HRU file.
+            Additionally, it can contain a 'station_id' coordinate to identify the name of the station, which will be used to fill the 'Obs_NM'
+            column in the HRU file.
         alt_name_flow : str, optional
             Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
         minimum_reservoir_area : str, optional
             Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
             If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
-        output_reaches : {"all", "qobs"}, optional
-            If "all", all reaches will be outputted.
-            If "qobs", reaches with observed flow will be outputted, as defined by the basin IDs in the observed streamflow data.
+        output_subbasins : {"all", "qobs"}, optional
+            If "all", all subbasins will be outputted.
+            If "qobs", subbasins with observed flow will be outputted, as defined by the basin IDs in the observed streamflow data.
             Leave as None to use the value as defined in the HRU file ('Has_Gauge' column). Only applicable for the HBVEC model.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
@@ -244,6 +247,7 @@ class RavenpyModel(HydrologicalModel):
                 f" Original error: {ravenpy_err_msg}"
             )
         kwargs = deepcopy(kwargs)
+        hru = deepcopy(hru)
 
         # Remove any existing files in the project directory
         if len([f for f in self.workdir.rglob(f"{self.run_name}.rv*")]) > 0:
@@ -331,19 +335,19 @@ class RavenpyModel(HydrologicalModel):
         # Extract the basin properties
         try:
             # Manage a few things while we still have a GeoDataFrame
-            if output_reaches is not None:
-                if output_reaches == "qobs":
+            if output_subbasins is not None:
+                if output_subbasins == "qobs":
                     hru["Has_Gauge"] = (hru["SubId"].isin(obs_basin_ids)).astype(int)
                     for s in obs_basin_ids:
                         hru.loc[hru["SubId"] == s, "Obs_NM"] = obs_station_ids[
                             obs_basin_ids.index(s)
                         ]
-                elif output_reaches == "all":
+                elif output_subbasins == "all":
                     hru["Has_Gauge"] = 1
                     hru["Obs_NM"] = hru["Obs_NM"].fillna("")
                 else:
                     raise ValueError(
-                        f"The 'output_reaches' parameter must be either 'all' or 'qobs'. Got '{output_reaches}' instead."
+                        f"The 'output_subbasins' parameter must be either 'all' or 'qobs'. Got '{output_subbasins}' instead."
                     )
 
             rvh_config = BasinMakerExtractor(hru).extract()
@@ -394,12 +398,7 @@ class RavenpyModel(HydrologicalModel):
 
         # Special considerations for distributed models (currently, only HBVEC)
         if model_name == "HBVEC":
-            # Additional information from the BasinMakerExtractor
-            for key in rvh_config.keys():
-                if key != "hrus" and len(rvh_config[key]) > 0:
-                    kwargs[key] = rvh_config[key]
-
-            if "sub_basins" in kwargs:
+            if "sub_basins" in rvh_config:
                 # Add the subbasin reference flow
                 if (
                     not any(
@@ -435,11 +434,11 @@ class RavenpyModel(HydrologicalModel):
                                     ]
                                 ),
                             }
-                            for subid in kwargs["sub_basins"]
+                            for subid in rvh_config["sub_basins"]
                         ],
                     }
 
-            if "reservoirs" in kwargs:
+            if "reservoirs" in rvh_config and len(rvh_config["reservoirs"]) > 0:
                 # Initial storage at 1000 mm
                 if "hru_state_variable_table" not in kwargs:
                     storage_name = (
@@ -452,7 +451,7 @@ class RavenpyModel(HydrologicalModel):
                             "hru_id": res["hru_id"],
                             "data": {storage_name: 1000},
                         }
-                        for res in kwargs["reservoirs"]
+                        for res in rvh_config["reservoirs"]
                     ]
 
                 # Filter the reservoirs based on the minimum reservoir area, but after setting an initial storage on all lakes
@@ -465,11 +464,16 @@ class RavenpyModel(HydrologicalModel):
                         & (hru["Lake_Cat"] > 0),
                         "SubId",
                     ].unique()
-                    kwargs["reservoirs"] = [
+                    rvh_config["reservoirs"] = [
                         r
-                        for r in kwargs["reservoirs"]
+                        for r in rvh_config["reservoirs"]
                         if r["subbasin_id"] in reservoirs
                     ]
+
+            # Add information from the BasinMakerExtractor
+            for key in rvh_config.keys():
+                if key != "hrus" and len(rvh_config[key]) > 0:
+                    kwargs[key] = rvh_config[key]
 
         # Prepare the meteorological data
         if meteo_type == "station":
@@ -632,6 +636,11 @@ class RavenpyModel(HydrologicalModel):
         outputs = OutputReader(run_name=self.run_name, path=self.workdir / "output")
 
         with xr.open_dataset(outputs.files["hydrograph"]) as ds:
-            qsim = ds.q_sim.to_dataset(name="qsim").rename({"qsim": "q"}).squeeze()
+            qsim = ds[["q_sim"]].rename({"q_sim": "q"})
+            qsim = qsim.swap_dims({"nbasins": "basin_name"}).rename(
+                {"basin_name": "subbasin_id"}
+            )
+            qsim = qsim.squeeze()
+            qsim["subbasin_id"].attrs["cf_role"] = "timeseries_id"
 
         return qsim
