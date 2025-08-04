@@ -430,17 +430,6 @@ class TestRavenpyModels:
 
 @pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
 class TestDistributedRavenpy:
-    df = gpd.read_file(
-        Path(__file__).parents[2]
-        / "xhydro-testdata"
-        / "data"
-        / "ravenpy"
-        / "hru_subset.shp"
-    )
-    df.loc[:, "VEG_C"] = "VEG_ALL"
-    df.loc[:, "LAND_USE_C"] = "LU_ALL"
-    df.loc[:, "SOIL_PROF"] = "DEFAULT_P"
-
     # Model parameters: X01 to X21
     parameters = [
         -0.15,  # rainsnow_temp
@@ -472,7 +461,7 @@ class TestDistributedRavenpy:
             Path(
                 deveraux.fetch(
                     "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.day.gn.zarr.zip",
-                    pooch.Unzip(),
+                    processor=pooch.Unzip(),
                 )[0]
             ).parents[0]
         )
@@ -480,7 +469,7 @@ class TestDistributedRavenpy:
             Path(
                 deveraux.fetch(
                     "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.fx.gn.zarr.zip",
-                    pooch.Unzip(),
+                    processor=pooch.Unzip(),
                 )[0]
             ).parents[0]
         )
@@ -491,8 +480,26 @@ class TestDistributedRavenpy:
         meteo, cfg = xhm.format_input(ds, model="HBVEC")
         return meteo, cfg
 
+    @pytest.fixture(scope="class")
+    def df(self, deveraux):
+        from xhydro.testing.helpers import deveraux as deveraux_branch
+
+        df = gpd.read_file(
+            Path(
+                deveraux_branch(branch="distributed").fetch(
+                    "ravenpy/hru_subset.zip",
+                    processor=pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+
+        df.loc[:, "VEG_C"] = "VEG_ALL"
+        df.loc[:, "LAND_USE_C"] = "LU_ALL"
+        df.loc[:, "SOIL_PROF"] = "DEFAULT_P"
+        return df
+
     @pytest.mark.parametrize("output_sub", ["all", None, "fail"])
-    def test_hbvec_basic(self, tmp_path, gridded_meteo, output_sub):
+    def test_hbvec_basic(self, tmp_path, df, gridded_meteo, output_sub):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
         cfg["meteo_file"] = str(tmp_path / "test.nc")
@@ -508,7 +515,7 @@ class TestDistributedRavenpy:
                 qsim = RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
-                    hru=self.df,
+                    hru=df,
                     start_date="2010-01-02",
                     end_date="2010-10-05",
                     workdir=tmp_path,
@@ -520,7 +527,7 @@ class TestDistributedRavenpy:
             qsim = RavenpyModel(
                 model_name="HBVEC",
                 parameters=self.parameters,
-                hru=self.df,
+                hru=df,
                 start_date="2010-01-02",
                 end_date="2010-10-05",
                 workdir=tmp_path,
@@ -541,7 +548,7 @@ class TestDistributedRavenpy:
                 assert len(qsim["subbasin_id"]) == 47
 
     @pytest.mark.parametrize("output_sub", ["qobs", None, "fail"])
-    def test_ravenpy_qobs(self, tmp_path, gridded_meteo, output_sub):
+    def test_ravenpy_qobs(self, tmp_path, df, gridded_meteo, output_sub):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
         cfg["meteo_file"] = str(tmp_path / "test.nc")
@@ -579,7 +586,7 @@ class TestDistributedRavenpy:
                 RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
-                    hru=self.df,
+                    hru=df,
                     start_date="2010-01-02",
                     end_date="2010-10-05",
                     workdir=tmp_path,
@@ -591,7 +598,7 @@ class TestDistributedRavenpy:
             qsim = RavenpyModel(
                 model_name="HBVEC",
                 parameters=self.parameters,
-                hru=self.df,
+                hru=df,
                 start_date="2010-01-02",
                 end_date="2010-10-05",
                 workdir=tmp_path,
@@ -609,16 +616,16 @@ class TestDistributedRavenpy:
                     qsim["subbasin_id"].values, ["sub_13", "sub_17"]
                 )
 
-    def test_hbvec_reservoirs(self, tmp_path, gridded_meteo):
+    def test_hbvec_reservoirs(self, tmp_path, df, gridded_meteo):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
         cfg["meteo_file"] = str(tmp_path / "test.nc")
 
-        df = self.df.copy()
-        df.loc[df["HRU_ID"] == 1, "HRU_IsLake"] = 1
-        df.loc[df["HRU_ID"] == 1, "Lake_Cat"] = 1
-        df.loc[df["HRU_ID"] == 1, "LakeArea"] = 1000000
-        df.loc[df["HRU_ID"] == 1, "LakeDepth"] = 1000
+        df2 = df.copy()
+        df2.loc[df2["HRU_ID"] == 1, "HRU_IsLake"] = 1
+        df2.loc[df2["HRU_ID"] == 1, "Lake_Cat"] = 1
+        df2.loc[df2["HRU_ID"] == 1, "LakeArea"] = 1000000
+        df2.loc[df2["HRU_ID"] == 1, "LakeDepth"] = 1000
 
         # Additional modifications to the model
         kwargs = {}
@@ -629,7 +636,7 @@ class TestDistributedRavenpy:
         hm = RavenpyModel(
             model_name="HBVEC",
             parameters=self.parameters,
-            hru=df,
+            hru=df2,
             start_date="2010-01-02",
             end_date="2010-10-05",
             workdir=tmp_path,
@@ -643,7 +650,7 @@ class TestDistributedRavenpy:
         hm2 = RavenpyModel(
             model_name="HBVEC",
             parameters=self.parameters,
-            hru=df,
+            hru=df2,
             start_date="2010-01-02",
             end_date="2010-10-05",
             workdir=tmp_path,
@@ -658,7 +665,7 @@ class TestDistributedRavenpy:
         hm_no = RavenpyModel(
             model_name="HBVEC",
             parameters=self.parameters,
-            hru=df,
+            hru=df2,
             start_date="2010-01-02",
             end_date="2010-10-05",
             workdir=tmp_path,
