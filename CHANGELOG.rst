@@ -35,6 +35,7 @@ Breaking changes
 * The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
 * The `use_defaults` argument in the `Hydrotel` class has been removed. (:pull:`331`).
 * The internal `xh.modelling._hydrotel._basic_checks` function has been removed, as Hydrotel itself performs most of these checks. Checks that are still relevant have been moved to the `run` function. (:pull:`331`).
+* The `station_id` dimension in the output of Hydrotel has been renamed to `subbasin_id`. (:pull:`331`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
