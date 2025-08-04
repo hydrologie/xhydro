@@ -169,7 +169,7 @@ class TestHydrotel:
         assert set(ds_orig.dims) == {"time", "troncon"}
 
         assert list(ds.data_vars) == ["q"]
-        assert set(ds.dims) == {"time", "station_id"}
+        assert set(ds.dims) == {"time", "subbasin_id"}
         correct_attrs = {
             "units": (
                 "m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"

@@ -385,20 +385,20 @@ class Hydrotel(HydrologicalModel):
         a temporary file will be created and then renamed to overwrite the original file.
         """
         with self.get_streamflow(**kwargs) as ds:
-            # station_id as dimension
+            # subbasin_id as dimension
             ds = ds.swap_dims({"troncon": "idtroncon"})
 
             # Rename variables to standard names
             ds = ds.assign_coords(idtroncon=ds["idtroncon"])
             ds = ds.rename(
                 {
-                    "idtroncon": "station_id",
+                    "idtroncon": "subbasin_id",
                     "debit_aval": "q",
                 }
             )
 
             # Add standard attributes and fix units
-            ds["station_id"].attrs["cf_role"] = "timeseries_id"
+            ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
             orig_attrs = dict()
             orig_attrs["_original_name"] = "debit_aval"
             for attr in ["standard_name", "long_name", "description"]:
@@ -437,7 +437,7 @@ class Hydrotel(HydrologicalModel):
             ]
 
             # Overwrite the file
-            chunks = estimate_chunks(ds, dims=["station_id"], target_mb=5)
+            chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=5)
             save_to_netcdf(
                 ds,
                 self.simulation_dir / "resultat" / "debit_aval_tmp.nc",
