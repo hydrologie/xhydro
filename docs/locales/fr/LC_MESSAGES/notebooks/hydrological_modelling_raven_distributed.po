@@ -254,11 +254,11 @@ msgid ""
 msgstr ""
 "De plus, bien que BasinMaker produise des attributs tels que "
 "``Landuse_ID``, ceux-ci ne seront pas transmis au modèle ``RavenPy``. "
-"Au lieu de cela, la HRU doit contenir des attributs d'utilisation du sol "
+"Au lieu de cela, le HRU doit contenir des attributs d'utilisation du sol "
 "pertinents qui peuvent être directement mappés aux arguments du modèle "
 "hydrologique. Par exemple, pour le modèle HBV-EC, qui est actuellement "
 "le seul modèle distribué disponible dans ``Raven``, les attributs suivants"
-" sont utilisés à la place : ``LAND_USE_C``, ``VEG_C``,
+" sont utilisés à la place : ``LAND_USE_C``, ``VEG_C``, "
 " et ``SOIL_PROF``, qui représentent respectivement l'utilisation du sol, "
 "la végétation et le profil du sol."
 
