@@ -80,6 +80,7 @@ def get_objective_function(
         - "nse": Nash-Sutcliffe Efficiency metric
         - "pbias" : Percent bias (relative bias)
         - "Persistence_index" : Measure of the relative magnitude of the residual variance to the variance of the errors
+        - "Persistence_index_weekly" : Measure of the weekly relative magnitude of the residual variance to the variance of the errors
         - "r2" : r-squared, i.e. square of correlation_coeff.
         - "rmse" : Root Mean Square Error
         - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
@@ -140,6 +141,7 @@ def get_objective_function(
         "nse": _nse,
         "pbias": _pbias,
         "persistence_index": _persistence_index,
+        "persistence_index_weekly": _persistence_index_weekly,
         "r2": _r2,
         "rmse": _rmse,
         "rrmse": _rrmse,
@@ -251,6 +253,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "lce",
         "nse",
         "persistence_index",
+        "persistence_index_weekly",
         "r2",
         "volumetric_efficiency"
     ]:
@@ -1081,6 +1084,55 @@ def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     qobs_prev = qobs[:-1]
 
     return 1 - np.sum((qsim - qobs_now) ** 2) / np.sum((qobs_prev - qobs_now) ** 2)
+
+
+def persistence_index_weekly(qsim, qobs):
+    """   Persistence index or persistence model efficiency based on weekly averages
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+        obtained by the use of a simple persistence model that assumes “Netx weeks flow will be the same as this week's”;
+        the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+
+        Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models: comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143. http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+
+    Notes
+    -----
+    The weekly persistence index should be MAXIMIZED
+    """
+
+    # Resample to weekly means (weeks starting on Monday)
+    qsim_weekly = qsim.resample(time="W-MON").mean()
+    qobs_weekly = qobs.resample(time="W-MON").mean()
+
+    # Remove NaNs from both series simultaneously
+    valid = qsim_weekly.notnull() & qobs_weekly.notnull()
+    qsim_weekly = qsim_weekly[valid]
+    qobs_weekly = qobs_weekly[valid]
+
+    # Need at least two weekly values
+    if len(qobs_weekly) < 2:
+        raise ValueError("At least 2 weekly averages are needed to compute persistence index.")
+
+    # Compute differences
+    qsim = qsim_weekly[1:].values
+    qobs_now = qobs_weekly[1:].values
+    qobs_prev = qobs_weekly[:-1].values
+
+    # Compute Persistence Index
+    denom = np.sum((qobs_prev - qobs_now) ** 2)
+    if denom == 0:
+        return np.nan  # avoid division by zero
+    return 1 - np.sum((qsim - qobs_now) ** 2) / denom
 
 
 def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
