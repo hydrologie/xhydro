@@ -20,7 +20,7 @@ msgstr ""
 
 #: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:9
 msgid "Hydrological modelling - Raven (distributed)"
-msgstr ""Modélisation hydrologique - Raven (modèles distribués)"
+msgstr "Modélisation hydrologique - Raven (modèles distribués)"
 
 #: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:11
 msgid ""
