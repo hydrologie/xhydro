@@ -49,14 +49,15 @@ class RavenpyModel(HydrologicalModel):
         The name of the RavenPy model to run. Only optional if the project files already exist.
     hru : gpd.GeoDataFrame | dict | os.PathLike, optional
         A GeoDataFrame, or dictionary containing the HRU properties. Only optional if the project files already exist.
-        It should contain the following variables:
+        For distributed models, it should be readable by ravenpy.extractors.BasinMakerExtractor.
+        For lumped models, should contain the following variables:
         - area: The watershed drainage area, in km².
         - elevation: The elevation of the watershed, in meters.
         - latitude: The latitude of the watershed centroid.
         - longitude: The longitude of the watershed centroid.
         - HRU_ID: The ID of the HRU (required for gridded data, optional for station data).
-        If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs. Unless the input is the
-        path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
+        If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs.
+        A file will be created in the workdir/weights subdirectory.
     meteo_file : str | Path, optional
         Path to the file containing the observed meteorological data. Only optional if the project files already exist.
         The meteorological data can be either station or gridded data. Use the 'xhydro.modelling.format_input' function to ensure the data
@@ -87,10 +88,12 @@ class RavenpyModel(HydrologicalModel):
         Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
     minimum_reservoir_area : str, optional
         Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
-        If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
+        If not provided, all lakes with the 'HRU_IsLake' column set to 1 in the HRU file will be considered as reservoirs.
+        Note that 'reservoirs' in Raven can also refer to natural lakes with weir-like outflows.
+        Only applicable for distributed HBVEC models.
     output_subbasins : {"all", "qobs"}, optional
         If "all", all subbasins will be outputted. If "qobs", only the subbasins with observed flow will be outputted.
-        Leave as None to use the value as defined in the HRU file. Only applicable for the HBVEC model.
+        Leave as None to use the value as defined in the HRU file ('Has_Gauge' column). Only applicable for distributed HBVEC models.
     \*\*kwargs : dict, optional
         Additional parameters to pass to the RavenPy emulator, to modify the default modules used by a given hydrological model.
         Typical entries include RainSnowFraction, Evaporation, GlobalParameters, etc.
@@ -187,14 +190,15 @@ class RavenpyModel(HydrologicalModel):
             The name of the RavenPy model to run.
         hru : gpd.GeoDataFrame | dict | os.PathLike
             A GeoDataFrame, or dictionary containing the HRU properties.
-            It should contain the following variables:
+            For distributed models, it should be readable by ravenpy.extractors.BasinMakerExtractor.
+            For lumped models, should contain the following variables:
             - area: The watershed drainage area, in km².
             - elevation: The elevation of the watershed, in meters.
             - latitude: The latitude of the watershed centroid.
             - longitude: The longitude of the watershed centroid.
             - HRU_ID: The ID of the HRU (required for gridded data, optional for station data).
-            If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs. Unless the input
-            is the path to a shapefile that already contains all additional properties, a file will be created in the workdir/weights subdirectory.
+            If the meteorological data is gridded, the HRU dataset must also contain a SubId, DowSubId, valid geometry and crs.
+            A file will be created in the workdir/weights subdirectory.
         meteo_file : str | Path
             Path to the file containing the observed meteorological data. Only optional if the project files already exist.
             The meteorological data can be either station or gridded data. Use the 'xhydro.modelling.format_input' function to ensure the data
@@ -228,11 +232,13 @@ class RavenpyModel(HydrologicalModel):
             Name of the streamflow variable in the observed data file. If not provided, it will be assumed to be "q".
         minimum_reservoir_area : str, optional
             Quantified string (e.g. "20 km2") representing the minimum lake area to consider the lake explicitly as a reservoir.
-            If not provided, all lakes with the 'Lake_Cat' column set to 1 in the HRU file will be considered as reservoirs.
+            If not provided, all lakes with the 'HRU_IsLake' column set to 1 in the HRU file will be considered as reservoirs.
+            Note that 'reservoirs' in Raven can also refer to natural lakes with weir-like outflows.
+            Only applicable for distributed HBVEC models.
         output_subbasins : {"all", "qobs"}, optional
             If "all", all subbasins will be outputted.
             If "qobs", subbasins with observed flow will be outputted, as defined by the basin IDs in the observed streamflow data.
-            Leave as None to use the value as defined in the HRU file ('Has_Gauge' column). Only applicable for the HBVEC model.
+            Leave as None to use the value as defined in the HRU file ('Has_Gauge' column). Only applicable for distributed HBVEC models.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
