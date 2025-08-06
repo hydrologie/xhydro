@@ -7,6 +7,7 @@ Modules
 
     gis
     hydrological_modelling_raven
+    hydrological_modelling_raven_distributed
     hydrological_modelling_hydrotel
     optimal_interpolation
     local_frequency_analysis

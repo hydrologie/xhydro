@@ -268,6 +268,10 @@ class TestRavenpyModels:
         ds = ds.drop_vars(["height", "prsn"])
         ds = ds.isel(plev=0)
         meteo, cfg = xhm.format_input(ds, model="GR4JCN", save_as=tmp_path / "test.nc")
+        if input_type == "gpd":
+            meteo["longitude"].attrs = {}
+            meteo["latitude"].attrs = {}
+            meteo.to_netcdf(tmp_path / "test_bad.nc")
 
         hru = Polygon(
             [
@@ -297,6 +301,28 @@ class TestRavenpyModels:
 
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
+
+        if input_type == "gpd":
+            cfg2 = cfg.copy()
+            cfg2["meteo_file"] = tmp_path / "test_bad.nc"
+            with pytest.raises(
+                ValueError, match="Could not determine the type of meteorological data"
+            ):
+                qsim = RavenpyModel(
+                    model_name="GR4JCN",
+                    parameters=parameters,
+                    hru=hru,
+                    start_date="2010-01-02",
+                    end_date="2010-10-03",
+                    workdir=tmp_path,
+                    meteo_station_properties=self.meteo_station_properties,
+                    rain_snow_fraction=self.rain_snow_fraction,
+                    evaporation=self.evaporation,
+                    global_parameter=global_parameter,
+                    overwrite=True,
+                    **cfg2,
+                ).run()
+
         qsim = RavenpyModel(
             model_name="GR4JCN",
             parameters=parameters,
@@ -382,7 +408,7 @@ class TestRavenpyModels:
                 **cfg,
             )
 
-        with pytest.raises(ValueError, match="The HRU dataset must contain only one"):
+        with pytest.raises(ValueError, match="If using multiple HRUs,"):
             hru_error2 = hru.copy()
             hru_error2 = pd.concat([hru_error2, hru_error2]).reset_index(drop=True)
 
@@ -400,3 +426,253 @@ class TestRavenpyModels:
                 overwrite=True,
                 **cfg,
             )
+
+
+@pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
+class TestDistributedRavenpy:
+    # Model parameters: X01 to X21
+    parameters = [
+        -0.15,  # rainsnow_temp
+        3.5,  # melt_factor
+        3.0,  # refreeze_factor
+        0.07,  # snow_swi
+        0.4,  # porosity
+        0.8,  # field_capacity
+        1,  # hbv_beta
+        4.0,  # max_perc_rate
+        0.5,  # baseflow_coeff_fastres
+        0.1,  # baseflow_coeff_slowres
+        1,  # time_conc
+        5.0,  # precip_lapse
+        4.8,  # adiabatic_lapse
+        0.1,  # sat_wilt
+        1.0,  # baseflow_n
+        22.0,  # max_cap_rise_rate
+        0.5,  # topsoil_thickness
+        0.1,  # hbv_melt_for_corr
+        0.0,  # glac_storage_coeff
+        1.0,  # rain_corr
+        1.0,  # snow_corr
+    ]
+
+    @pytest.fixture(scope="class")
+    def gridded_meteo(self, deveraux):
+        ds = xr.open_zarr(
+            Path(
+                deveraux.fetch(
+                    "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.day.gn.zarr.zip",
+                    processor=pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+        ds_fx = xr.open_zarr(
+            Path(
+                deveraux.fetch(
+                    "pmp/CMIP.CCCma.CanESM5.historical.r1i1p1f1.fx.gn.zarr.zip",
+                    processor=pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+        ds["orog"] = ds_fx["orog"]
+        ds["pr"].attrs = {"units": "mm", "long_name": "precipitation"}
+        ds = ds.drop_vars(["height", "prsn"])
+        ds = ds.isel(plev=0)
+        meteo, cfg = xhm.format_input(ds, model="HBVEC")
+        return meteo, cfg
+
+    @pytest.fixture(scope="class")
+    def df(self, deveraux):
+        from xhydro.testing.helpers import deveraux as deveraux_branch
+
+        df = gpd.read_file(
+            Path(
+                deveraux_branch(branch="distributed").fetch(
+                    "ravenpy/hru_subset.zip",
+                    processor=pooch.Unzip(),
+                )[0]
+            ).parents[0]
+        )
+
+        df.loc[:, "VEG_C"] = "VEG_ALL"
+        df.loc[:, "LAND_USE_C"] = "LU_ALL"
+        df.loc[:, "SOIL_PROF"] = "DEFAULT_P"
+        return df
+
+    @pytest.mark.parametrize("output_sub", ["all", None, "fail"])
+    def test_hbvec_basic(self, tmp_path, df, gridded_meteo, output_sub):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = {}
+
+        # Distributed models require a global parameter for the average annual runoff
+        kwargs["global_parameter"] = {"AVG_ANNUAL_RUNOFF": 500}
+
+        if output_sub == "fail":
+            with pytest.raises(ValueError, match="parameter must be either"):
+                qsim = RavenpyModel(
+                    model_name="HBVEC",
+                    parameters=self.parameters,
+                    hru=df,
+                    start_date="2010-01-02",
+                    end_date="2010-10-05",
+                    workdir=tmp_path,
+                    overwrite=True,
+                    output_subbasins=output_sub,
+                    **cfg | kwargs,
+                ).run()
+        else:
+            qsim = RavenpyModel(
+                model_name="HBVEC",
+                parameters=self.parameters,
+                hru=df,
+                start_date="2010-01-02",
+                end_date="2010-10-05",
+                workdir=tmp_path,
+                overwrite=True,
+                output_subbasins=output_sub,
+                **cfg | kwargs,
+            ).run()
+
+            assert "q" in qsim
+            np.testing.assert_array_equal(qsim.time.min(), np.datetime64("2010-01-02"))
+            np.testing.assert_array_equal(qsim.time.max(), np.datetime64("2010-10-05"))
+
+            if output_sub is None:
+                # If no output_sub is specified, we get the total flow for all HRUs
+                assert qsim["q"].shape == (277,)
+            else:
+                assert len(qsim["q"].dims) == 2
+                assert len(qsim["subbasin_id"]) == 47
+
+    @pytest.mark.parametrize("output_sub", ["qobs", None, "fail"])
+    def test_ravenpy_qobs(self, tmp_path, df, gridded_meteo, output_sub):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = {}
+
+        # Distributed models require a global parameter for the average annual runoff
+        kwargs["global_parameter"] = {"AVG_ANNUAL_RUNOFF": 500}
+
+        # Create a dummy qobs file
+        qobs = xr.DataArray(
+            np.array([np.random.rand(100), np.random.rand(100)]).transpose(),
+            coords={
+                "time": pd.date_range("2010-01-01", periods=100, freq="D"),
+                "basin_id": ["13", "17"],
+            },
+            dims=["time", "basin_id"],
+        )
+        if output_sub is None:
+            # If no output_sub is specified, we get the total flow for all HRUs
+            qobs = qobs.assign_coords(station_id=("basin_id", ["020213", "0202017"]))
+        qobs.attrs["units"] = "m3/s"
+        qobs = qobs.to_dataset(name="qobs")
+        if output_sub == "fail":
+            qobs = qobs.rename({"basin_id": "abc"})
+        qobs.to_netcdf(tmp_path / "qobs.nc")
+        kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
+        kwargs["alt_name_flow"] = "qobs"
+
+        if output_sub == "fail":
+            with pytest.raises(
+                ValueError, match="The observed streamflow dataset must contain a "
+            ):
+                RavenpyModel(
+                    model_name="HBVEC",
+                    parameters=self.parameters,
+                    hru=df,
+                    start_date="2010-01-02",
+                    end_date="2010-10-05",
+                    workdir=tmp_path,
+                    overwrite=True,
+                    output_subbasins=output_sub,
+                    **cfg | kwargs,
+                ).run()
+        else:
+            qsim = RavenpyModel(
+                model_name="HBVEC",
+                parameters=self.parameters,
+                hru=df,
+                start_date="2010-01-02",
+                end_date="2010-10-05",
+                workdir=tmp_path,
+                overwrite=True,
+                output_subbasins=output_sub,
+                **cfg | kwargs,
+            ).run()
+
+            if output_sub is None:
+                # If no output_sub is specified, we get the total flow for all HRUs
+                assert qsim["q"].shape == (277,)
+            else:
+                assert len(qsim["q"].dims) == 2
+                np.testing.assert_array_equal(
+                    qsim["subbasin_id"].values, ["sub_13", "sub_17"]
+                )
+
+    def test_hbvec_reservoirs(self, tmp_path, df, gridded_meteo):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        df2 = df.copy()
+        df2.loc[df2["HRU_ID"] == 1, "HRU_IsLake"] = 1
+        df2.loc[df2["HRU_ID"] == 1, "Lake_Cat"] = 1
+        df2.loc[df2["HRU_ID"] == 1, "LakeArea"] = 1000000
+        df2.loc[df2["HRU_ID"] == 1, "LakeDepth"] = 1000
+
+        # Additional modifications to the model
+        kwargs = {}
+
+        # Distributed models require a global parameter for the average annual runoff
+        kwargs["global_parameter"] = {"AVG_ANNUAL_RUNOFF": 500}
+
+        hm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df2,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            **cfg | kwargs,
+        )
+
+        assert "reservoirs" in hm.emulator_config
+
+        hm2 = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df2,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            minimum_reservoir_area="20 m2",
+            **cfg | kwargs,
+        )
+
+        assert "reservoirs" in hm2.emulator_config
+
+        hm_no = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df2,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            minimum_reservoir_area="20 km2",
+            **cfg | kwargs,
+        )
+
+        assert "reservoirs" not in hm_no.emulator_config
