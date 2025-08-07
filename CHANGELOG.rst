@@ -38,6 +38,7 @@ Breaking changes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
+* Added a security policy (``SECURITY.md``) to the repository. (:pull:`340`).
 
 v0.5.0 (2025-04-24)
 -------------------
