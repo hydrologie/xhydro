@@ -137,8 +137,11 @@ class TestRavenpyModels:
         rpm.run(overwrite=True)
 
         # Try to overwrite the model again
-        config2 = model_config.copy()
-        config2.pop("workdir")
+        config2 = {
+            k: v
+            for k, v in model_config.items()
+            if k in ["parameters", "start_date", "end_date"]
+        }
         with pytest.raises(FileExistsError):
             rpm.create_rv(**config2)
         rpm.create_rv(overwrite=True, **config2)
@@ -390,7 +393,7 @@ class TestRavenpyModels:
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
 
-        with pytest.raises(ValueError, match="The HRU dataset must contain a geometry"):
+        with pytest.raises(TypeError, match="parameter must be a GeoDataFrame,"):
             hru_error = hru.copy()
             hru_error = hru_error.drop(columns=["geometry"])
             RavenpyModel(
@@ -608,7 +611,7 @@ class TestDistributedRavenpy:
             ).run()
 
             if output_sub is None:
-                # If no output_sub is specified, we get the total flow for all HRUs
+                # If no output_sub is specified, we get the output from the base HRU file
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
