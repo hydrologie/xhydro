@@ -139,6 +139,7 @@ class RavenpyModel(HydrologicalModel):
 
         self.model_name = model_name
         self.run_name = run_name or "raven"
+        self.parameters = parameters
         self.start_date = start_date
         self.end_date = end_date
         self.kwargs = deepcopy(kwargs)
@@ -202,15 +203,14 @@ class RavenpyModel(HydrologicalModel):
 
             # Create the project files
             self.create_rv(
-                parameters=parameters,
                 overwrite=overwrite,
             )
 
     def create_rv(
         self,
         *,
-        parameters: np.ndarray | list[float],
         overwrite: bool = False,
+        parameters=None,
         model_name=None,
         hru=None,
         meteo_file=None,
@@ -229,11 +229,11 @@ class RavenpyModel(HydrologicalModel):
 
         Parameters
         ----------
-        parameters : np.ndarray | list[float]
-            The model parameters for simulation or calibration.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
-            Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
+            Note that to prevent inconsistencies, all files containing the 'run_name' will be removed, including the output files.
+        parameters : None
+            Deprecated. Use the class attribute instead.
         model_name : None
             Deprecated. Use the class attribute instead.
         hru : None
@@ -267,6 +267,13 @@ class RavenpyModel(HydrologicalModel):
                 f" Original error: {ravenpy_err_msg}"
             )
 
+        if parameters is not None:
+            warnings.warn(
+                "The 'parameters' parameter is deprecated and will be removed in a future version. "
+                "Please set the 'parameters' attribute directly on the RavenPy model instance.",
+                FutureWarning,
+            )
+            self.parameters = parameters
         if model_name is not None:
             warnings.warn(
                 "The 'model_name' parameter is deprecated and will be removed in a future version. "
@@ -288,6 +295,14 @@ class RavenpyModel(HydrologicalModel):
                 FutureWarning,
             )
             self.end_date = end_date
+        if len(kwargs) > 0:
+            warnings.warn(
+                "Kwargs in the 'create_rv' method are deprecated and will be removed in a future version. "
+                "Set them when first instantiating the RavenPy model, or later by setting the attributes in "
+                "a dictionary under the 'kwargs' attribute of the class.",
+                FutureWarning,
+            )
+            self.kwargs = kwargs
         if qobs_file is not None:
             warnings.warn(
                 "The 'qobs_file' and 'alt_name_flow' parameters are deprecated and will be removed in a future version. "
@@ -329,9 +344,19 @@ class RavenpyModel(HydrologicalModel):
                 meteo_station_properties=meteo_station_properties,
             )
 
-        if any(input is None for input in [self.meteo, self.hru]):
+        required = [
+            "model_name",
+            "run_name",
+            "start_date",
+            "end_date",
+            "parameters",
+            "meteo",
+            "hru",
+        ]
+        missing = [input for input in required if getattr(self, input) is None]
+        if missing:
             raise ValueError(
-                "The meteo and/or HRU must be initialized before calling the create_rv method."
+                f"The following required inputs are missing: {', '.join(missing)}"
             )
 
         # Remove any existing files in the project directory
@@ -359,7 +384,7 @@ class RavenpyModel(HydrologicalModel):
         # Create the emulator configuration
         self.emulator_config = dict(
             RunName=self.run_name,
-            params=parameters,
+            params=self.parameters,
             StartDate=self.start_date,
             EndDate=self.end_date,
             **kwargs,
@@ -757,11 +782,6 @@ class RavenpyModel(HydrologicalModel):
         If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance and saved
         in a 'weights' subdirectory of the project folder, under the name 'meteo-name_vs_hru-name.txt'.
         """
-        if not all(v in alt_names_meteo for v in data_type):
-            raise ValueError(
-                "The 'alt_names_meteo' dictionary must contain all the meteorological data types specified in 'data_type'."
-            )
-
         self.meteo = {
             "file": Path(meteo_file),
             "data_type": data_type,

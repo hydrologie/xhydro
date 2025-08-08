@@ -1,4 +1,6 @@
 import datetime as dt
+import os
+import shutil
 from pathlib import Path
 
 import geopandas as gpd
@@ -6,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pooch
 import pytest
+import raven_hydro
 import xarray as xr
 from pystac_client.exceptions import APIError
 from shapely import Polygon
@@ -82,6 +85,67 @@ class TestRavenpyModels:
         np.testing.assert_array_equal(met.time, qsim.time)
         assert all(var in met.variables for var in self.alt_names_meteo.values())
 
+    def test_build_later(self, deveraux):
+        model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
+        parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+        global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
+
+        with pytest.warns(
+            UserWarning, match="The meteorological data and/or HRU are not provided."
+        ):
+            rpm = RavenpyModel()
+
+        with pytest.raises(
+            ValueError, match="The following required inputs are missing"
+        ):
+            rpm.create_rv()
+
+        # Test backward compatibility
+        with pytest.warns(FutureWarning) as msg:
+            rpm.create_rv(
+                model_name=model_name,
+                parameters=parameters,
+                hru=self.hru,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
+                data_type=self.data_type,
+                alt_names_meteo=self.alt_names_meteo,
+                meteo_station_properties=self.meteo_station_properties,
+                rain_snow_fraction=self.rain_snow_fraction,  # Test that we can add kwargs
+                evaporation=self.evaporation,
+                global_parameter=global_parameter,
+            )
+            assert rpm.start_date == self.start_date
+            assert rpm.end_date == self.end_date
+            assert rpm.model_name == model_name
+            assert rpm.meteo is not None
+            assert rpm.hru is not None
+            assert rpm.qobs is None
+
+        rpm2 = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            hru=self.hru,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,  # Test that we can add kwargs
+            evaporation=self.evaporation,
+            global_parameter=global_parameter,
+        )
+        rpm2.create_rv(overwrite=True)
+
+        for k in rpm.emulator_config:
+            assert rpm.emulator_config[k] == rpm2.emulator_config[k]
+
+        ds1 = rpm.run()
+        ds2 = rpm2.run()
+        xr.testing.assert_equal(ds1, ds2)
+
     @pytest.mark.online
     @pytest.mark.xfail(
         reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
@@ -152,6 +216,39 @@ class TestRavenpyModels:
         RavenpyModel(**model_config, overwrite=False).run(overwrite=True)
         with pytest.raises(FileExistsError):
             RavenpyModel(**model_config, overwrite=False).run(overwrite=False)
+
+    def test_executable(self, deveraux):
+        model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
+        parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+        global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
+
+        rpm = RavenpyModel(
+            model_name=model_name,
+            parameters=parameters,
+            hru=self.hru,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+            global_parameter=global_parameter,
+        )
+        rpm.run()
+        filename = str(rpm.get_streamflow("path"))
+        shutil.move(filename, filename.replace(".nc", "a.nc"))
+        ds1 = xr.open_dataset(filename.replace(".nc", "a.nc"))[["q"]]
+
+        # Find the executable
+        path = Path(raven_hydro.__file__).parents[4] / "bin" / "raven"
+
+        with pytest.raises(ValueError, match="The executable command"):
+            rpm.run(executable="malicious_command")
+        ds2 = rpm.run(executable=path)
+
+        xr.testing.assert_equal(ds1, ds2)
 
     def test_fake_ravenpy(self, deveraux):
         with pytest.raises(AttributeError):
@@ -501,11 +598,14 @@ class TestDistributedRavenpy:
         df.loc[:, "SOIL_PROF"] = "DEFAULT_P"
         return df
 
-    @pytest.mark.parametrize("output_sub", ["all", None, "fail"])
+    @pytest.mark.parametrize("output_sub", ["all", None, "list", "fail"])
     def test_hbvec_basic(self, tmp_path, df, gridded_meteo, output_sub):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
         cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        if output_sub == "list":
+            output_sub = [15, 16, 17, 18]
 
         # Additional modifications to the model
         kwargs = {}
@@ -527,6 +627,10 @@ class TestDistributedRavenpy:
                     **cfg | kwargs,
                 ).run()
         else:
+            if output_sub is None:
+                df.to_file(tmp_path / "hru.shp")
+                df = tmp_path / "hru.shp"
+
             qsim = RavenpyModel(
                 model_name="HBVEC",
                 parameters=self.parameters,
@@ -548,9 +652,13 @@ class TestDistributedRavenpy:
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
-                assert len(qsim["subbasin_id"]) == 47
+                assert (
+                    len(qsim["subbasin_id"]) == 47
+                    if output_sub == "all"
+                    else len(output_sub)
+                )
 
-    @pytest.mark.parametrize("output_sub", ["qobs", None, "fail"])
+    @pytest.mark.parametrize("output_sub", ["qobs", None, "fail", "fail2"])
     def test_ravenpy_qobs(self, tmp_path, df, gridded_meteo, output_sub):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
@@ -572,17 +680,18 @@ class TestDistributedRavenpy:
             dims=["time", "basin_id"],
         )
         if output_sub is None:
-            # If no output_sub is specified, we get the total flow for all HRUs
-            qobs = qobs.assign_coords(station_id=("basin_id", ["020213", "0202017"]))
+            qobs = qobs.rename({"basin_id": "blabla"})
+            qobs["blabla"].attrs["cf_role"] = "timeseries_id"
+            qobs = qobs.assign_coords(station_id=("blabla", ["020213", "0202017"]))
         qobs.attrs["units"] = "m3/s"
         qobs = qobs.to_dataset(name="qobs")
+
+        # Bad basin_id names
         if output_sub == "fail":
             qobs = qobs.rename({"basin_id": "abc"})
-        qobs.to_netcdf(tmp_path / "qobs.nc")
-        kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
-        kwargs["alt_name_flow"] = "qobs"
-
-        if output_sub == "fail":
+            qobs.to_netcdf(tmp_path / "qobs.nc")
+            kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
+            kwargs["alt_name_flow"] = "qobs"
             with pytest.raises(
                 ValueError, match="The observed streamflow dataset must contain a "
             ):
@@ -597,7 +706,61 @@ class TestDistributedRavenpy:
                     output_subbasins=output_sub,
                     **cfg | kwargs,
                 ).run()
+
+            qobs = qobs.rename({"abc": "basin_id"})
+            qobs["subbasin_id"] = qobs["basin_id"]
+            qobs.to_netcdf(tmp_path / "qobs.nc")
+            kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
+            kwargs["alt_name_flow"] = "qobs"
+            with pytest.raises(ValueError, match="Multiple possible basin ID"):
+                RavenpyModel(
+                    model_name="HBVEC",
+                    parameters=self.parameters,
+                    hru=df,
+                    start_date="2010-01-02",
+                    end_date="2010-10-05",
+                    workdir=tmp_path,
+                    overwrite=True,
+                    output_subbasins=output_sub,
+                    **cfg | kwargs,
+                ).run()
+        # Bad initialisation order
+        elif output_sub == "fail2":
+            with pytest.raises(
+                ValueError, match=", but no observed streamflow data is provided."
+            ):
+                RavenpyModel(
+                    model_name="HBVEC",
+                    parameters=self.parameters,
+                    hru=df,
+                    start_date="2010-01-02",
+                    end_date="2010-10-05",
+                    workdir=tmp_path,
+                    overwrite=True,
+                    output_subbasins="qobs",
+                    **cfg | kwargs,
+                )
+
+            qobs.to_netcdf(tmp_path / "qobs.nc")
+            kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
+            kwargs["alt_name_flow"] = "qobs"
+            with pytest.raises(
+                ValueError, match="HRU properties must be defined before "
+            ):
+                RavenpyModel(
+                    model_name="HBVEC",
+                    parameters=self.parameters,
+                    start_date="2010-01-02",
+                    end_date="2010-10-05",
+                    workdir=tmp_path,
+                    overwrite=True,
+                    output_subbasins=output_sub,
+                    **cfg | kwargs,
+                )
         else:
+            qobs.to_netcdf(tmp_path / "qobs.nc")
+            kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
+            kwargs["alt_name_flow"] = "qobs"
             qsim = RavenpyModel(
                 model_name="HBVEC",
                 parameters=self.parameters,
