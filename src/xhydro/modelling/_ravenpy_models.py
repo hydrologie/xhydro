@@ -451,14 +451,14 @@ class RavenpyModel(HydrologicalModel):
                     "The observed streamflow dataset must contain a basin ID variable. Please ensure one of 'basin_id', 'basin_name', "
                     "or 'subbasin_id' is present, or that the dataset contains a time series with an attribute 'cf_role' set to 'timeseries_id'."
                 )
-
-            # Extract the basin and station IDs
-            self.qobs["basin_id"] = [int(i) for i in ds_qobs[basin_id].values]
-            self.qobs["station_id"] = (
-                [str(i) for i in range(len(self.qobs["basin_id"]))]
-                if station_id is None
-                else ds_qobs[station_id].astype(str).values.tolist()
-            )
+            else:
+                # Extract the basin and station IDs
+                self.qobs["basin_id"] = [int(i) for i in ds_qobs[basin_id].values]
+                self.qobs["station_id"] = (
+                    [str(i) for i in range(len(self.qobs["basin_id"]))]
+                    if station_id is None
+                    else ds_qobs[station_id].astype(str).values.tolist()
+                )
 
         self.qobs["rc"] = [
             rc.commands.ObservationData.from_nc(
