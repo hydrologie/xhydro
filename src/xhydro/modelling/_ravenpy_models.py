@@ -208,30 +208,126 @@ class RavenpyModel(HydrologicalModel):
     def create_rv(
         self,
         *,
-        start_date: dt.datetime | str,
-        end_date: dt.datetime | str,
         parameters: np.ndarray | list[float],
         overwrite: bool = False,
+        model_name=None,
+        hru=None,
+        meteo_file=None,
+        data_type=None,
+        start_date=None,
+        end_date=None,
+        alt_names_meteo=None,
+        meteo_station_properties=None,
+        qobs_file=None,
+        alt_name_flow="q",
+        minimum_reservoir_area=None,
+        output_subbasins=None,
+        **kwargs,
     ):
         r"""Write the RavenPy project files.
 
         Parameters
         ----------
-        start_date : dt.datetime | str
-            The first date of the simulation.
-        end_date : dt.datetime | str
-            The last date of the simulation.
         parameters : np.ndarray | list[float]
             The model parameters for simulation or calibration.
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run'name' will be removed, including the output files.
+        model_name : None
+            Deprecated. Use the class attribute instead.
+        hru : None
+            Deprecated. Use the 'read_hru' method instead.
+        meteo_file : None
+            Deprecated. Use the 'read_meteo' method instead.
+        data_type : None
+            Deprecated. Use the 'read_meteo' method instead.
+        start_date : None
+            Deprecated. Use the class attribute instead.
+        end_date : None
+            Deprecated. Use the class attribute instead.
+        alt_names_meteo : None
+            Deprecated. Use the 'read_meteo' method instead.
+        meteo_station_properties : None
+            Deprecated. Use the 'read_meteo' method instead.
+        qobs_file : None
+            Deprecated. Use the 'read_qobs' method instead.
+        alt_name_flow : str
+            Deprecated. Use the 'read_qobs' method instead.
+        minimum_reservoir_area : None
+            Deprecated. Use the 'read_hru' method instead.
+        output_subbasins : None
+            Deprecated. Use the 'read_hru' method instead.
+        \*\*kwargs : dict
+            Deprecated. Instantiate the model with the them or pass them to the class attribute.
         """
         if run is None:
             raise RuntimeError(
                 "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
                 f" Original error: {ravenpy_err_msg}"
             )
+
+        if model_name is not None:
+            warnings.warn(
+                "The 'model_name' parameter is deprecated and will be removed in a future version. "
+                "Please set the 'model_name' attribute directly on the RavenPy model instance.",
+                FutureWarning,
+            )
+            self.model_name = model_name
+        if start_date is not None:
+            warnings.warn(
+                "The 'start_date' parameter is deprecated and will be removed in a future version. "
+                "Please set the 'start_date' attribute directly on the RavenPy model instance.",
+                FutureWarning,
+            )
+            self.start_date = start_date
+        if end_date is not None:
+            warnings.warn(
+                "The 'end_date' parameter is deprecated and will be removed in a future version. "
+                "Please set the 'end_date' attribute directly on the RavenPy model instance.",
+                FutureWarning,
+            )
+            self.end_date = end_date
+        if qobs_file is not None:
+            warnings.warn(
+                "The 'qobs_file' and 'alt_name_flow' parameters are deprecated and will be removed in a future version. "
+                "Please use the 'read_qobs()' method instead.",
+                FutureWarning,
+            )
+            self.read_qobs(qobs_file=qobs_file, alt_name_flow=alt_name_flow)
+        if any(
+            depr is not None for depr in [hru, output_subbasins, minimum_reservoir_area]
+        ):
+            warnings.warn(
+                "The 'hru', 'output_subbasins', and 'minimum_reservoir_area' parameters are deprecated and will be removed in a future version. "
+                "Please use the 'read_hru()' method instead.",
+                FutureWarning,
+            )
+            self.read_hru(
+                hru=hru,
+                output_subbasins=output_subbasins,
+                minimum_reservoir_area=minimum_reservoir_area,
+            )
+        if any(
+            depr is not None
+            for depr in [
+                meteo_file,
+                data_type,
+                alt_names_meteo,
+                meteo_station_properties,
+            ]
+        ):
+            warnings.warn(
+                "The 'meteo_file', 'data_type', 'alt_names_meteo', and 'meteo_station_properties' parameters are deprecated and"
+                " will be removed in a future version. Please use the 'read_meteo()' method instead.",
+                FutureWarning,
+            )
+            self.read_meteo(
+                meteo_file=meteo_file,
+                data_type=data_type,
+                alt_names_meteo=alt_names_meteo,
+                meteo_station_properties=meteo_station_properties,
+            )
+
         if any(input is None for input in [self.meteo, self.hru]):
             raise ValueError(
                 "The meteo and/or HRU must be initialized before calling the create_rv method."
