@@ -3,6 +3,7 @@
 import datetime as dt
 import logging
 import os
+import shutil
 import tempfile
 import warnings
 from copy import deepcopy
@@ -137,6 +138,8 @@ class RavenpyModel(HydrologicalModel):
 
         self.model_name = model_name
         self.run_name = run_name or "raven"
+        self.start_date = start_date
+        self.end_date = end_date
         self.kwargs = deepcopy(kwargs)
 
         # Updated when the project files are created and never really changed afterwards,
@@ -175,7 +178,14 @@ class RavenpyModel(HydrologicalModel):
 
         # If the project files already exist and overwrite is False, we stop here
         if len(files) > 0 and not overwrite:
-            logger.info("Project already exists and files will not be overwritten.")
+            if any(opt is not None for opt in [self.meteo, self.hru, self.qobs]):
+                warnings.warn(
+                    "Meteorological data, HRU, or observed streamflow data were provided, but the project files already exist "
+                    "and 'overwrite' is set to False. These data will not be used. If you want to update the "
+                    "project files, use the 'update_config' method."
+                )
+            else:
+                logger.info("Project already exists and files will not be overwritten.")
             return
 
         # If the project files do not exist, we create them if the required data is provided
@@ -191,8 +201,6 @@ class RavenpyModel(HydrologicalModel):
 
             # Create the project files
             self.create_rv(
-                start_date=start_date,
-                end_date=end_date,
                 parameters=parameters,
                 overwrite=overwrite,
             )
@@ -255,8 +263,8 @@ class RavenpyModel(HydrologicalModel):
         self.emulator_config = dict(
             RunName=self.run_name,
             params=parameters,
-            StartDate=start_date,
-            EndDate=end_date,
+            StartDate=self.start_date,
+            EndDate=self.end_date,
             **kwargs,
         )
         model = getattr(rc.emulators, self.model_name)(
@@ -449,6 +457,7 @@ class RavenpyModel(HydrologicalModel):
                     f"The 'output_subbasins' parameter must be either 'all', 'qobs', or a list of basin IDs. Got '{output_subbasins}' instead."
                 )
 
+            self.hru["output_subbasins"] = basin_ids
             hru["Has_Gauge"] = hru["SubId"].isin(basin_ids)
             hru["Obs_NM"] = hru["Obs_NM"].fillna("")
 
@@ -492,9 +501,12 @@ class RavenpyModel(HydrologicalModel):
         if hru_file is None or has_changed:
             self.hru["file"] = self.workdir / "shapefile" / f"{self.run_name}_hru.shp"
             Path(self.hru["file"].parent).mkdir(parents=True, exist_ok=True)
-            # FIXME: pyogrio can generate a lot of warnings due to the size of the DrainArea column.
-            # Possibly fixed in the latest version: https://github.com/geopandas/pyogrio/issues/533
-            hru.to_file(str(self.hru["file"]), engine="fiona")
+            # pyogrio can generate a lot of warnings due to the size of the DrainArea/BasArea column if there are floating point numbers
+            if "DrainArea" in hru.columns:
+                hru["DrainArea"] = hru["DrainArea"].apply(np.round, 3)
+            if "BasArea" in hru.columns:
+                hru["BasArea"] = hru["BasArea"].apply(np.round, 3)
+            hru.to_file(str(self.hru["file"]))
         else:
             self.hru["file"] = hru_file
 
@@ -616,6 +628,11 @@ class RavenpyModel(HydrologicalModel):
             Additional properties of the weather stations providing the meteorological data. Only required if absent from the 'meteo_file'.
             For single stations, the format is {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}.
             This has not been tested for multiple stations or gridded data.
+
+        Note
+        ----
+        If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance and saved
+        in a 'weights' subdirectory of the project folder, under the name 'meteo-name_vs_hru-name.txt'.
         """
         if not all(v in alt_names_meteo for v in data_type):
             raise ValueError(
@@ -718,134 +735,203 @@ class RavenpyModel(HydrologicalModel):
                 for v in data_type
             ]
 
-    def update_config(
+    def update_config(  # noqa: C901
         self,
         *,
-        run_name: str | None = None,
-        start_date: dt.datetime | str | None = None,
-        end_date: dt.datetime | str | None = None,
-        meteo_file: os.PathLike | str | None = None,
-        data_type: list[str] | None = None,
-        alt_names_meteo: dict | None = None,
-        meteo_station_properties: dict | None = None,
-        hru_file: os.PathLike | str | None = None,
+        rvi: bool = False,
+        rvt: bool = False,
+        rvh: bool = False,
     ) -> None:
-        """Update the configuration of the RavenPy model.
+        """Manually update some aspects of the configuration of the RavenPy model.
 
         Parameters
         ----------
-        run_name : str, optional
-            The name of the run. If provided, it will update the run name in the .rvi file.
-        start_date : dt.datetime | str, optional
-            The start date of the simulation. If provided, it will update the start date in the .rvi file.
-        end_date : dt.datetime | str, optional
-            The end date of the simulation. If provided, it will update the end date in the .rvi file.
-        meteo_file : os.PathLike | str, optional
-            Path to a new meteorological data file. If provided, it will update the meteorological data in the .rvt file.
-        data_type : list[str], optional
-            The list of types of data provided to Raven in the meteorological file. If provided, it will update the data type in the .rvt file.
-        alt_names_meteo : dict, optional
-            A dictionary that allows users to link the names of meteorological variables in their dataset to Raven-compliant names.
-            If provided, it will update the alternative names in the .rvt file.
-        meteo_station_properties : dict, optional
-            Additional properties of the weather stations providing the meteorological data.
-            If provided, it will update the station properties in the .rvt file.
-        hru_file : os.PathLike | str, optional
-            Path to a new HRU file. If provided, it will update the HRU file in the .rvt file.
+        rvi : bool
+            If True, update the .rvi file with the 'run_name', 'start_date', and 'end_date' defined in the model.
+        rvt : bool
+            If True, update the .rvt file with the meteorological data and observed streamflow data defined in the model.
+        rvh : bool
+            If True, update the .rvh file with the list of subbasins to output. Nothing else will be changed in that file.
+
+        Notes
+        -----
+        Ideally, users should favor using the `read_qobs/meteo/hru` methods to update the model configuration, then call the `create_rv`
+        method to recreate the project files from scratch. This method assumes that the changes brought to the model configuration
+        are minimal, such as wanting to change the meteorological data or the simulation start and end dates.
+
+        Be aware that:
+          - The .rvh will be rewritten entirely. If multiple sources of data were mentioned, such as both meteorological and observed streamflow data,
+            all of them must be included in the RavenpyModel instance.
+          - If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance. If that HRU
+            file is different from the one used to create the original .rvh file, it may lead to inconsistencies or errors.
+          - Similarly, only the list of subbasins to output will be modified in the new .rvh file. Any additional changes to the HRU or
+            other components might also lead to inconsistencies or errors.
+
+        A backup of the original files will be created before any modifications are made.
         """
-        if any(op is not None for op in [run_name, start_date, end_date]):
+        # Update the .rvi file
+        if rvi:
+            # Backup the existing .rvi file
+            shutil.copy(
+                self.workdir / f"{self.run_name}.rvi",
+                self.workdir
+                / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvi",
+            )
+
+            # Read the existing .rvi file and update the run name, start date, and end date
             with (self.workdir / f"{self.run_name}.rvi").open("r") as file:
                 lines = file.readlines()
 
-            if run_name is not None:
-                run_name = str(run_name)
-                idx = [
-                    i for i, line in enumerate(lines) if line.startswith(":RunName")
-                ][0]
-                lines[idx] = f":RunName              {run_name}\n"
-            if start_date is not None:
-                start_date = pd.to_datetime(start_date).strftime("%Y-%m-%d %H:%M:%S")
-                idx = [
-                    i for i, line in enumerate(lines) if line.startswith(":StartDate")
-                ][0]
-                lines[idx] = f":StartDate            {start_date}\n"
-            if end_date is not None:
-                end_date = pd.to_datetime(end_date).strftime("%Y-%m-%d %H:%M:%S")
-                idx = [
-                    i for i, line in enumerate(lines) if line.startswith(":EndDate")
-                ][0]
-                lines[idx] = f":EndDate              {end_date}\n"
+            idx = [i for i, line in enumerate(lines) if line.startswith(":RunName")][0]
+            lines[idx] = f":RunName              {self.run_name}\n"
+
+            start_date = pd.to_datetime(self.start_date).strftime("%Y-%m-%d %H:%M:%S")
+            idx = [i for i, line in enumerate(lines) if line.startswith(":StartDate")][
+                0
+            ]
+            lines[idx] = f":StartDate            {start_date}\n"
+
+            end_date = pd.to_datetime(self.end_date).strftime("%Y-%m-%d %H:%M:%S")
+            idx = [i for i, line in enumerate(lines) if line.startswith(":EndDate")][0]
+            lines[idx] = f":EndDate              {end_date}\n"
 
             with (self.workdir / f"{self.run_name}.rvi").open("w") as file:
                 file.writelines(lines)
 
-        if meteo_file is not None:
-            meteo_file = Path(meteo_file)
-            meteo_type = self._get_meteo_type(meteo_file)
-
-            if meteo_type["meteo_type"] == "grid" and hru_file is None:
-                files = [f for f in (self.workdir / "weights").glob("*.shp")]
-                if len(files) == 0:
-                    raise FileNotFoundError(
-                        "No HRU file provided and no HRU file found in the workdir/weights directory."
-                    )
-                elif len(files) > 1:
-                    raise ValueError(
-                        "Multiple HRU files found in the workdir/weights directory. Please specify the HRU file to use."
-                    )
-                hru_file = files[0]
+        if rvt:
+            if all(data is None for data in [self.meteo, self.qobs]):
                 warnings.warn(
-                    f"No HRU file provided. Using the HRU file found in the workdir/weights directory: {hru_file}",
-                    UserWarning,
+                    "Meteorological data and/or observed streamflow data were not provided. The .rvt file will not be updated."
                 )
-                hru_file = self.workdir / "weights" / f"{self.run_name}_hru.shp"
+            else:
+                # Backup the existing .rvt file
+                shutil.copy(
+                    self.workdir / f"{self.run_name}.rvt",
+                    self.workdir
+                    / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvt",
+                )
 
-            # Generate the new command
-            rcs = self._prep_meteo_command(
-                meteo_file=meteo_file,
-                data_type=data_type,
-                alt_names_meteo=alt_names_meteo,
-                meteo_station_properties=meteo_station_properties,
-                meteo_type=meteo_type,
-                hru_file=hru_file,
-            )
-            rcs = rc.rvs.RVT(
-                *{
-                    (
-                        "gridded_forcing"
-                        if meteo_type["meteo_type"] == "grid"
-                        else "gauge"
-                    ): rcs
-                }
-            )
-            newlines = rcs.to_rv()
-            newlines = newlines.split("\n")
-            newlines = [line + "\n" for line in newlines]
+                # Update the meteorological data and observed streamflow data in the .rvt file
+                rvt = rc.rvs.RVT(
+                    **(
+                        self.meteo["keys"]
+                        | (self.qobs["rc"] if self.qobs is not None else {})
+                    )
+                )
+                rvt_lines = rvt.to_rv() + "\n"
+                rvt_lines = rvt_lines.split("\n")
+                rvt_lines = [line + "\n" for line in rvt_lines]
 
-            # Read the existing .rvt file and replace the GriddedForcing or Gauge section
-            with (self.workdir / f"{self.run_name}.rvt").open("r") as file:
+                # Read the existing .rvt file and replace the GriddedForcing or Gauge section
+                with (self.workdir / f"{self.run_name}.rvt").open("r") as file:
+                    lines = file.readlines()
+
+                output_lines = []
+                for line in lines:
+                    # If the line starts with :GriddedForcing, :Gauge, or :ObservationalData, replace everything after with the new rvt_lines
+                    if (
+                        line.startswith(":GriddedForcing")
+                        or line.startswith(":Gauge")
+                        or line.startswith(":ObservationalData")
+                    ):
+                        output_lines.extend(rvt_lines)
+                        break
+                    else:
+                        output_lines.append(line)
+
+                # Overwrite the .rvt file with the new lines
+                with (self.workdir / f"{self.run_name}.rvt").open("w") as file:
+                    file.writelines(output_lines)
+
+        if rvh:
+            # Backup the existing .rvh file
+            shutil.copy(
+                self.workdir / f"{self.run_name}.rvh",
+                self.workdir
+                / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvh",
+            )
+
+            # Read the existing .rvh file and update the hydrological response variables
+            with (self.workdir / f"{self.run_name}.rvh").open("r") as file:
                 lines = file.readlines()
 
-            keep = True
-            first_replace = True
-            output_lines = []
-            for line in lines:
-                if line.startswith(":GriddedForcing") or line.startswith(":Gauge"):
-                    keep = False
-                if not keep:
-                    if first_replace:
-                        output_lines.extend(newlines)
-                        first_replace = False
-                    if line.startswith(":EndGriddedForcing") or line.startswith(
-                        ":EndGauge"
-                    ):
-                        keep = True
-                else:
+            # Get the requested output
+            output = self.hru.get("output_subbasins", None)
+            if output is None:
+                warnings.warn(
+                    "Changes to the .rvh file were requested, but no output subbasins were defined in the HRU properties. "
+                    "The .rvh file will not be updated."
+                )
+            else:
+                output = [int(o) for o in output]
+
+                output_lines = []
+                changes_active = False
+                for line in lines:
+                    if line == ":SubBasins\n":
+                        changes_active = True
+                        hruid_idx = None
+                        gauged_idx = None
+                    if line == ":EndSubBasins\n":
+                        changes_active = False
+                    if changes_active:
+                        if "GAUGED" in line:
+                            l_split = line.split(",")
+                            l_split = [
+                                li for li in l_split if li.strip() != ":Attributes"
+                            ]
+                            hruid_idx = [
+                                idx for idx, line in enumerate(l_split) if " ID" in line
+                            ]
+                            gauged_idx = [
+                                idx
+                                for idx, line in enumerate(l_split)
+                                if "GAUGED" in line
+                            ]
+                            if len(hruid_idx) != 1 and len(gauged_idx) != 1:
+                                raise ValueError(
+                                    "Could not determine unique HRU and GAUGED columns in the .rvh file."
+                                )
+                            hruid_idx = hruid_idx[0]
+                            gauged_idx = gauged_idx[0]
+                        if gauged_idx is not None:
+                            l_split = line.split()
+                            try:
+                                idx = int(l_split[hruid_idx])
+
+                                # Replace the gauged element, accounting for the real whitespace between each non-space value
+                                whitespaces = np.diff(
+                                    [i for i, c in enumerate(line) if c == " "]
+                                )
+                                actual_gauged_idx = (
+                                    np.array(
+                                        [
+                                            i
+                                            for i, val in enumerate(whitespaces)
+                                            if val != 1
+                                        ]
+                                    )
+                                )[gauged_idx]
+                                actual_gauged_idx = (
+                                    np.sum(whitespaces[:actual_gauged_idx]) + 1
+                                )
+                                line = [li for li in line]
+                                if idx in output:
+                                    line[actual_gauged_idx] = "1"
+                                else:
+                                    line[actual_gauged_idx] = "0"
+                                line = "".join(line)
+                            except ValueError as e:
+                                if "invalid literal for int()" in str(e):
+                                    pass  # Skip lines that do not contain a valid HRU ID
+                                else:
+                                    raise e
+
                     output_lines.append(line)
 
-            # Overwrite the .rvt file with the new lines
-            with (self.workdir / f"{self.run_name}.rvt").open("w") as file:
-                file.writelines(output_lines)
+                # Overwrite the .rvh file with the new lines
+                with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
+                    file.writelines(output_lines)
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
         r"""Return the inputs used to run the Raven model.
