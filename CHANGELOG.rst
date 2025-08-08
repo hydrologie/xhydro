@@ -17,6 +17,7 @@ New features and enhancements
 * The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
+* To compute the Probable Maximum Snowfall Accumulation (PMSA), a new function `xhydro.indicators.pmp.pw_snowfall` has been added, and the existing functions `xhydro.indicators.pmp.precipitable_water_100y` and `xhydro.indicators.pmp.major_precipitation_events` have been adapted. (:pull:`328`).
 
 Bug fixes
 ^^^^^^^^^
