@@ -4,6 +4,7 @@ import datetime as dt
 import logging
 import os
 import shutil
+import subprocess  # noqa: S404
 import tempfile
 import warnings
 from copy import deepcopy
@@ -370,13 +371,18 @@ class RavenpyModel(HydrologicalModel):
 
         # TODO: Add a tag to the files to identify the raven-hydro version
 
-    def run(self, overwrite=False) -> str | xr.Dataset:
+    def run(
+        self, *, overwrite: bool = False, executable: str | os.PathLike | None = None
+    ) -> str | xr.Dataset:
         """Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
         ----------
         overwrite : bool
             If True, overwrite the existing output files. Default is False.
+        executable : str | os.PathLike | None
+            Path to the Raven executable, bypassing RavenPy.
+            If None (default), the Raven executable from your current Python environment ('raven-hydro') will be used.
 
         Returns
         -------
@@ -384,7 +390,6 @@ class RavenpyModel(HydrologicalModel):
             The simulated streamflow.
         """
         # TODO: Compare the tagged version of the files with the raven-hydro version
-        # TODO: Allow running the model through the command line
         # FIXME: overwrite is currently not working as intended in RavenPy. Remove this once it is fixed.
         if overwrite is False and Path.is_file(
             self.workdir / "output" / f"{self.run_name}_Hydrographs.nc"
@@ -393,10 +398,32 @@ class RavenpyModel(HydrologicalModel):
                 f"Output files already exist in {self.workdir / 'output'}. Use 'overwrite=True' to overwrite them."
             )
 
-        run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
+        if executable is None:
+            run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
+        else:
+            executable = str(Path(executable))
+            if "raven" not in executable:
+                raise ValueError(
+                    "The executable command does not seem to be a valid Raven command. "
+                    "Please check the 'executable' parameter."
+                )
+
+            # Since we bypassed RavenPy, we need to clean up the output directory
+            for file in (self.workdir / "output").glob(f"{self.run_name}*.nc"):
+                file.unlink()
+
+            subprocess.run(  # noqa: S603
+                [
+                    executable,
+                    self.workdir / f"{self.run_name}",
+                    "-o",
+                    self.workdir / "output",
+                ],
+                check=True,
+            )
+
         self._standardise_outputs()
 
-        # TODO: Add metadata to the output files (e.g. the version of Raven used, the emulator used, etc.)
         return self.get_streamflow()
 
     def read_qobs(
@@ -1147,6 +1174,14 @@ class RavenpyModel(HydrologicalModel):
                 # Since we squeezed the dataset and renamed basin_name, it is preferable to call xs.io.rechunk_for_saving
                 # anyway to clean chunk encoding.
                 chunks = {"time": len(ds.time)}
+
+            # Global attributes are already pretty good, but make the Raven version explicit
+            # Since the executable used might differ from raven-hydro, we trust the dataset's history
+            ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split(
+                "Raven "
+            )[-1]
+            if run is not None:
+                ds.attrs["RavenPy_version"] = ravenpy.__version__
 
             # Overwrite the file
             save_to_netcdf(
