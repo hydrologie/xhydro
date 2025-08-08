@@ -887,10 +887,11 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) 
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
-    mask = qobs >= threshold
+    mask1 = qobs >= threshold
+    qobs_high = qobs.where(mask1, drop=True)
 
-    qsim_high = qsim.where(mask, drop=True)
-    qobs_high = qobs.where(mask, drop=True)
+    mask2 = qobs >= threshold
+    qsim_high = qsim.where(mask2, drop=True)
 
     return (np.sum(qsim_high - qobs_high) / np.sum(qobs_high))
 
@@ -994,10 +995,13 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
-    mask = qobs >= threshold
-
-    qsim_low = qsim.where(mask, drop=True)
+    mask1 = qobs >= threshold
     qobs_low = qobs.where(mask, drop=True)
+
+    mask2 = qsim >= threshold
+    qsim_low = qsim.where(mask1, drop=True)
+
+
 
     return (np.sum(qsim_low - qobs_low) / np.sum(qobs_low))
 
