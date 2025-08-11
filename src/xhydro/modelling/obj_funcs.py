@@ -861,7 +861,7 @@ ADD OBJECTIVE FUNCTIONS HERE
 def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) -> float:
     """
     High Flow Relative Error.
-    Relative error error in flow that is exceeded 10 % of the time.
+    Relative error for observed flows that are exceeded 10 % of the time.
 
     Parameters
     ----------
@@ -969,7 +969,7 @@ def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
 def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) -> float:
     """
     High Flow Relative Error.
-    Relative error error in flow that is exceeded 90 % of the time.
+    Relative error for observed flows that are exceeded 90 % of the time.
 
     Parameters
     ----------
@@ -995,13 +995,10 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
-    mask1 = qobs >= threshold
+    mask = qobs >= threshold
+
+    qsim_low = qsim.where(mask, drop=True)
     qobs_low = qobs.where(mask, drop=True)
-
-    mask2 = qsim >= threshold
-    qsim_low = qsim.where(mask1, drop=True)
-
-
 
     return (np.sum(qsim_low - qobs_low) / np.sum(qobs_low))
 
