@@ -68,6 +68,7 @@ def get_objective_function(
         - "bias" : Bias metric
         - "correlation_coeff": Correlation coefficient
         - "high_flow_rel_error" : High flow relative error
+        - "high_flow_timing_error" : High flow timing error
         - "kge" : Kling Gupta Efficiency metric (2009 version)
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
         - "kge_2021" : Kling-Gupta Efficiency (2021 version)
@@ -128,6 +129,7 @@ def get_objective_function(
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
         "high_flow_rel_error": _high_flow_rel_error,
+        "high_flow_timing_error" : _high_flow_timing_error,
         "kge": _kge,
         "kge_mod": _kge_mod,
         "kge_2021" : _kge_2021,
@@ -262,6 +264,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "abs_bias",
         "abs_pbias",
         "abs_volume_error",
+        "high_flow_timing_error",
         "mae",
         "mare",
         "mse",
@@ -968,7 +971,7 @@ def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) -> float:
     """
-    High Flow Relative Error.
+    Low Flow Relative Error.
     Relative error for observed flows that are exceeded 90 % of the time.
 
     Parameters
@@ -1117,3 +1120,58 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
 
+
+import xarray
+from datetime import datetime
+from scipy.stats import norm, circmean
+
+
+def _high_flow_timing_error(
+    qobs: xarray.DataArray,
+    qsim: xarray.DataArray,
+    freq: str = "YS-OCT",
+    percentile: int = 10,
+) -> xarray.DataArray:
+    """
+    Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
+
+
+    Parameters
+    ----------
+    qsim : xarray.DataArray
+        Daily Simulated streamflow data.
+    qobs : array_like
+        Daily Observed streamflow data.
+    percentile : int
+        frequency percentile for high flows, default is 10%.
+
+    Returns
+    -------
+    float
+        Difference in Julian day occurence of high flows, e.g. flows that are exceeded 10 % of the time.
+        ref : Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models at gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures. Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
+
+    Notes
+    -----
+    High Flow timing Error should AIM TO BE ZERO
+
+
+    """
+
+    threshold = np.nanpercentile(qobs, 100 - percentile)
+
+    # Select only high flow time steps
+    mask1 = qobs >= threshold
+
+    qobs_high = qobs.where(mask1, drop=True)
+    date_obs = pd.DatetimeIndex(qobs_high.time.values)
+    doy_obs = date_obs.dayofyear
+    mean_doy_obs = circmean(doy_obs, high=365, low=1)
+
+    mask2 = qsim >= threshold
+    qsim_high = qsim.where(mask2, drop=True)
+    date_sim = pd.DatetimeIndex(qsim_high.time.values)
+    doy_sim = date_sim.dayofyear
+    mean_doy_sim = circmean(doy_sim, high=365, low=1)
+
+    return (mean_doy_sim - mean_doy_obs)
