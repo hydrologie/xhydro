@@ -2,12 +2,11 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: xHydro 0.5.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-05 13:06-0400\n"
+"POT-Creation-Date: 2025-08-13 13:46-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -154,37 +153,21 @@ msgstr "Initialisation et exécution d'un modèle calé"
 #: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:107
 msgid ""
 "Raven requires several ``.rv*`` files to control various aspects such as "
-"meteorological inputs, watershed characteristics, and more. Currently, "
-"``RavenPy`` provides no straightforward way to open and modify these "
-"files. For instance, changing simulation dates or meteorological data "
-"directly through the files is not yet supported. Until this feature is "
-"added, all relevant information must be provided to ``RavenPy`` via the "
-"``model_config`` dictionary in order to successfully run the model."
+"meteorological inputs, watershed characteristics, and more. If the "
+"project directory already exists and contains data, ``xHydro`` will "
+"prepare the model for execution without overwriting existing ``.rv*`` "
+"files—unless the ``overwrite`` argument is explicitly set to ``True``. To"
+" force overwriting of these files, you can thus either:"
 msgstr ""
-"Raven nécessite plusieurs fichiers ``.rv*`` pour gérer divers aspects "
-"tels que les entrées météorologiques, les caractéristiques du bassin "
-"versant, et plus encore. Actuellement, ``RavenPy`` ne permet pas d'ouvrir"
-" et de modifier facilement ces fichiers. Par exemple, il n'est pas encore"
-" possible de modifier directement les dates de simulation ou les données "
-"météorologiques dans les fichiers. En attendant que cette fonctionnalité "
-"soit ajoutée, toutes les informations pertinentes doivent être fournies à"
-" ``RavenPy`` via le dictionnaire ``model_config`` afin d'exécuter "
-"correctement le modèle."
+"Raven nécessite plusieurs fichiers ``.rv*`` pour contrôler divers aspects "
+"tels que les intrants météorologiques, les caractéristiques du bassin "
+"versant, et plus encore. Si le répertoire du projet existe déjà et "
+"contient des données, ``xHydro`` préparera le modèle pour l'exécution "
+"sans écraser les fichiers ``.rv*`` existants, à moins que l'argument "
+"``overwrite`` ne soit explicitement défini sur ``True``. Pour forcer "
+"l'écrasement de ces fichiers, vous pouvez donc soit :"
 
 #: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:109
-msgid ""
-"If the project directory already exists and contains data, ``xHydro`` "
-"will prepare the model for execution without overwriting existing "
-"``.rv*`` files—unless the ``overwrite`` argument is explicitly set to "
-"``True``. To force overwriting of these files, you can thus either:"
-msgstr ""
-"Si le répertoire du projet existe déjà et contient des données, "
-"``xHydro`` préparera le modèle pour l'exécution sans écraser les fichiers"
-" ``.rv*`` existants — sauf si l'argument ``overwrite`` est explicitement "
-"défini à ``True``. Pour forcer l’écrasement de ces fichiers, vous pouvez "
-"donc :"
-
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:111
 msgid ""
 "Set ``overwrite=True`` in the ``model_config`` when instantiating the "
 "model"
@@ -192,17 +175,13 @@ msgstr ""
 "Définir ``overwrite=True`` dans ``model_config`` lors de l'instanciation "
 "du modèle"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:112
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:110
 msgid ""
-"Use the ``.create_rv(*args, overwrite=True, **kwargs)`` method on the "
-"instantiated model. Note that if using that option, all necessary "
-"arguments need to be provided again."
+"Use the ``.create_rv(overwrite=True)`` method on the instantiated model."
 msgstr ""
-"Utiliser la méthode ``.create_rv(*args, overwrite=True, **kwargs)`` sur "
-"le modèle instancié. Notez que si vous utilisez cette option, tous les "
-"arguments nécessaires doivent être fournis à nouveau."
+"Utiliser la méthode ``.create_rv(overwrite=True)`` sur le modèle instancié."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:114
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:112
 msgid ""
 "This Notebook will focus on distributed RavenPy models. For lumped "
 "models, refer to the `Raven lumped modelling notebook "
@@ -212,11 +191,11 @@ msgstr ""
 "modèles globaux, consultez le `Notebook Raven de modélisation globale "
 "<hydrological_modelling_raven.ipynb>`__."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:117
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:115
 msgid "Formatting HRU Data for distributed models"
 msgstr "Formatage des données HRU pour les modèles distribués"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:119
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:117
 msgid ""
 "Raven relies on Hydrological Response Units (HRUs) for its hydrological "
 "simulations. Distributed models require a long list of HRU attributes, "
@@ -231,17 +210,18 @@ msgid ""
 msgstr ""
 "Raven s'appuie sur les Unités de Réponse Hydrologique (HRU) pour ses "
 "simulations hydrologiques. Les modèles distribués nécessitent une longue "
-"liste d'attributs de HRU, qui n'est pas encore entièrement prise en charge "
-"par ``xHydro``. Les utilisateurs sont encouragés à consulter la "
-"documentation de `BasinMaker <https://hydrology.uwaterloo.ca/basinmaker/>`__ "
-"pour une liste complète d'attributs de HRU, et en particulier le "
-"fichier de spécification des données disponible sur leur page d'accueil. "
-"Pour la modélisation distribuée, ``xHydro`` utilise la classe "
-"``BasinMakerExtractor`` de ``RavenPy`` pour extraire les données HRU "
-"à partir d'un shapefile, donc les utilisateurs doivent s'assurer que leur"
-" shapefile est correctement formaté."
+"liste d'attributs de HRU, qui n'est pas encore entièrement prise en "
+"charge par ``xHydro``. Les utilisateurs sont encouragés à consulter la "
+"documentation de `BasinMaker "
+"<https://hydrology.uwaterloo.ca/basinmaker/>`__ pour une liste complète "
+"d'attributs de HRU, et en particulier le fichier de spécification des "
+"données disponible sur leur page d'accueil. Pour la modélisation "
+"distribuée, ``xHydro`` utilise la classe ``BasinMakerExtractor`` de "
+"``RavenPy`` pour extraire les données HRU à partir d'un shapefile, donc "
+"les utilisateurs doivent s'assurer que leur shapefile est correctement "
+"formaté."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:122
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:120
 msgid ""
 "Additionally, while BasinMaker will produce attributes such as "
 "``Landuse_ID``, these will not be passed on to the ``RavenPy`` model. "
@@ -253,22 +233,22 @@ msgid ""
 "soil profile respectively."
 msgstr ""
 "De plus, bien que BasinMaker produise des attributs tels que "
-"``Landuse_ID``, ceux-ci ne seront pas transmis au modèle ``RavenPy``. "
-"Au lieu de cela, le HRU doit contenir des attributs d'utilisation du sol "
+"``Landuse_ID``, ceux-ci ne seront pas transmis au modèle ``RavenPy``. Au "
+"lieu de cela, le HRU doit contenir des attributs d'utilisation du sol "
 "pertinents qui peuvent être directement mappés aux arguments du modèle "
-"hydrologique. Par exemple, pour le modèle HBV-EC, qui est actuellement "
-"le seul modèle distribué disponible dans ``Raven``, les attributs suivants"
-" sont utilisés à la place : ``LAND_USE_C``, ``VEG_C``, "
-" et ``SOIL_PROF``, qui représentent respectivement l'utilisation du sol, "
-"la végétation et le profil du sol."
+"hydrologique. Par exemple, pour le modèle HBV-EC, qui est actuellement le"
+" seul modèle distribué disponible dans ``Raven``, les attributs suivants "
+"sont utilisés à la place : ``LAND_USE_C``, ``VEG_C``,  et ``SOIL_PROF``, "
+"qui représentent respectivement l'utilisation du sol, la végétation et le"
+" profil du sol."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:129
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:207
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:225
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:127
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:205
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:223
 msgid "INFO"
 msgstr "INFO"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:131
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:129
 msgid ""
 "By default, HBV-EC as defined in ``RavenPy`` only understands a unique "
 "``LAND_USE_C`` (``LU_ALL``), ``VEG_C`` (``VEG_ALL``), and ``SOIL_PROF`` "
@@ -287,24 +267,24 @@ msgstr ""
 "la définition de la classe du modèle ``HBVEC`` dans "
 "``ravenpy.config.emulators.hbvec.py``."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:133
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:131
 msgid ""
 "As an example, new vegetation classes can be added by modifying the "
 "``VegetationClasses`` and ``VegetationParameterList`` keys with new "
 "entries detailing all the vegetation classes and their parameters. The "
 "same applies to land use and soil profile classes."
 msgstr ""
-"Par exemple, de nouvelles classes de végétation peuvent être ajoutées en"
-" modifiant les clés ``VegetationClasses`` et ``VegetationParameterList`` "
+"Par exemple, de nouvelles classes de végétation peuvent être ajoutées en "
+"modifiant les clés ``VegetationClasses`` et ``VegetationParameterList`` "
 "avec de nouvelles entrées détaillant toutes les classes de végétation et "
 "leurs paramètres. Il en va de même pour les classes d'utilisation du sol "
 "et de profil de sol."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:201
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:199
 msgid "Formatting Meteorological Data"
 msgstr "Formatage des données météorologiques"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:209
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:207
 msgid ""
 "If using multiple meteorological stations, it is recommended to add the "
 "``Interpolation`` argument to ``model_config`` or the ``RavenpyModel`` "
@@ -317,17 +297,17 @@ msgstr ""
 "d'interpolation. Raven utilise par défaut la méthode du plus proche "
 "voisin, mais d'autres options sont disponibles :"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:211
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:209
 msgid "``INTERP_NEAREST_NEIGHBOR`` (default) — Nearest neighbor (Voronoi) method"
 msgstr ""
 "``INTERP_NEAREST_NEIGHBOR`` (par défaut) — Méthode du plus proche voisin "
 "(Voronoï)"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:212
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:210
 msgid "``INTERP_INVERSE_DISTANCE`` — Inverse distance weighting"
 msgstr "``INTERP_INVERSE_DISTANCE`` — Pondération par distance inverse"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:213
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:211
 msgid ""
 "``INTERP_INVERSE_DISTANCE_ELEVATION`` — Inverse distance weighting with "
 "consideration of elevation"
@@ -335,11 +315,11 @@ msgstr ""
 "``INTERP_INVERSE_DISTANCE_ELEVATION`` — Pondération par distance inverse "
 "avec prise en compte de l'altitude"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:214
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:212
 msgid "``INTERP_AVERAGE_ALL`` — Averages all specified gauge readings"
 msgstr "``INTERP_AVERAGE_ALL`` — Moyenne de toutes les stations spécifiées"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:215
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:213
 msgid ""
 "``INTERP_FROM_FILE [filename]`` — Weights for each gauge at each HRU are "
 "specified in an external file. This method should work via ``xHydro``, "
@@ -350,7 +330,7 @@ msgstr ""
 "fonctionner via ``xHydro``, mais elle n'a pas encore été entièrement "
 "testée."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:227
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:225
 msgid ""
 "When using gridded meteorological data, ``xHydro`` uses functions from "
 "``RavenPy`` to compute weights for each grid cell based on the HRU's "
@@ -360,13 +340,13 @@ msgstr ""
 "utilise des fonctions de ``RavenPy`` pour calculer les poids de chaque "
 "cellule de la grille en fonction de la géométrie du HRU."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:228
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:226
 msgid "Ensure that the domain of the grid completely covers the watershed."
 msgstr ""
 "Assurez-vous que le domaine de la grille couvre entièrement le bassin "
 "versant."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:234
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:232
 msgid ""
 "The acquisition of raw meteorological data is covered in the `GIS "
 "notebook <gis.ipynb>`__ and `Use Case Example <use_case.ipynb>`__ "
@@ -377,7 +357,7 @@ msgstr ""
 "<use_case.ipynb>`__. Par conséquent, ce Notebook utilisera un jeu de "
 "données de test."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:277
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:275
 msgid ""
 "Every hydrological model has different requirements when it comes to "
 "their input data. In this example, the data above has multiple issues "
@@ -389,9 +369,10 @@ msgstr ""
 " ses données d'entrée. Dans cet exemple, les données ci-dessus présentent"
 " plusieurs problèmes qui ne seraient pas compatibles avec les exigences "
 "de Raven. Pour référence sur les unités par défaut attendues par Raven, "
-"consultez `ce lien <https://ravenpy.readthedocs.io/en/latest/_modules/ravenpy/config/defaults.html#>`__."
+"consultez `ce lien "
+"<https://ravenpy.readthedocs.io/en/latest/_modules/ravenpy/config/defaults.html#>`__."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:279
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:277
 msgid ""
 "The function ``xh.modelling.format_input`` can be used to reformat CF-"
 "compliant datasets for use in hydrological models."
@@ -400,7 +381,7 @@ msgstr ""
 "reformater les jeux de données conformes aux normes CF pour une "
 "utilisation dans les modèles hydrologiques."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:314
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:312
 msgid ""
 "While RavenPy does not require a configuration file to accompany the "
 "meteorological file, many information must be given to ``model_config`` "
@@ -415,34 +396,34 @@ msgstr ""
 "\"meteo_file\", \"data_type\", \"alt_names_meteo\", et "
 "\"meteo_station_properties\" basées sur le fichier fourni."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:337
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:335
 msgid "Initializing the Model"
 msgstr "Initialisation du modèle"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:339
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:337
 msgid "The model can now be initialized using the information acquired so far."
 msgstr ""
 "Le modèle peut maintenant être initialisé en utilisant les informations "
 "acquises jusqu'à présent."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:340
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:338
 msgid ""
 "Additional entries can be provided to the ``model_config`` dictionary, as"
 " long as they are supported by the emulated Raven model. In particular:"
 msgstr ""
 "Des entrées supplémentaires peuvent être fournies au dictionnaire "
-"``model_config``, tant qu'elles sont prises en charge par le modèle "
-"émulé par Raven. En particulier :"
+"``model_config``, tant qu'elles sont prises en charge par le modèle émulé"
+" par Raven. En particulier :"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:342
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:340
 msgid ""
 "The ``output_subbasins`` key can be used to specify which subbasins to "
 "output."
 msgstr ""
-"La clé ``output_subbasins`` peut être utilisée pour spécifier "
-"quels sous-bassins doivent être inclus dans la sortie."
+"La clé ``output_subbasins`` peut être utilisée pour spécifier quels sous-"
+"bassins doivent être inclus dans la sortie."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:343
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:341
 msgid ""
 "The ``global_parameter`` key must have a value for ``AVG_ANNUAL_RUNOFF``,"
 " which is the average annual runoff in mm/year (with a range of 0-1000 "
@@ -454,7 +435,7 @@ msgstr ""
 "(avec une plage de 0-1000 selon la documentation de Raven). Cette valeur "
 "est requise pour les modèles distribués."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:345
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:343
 msgid ""
 "Refer to the `Raven documentation "
 "<https://raven.uwaterloo.ca/Downloads.html>`__ for the most up-to-date "
@@ -464,7 +445,7 @@ msgstr ""
 "<https://raven.uwaterloo.ca/Downloads.html>`__ pour obtenir les "
 "informations les plus récentes."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:346
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:344
 msgid ""
 "Model templates are currently listed in Appendix F, while the available "
 "options are described in various chapters."
@@ -472,7 +453,7 @@ msgstr ""
 "Les modèles types sont actuellement listés dans l'annexe F, tandis que "
 "les options disponibles sont décrites dans différents chapitres."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:402
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:400
 msgid ""
 "With ``model_config`` on hand, an instance of the hydrological model can "
 "be initialized using ``xhydro.modelling.hydrological_model`` or the "
@@ -483,11 +464,11 @@ msgstr ""
 "``xhydro.modelling.hydrological_model`` ou directement la classe "
 "``xhydro.modelling.RavenpyModel``."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:424
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:422
 msgid "Validating the Meteorological Data"
 msgstr "Validation des données météorologiques"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:426
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:424
 msgid ""
 "Before executing hydrological models, a few basic checks will be "
 "performed automatically. However, users may want to conduct more advanced"
@@ -508,7 +489,7 @@ msgstr ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/3_diagnostics.html"
 "#Health-checks>`__."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:428
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:426
 msgid ""
 "We can use ``.get_inputs()`` to automatically retrieve the meteorological"
 " data. In this example, we'll ensure there are no abnormal meteorological"
@@ -519,23 +500,28 @@ msgstr ""
 " n'y a pas de valeurs ou de séquences de valeurs météorologiques "
 "anormales."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:479
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:477
 msgid "Executing the Model"
 msgstr "Exécution du modèle"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:481
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:479
 msgid ""
 "A few basic checks are performed when the ``.run()`` function is called, "
 "before executing the model itself. However, since both RavenPy and Raven "
 "will perform a series of checkups themselves, they are kept at a minimum "
-"in ``xHydro``."
+"in ``xHydro``. If required, a ``executable`` argument can be used to "
+"point to your own Raven executable instead of the one provided by the "
+"``raven-hydro`` library in the active Python environment."
 msgstr ""
 "Quelques vérifications de base sont effectuées lorsque la fonction "
 "``.run()`` est appelée, avant d'exécuter le modèle lui-même. Cependant, "
-"puisque RavenPy et Raven effectueront eux-mêmes une série de vérifications,"
-" elles sont maintenues au minimum dans ``xHydro``."
+"comme RavenPy et Raven effectueront eux-mêmes une série de contrôles, "
+"ils sont maintenus à un minimum dans ``xHydro``. Si nécessaire, un "
+"argument ``executable`` peut être utilisé pour pointer vers votre propre "
+"exécutable Raven au lieu de celui fourni par la librairie "
+"``raven-hydro`` dans l'environnement Python actif."
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:483
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:481
 msgid ""
 "Once the model is executed, ``xHydro`` will automatically reformat the "
 "NetCDF file to bring it closer to CF conventions, ensuring compatibility "
@@ -547,11 +533,119 @@ msgstr ""
 "compatibilité avec les autres modules ``xHydro``. Notez qu'en ce moment, "
 "ce reformatage soutient uniquement le débit sortant."
 
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:512
+msgid "Updating the rv\\* files"
+msgstr "Mise à jour des fichiers rv\\*"
+
 #: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:514
+msgid ""
+"Currently, ``RavenPy`` provides no straightforward way to open and modify"
+" the Raven ``.rv*`` files. For instance, changing simulation dates or "
+"meteorological data directly through the files is not yet supported. "
+"Until this feature is added, some basic functions have been integrated "
+"into ``xHydro``, but should be used with care."
+msgstr ""
+"Actuellement, ``RavenPy`` ne fournit pas de moyen simple d'ouvrir et de "
+"modifier les fichiers Raven ``.rv*``. Par exemple, changer les dates de "
+"simulation ou les données météorologiques directement à travers les fichiers "
+"n'est pas encore pris en charge. Jusqu'à ce que cette fonctionnalité soit "
+"ajoutée, certaines fonctions de base ont été intégrées dans ``xHydro``, mais "
+"doivent être utilisées avec précaution."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:516
+msgid ""
+"The basic information, such as ``start_date``, ``end_date``, and "
+"``parameters``, are stored directly in the ``RavenpyModel`` class and can"
+" be manually updated. Similarly, if additional arguments had been given "
+"to the model during initialization, they are stored within a dictionary "
+"under ``RavenpyModel.kwargs``, which can be accessed and modified as "
+"needed."
+msgstr ""
+"Les informations de base, telles que ``start_date``, ``end_date`` et "
+"``parameters``, sont stockées directement dans la classe ``RavenpyModel`` "
+"et peuvent être mises à jour manuellement. De même, si des arguments "
+"supplémentaires ont été fournis au modèle lors de l'initialisation, ils "
+"seront stockés dans un dictionnaire sous ``RavenpyModel.kwargs``, qui peut "
+"être consulté et modifié au besoin."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:518
+msgid ""
+"The observed streamflow, HRU characteristics and meteorological data are "
+"stored under the ``.qobs``, ``.hru`` and ``.meteo`` attributes "
+"respectively, but can be much trickier to update, since the associated "
+"``RavenPy`` commands must be reconstructed again. Therefore, it is "
+"strongly recommended to use the ``.update_data`` method to update these. "
+"This function calls upon a subset of the same arguments used when "
+"initializing a Raven model:"
+msgstr ""
+"Le débit observé, les caractéristiques de HRU et les données météorologiques "
+"sont stockés sous les attributs ``.qobs``, ``.hru`` et ``.meteo`` "
+"respectivement, mais peuvent être beaucoup plus difficiles à mettre à jour, "
+"car les commandes ``RavenPy`` associées doivent être reconstruites à nouveau. "
+"Par conséquent, il est fortement recommandé d'utiliser la méthode "
+"``.update_data`` pour mettre à jour ces éléments. Cette fonction fait appel "
+"à un sous-ensemble des mêmes arguments utilisés lors de l'initialisation d'un "
+"modèle Raven :"
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:538
+msgid ""
+"That function will only update the ``RavenpyModel`` class itself, not the"
+" files. If possible, it is strongly recommended to use the ``create_rv`` "
+"function to overwrite the existing ``.rv*`` files with the updated "
+"information."
+msgstr ""
+"Cette fonction ne mettra à jour que la classe ``RavenpyModel`` elle-même, "
+"pas les fichiers. Si possible, il est fortement recommandé d'utiliser la "
+"fonction ``create_rv`` pour écraser les fichiers ``.rv*`` existants avec "
+"les informations mises à jour."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:540
+msgid ""
+"If this is not possible, some aspects of the model can still be updated "
+"using the ``.update_config`` method, but be very aware that not all "
+"updates will be reflected in the ``.rv*`` files. Specifically, the method"
+" will update the following, if the option is set to ``True``:"
+msgstr ""
+"Si cela n'est pas possible, certains aspects du modèle peuvent tout de même être "
+"mis à jour en utilisant la méthode ``.update_config``, mais soyez très "
+"conscient que toutes les mises à jour ne seront pas reflétées dans les "
+"fichiers ``.rv*``. Plus précisément, la méthode mettra à jour les éléments "
+"suivants, si l'option est définie sur ``True`` :"
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:542
+msgid "``.rvi``: Update the start and end dates."
+msgstr "``.rvi`` : Met à jour les dates de début et de fin."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:543
+msgid ""
+"``.rvt``: Update observed streamflow and meteorological data, including "
+"the grid cell weights if relevant."
+msgstr ""
+"``.rvt`` : Met à jour le débit observé et les données météorologiques, "
+"y compris les poids des points de grille si pertinent."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:544
+msgid "``.rvh``: Update the list of subbasins to output."
+msgstr "``.rvh`` : Met à jour la liste des sous-bassins à sortir."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:546
+msgid ""
+"The last two options should be used with caution, as HRU characteristics,"
+" such as the subbasin IDs, will *not* be updated. If the HRU within the "
+"model has changed, there is currently no way to modify existing files. "
+"They should be deleted and recreated using the ``.create_rv()`` method."
+msgstr ""
+"Ces deux dernières options doivent être utilisées avec précaution, car les "
+"caractéristiques des HRU, telles que les ID de sous-bassin, ne seront *pas* "
+"mises à jour. Si le HRU au sein du modèle a changé, il n'y a actuellement "
+"aucun moyen de modifier les fichiers existants. Ils doivent être supprimés "
+"et recréés à l'aide de la méthode ``.create_rv()``."
+
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:567
 msgid "Model Calibration"
 msgstr "Calage du modèle"
 
-#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:516
+#: ../../notebooks/hydrological_modelling_raven_distributed.ipynb:569
 msgid ""
 "Calibrating distributed models is not yet supported by ``xHydro`` if "
 "multiple hydrometric stations are used. Users are encouraged to use the "
@@ -563,5 +657,6 @@ msgstr ""
 "``xHydro`` si plusieurs stations hydrométriques sont utilisées. Les "
 "utilisateurs sont encouragés à utiliser directement la librairie "
 "``RavenPy`` à cette fin. Pour le calage à une station unique, ``xHydro`` "
-"peut être utilisé. Consultez la `documentation de RavenPy pour les modèles globaux "
-"<hydrological_modelling_raven.ipynb>`__ pour plus de détails."
+"peut être utilisé. Consultez la `documentation de RavenPy pour les "
+"modèles globaux <hydrological_modelling_raven.ipynb>`__ pour plus de "
+"détails."
