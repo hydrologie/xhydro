@@ -12,9 +12,11 @@ New features and enhancements
 * Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
 * New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
 * The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`, :pull:`339`).
-* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
+* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.create_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
 * The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
+* Two functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`).
+* A `executable` argument has been added to the `RavenpyModel` class's `run` method to specify a custom path to the Raven executable. (:pull:`341`).
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
 
@@ -39,6 +41,7 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
 * Added a security policy (``SECURITY.md``) to the repository. (:pull:`340`).
+* The `RavenpyModel` class has been heavily refactored to improve code readability and maintainability. (:pull:`339`, :pull:`341`).
 
 v0.5.0 (2025-04-24)
 -------------------
