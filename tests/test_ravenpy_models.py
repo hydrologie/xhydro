@@ -1,5 +1,4 @@
 import datetime as dt
-import os
 import shutil
 from pathlib import Path
 
@@ -8,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pooch
 import pytest
-import raven_hydro
 import xarray as xr
 from pystac_client.exceptions import APIError
 from shapely import Polygon
@@ -18,9 +16,11 @@ import xhydro.modelling as xhm
 from xhydro.modelling import RavenpyModel
 
 try:
+    import raven_hydro
     import ravenpy
 except ImportError:
     ravenpy = None
+    raven_hydro = None
 
 
 @pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
