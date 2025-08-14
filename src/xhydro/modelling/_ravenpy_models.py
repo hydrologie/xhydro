@@ -968,16 +968,9 @@ class RavenpyModel(HydrologicalModel):
             ]
 
         if hru_file is None or has_changed:
-            self.hru["file"] = self.workdir / "shapefile" / f"{self.run_name}_hru.shp"
+            self.hru["file"] = self.workdir / "shapefile" / f"{self.run_name}_hru.gpkg"
             Path(self.hru["file"].parent).mkdir(parents=True, exist_ok=True)
-            # These columns can generate a lot of warnings due to the size of the DrainArea/BasArea column if there are floating point numbers
-            if "DrainArea" in hru.columns:
-                hru["DrainArea"] = hru["DrainArea"].apply(np.round, 3)
-            if "BasArea" in hru.columns:
-                hru["BasArea"] = hru["BasArea"].apply(np.round, 3)
-            hru.to_file(
-                str(self.hru["file"]), engine="fiona"
-            )  # pyogrio currently generates a lot of warnings with bigger values
+            hru.to_file(str(self.hru["file"]))
         else:
             self.hru["file"] = hru_file
 
