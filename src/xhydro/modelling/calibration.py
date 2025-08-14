@@ -240,12 +240,17 @@ class SpotSetup:
                 )
             da = da.squeeze()
 
+            # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)        
             # Subset the observed streamflow to the calibration period
-            da = da.sel(
-                time=slice(
-                    self.model_config["start_date"], self.model_config["end_date"]
-                )
-            )
+            da = da.where(da.time.values<= np.datetime64(self.model_config["end_date"]))
+            da = da.where(da.time.values>= np.datetime64(self.model_config["start_date"]))
+
+            # # Subset the observed streamflow to the calibration period
+            # da = da.sel(
+            #     time=slice(
+            #         self.model_config["start_date"], self.model_config["end_date"]
+            #     )
+            # )
             self.qobs = da.values
 
     def simulation(self, x):

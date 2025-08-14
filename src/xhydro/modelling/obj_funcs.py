@@ -531,7 +531,7 @@ def _kge(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
     # Calculate the KGE
     kge = 1 - np.sqrt((r - 1) ** 2 + (a - 1) ** 2 + (b - 1) ** 2)
-
+    print(kge)
     return kge
 
 
@@ -738,6 +738,10 @@ def _rmse(qsim: np.ndarray, qobs: np.ndarray) -> float:
     -----
     The rmse should be MINIMIZED.
     """
+    #print(qobs)
+    #print(qsim)
+    print(np.sqrt(np.mean((qobs - qsim) ** 2)))
+    
     return np.sqrt(np.mean((qobs - qsim) ** 2))
 
 
