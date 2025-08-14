@@ -46,6 +46,9 @@ class RavenpyModel(HydrologicalModel):
         If True, overwrite the existing project files. Default is False.
     workdir : str | Path | None
         Path to save the .rv files and model outputs. Default is None, which creates a temporary directory.
+    executable : str | os.PathLike | None, optional
+        Path to the Raven executable, bypassing RavenPy.
+        If None (default), the Raven executable from your current Python environment ('raven-hydro') will be used.
     run_name : str, optional
         Name of the run, which will be used to name the project files. Defaults to "raven" if not provided.
     model_name : {"Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"}, optional
@@ -110,6 +113,7 @@ class RavenpyModel(HydrologicalModel):
         overwrite: bool = False,
         *,
         workdir: str | os.PathLike | None = None,
+        executable: str | os.PathLike | None = None,
         run_name: str | None = None,
         model_name: (
             Literal["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"]
@@ -136,6 +140,7 @@ class RavenpyModel(HydrologicalModel):
         else:
             self.workdir = Path(workdir)
             self.workdir.mkdir(parents=True, exist_ok=True)
+        self.executable = executable
 
         self.model_name = model_name
         self.run_name = run_name or "raven"
@@ -675,18 +680,13 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(
-        self, *, overwrite: bool = False, executable: str | os.PathLike | None = None
-    ) -> str | xr.Dataset:
+    def run(self, *, overwrite: bool = False) -> str | xr.Dataset:
         """Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
         ----------
         overwrite : bool
             If True, overwrite the existing output files. Default is False.
-        executable : str | os.PathLike | None
-            Path to the Raven executable, bypassing RavenPy.
-            If None (default), the Raven executable from your current Python environment ('raven-hydro') will be used.
 
         Returns
         -------
@@ -702,10 +702,10 @@ class RavenpyModel(HydrologicalModel):
                 f"Output files already exist in {self.workdir / 'output'}. Use 'overwrite=True' to overwrite them."
             )
 
-        if executable is None:
+        if self.executable is None:
             run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
         else:
-            executable = str(Path(executable))
+            executable = str(Path(self.executable))
             if "raven" not in executable:
                 raise ValueError(
                     "The executable command does not seem to be a valid Raven command. "

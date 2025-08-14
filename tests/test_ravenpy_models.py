@@ -266,8 +266,10 @@ class TestRavenpyModels:
         path = Path(raven_hydro.__file__).parents[4] / "bin" / "raven"
 
         with pytest.raises(ValueError, match="The executable command"):
-            rpm.run(executable="malicious_command")
-        ds2 = rpm.run(executable=path)
+            rpm.executable = "malicious_command"
+            rpm.run()
+        rpm.executable = path
+        ds2 = rpm.run()
 
         xr.testing.assert_equal(ds1, ds2)
 
