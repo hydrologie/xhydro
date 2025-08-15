@@ -882,11 +882,11 @@ class RavenpyModel(HydrologicalModel):
         """Read the HRU properties from a GeoDataFrame and update the .hru properties of the RavenPy model. Might also create a new HRU file."""
         hru = deepcopy(hru)
 
+        self.hru = {"keys": {}}
         has_changed = False
         hru_file = None
         if isinstance(hru, gpd.GeoDataFrame | dict):
             has_changed = True
-        self.hru = {"keys": {}}
 
         # Manage the input to ensure it is a GeoDataFrame
         if isinstance(hru, str | os.PathLike):
@@ -967,10 +967,10 @@ class RavenpyModel(HydrologicalModel):
                 }
             ]
 
+        self.hru["hru"] = hru
+        self.hru["saved_on_disk"] = False if has_changed else True
         if hru_file is None or has_changed:
             self.hru["file"] = self.workdir / "shapefile" / f"{self.run_name}_hru.gpkg"
-            Path(self.hru["file"].parent).mkdir(parents=True, exist_ok=True)
-            hru.to_file(str(self.hru["file"]))
         else:
             self.hru["file"] = hru_file
 
@@ -1130,6 +1130,11 @@ class RavenpyModel(HydrologicalModel):
                 for i in range(self.meteo["station_len"])
             ]
         else:
+            if not self.hru["saved_on_disk"]:
+                Path(self.hru["file"].parent).mkdir(parents=True, exist_ok=True)
+                self.hru["hru"].to_file(str(self.hru["file"]))
+                self.hru["saved_on_disk"] = True
+
             # Compute the weights
             weight_file = (
                 self.workdir
