@@ -662,20 +662,14 @@ class TestDistributedRavenpy:
 
     @pytest.fixture(scope="class")
     def df(self, deveraux):
-        from xhydro.testing.helpers import deveraux as deveraux_branch
-
         df = gpd.read_file(
             Path(
-                deveraux_branch(branch="distributed").fetch(
+                deveraux.fetch(
                     "ravenpy/hru_subset.zip",
                     processor=pooch.Unzip(),
                 )[0]
             ).parents[0]
         )
-        df["DrainArea"] = df["DrainArea"].apply(
-            np.round, 3
-        )  # Kill multiple floating point warnings
-        df["BasArea"] = df["BasArea"].apply(np.round, 3)
 
         df.loc[:, "VEG_C"] = "VEG_ALL"
         df.loc[:, "LAND_USE_C"] = "LU_ALL"
@@ -712,8 +706,8 @@ class TestDistributedRavenpy:
                 ).run()
         else:
             if output_sub is None:
-                df.to_file(tmp_path / "hru.shp")
-                df = tmp_path / "hru.shp"
+                df.to_file(tmp_path / "hru.gpkg")
+                df = tmp_path / "hru.gpkg"
 
             qsim = RavenpyModel(
                 model_name="HBVEC",
@@ -926,7 +920,7 @@ class TestDistributedRavenpy:
 
         assert "reservoirs" not in hm_no.emulator_config
 
-    def test_update_config_distributed(self, deveraux, tmp_path, gridded_meteo, df):
+    def test_update_config_distributed(self, tmp_path, gridded_meteo, df):
         meteo, cfg = gridded_meteo
         meteo.to_netcdf(tmp_path / "test.nc")
         cfg["meteo_file"] = str(tmp_path / "test.nc")
