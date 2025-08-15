@@ -19,6 +19,7 @@ New features and enhancements
 * A `executable` argument has been added to the `RavenpyModel` class's `run` method to specify a custom path to the Raven executable. (:pull:`341`).
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
+* Additional options can now be passed to the Hydrotel executable via the `run_options` argument in the `run` method. (:pull:`331`).
 
 Bug fixes
 ^^^^^^^^^
@@ -26,6 +27,7 @@ Bug fixes
 * If returning a GeoDataFrame in `xh.gis.watershed_properties`, column names have been changed to include the units. (:issue:`266`, :pull:`303`).
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
 * Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
+* Fixed a bug in Hydrotel modelling where the simulation file's name was not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -36,6 +38,9 @@ Breaking changes
 * The `basin_name` coordinate produced by Raven is now renamed to `subbasin_id`. (:pull:`339`).
 * The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from `xhfa.regional.calculate_rp_from_afr` and `return_periods` from `xhfa.uncertainties.calc_q_iter` all renamed `return_period`. (:issue:`269`, :pull:`317`).
 * The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
+* The `use_defaults` argument in the `Hydrotel` class has been removed. (:pull:`331`).
+* The internal `xh.modelling._hydrotel._basic_checks` function has been removed, as Hydrotel itself performs most of these checks. Checks that are still relevant have been moved to the `run` function. (:pull:`331`).
+* The `station_id` dimension in the output of Hydrotel has been renamed to `subbasin_id`. (:pull:`331`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^

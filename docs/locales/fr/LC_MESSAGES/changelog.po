@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-13 13:46-0400\n"
+"POT-Creation-Date: 2025-08-15 13:17-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,11 +32,11 @@ msgid ""
 "(:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:10 ../../../CHANGELOG.rst:51
-#: ../../../CHANGELOG.rst:96 ../../../CHANGELOG.rst:129
-#: ../../../CHANGELOG.rst:164 ../../../CHANGELOG.rst:187
-#: ../../../CHANGELOG.rst:208 ../../../CHANGELOG.rst:246
-#: ../../../CHANGELOG.rst:281
+#: ../../../CHANGELOG.rst:10 ../../../CHANGELOG.rst:56
+#: ../../../CHANGELOG.rst:101 ../../../CHANGELOG.rst:134
+#: ../../../CHANGELOG.rst:169 ../../../CHANGELOG.rst:192
+#: ../../../CHANGELOG.rst:213 ../../../CHANGELOG.rst:251
+#: ../../../CHANGELOG.rst:286
 msgid "New features and enhancements"
 msgstr ""
 
@@ -111,79 +111,91 @@ msgid ""
 "\"1.0.5\"` and  `Optim = \"1.13.2\"`. (:issue:`292`, :pull:`315`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:24 ../../../CHANGELOG.rst:59
-#: ../../../CHANGELOG.rst:102 ../../../CHANGELOG.rst:254
-#: ../../../CHANGELOG.rst:293
+#: ../../../CHANGELOG.rst:22
+msgid ""
+"Additional options can now be passed to the Hydrotel executable via the "
+"`run_options` argument in the `run` method. (:pull:`331`)."
+msgstr ""
+
+#: ../../../CHANGELOG.rst:25 ../../../CHANGELOG.rst:64
+#: ../../../CHANGELOG.rst:107 ../../../CHANGELOG.rst:259
+#: ../../../CHANGELOG.rst:298
 msgid "Bug fixes"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:25
+#: ../../../CHANGELOG.rst:26
 msgid ""
 "A warning will now appear if the calculated area in "
 "`xh.gis.watershed_properties` differs from the theoretical area from "
 "HydroBASINS. (:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:26
+#: ../../../CHANGELOG.rst:27
 msgid ""
 "If returning a GeoDataFrame in `xh.gis.watershed_properties`, column "
 "names have been changed to include the units. (:issue:`266`, "
 ":pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:27
+#: ../../../CHANGELOG.rst:28
 msgid ""
 "Multiple corrections to the `xh.modelling.format_input` function to "
 "ensure that the results are correctly formatted for Raven. (:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:28
+#: ../../../CHANGELOG.rst:29
 msgid ""
 "Importation will no longer fail if the `ravenpy` package is installed, "
 "but cannot find the Raven executable. (:issue:`305`, :pull:`306`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:31 ../../../CHANGELOG.rst:65
-#: ../../../CHANGELOG.rst:107 ../../../CHANGELOG.rst:156
-#: ../../../CHANGELOG.rst:172 ../../../CHANGELOG.rst:219
-#: ../../../CHANGELOG.rst:250 ../../../CHANGELOG.rst:288
+#: ../../../CHANGELOG.rst:30
+msgid ""
+"Fixed a bug in Hydrotel modelling where the simulation file's name was "
+"not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`)."
+msgstr ""
+
+#: ../../../CHANGELOG.rst:33 ../../../CHANGELOG.rst:70
+#: ../../../CHANGELOG.rst:112 ../../../CHANGELOG.rst:161
+#: ../../../CHANGELOG.rst:177 ../../../CHANGELOG.rst:224
+#: ../../../CHANGELOG.rst:255 ../../../CHANGELOG.rst:293
 msgid "Breaking changes"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:32
+#: ../../../CHANGELOG.rst:34
 msgid ""
 "The `map` argument in `xh.gis.watershed_delineation` has been renamed to "
 "`m` to avoid confusion with the built-in function. (:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:33
+#: ../../../CHANGELOG.rst:35
 msgid ""
 "The default CRS in `xh.gis.watershed_properties` and `surface_properties`"
 " has been changed to a call to `geopandas.estimate_utm_crs` instead of an"
 " hardcoded value. (:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:34
+#: ../../../CHANGELOG.rst:36
 msgid ""
 "The `RavenpyModel` class has abandoned the `longitude`, `latitude`, "
 "`drainage_area` and `elevation` arguments in favor of a `hru` argument. "
 "(:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:35
+#: ../../../CHANGELOG.rst:37
 msgid ""
 "The `RavenpyModel` class has abandoned the explicit `evaporation` and "
 "`rain_snow_fraction`, but they can still be passed as kwargs. "
 "(:pull:`303`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:36
+#: ../../../CHANGELOG.rst:38
 msgid ""
 "The `basin_name` coordinate produced by Raven is now renamed to "
 "`subbasin_id`. (:pull:`339`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:37
+#: ../../../CHANGELOG.rst:39
 msgid ""
 "The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from "
 "`xhfa.regional.calculate_rp_from_afr` and `return_periods` from "
@@ -191,43 +203,62 @@ msgid ""
 "(:issue:`269`, :pull:`317`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:38
+#: ../../../CHANGELOG.rst:40
 msgid ""
 "The function `xhfa.regional.calculate_rp_from_afr` was renamed "
 "`xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:41 ../../../CHANGELOG.rst:72
-#: ../../../CHANGELOG.rst:115 ../../../CHANGELOG.rst:136
-#: ../../../CHANGELOG.rst:177 ../../../CHANGELOG.rst:191
-#: ../../../CHANGELOG.rst:225 ../../../CHANGELOG.rst:258
-#: ../../../CHANGELOG.rst:297
-msgid "Internal changes"
+#: ../../../CHANGELOG.rst:41
+msgid ""
+"The `use_defaults` argument in the `Hydrotel` class has been removed. "
+"(:pull:`331`)."
 msgstr ""
 
 #: ../../../CHANGELOG.rst:42
+msgid ""
+"The internal `xh.modelling._hydrotel._basic_checks` function has been "
+"removed, as Hydrotel itself performs most of these checks. Checks that "
+"are still relevant have been moved to the `run` function. (:pull:`331`)."
+msgstr ""
+
+#: ../../../CHANGELOG.rst:43
+msgid ""
+"The `station_id` dimension in the output of Hydrotel has been renamed to "
+"`subbasin_id`. (:pull:`331`)."
+msgstr ""
+
+#: ../../../CHANGELOG.rst:46 ../../../CHANGELOG.rst:77
+#: ../../../CHANGELOG.rst:120 ../../../CHANGELOG.rst:141
+#: ../../../CHANGELOG.rst:182 ../../../CHANGELOG.rst:196
+#: ../../../CHANGELOG.rst:230 ../../../CHANGELOG.rst:263
+#: ../../../CHANGELOG.rst:302
+msgid "Internal changes"
+msgstr ""
+
+#: ../../../CHANGELOG.rst:47
 msgid ""
 "Running the docs translation steps from Makefile or Batchfile no longer "
 "executes the notebooks. (:pull:`330`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:43
+#: ../../../CHANGELOG.rst:48
 msgid ""
 "Added a security policy (``SECURITY.md``) to the repository. "
 "(:pull:`340`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:44
+#: ../../../CHANGELOG.rst:49
 msgid ""
 "The `RavenpyModel` class has been heavily refactored to improve code "
 "readability and maintainability. (:pull:`339`, :pull:`341`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:47
+#: ../../../CHANGELOG.rst:52
 msgid "v0.5.0 (2025-04-24)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:48
+#: ../../../CHANGELOG.rst:53
 msgid ""
 "Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-"
 "FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith "
@@ -235,7 +266,7 @@ msgid ""
 "(:user:`essicolo`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:52
+#: ../../../CHANGELOG.rst:57
 msgid ""
 "Added a new module `xhydro.extreme_value_analysis` that wraps the "
 "`Extremes.jl` package for Julia. (:pull:`175`). * The module provides "
@@ -247,13 +278,13 @@ msgid ""
 "dependencies."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:56
+#: ../../../CHANGELOG.rst:61
 msgid ""
 "Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, "
 ":pull:`293`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:60
+#: ../../../CHANGELOG.rst:65
 msgid ""
 "Patched the outputs of `xh.optimal_interpolation.execute` to remove a "
 "superfluous `station` dimension and to ensure that the `time` dimension "
@@ -262,7 +293,7 @@ msgid ""
 "release."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:62
+#: ../../../CHANGELOG.rst:67
 msgid ""
 "Added attributes to variables instead of global attributes in "
 "`xh.extreme_value_analysis`. Modified dimension names and introduced a "
@@ -270,7 +301,7 @@ msgid ""
 "`xh.extreme_value_analysis.return_level()`. (:pull:`283`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:66
+#: ../../../CHANGELOG.rst:71
 msgid ""
 "The ``xh.cc.sampled_indicators`` function has been separated into two "
 "functions: ``xh.cc.weighted_random_sampling`` and "
@@ -279,216 +310,216 @@ msgid ""
 "function yet AFAIK, no backward compatibility has been maintained."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:68
+#: ../../../CHANGELOG.rst:73
 msgid ""
 "The default `use_defaults` argument of Hydrotel has been changed from "
 "'True' to 'False'. (:pull:`233`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:69
+#: ../../../CHANGELOG.rst:74
 msgid ""
 "Multiple functions in the `xhydro.frequency_analysis` and "
 "`xhydro.indicators.pmp` modules have been updated to require literal "
 "arguments instead of positional arguments. (:pull:`274`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:73
+#: ../../../CHANGELOG.rst:78
 msgid ""
 "`\"land_use_classification\"` default collection has been changed to "
 "`\"io-lulc-annual-v02\"`, as the previous one will be deprecated in "
 "December 2024. (:pull:`227`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:74
+#: ../../../CHANGELOG.rst:79
 msgid ""
 "Added some collection, year, resolution and history attributes to "
 "`xarray` output of `\"land_use_classification\"`. (:pull:`227`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:75
+#: ../../../CHANGELOG.rst:80
 msgid ""
 "Added a \"User-Agent\" to fix an issue related to `pooch` calls in the "
 "notebooks for recent ReadTheDocs builds. (:pull:`231`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:76
+#: ../../../CHANGELOG.rst:81
 msgid ""
 "Patched the ``xhydro.testing.helpers.devereaux()`` function to add a "
 "\"User-Agent\" by default. (:pull:`234`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:77
+#: ../../../CHANGELOG.rst:82
 msgid ""
 "Fixed the URL joining logic of the ``load_registry()`` and "
 "``devereaux()`` functions in the `xhydro.testing.helpers` module. "
 "(:pull:`234`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:78
+#: ../../../CHANGELOG.rst:83
 msgid ""
 "Updated ``uncertainties.calc_q_iter()`` to allow for ungaged catchments. "
 "(:pull:`235`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:79
+#: ../../../CHANGELOG.rst:84
 msgid "Updated the cookiecutter template. (:pull:`252`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:80
+#: ../../../CHANGELOG.rst:85
 msgid "GitHub Actions versions and Python dependencies updated."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:81
+#: ../../../CHANGELOG.rst:86
 msgid ""
 "Added pre-commit hooks for `vulture` (find dead code), `codespell` "
 "(spelling mistakes), `gitleaks` (token commit prevention), and `zizmor` "
 "(workflow security)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:82
+#: ../../../CHANGELOG.rst:87
 msgid "Added an advanced CodeQL workflow for security scanning."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:83
+#: ../../../CHANGELOG.rst:88
 msgid ""
 "Adjusted a handful of dependency pins to handle the latest version of "
 "`sphinx`. (:pull:`258`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:84
+#: ../../../CHANGELOG.rst:89
 msgid ""
 "The internal ``xh.cc._weighted_sampling`` function has been almost "
 "entirely rewritten to hopefully be more efficient. Results should be the "
 "same as before. (:pull:`240`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:85
+#: ../../../CHANGELOG.rst:90
 msgid "Reduced the number of tests performed on Notebooks. (:pull:`267`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:86
+#: ../../../CHANGELOG.rst:91
 msgid ""
 "Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant "
 "and likely to generate errors. (:pull:`233`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:87
+#: ../../../CHANGELOG.rst:92
 msgid "Updated and fixed many dependencies. (:pull:`295`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:88
+#: ../../../CHANGELOG.rst:93
 msgid "Added a workflow to test `pip` installations of `xhydro`. (:pull:`295`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:89
+#: ../../../CHANGELOG.rst:94
 msgid ""
 "Removed steps involving ESMF installation from the `Makefile` and the "
 "`tox` configuration. (:pull:`295`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:92
+#: ../../../CHANGELOG.rst:97
 msgid "v0.4.1 (2024-11-07)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:93
+#: ../../../CHANGELOG.rst:98
 msgid ""
 "Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`),"
 " Trevor James Smith (:user:`Zeitsperre`), Louise Arnal (:user:`lou-a`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:97
+#: ../../../CHANGELOG.rst:102
 msgid ""
 "A `periods` parameter was added to ``frequency_analysis.local.fit`` to "
 "compute multiple separate periods with a single call. (:pull:`219`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:98
+#: ../../../CHANGELOG.rst:103
 msgid ""
 "In ``xhydro.cc.sampled_indicators``, the `delta_type` argument can now be"
 " a dictionary or None, in which case the attribute `delta_kind` is used. "
 "(:pull:`220`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:99
+#: ../../../CHANGELOG.rst:104
 msgid ""
 "In ``xhydro.cc.sampled_indicators``, weights along a `time` or `horizon` "
 "dimension will no longer reduce that dimension. (:pull:`220`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:103
+#: ../../../CHANGELOG.rst:108
 msgid ""
 "Fixed a bug in `xhydro.modelling.format_input` where the function would "
 "fail if the input data was a `dask` array. (:pull:`214`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:104
+#: ../../../CHANGELOG.rst:109
 msgid ""
 "The `executable` parameter in the Hydrotel model class is now always "
 "required. (:pull:`214`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:108
+#: ../../../CHANGELOG.rst:113
 msgid ""
 "The `xhydro` testing utilities have been rewritten to use `pooch` for "
 "downloading and caching testing datasets from `hydrologie/xhydro-"
 "testdata`. (:pull:`212`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:109
+#: ../../../CHANGELOG.rst:114
 msgid ""
 "The `xhydro` testing utilities now require `pytest-xdist` as a "
 "development dependency. (:pull:`212`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:110
+#: ../../../CHANGELOG.rst:115
 msgid ""
 "Many core dependencies have been updated to more modern versions. "
 "(:pull:`218`, :pull:`228`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:111
+#: ../../../CHANGELOG.rst:116
 msgid ""
 "The `delta_type` argument in ``xhydro.cc.sampled_indicators`` has been "
 "renamed to `delta_kind` and is no longer positional. (:pull:`220`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:112
+#: ../../../CHANGELOG.rst:117
 msgid ""
 "The ``xhydro.pmp`` module has been moved to ``xhydro.indicators.pmp``. "
 "(:pull:`226`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:116
+#: ../../../CHANGELOG.rst:121
 msgid "Updated the notebooks to reduce the load on ReadTheDocs. (:pull:`211`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:117
+#: ../../../CHANGELOG.rst:122
 msgid ""
 "Tests can now be run using the `pytest-xdist` plugin for distributed "
 "testing. See the `pytest-xdist documentation <https://pytest-"
 "xdist.readthedocs.io/en/stable/>`_ for more information. (:pull:`212`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:118
+#: ../../../CHANGELOG.rst:123
 msgid ""
 "Several tests reliant on online servers and services have been marked as "
 "`online` to prevent them from running in contexts where internet access "
 "is limited. (:pull:`212`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:119
+#: ../../../CHANGELOG.rst:124
 msgid ""
 "Many function docstrings and type hints have been updated for accuracy "
 "and precision. (:pull:`212`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:120
+#: ../../../CHANGELOG.rst:125
 msgid ""
 "The `xHydro` project now has a set of logos for use in documentation, the"
 " readme, and other materials. (:pull:`217`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:121
+#: ../../../CHANGELOG.rst:126
 msgid ""
 "``xhydro.indicators`` is now a package with submodules for different "
 "types of indicators. Previous functions have been moved to a `generic` "
@@ -496,200 +527,200 @@ msgid ""
 "(:pull:`226`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:122
+#: ../../../CHANGELOG.rst:127
 msgid ""
 "``xh.testing.utils.publish_release_notes`` now has a `latest` parameter "
 "to print only the latest release notes. (:pull:`228`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:125
+#: ../../../CHANGELOG.rst:130
 msgid "v0.4.0 (2024-10-04)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:126
+#: ../../../CHANGELOG.rst:131
 msgid ""
 "Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), "
 "Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion"
 " (:user:`TC-FF`), Julián Ospina (:user:`ospinajulian`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:130
+#: ../../../CHANGELOG.rst:135
 msgid ""
 "`xhydro` now supports `RavenPy` v0.15.0 (`RavenHydroFramework` v3.8.1). "
 "(:pull:`161`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:131
+#: ../../../CHANGELOG.rst:136
 msgid ""
 "Regional frequency analysis functions as well as Resampling function for "
 "uncertainties have been added to the ``xhydro.frequency_analysis`` "
 "module. (:pull:`186`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:132
+#: ../../../CHANGELOG.rst:137
 msgid ""
 "New function ``xhydro.modelling.format_input`` to format CF-compliant "
 "input data for hydrological models (currently only supports Hydrotel). "
 "(:pull:`185`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:133
+#: ../../../CHANGELOG.rst:138
 msgid ""
 "`xhydro` now has a `pmp` module to compute the Probable Maximum "
 "Precipitation from climate change scenarios. (:pull:`176`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:137
+#: ../../../CHANGELOG.rst:142
 msgid ""
 "`numpy` has been pinned below v2.0.0 until `xclim` and other dependencies"
 " are updated to support it. (:pull:`161`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:138
+#: ../../../CHANGELOG.rst:143
 msgid ""
 "A helper script has been added in the `CI` directory to facilitate the "
 "translation of the `xhydro` documentation. (:issue:`63`, :pull:`163`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:139
+#: ../../../CHANGELOG.rst:144
 msgid ""
 "The `conda` environment now relies on the newly created `xdatasets` "
 "package. (:pull:`164`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:140
+#: ../../../CHANGELOG.rst:145
 msgid ""
 "The cookiecutter has been updated to the latest commit. Changes include "
 "workflow fixes, stricter coding standards, and many small adjustments to "
 "the documentation. (:pull:`164`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:141
+#: ../../../CHANGELOG.rst:146
 msgid ""
 "A previously uncaught YAML formatting issue has been addressed. Stricter "
 "style conventions are now enforced. (:pull:`174`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:142
+#: ../../../CHANGELOG.rst:147
 msgid ""
 "Chunking was adjusted in a few functions to work with the new "
 "requirements of ``apply_ufunc``. (:pull:`180`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:143
+#: ../../../CHANGELOG.rst:148
 msgid "Updated the cookiecutter template to the latest commit. (:pull:`177`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:144
+#: ../../../CHANGELOG.rst:149
 msgid "Actions have been updated and synchronized."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:145
+#: ../../../CHANGELOG.rst:150
 msgid "Warnings in Pull Requests from forks are now less buggy."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:146
+#: ../../../CHANGELOG.rst:151
 msgid ""
 "A new pre-commit hook and linting step for validating numpy docstrings "
 "has been added (`numpydoc`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:147
+#: ../../../CHANGELOG.rst:152
 msgid ""
 "All `pip`-based dependencies used to run in CI are now managed by a "
 "``CI/requirements_ci.txt`` that uses hashes of packages for security."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:148
+#: ../../../CHANGELOG.rst:153
 msgid ""
 "Added two new Batch (`.bat`) files to help facilitate the translation of "
 "and the generation of the `xhydro` documentation in Windows environments."
 " (:pull:`196`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:149
+#: ../../../CHANGELOG.rst:154
 msgid ""
 "The bumpversion workflow now uses the Hydrologie Helper Bot to make "
 "signed commits. (:pull:`199`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:150
+#: ../../../CHANGELOG.rst:155
 msgid "Updated the cookiecutter template to the latest commit. (:pull:`199`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:151
+#: ../../../CHANGELOG.rst:156
 msgid "Updated development dependencies to the latest versions."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:152
+#: ../../../CHANGELOG.rst:157
 msgid "Staged support for Python3.13."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:153
+#: ../../../CHANGELOG.rst:158
 msgid "Added environment caching to existing workflows."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:157
+#: ../../../CHANGELOG.rst:162
 msgid "`xhydro` now requires `python` >= 3.10. (:pull:`195`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:160
+#: ../../../CHANGELOG.rst:165
 msgid "v0.3.6 (2024-06-10)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:161
+#: ../../../CHANGELOG.rst:166
 msgid ""
 "Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`),"
 " Richard Arsenault (:user:`richardarsenault`), Sébastien Langlois "
 "(:user:`sebastienlanglois`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:165
+#: ../../../CHANGELOG.rst:170
 msgid "Added support for the Hydrotel hydrological model. (:pull:`18`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:166
+#: ../../../CHANGELOG.rst:171
 msgid ""
 "Added support for various hydrological models emulated through the Raven "
 "hydrological framework. (:pull:`128`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:167
+#: ../../../CHANGELOG.rst:172
 msgid ""
 "Added optimal interpolation functions for time-series and streamflow "
 "indicators. (:pull:`88`, :pull:`129`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:168
+#: ../../../CHANGELOG.rst:173
 msgid "Added optimal interpolation notebooks. (:pull:`123`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:169
+#: ../../../CHANGELOG.rst:174
 msgid ""
 "Added surface properties (elevation, slope, aspect ratio) to the `gis` "
 "module. (:pull:`151`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:173
+#: ../../../CHANGELOG.rst:178
 msgid ""
 "Hydrological models are now classes instead of functions and "
 "dictionaries. (:issue:`93`, :pull:`18`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:174
+#: ../../../CHANGELOG.rst:179
 msgid ""
 "`xhydro` now uses a `'src' layout "
 "<https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-"
 "layout>`_ for the package. (:pull:`147`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:178
+#: ../../../CHANGELOG.rst:183
 msgid ""
 "Tests using the `gamma` distribution were changed to the `gumbel_r` to "
 "avoid changes in `xclim v0.49.0`. (:pull:`145`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:179
+#: ../../../CHANGELOG.rst:184
 msgid ""
 "The cookiecutter template has been updated to the latest commit. Changes "
 "include the addition of a `CODE_OF_CONDUCT.rst` file, the renaming of "
@@ -697,36 +728,36 @@ msgid ""
 "documentation. (:pull:`147`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:180
+#: ../../../CHANGELOG.rst:185
 msgid ""
 "Added a CODE_OF_CONDUCT.rst file with Contributor Covenant guidelines. "
 "(:pull:`147`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:183
+#: ../../../CHANGELOG.rst:188
 msgid "v0.3.5 (2024-03-20)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:184
+#: ../../../CHANGELOG.rst:189
 msgid ""
 "Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), "
 "Thomas-Charles Fortier Filion (:user:`TC-FF`), Sébastien Langlois "
 "(:user:`sebastienlanglois`), Gabriel Rondeau-Genesse (:user:`RondeauG`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:188
+#: ../../../CHANGELOG.rst:193
 msgid ""
 "`xhydro` has implemented a `gis` module that facilitates geospatial tasks"
 " needed for gathering hydrological inputs. (:issue:`60`, :pull:`61`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:192
+#: ../../../CHANGELOG.rst:197
 msgid ""
 "Added a workflow based on `actions/labeler` to automatically label Pull "
 "Requests based on files changed. (:pull:`68`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:193
+#: ../../../CHANGELOG.rst:198
 msgid ""
 "Added a conditional trigger to the `test-notebooks` job to run in advance"
 " of pull request approval in the event that the notebooks found within "
@@ -734,69 +765,69 @@ msgid ""
 "(:pull:`68`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:194
+#: ../../../CHANGELOG.rst:199
 msgid ""
 "Significant changes to the Continuous Integration (CI) setup. "
 "(:pull:`65`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:195
+#: ../../../CHANGELOG.rst:200
 msgid ""
 "Added a workflow configuration using ``label_on_approval.yml`` and "
 "modifications of ``main.yml`` so that fewer tests are run on Pull "
 "Requests before they are fully approved."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:196
+#: ../../../CHANGELOG.rst:201
 msgid ""
 "Added some `pre-commit` configurations to both clean up the code within "
 "notebooks (`NbQA`) and strip their outputs (`nbstripout`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:197
+#: ../../../CHANGELOG.rst:202
 msgid "`tox` is now fully v4.0-compliant."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:198
+#: ../../../CHANGELOG.rst:203
 msgid ""
 "Added a `Makefile` recipe to facilitate installation of `esmpy` when "
 "`esmf` is installed and visible on the `$PATH`."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:199
+#: ../../../CHANGELOG.rst:204
 msgid "Added a `Makefile` recipe for running tests over Jupyter notebooks."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:200
+#: ../../../CHANGELOG.rst:205
 msgid ""
 "Synchronized dependencies between `pyproject.toml` and `conda` "
 "configuration files."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:201
+#: ../../../CHANGELOG.rst:206
 msgid ""
 "Moved the notebooks under a Usage section in the documentation. "
 "(:issue:`114`, :pull:`118`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:204
+#: ../../../CHANGELOG.rst:209
 msgid "v0.3.4 (2024-02-29)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:205
+#: ../../../CHANGELOG.rst:210
 msgid ""
 "Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), "
 "Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse "
 "(:user:`RondeauG`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:209
+#: ../../../CHANGELOG.rst:214
 msgid ""
 "Added French language support to the documentation. (:issue:`53`, "
 ":pull:`55`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:210
+#: ../../../CHANGELOG.rst:215
 msgid ""
 "Added a new set of functions to support creating and updating `pooch` "
 "registries, caching testing datasets from `hydrologie/xhydro-testdata`, "
@@ -804,45 +835,45 @@ msgid ""
 "directories. (:pull:`62`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:211
+#: ../../../CHANGELOG.rst:216
 msgid ""
 "`xhydro` is now configured to use `pooch` to download and cache testing "
 "datasets from `hydrologie/xhydro-testdata`. (:pull:`62`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:212
+#: ../../../CHANGELOG.rst:217
 msgid ""
 "`xhydro` is now `Semantic Versioning v2.0.0 "
 "<https://semver.org/spec/v2.0.0.html>`_ compliant. (:pull:`70`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:213
+#: ../../../CHANGELOG.rst:218
 msgid ""
 "Added new functions to `xhydro.frequency_analysis.local` to calculate "
 "plotting positions and to prepare plots. (:pull:`87`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:214
+#: ../../../CHANGELOG.rst:219
 msgid "`xscen` now supports Python3.12. (:pull:`99`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:215
+#: ../../../CHANGELOG.rst:220
 msgid ""
 "`xscen` now supports `pandas` >= 2.2.0, `xarray` >= 2023.11.0, and "
 "`xclim` >= 0.47.0. (:pull:`99`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:216
+#: ../../../CHANGELOG.rst:221
 msgid ""
 "Added `xh.cc.sampled_indicators` to compute future indicators using a "
 "perturbation approach and random sampling. (:pull:`54`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:220
+#: ../../../CHANGELOG.rst:225
 msgid "Added `pooch` as an installation dependency. (:pull:`62`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:221
+#: ../../../CHANGELOG.rst:226
 msgid ""
 "`xhydro` now requires `xarray`>=2023.11.0, `xclim`>=0.48.2, "
 "`xscen`>=0.8.3, and, indirectly, `pandas`>=2.2.0. The main breaking "
@@ -850,315 +881,315 @@ msgid ""
 "(:pull:`54`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:222
+#: ../../../CHANGELOG.rst:227
 msgid ""
 "Functions that output a dict with keys as xrfreq (namely, "
 "``xh.indicators.compute_indicators``) will now return the new "
 "nomenclature (e.g. \"YS-JAN\" instead of \"AS-JAN\"). (:pull:`54`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:226
+#: ../../../CHANGELOG.rst:231
 msgid ""
 "Added a new module for testing purposes: `xhydro.testing.helpers` with "
 "some new functions. (:pull:`62`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:227
+#: ../../../CHANGELOG.rst:232
 msgid ""
 "`generate_registry`: Parses data found in package "
 "(`xhydro.testing.data`), and adds it to the `registry.txt`"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:228
+#: ../../../CHANGELOG.rst:233
 msgid ""
 "`load_registry`: Loads installed (or custom) registry and returns "
 "dictionary"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:229
+#: ../../../CHANGELOG.rst:234
 msgid ""
 "`populate_testing_data`: Fetches the registry and optionally caches files"
 " at a different location (helpful for `pytest-xdist`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:230
+#: ../../../CHANGELOG.rst:235
 msgid ""
 "Added a `pre-commit` hook (`numpydoc`) to ensure that `numpy` docstrings "
 "are formatted correctly. (:pull:`62`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:231
+#: ../../../CHANGELOG.rst:236
 msgid ""
 "The cookiecutter has been updated to the latest commit (:pull:`70`, "
 ":pull:`106`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:232
+#: ../../../CHANGELOG.rst:237
 msgid ""
 "Added some workflows (Change file labelling, Cache cleaning, Dependency "
 "scans, `OpenSSF Scorecard <https://securityscorecards.dev/>`_)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:233
+#: ../../../CHANGELOG.rst:238
 msgid ""
 "The README has been updated to organize badges in a table, including a "
 "badge for the OpenSSF Scorecard."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:234
+#: ../../../CHANGELOG.rst:239
 msgid "Updated pre-commit hook versions to the latest available."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:235
+#: ../../../CHANGELOG.rst:240
 msgid "Formatting tools are now pinned to their pre-commit equivalents."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:236
+#: ../../../CHANGELOG.rst:241
 msgid ""
 "`actions-version-updater.yml` has been replaced by `dependabot "
 "<https://docs.github.com/en/code-security/dependabot/working-with-"
 "dependabot>`_."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:237
+#: ../../../CHANGELOG.rst:242
 msgid "Addressed a handful of misconfigurations in the workflows."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:238
+#: ../../../CHANGELOG.rst:243
 msgid "Updated ruff to v0.2.0 and black to v24.2.0."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:239
+#: ../../../CHANGELOG.rst:244
 msgid ""
 "Added a few functions missing from the API to their respective modules "
 "via ``__all__``. (:pull:`99`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:242
+#: ../../../CHANGELOG.rst:247
 msgid "v0.3.0 (2023-12-01)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:243
+#: ../../../CHANGELOG.rst:248
 msgid ""
 "Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`),"
 " Trevor James Smith (:user:`Zeitsperre`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:247
+#: ../../../CHANGELOG.rst:252
 msgid ""
 "The `xhydro` planification was added to the documentation. (:issue:`39`, "
 ":pull:`49`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:251
+#: ../../../CHANGELOG.rst:256
 msgid ""
 "`xhydro` now adheres to PEPs 517/518/621 using the `flit` backend for "
 "building and packaging. (:pull:`50`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:255
+#: ../../../CHANGELOG.rst:260
 msgid ""
 "The `return_level` dimension in "
 "`xh.frequency_analysis.local.parametric_quantiles()` is now the actual "
 "return level, not the quantile. (:issue:`41`, :pull:`43`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:259
+#: ../../../CHANGELOG.rst:264
 msgid ""
 "Added `xhydro.testing.utils.publish_release_notes()` to help with the "
 "release process. (:pull:`37`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:260
+#: ../../../CHANGELOG.rst:265
 msgid ""
 "`xh.frequency_analysis.local.parametric_quantiles()` and "
 "`xh.frequency_analysis.local.criteria()` are now lazier. (:issue:`41`, "
 ":pull:`43`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:261
+#: ../../../CHANGELOG.rst:266
 msgid ""
 "The `cookiecutter` template has been updated to the latest commit via "
 "`cruft`. (:pull:`50`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:262
+#: ../../../CHANGELOG.rst:267
 msgid "`Manifest.in` and `setup.py` have been removed."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:263
+#: ../../../CHANGELOG.rst:268
 msgid ""
 "`pyproject.toml` has been added, with most package configurations "
 "migrated into it."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:264
+#: ../../../CHANGELOG.rst:269
 msgid "`HISTORY.rst` has been renamed to `CHANGES.rst`."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:265
+#: ../../../CHANGELOG.rst:270
 msgid ""
 "`actions-version-updater.yml` has been added to automate the versioning "
 "of the package."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:266
+#: ../../../CHANGELOG.rst:271
 msgid ""
 "`bump-version.yml` has been added to automate patch versioning of the "
 "package."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:267
+#: ../../../CHANGELOG.rst:272
 msgid ""
 "`pre-commit` hooks have been updated to the latest versions; `check-toml`"
 " and `toml-sort` have been added to cleanup the `pyproject.toml` file."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:268
+#: ../../../CHANGELOG.rst:273
 msgid ""
 "`ruff` has been added to the linting tools to replace most `flake8` and "
 "`pydocstyle` verifications."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:271
+#: ../../../CHANGELOG.rst:276
 msgid "v0.2.0 (2023-10-10)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:272
+#: ../../../CHANGELOG.rst:277
 msgid ""
 "Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), "
 "Gabriel Rondeau-Genesse (:user:`RondeauG`), Thomas-Charles Fortier Filion"
 " (:user:`TC-FF`), Sébastien Langlois (:user:`sebastienlanglois`)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:275
+#: ../../../CHANGELOG.rst:280
 msgid "Announcements"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:276
+#: ../../../CHANGELOG.rst:281
 msgid "Support for Python3.8 and lower has been dropped. (:pull:`11`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:277
+#: ../../../CHANGELOG.rst:282
 msgid ""
 "`xHydro` now hosts its documentation on `Read the Docs "
 "<https://xhydro.readthedocs.io/en/latest/>`_. (:issue:`22`, :pull:`26`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:278
+#: ../../../CHANGELOG.rst:283
 msgid ""
 "Local frequency analysis functions have been added under a new module "
 "`xhydro.frequency_analysis`. (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:282
+#: ../../../CHANGELOG.rst:287
 msgid ""
 "GitHub Workflows for automated testing using `tox` have been added. "
 "(:pull:`11`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:283
+#: ../../../CHANGELOG.rst:288
 msgid ""
 "Support for various `xscen` functions has been added to compute "
 "indicators and various climate change metrics. (:pull:`21`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:284
+#: ../../../CHANGELOG.rst:289
 msgid ""
 "New function `xh.indicators.compute_volume` to convert streamflow data to"
 " volumes. (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:285
+#: ../../../CHANGELOG.rst:290
 msgid ""
 "New function `xh.indicators.get_yearly_op` to compute block operation "
 "(e.g. block maxima, minima, etc.). (:pull:`20`, :pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:289
+#: ../../../CHANGELOG.rst:294
 msgid ""
 "`xHydro` repository has renamed its primary development branch from "
 "`master` to `main`. (:pull:`13`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:290
+#: ../../../CHANGELOG.rst:295
 msgid "`xHydro` now requires a conda environment to be installed. (:pull:`21`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:294
+#: ../../../CHANGELOG.rst:299
 msgid "N/A"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:298
+#: ../../../CHANGELOG.rst:303
 msgid "Added a Pull Request template. (:pull:`14`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:299
+#: ../../../CHANGELOG.rst:304
 msgid ""
 "Various updates to the autogenerated boilerplate (Ouranosinc"
 "/cookiecutter-pypackage) via `cruft`. (:pull:`11`, :pull:`12`, "
 ":pull:`13`):"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:300
+#: ../../../CHANGELOG.rst:305
 msgid ""
 "General updates to pre-commit hooks, development dependencies, "
 "documentation."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:301
+#: ../../../CHANGELOG.rst:306
 msgid "Added configurations for Pull Request and Issues templates, Zenodo."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:302
+#: ../../../CHANGELOG.rst:307
 msgid ""
 "Documentation now makes use of sphinx directives for usernames, issues, "
 "and pull request hyperlinks (via sphinx.ext.extlinks). (:issue:`15`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:303
+#: ../../../CHANGELOG.rst:308
 msgid "GitHub Workflows have been added for automated testing, and publishing."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:304
+#: ../../../CHANGELOG.rst:309
 msgid ""
 "Some sphinx extensions have been added/enabled (sphinx-codeautolink, "
 "sphinx-copybutton)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:305
+#: ../../../CHANGELOG.rst:310
 msgid "Automated testing with tox now updated to use v4.0+ conventions."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:306
+#: ../../../CHANGELOG.rst:311
 msgid "Removed all references to travis.ci."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:307
+#: ../../../CHANGELOG.rst:312
 msgid ""
 "Deployments to TestPyPI and PyPI are now run using GitHub Workflow "
 "Environments as a safeguarding mechanism. (:pull:`28`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:308
+#: ../../../CHANGELOG.rst:313
 msgid "Various cleanups of the environment files. (:issue:`23`, :pull:`30`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:309
+#: ../../../CHANGELOG.rst:314
 msgid ""
 "`xhydro` now uses the trusted publishing mechanism for PyPI and TestPyPI "
 "deployment. (:pull:`32`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:310
+#: ../../../CHANGELOG.rst:315
 msgid "Added tests. (:pull:`27`)."
 msgstr ""
 
-#: ../../../CHANGELOG.rst:313
+#: ../../../CHANGELOG.rst:318
 msgid "0.1.2 (2023-05-10)"
 msgstr ""
 
-#: ../../../CHANGELOG.rst:315
+#: ../../../CHANGELOG.rst:320
 msgid "First release on PyPI."
 msgstr ""
 
