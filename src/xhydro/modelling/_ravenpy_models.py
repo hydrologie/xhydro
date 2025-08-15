@@ -970,7 +970,7 @@ class RavenpyModel(HydrologicalModel):
         self.hru["hru"] = hru
         self.hru["saved_on_disk"] = False if has_changed else True
         if hru_file is None or has_changed:
-            self.hru["file"] = self.workdir / "shapefile" / f"{self.run_name}_hru.gpkg"
+            self.hru["file"] = self.workdir / "geospatial" / f"{self.run_name}_hru.gpkg"
         else:
             self.hru["file"] = hru_file
 
