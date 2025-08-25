@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2025-08-05 13:06-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,35 +59,11 @@ msgstr ""
 "précipitation maximale qui pourrait théoriquement se produire à cet "
 "endroit."
 
-#: ../../notebooks/pmp.ipynb:333
-msgid ""
-"Data type cannot be displayed: application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-msgstr ""
-"Type de données non affichable : application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-
-#: ../../notebooks/pmp.ipynb:597
-msgid ""
-"Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
-"application/javascript"
-msgstr ""
-"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
-"application/javascript"
-
-#: ../../notebooks/pmp.ipynb:686
-msgid ""
-"Data type cannot be displayed: text/html, "
-"application/vnd.holoviews_exec.v0+json"
-msgstr ""
-"Type de données non affichable : text/html, "
-"application/vnd.holoviews_exec.v0+json"
-
-#: ../../notebooks/pmp.ipynb:696
+#: ../../notebooks/pmp.ipynb:45
 msgid "Acquiring data"
 msgstr "Acquisition des données"
 
-#: ../../notebooks/pmp.ipynb:698
+#: ../../notebooks/pmp.ipynb:47
 msgid ""
 "The acquisition of climatological data is outside the scope of "
 "``xHydro``. However, some examples of how to obtain and handle such data "
@@ -106,41 +82,41 @@ msgstr ""
 "CanESM5. Dans une application réelle, il serait préférable d'avoir autant"
 " d'années de données que possible."
 
-#: ../../notebooks/pmp.ipynb:700
+#: ../../notebooks/pmp.ipynb:49
 msgid "To perform the analysis, certain climatological variables are required."
 msgstr ""
 "Pour effectuer l'analyse, certaines variables climatiques sont "
 "nécessaires."
 
-#: ../../notebooks/pmp.ipynb:702
+#: ../../notebooks/pmp.ipynb:51
 msgid "**Daily Timestep Variables**:"
 msgstr "**Variables au pas de temps quotidien**:"
 
-#: ../../notebooks/pmp.ipynb:704
+#: ../../notebooks/pmp.ipynb:53
 msgid "``pr`` → Precipitation flux"
 msgstr "``pr`` → Flux de précipitations"
 
-#: ../../notebooks/pmp.ipynb:705
+#: ../../notebooks/pmp.ipynb:54
 msgid "``snw`` → Snow water equivalent"
 msgstr "``snw`` → Équivalent en eau de neige"
 
-#: ../../notebooks/pmp.ipynb:706
+#: ../../notebooks/pmp.ipynb:55
 msgid "``hus`` → Specific humidity for multiple pressure levels"
 msgstr "``hus`` → Humidité spécifique pour plusieurs niveaux de pression"
 
-#: ../../notebooks/pmp.ipynb:707
+#: ../../notebooks/pmp.ipynb:56
 msgid "``zg`` → Geopotential height for multiple pressure levels"
 msgstr "``zg`` → Hauteur géopotentielle pour plusieurs niveaux de pression"
 
-#: ../../notebooks/pmp.ipynb:709
+#: ../../notebooks/pmp.ipynb:58
 msgid "**Fixed Field Variables**:"
 msgstr "**Variables de champ fixe**:"
 
-#: ../../notebooks/pmp.ipynb:711
+#: ../../notebooks/pmp.ipynb:60
 msgid "``orog`` → Surface altitude"
 msgstr "``orog`` → Altitude de la surface"
 
-#: ../../notebooks/pmp.ipynb:713
+#: ../../notebooks/pmp.ipynb:62
 msgid ""
 "In cold regions, it may be necessary to split total precipitation into "
 "rainfall and snowfall components. Many climate models already provide "
@@ -155,11 +131,11 @@ msgstr ""
 "``xclim`` peuvent approximer la division en utilisant les données de "
 "précipitations et de température."
 
-#: ../../notebooks/pmp.ipynb:2158
+#: ../../notebooks/pmp.ipynb:107
 msgid "Computing the PMP"
 msgstr "Calcul de la PMP"
 
-#: ../../notebooks/pmp.ipynb:2160
+#: ../../notebooks/pmp.ipynb:109
 msgid ""
 "The method outlined by `Clavet-Gaumont et al. (2017) "
 "<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ follows these steps:"
@@ -227,7 +203,7 @@ msgstr ""
 "exemple, printemps, été) pour tenir compte de la neige lors du calcul des"
 " Crues Maximales Probables (CMP)."
 
-#: ../../notebooks/pmp.ipynb:2174
+#: ../../notebooks/pmp.ipynb:123
 msgid ""
 "This method provides a comprehensive approach for estimating the PMP, "
 "taking into account both temperature and precipitation variations across "
@@ -237,11 +213,11 @@ msgstr ""
 "tenant compte à la fois des variations de température et de "
 "précipitations à travers différentes régions et saisons."
 
-#: ../../notebooks/pmp.ipynb:2177
+#: ../../notebooks/pmp.ipynb:126
 msgid "Major precipitation events"
 msgstr "Grands événements de précipitation"
 
-#: ../../notebooks/pmp.ipynb:2179
+#: ../../notebooks/pmp.ipynb:128
 msgid ""
 "The first step in calculating the Probable Maximum Precipitation (PMP) "
 "involves filtering the precipitation data to retain only the events that "
@@ -262,7 +238,7 @@ msgstr ""
 "de tempête. Pour les données 2D, comme dans cet exemple, chaque point de "
 "grille est traité indépendamment."
 
-#: ../../notebooks/pmp.ipynb:2182
+#: ../../notebooks/pmp.ipynb:131
 msgid ""
 "In this example, we will filter out the 10% most intense storms to avoid "
 "overemphasizing smaller precipitation events during the maximization "
@@ -276,15 +252,15 @@ msgstr ""
 "concentrerons sur les précipitations liquides (``rf``) plutôt que sur les"
 " précipitations totales (``pr``) afin d'exclure les tempêtes de neige."
 
-#: ../../notebooks/pmp.ipynb:2434
+#: ../../notebooks/pmp.ipynb:167
 msgid "Daily precipitable water"
 msgstr "Eau précipitable quotidienne"
 
-#: ../../notebooks/pmp.ipynb:2440
+#: ../../notebooks/pmp.ipynb:173
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#: ../../notebooks/pmp.ipynb:2442
+#: ../../notebooks/pmp.ipynb:175
 msgid ""
 "This step should be avoided if possible, as it involves approximating "
 "precipitable water from the integral of specific humidity and will be "
@@ -299,7 +275,7 @@ msgstr ""
 "variable ou une combinaison de variables qui représentent directement "
 "l'eau précipitable."
 
-#: ../../notebooks/pmp.ipynb:2448
+#: ../../notebooks/pmp.ipynb:181
 msgid ""
 "Precipitable water can be estimated using "
 "``xhydro.indicators.pmp.precipitable_water`` by integrating the vertical "
@@ -315,11 +291,11 @@ msgstr ""
 " représente la quantité totale de vapeur d'eau qui pourrait être "
 "précipitée de l'atmosphère sous des conditions idéales."
 
-#: ../../notebooks/pmp.ipynb:2747
+#: ../../notebooks/pmp.ipynb:219
 msgid "Monthly 100-year precipitable water"
 msgstr "Eau précipitable mensuelle de récurrence 100 ans"
 
-#: ../../notebooks/pmp.ipynb:2749
+#: ../../notebooks/pmp.ipynb:221
 #, python-format
 msgid ""
 "According to Clavet-Gaumont et al. (2017), a monthly 100-year "
@@ -336,7 +312,7 @@ msgstr ""
 "précipitable pour un mois donné. Cette approche garantit que l'événement "
 "estimé sur 100 ans est réaliste et contraint par les données observées."
 
-#: ../../notebooks/pmp.ipynb:2751
+#: ../../notebooks/pmp.ipynb:223
 msgid ""
 "To compute this, you can use the "
 "``xh.indicators.pmp.precipitable_water_100y`` function. If using "
@@ -348,15 +324,15 @@ msgstr ""
 "``rebuild_time``, la sortie aura le même axe temporel que les données "
 "d'origine."
 
-#: ../../notebooks/pmp.ipynb:3023
+#: ../../notebooks/pmp.ipynb:261
 msgid "Maximized precipitation"
 msgstr "Précipitations maximisées"
 
-#: ../../notebooks/pmp.ipynb:3029
+#: ../../notebooks/pmp.ipynb:267
 msgid "INFO"
 msgstr "INFO"
 
-#: ../../notebooks/pmp.ipynb:3031
+#: ../../notebooks/pmp.ipynb:269
 msgid ""
 "This step follows the methodology described in Clavet-Gaumont et al., "
 "2017. It is referred to as \"Maximizing precipitation\", however, it "
@@ -372,7 +348,7 @@ msgstr ""
 "cette valeur—comme cela a été observé pour janvier 2011—le résultat peut "
 "en réalité réduire les précipitations, plutôt que de les augmenter."
 
-#: ../../notebooks/pmp.ipynb:3037
+#: ../../notebooks/pmp.ipynb:275
 msgid ""
 "With the information gathered so far, we can now proceed to maximize the "
 "precipitation events. Although ``xHydro`` does not provide an explicit "
@@ -383,7 +359,7 @@ msgstr ""
 "Bien que ``xHydro`` ne fournisse pas de fonction explicite pour cette "
 "étape, cela peut être accompli en suivant ces étapes :"
 
-#: ../../notebooks/pmp.ipynb:3039
+#: ../../notebooks/pmp.ipynb:277
 msgid ""
 "**Compute the Ratio**: First, calculate the ratio between the 100-year "
 "monthly precipitable water and the precipitable water during the major "
@@ -393,7 +369,7 @@ msgstr ""
 "précipitable mensuelle de récurrence 100 ans et l'eau précipitable "
 "pendant les grands événements de précipitation."
 
-#: ../../notebooks/pmp.ipynb:3041
+#: ../../notebooks/pmp.ipynb:279
 msgid ""
 "**Apply the Ratio**: Next, apply this ratio to the precipitation values "
 "themselves to maximize the precipitation events accordingly."
@@ -402,7 +378,7 @@ msgstr ""
 "précipitations elles-mêmes pour maximiser les événements de précipitation"
 " en conséquence."
 
-#: ../../notebooks/pmp.ipynb:3043
+#: ../../notebooks/pmp.ipynb:281
 msgid ""
 "This process effectively scales the precipitation events based on the "
 "100-year precipitable water, giving an estimate of the maximum possible "
@@ -412,11 +388,11 @@ msgstr ""
 "précipitable de récurrence 100 ans, fournissant une estimation des "
 "précipitations maximales possibles."
 
-#: ../../notebooks/pmp.ipynb:3199
+#: ../../notebooks/pmp.ipynb:312
 msgid "Seasonal Mask"
 msgstr "Masque saisonnier"
 
-#: ../../notebooks/pmp.ipynb:3201
+#: ../../notebooks/pmp.ipynb:314
 msgid ""
 "In cold regions, computing Probable Maximum Floods (PMFs) often involves "
 "scenarios that combine both rainfall and snowpack. Therefore, PMP values "
@@ -429,7 +405,7 @@ msgstr ""
 " être séparées en deux catégories : pluie-sur-neige (c'est-à-dire, "
 "\"printemps\") et précipitations sans neige (c'est-à-dire, \"été\")."
 
-#: ../../notebooks/pmp.ipynb:3203
+#: ../../notebooks/pmp.ipynb:316
 msgid ""
 "This can be computed easily using "
 "``xhydro.indicators.pmp.compute_spring_and_summer_mask``, which defines "
@@ -441,11 +417,11 @@ msgstr ""
 " dates de début et de fin du printemps, de l'été et de l'hiver en "
 "fonction de la présence de neige au sol, selon les critères suivants :"
 
-#: ../../notebooks/pmp.ipynb:3205
+#: ../../notebooks/pmp.ipynb:318
 msgid "**Winter**:"
 msgstr "**Hiver** :"
 
-#: ../../notebooks/pmp.ipynb:3207
+#: ../../notebooks/pmp.ipynb:320
 msgid ""
 "Winter start: The first day after which there are at least 14 consecutive"
 " days with snow on the ground."
@@ -453,7 +429,7 @@ msgstr ""
 "Début de l'hiver : Le premier jour après lequel il y a au moins 14 jours "
 "consécutifs avec de la neige au sol."
 
-#: ../../notebooks/pmp.ipynb:3208
+#: ../../notebooks/pmp.ipynb:321
 msgid ""
 "Winter end: The last day with snow on the ground, followed by at least 45"
 " consecutive snow-free days."
@@ -461,23 +437,23 @@ msgstr ""
 "Fin de l'hiver : Le dernier jour avec de la neige au sol, suivi d'au "
 "moins 45 jours consécutifs sans neige."
 
-#: ../../notebooks/pmp.ipynb:3210
+#: ../../notebooks/pmp.ipynb:323
 msgid "**Spring**:"
 msgstr "**Printemps** :"
 
-#: ../../notebooks/pmp.ipynb:3212
+#: ../../notebooks/pmp.ipynb:325
 msgid "Spring start: 60 days before the end of winter."
 msgstr "Début du printemps : 60 jours avant la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3213
+#: ../../notebooks/pmp.ipynb:326
 msgid "Spring end: 30 days after the end of winter."
 msgstr "Fin du printemps : 30 jours après la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3215
+#: ../../notebooks/pmp.ipynb:328
 msgid "**Summer**:"
 msgstr "**Été** :"
 
-#: ../../notebooks/pmp.ipynb:3217
+#: ../../notebooks/pmp.ipynb:330
 msgid ""
 "The summer period is defined as the time between winters. This period is "
 "not influenced by whether it falls in the traditional summer or fall "
@@ -488,11 +464,11 @@ msgstr ""
 "l'automne traditionnels, mais marque simplement l'intervalle entre les "
 "saisons de neige."
 
-#: ../../notebooks/pmp.ipynb:4120
+#: ../../notebooks/pmp.ipynb:380
 msgid "Final PMP"
 msgstr "PMP finale"
 
-#: ../../notebooks/pmp.ipynb:4122
+#: ../../notebooks/pmp.ipynb:382
 msgid ""
 "The final PMP is obtained by finding the maximum value over the ``time`` "
 "dimension. In our case, since we computed a season mask, we can further "
@@ -503,11 +479,11 @@ msgstr ""
 "saisonnier, nous pouvons affiner les résultats en une PMP pour le "
 "printemps et l'été."
 
-#: ../../notebooks/pmp.ipynb:4197
+#: ../../notebooks/pmp.ipynb:421
 msgid "PMPs with aggregated storm configurations"
 msgstr "PMP avec configurations de tempêtes agrégées"
 
-#: ../../notebooks/pmp.ipynb:4199
+#: ../../notebooks/pmp.ipynb:423
 msgid ""
 "In some cases, it may be preferable to avoid processing each grid cell "
 "independently. Instead, storms can be aggregated using various "
@@ -524,7 +500,7 @@ msgstr ""
 "aider à réduire la variabilité entre les points de grille et fournir des "
 "résultats plus fiables."
 
-#: ../../notebooks/pmp.ipynb:4201
+#: ../../notebooks/pmp.ipynb:425
 msgid ""
 "Different aggregation configurations are discussed in Clavet-Gaumont et "
 "al. (2017) and have been implemented in ``xHydro`` under the function "
@@ -534,7 +510,7 @@ msgstr ""
 "Gaumont et al. (2017) et ont été implémentées dans ``xHydro`` sous la "
 "fonction ``xhydro.indicators.pmp.spatial_average_storm_configurations``."
 
-#: ../../notebooks/pmp.ipynb:4203
+#: ../../notebooks/pmp.ipynb:427
 msgid ""
 "Note that precipitable water must first be calculated in a distributed "
 "manner and then spatially averaged to obtain the aggregated precipitable "
@@ -544,7 +520,7 @@ msgstr ""
 "distribuée puis moyennée spatialement pour obtenir l'eau précipitable "
 "agrégée."
 
-#: ../../notebooks/pmp.ipynb:5133
+#: ../../notebooks/pmp.ipynb:475
 msgid ""
 "After applying storm aggregation, the subsequent steps remain the same as"
 " before, following the standard PMP calculation process outlined earlier."
@@ -553,7 +529,7 @@ msgstr ""
 "restent les mêmes qu'auparavant, suivant le processus standard de calcul "
 "da le PMP."
 
-#: ../../notebooks/pmp.ipynb:5805
+#: ../../notebooks/pmp.ipynb:523
 msgid ""
 "Previously, the final PMP for each season was obtained by taking the "
 "maximum value over the ``time`` dimension. In this updated approach, we "
