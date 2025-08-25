@@ -20,7 +20,7 @@ New features and enhancements
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
 * Additional options can now be passed to the Hydrotel executable via the `run_options` argument in the `run` method. (:pull:`331`).
-* To compute the Probable Maximum Snowfall Accumulation (PMSA), a new function `xhydro.indicators.pmp.pw_snowfall` has been added, and the existing functions `xhydro.indicators.pmp.precipitable_water_100y` and `xhydro.indicators.pmp.major_precipitation_events` have been adapted. (:pull:`328`).
+* A new function `xhydro.indicators.pmp.pw_snowfall` has been added to compute the Probable Maximum Snowfall Accumulation (PMSA).  Additionally, the existing functions  `xhydro.indicators.pmp.precipitable_water_100y` and `xhydro.indicators.pmp.major_precipitation_events` have been adapted accordingly. (:pull:`328`).
 
 Bug fixes
 ^^^^^^^^^
