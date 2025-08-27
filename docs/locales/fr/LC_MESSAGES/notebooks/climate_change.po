@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2025-08-05 13:06-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,31 +20,7 @@ msgstr ""
 msgid "Climate change analysis of hydrological data"
 msgstr "Analyse de l'impact des changements climatiques sur l'hydrologie"
 
-#: ../../notebooks/climate_change.ipynb:339
-msgid ""
-"Data type cannot be displayed: application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-msgstr ""
-"Type de données non affichable : application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-
-#: ../../notebooks/climate_change.ipynb:603
-msgid ""
-"Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
-"application/javascript"
-msgstr ""
-"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
-"application/javascript""
-
-#: ../../notebooks/climate_change.ipynb:692
-msgid ""
-"Data type cannot be displayed: text/html, "
-"application/vnd.holoviews_exec.v0+json"
-msgstr ""
-"Type de données non affichable : text/html, "
-"application/vnd.holoviews_exec.v0+json"
-
-#: ../../notebooks/climate_change.ipynb:701
+#: ../../notebooks/climate_change.ipynb:50
 msgid ""
 "While there is a vast array of analyses that can be performed to assess "
 "the impacts of climate change on hydrology, this notebook covers some of "
@@ -54,28 +30,28 @@ msgstr ""
 "pour évaluer les impacts du changement climatique sur l'hydrologie, ce "
 "Notebook couvre quelques-unes des étapes les plus courantes :"
 
-#: ../../notebooks/climate_change.ipynb:703
+#: ../../notebooks/climate_change.ipynb:52
 msgid "Computing a list of relevant indicators over climatological periods."
 msgstr ""
 "Calculer une liste d'indicateurs pertinents sur des périodes "
 "climatologiques."
 
-#: ../../notebooks/climate_change.ipynb:704
+#: ../../notebooks/climate_change.ipynb:53
 msgid "Computing future differences to assess the changes."
 msgstr "Calculer les différences futures pour évaluer les changements."
 
-#: ../../notebooks/climate_change.ipynb:705
+#: ../../notebooks/climate_change.ipynb:54
 msgid "Computing ensemble statistics to evaluate future changes and variability."
 msgstr ""
 "Calculer les statistiques d'ensemble pour évaluer les changements et la "
 "variabilité futurs."
 
-#: ../../notebooks/climate_change.ipynb:711
-#: ../../notebooks/climate_change.ipynb:750
+#: ../../notebooks/climate_change.ipynb:60
+#: ../../notebooks/climate_change.ipynb:99
 msgid "INFO"
 msgstr "INFO"
 
-#: ../../notebooks/climate_change.ipynb:713
+#: ../../notebooks/climate_change.ipynb:62
 msgid ""
 "Several functions from the ``xscen`` library have been integrated into "
 "``xhydro`` to simplify access for users, such as those in "
@@ -89,7 +65,7 @@ msgstr ""
 "mais pour plus de détails sur ces fonctions, veuillez consulter les "
 "ressources suivantes :"
 
-#: ../../notebooks/climate_change.ipynb:715
+#: ../../notebooks/climate_change.ipynb:64
 msgid ""
 "`compute_indicators "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
@@ -99,7 +75,7 @@ msgstr ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Computing-indicators>`__"
 
-#: ../../notebooks/climate_change.ipynb:716
+#: ../../notebooks/climate_change.ipynb:65
 msgid ""
 "`climatological_op "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
@@ -109,7 +85,7 @@ msgstr ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Climatological-operations>`__"
 
-#: ../../notebooks/climate_change.ipynb:717
+#: ../../notebooks/climate_change.ipynb:66
 msgid ""
 "`compute_deltas "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
@@ -119,7 +95,7 @@ msgstr ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Computing-deltas>`__"
 
-#: ../../notebooks/climate_change.ipynb:718
+#: ../../notebooks/climate_change.ipynb:67
 msgid ""
 "`ensemble_statistics "
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
@@ -129,17 +105,17 @@ msgstr ""
 "<https://xscen.readthedocs.io/en/latest/notebooks/2_getting_started.html"
 "#Ensemble-statistics>`__"
 
-#: ../../notebooks/climate_change.ipynb:734
+#: ../../notebooks/climate_change.ipynb:83
 msgid "Computing hydrological indicators over a given time period"
 msgstr "Calcul des indicateurs hydrologiques sur une période donnée"
 
-#: ../../notebooks/climate_change.ipynb:736
+#: ../../notebooks/climate_change.ipynb:85
 msgid "Hydrological indicators can be categorized into two main types:"
 msgstr ""
 "Les indicateurs hydrologiques peuvent être classés en deux types "
 "principaux :"
 
-#: ../../notebooks/climate_change.ipynb:738
+#: ../../notebooks/climate_change.ipynb:87
 msgid ""
 "Frequential indicators: These indicators describe hydrological events "
 "that occur at recurring intervals. They include metrics like the maximum "
@@ -156,7 +132,7 @@ msgstr ""
 "abordée dans le Notebook `Analyses fréquencielles locales "
 "<local_frequency_analysis.ipynb>`__."
 
-#: ../../notebooks/climate_change.ipynb:739
+#: ../../notebooks/climate_change.ipynb:88
 msgid ""
 "Non-frequential indicators: These indicators do not explicitly describe "
 "recurrence, but rather absolute values or trends in hydrological "
@@ -167,7 +143,7 @@ msgstr ""
 "tendances dans les variables hydrologiques. Ils incluent des métriques "
 "comme le débit moyen annuel."
 
-#: ../../notebooks/climate_change.ipynb:741
+#: ../../notebooks/climate_change.ipynb:90
 msgid ""
 "Since frequential indicators are already covered in another example, this"
 " notebook will focus on the methodology for computing non-frequential "
@@ -191,7 +167,7 @@ msgstr ""
 "Pour les utilisateurs avancés, la construction d'indicateurs peut "
 "également être définie via un fichier YAML."
 
-#: ../../notebooks/climate_change.ipynb:744
+#: ../../notebooks/climate_change.ipynb:93
 msgid ""
 "The output of ``xhydro.indicators.compute_indicators`` is a dictionary, "
 "where each key represents the frequency of the requested indicators, "
@@ -204,7 +180,7 @@ msgstr ""
 "n'utiliserons que les données annuelles commençant en janvier, donc la "
 "fréquence sera ``YS-JAN``."
 
-#: ../../notebooks/climate_change.ipynb:752
+#: ../../notebooks/climate_change.ipynb:101
 msgid ""
 "Custom indicators in ``xHydro`` are built by following the YAML "
 "formatting required by ``xclim``."
@@ -212,7 +188,7 @@ msgstr ""
 "Les indicateurs personnalisés dans ``xHydro`` sont construits en suivant "
 "le formatage YAML requis par ``xclim``."
 
-#: ../../notebooks/climate_change.ipynb:754
+#: ../../notebooks/climate_change.ipynb:103
 msgid ""
 "A custom indicator built using "
 "``xclim.core.indicator.Indicator.from_dict`` will need these elements:"
@@ -220,11 +196,11 @@ msgstr ""
 "Un indicateur personnalisé construit avec "
 "``xclim.core.indicator.Indicator.from_dict`` nécessitera ces éléments :"
 
-#: ../../notebooks/climate_change.ipynb:756
+#: ../../notebooks/climate_change.ipynb:105
 msgid "\"data\": A dictionary with the following information:"
 msgstr "\"data\" : Un dictionnaire avec les informations suivantes :"
 
-#: ../../notebooks/climate_change.ipynb:758
+#: ../../notebooks/climate_change.ipynb:107
 msgid ""
 "\"base\": The \"YAML ID\" obtained from `here "
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
@@ -232,7 +208,7 @@ msgstr ""
 "\"base\" : L'\"ID YAML\" obtenu depuis `cette page "
 "<https://xclim.readthedocs.io/en/stable/indicators.html>`__."
 
-#: ../../notebooks/climate_change.ipynb:759
+#: ../../notebooks/climate_change.ipynb:108
 msgid ""
 "\"input\": A dictionary linking the default xclim input to the name of "
 "your variable. Needed only if it is different. In the link above, they "
@@ -242,7 +218,7 @@ msgstr ""
 "votre variable. Nécessaire uniquement si elle diffère. Dans le lien ci-"
 "dessus, ce sont les chaînes suivant \"Uses:\"."
 
-#: ../../notebooks/climate_change.ipynb:760
+#: ../../notebooks/climate_change.ipynb:109
 msgid ""
 "\"parameters\": A dictionary containing all other parameters for a given "
 "indicator. In the link above, the easiest way to access them is by "
@@ -254,7 +230,7 @@ msgstr ""
 "simple d'y accéder est de cliquer sur le lien dans le coin supérieur "
 "droit de la boîte décrivant un indicateur donné.\"é."
 
-#: ../../notebooks/climate_change.ipynb:761
+#: ../../notebooks/climate_change.ipynb:110
 msgid ""
 "More entries can be used here, as described `in the xclim documentation "
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__ "
@@ -265,7 +241,7 @@ msgstr ""
 "<https://xclim.readthedocs.io/en/latest/api.html#yaml-file-structure>`__ "
 "sous \"identifier\"."
 
-#: ../../notebooks/climate_change.ipynb:763
+#: ../../notebooks/climate_change.ipynb:112
 msgid ""
 "\"identifier\": A custom name for your indicator. This will be the name "
 "returned in the results."
@@ -273,7 +249,7 @@ msgstr ""
 "\"identifier\" : Un nom personnalisé pour votre indicateur. Ce sera le "
 "nom retourné dans les résultats."
 
-#: ../../notebooks/climate_change.ipynb:764
+#: ../../notebooks/climate_change.ipynb:113
 msgid ""
 "\"module\": Needed, but can be anything. To prevent an accidental "
 "overwriting of ``xclim`` indicators, it is best to use something "
@@ -284,7 +260,7 @@ msgstr ""
 "d'utiliser quelque chose de différent de : [\"atmos\", \"land\", "
 "\"generic\"]."
 
-#: ../../notebooks/climate_change.ipynb:779
+#: ../../notebooks/climate_change.ipynb:128
 msgid ""
 "The example file used in this notebook is a daily time series of "
 "streamflow data, generated from the HYDROTEL hydrological model. This "
@@ -304,7 +280,7 @@ msgstr ""
 "utilisée avec n'importe quel nombre d'indicateurs. Pour cet exemple, nous"
 " allons calculer le débit moyen annuel et le débit moyen été-automne."
 
-#: ../../notebooks/climate_change.ipynb:1489
+#: ../../notebooks/climate_change.ipynb:214
 msgid ""
 "The next step is to compute averages over climatological periods. This "
 "can be done using the ``xhydro.cc.climatological_op`` function."
@@ -313,7 +289,7 @@ msgstr ""
 "climatiques. Cela peut être fait en utilisant la fonction "
 "``xhydro.cc.climatological_op``."
 
-#: ../../notebooks/climate_change.ipynb:1491
+#: ../../notebooks/climate_change.ipynb:216
 msgid ""
 "If the indicators themselves are not relevant to your analysis and you "
 "only need the climatological averages, you can directly use "
@@ -337,7 +313,7 @@ msgstr ""
 "des fréquences de sortie différentes. Un exemple de cette approche est "
 "fourni dans l'`exemple d'application <use_case.ipynb>`__."
 
-#: ../../notebooks/climate_change.ipynb:2254
+#: ../../notebooks/climate_change.ipynb:255
 msgid ""
 "Once the averages over time periods have been computed, calculating the "
 "differences between future and past values is straightforward. Simply "
@@ -347,11 +323,11 @@ msgstr ""
 "différences entre les valeurs futures et passées est simple. Il suffit "
 "d'appeler ``xhydro.cc.compute_deltas`` pour effectuer ce calcul."
 
-#: ../../notebooks/climate_change.ipynb:3206
+#: ../../notebooks/climate_change.ipynb:301
 msgid "Ensemble statistics"
 msgstr "Statistiques d'ensemble"
 
-#: ../../notebooks/climate_change.ipynb:3208
+#: ../../notebooks/climate_change.ipynb:303
 msgid ""
 "In a real-world application, the steps outlined so far would need to be "
 "repeated for all available hydroclimatological simulations. For this "
@@ -365,7 +341,7 @@ msgstr ""
 "de deltas pré-calculés des simulations RCP4.5 utilisées dans l'édition "
 "2022 de l'Atlas hydroclimatique du Québec méridional."
 
-#: ../../notebooks/climate_change.ipynb:3258
+#: ../../notebooks/climate_change.ipynb:328
 msgid ""
 "It is considered good practice to use multiple climate models when "
 "performing climate change analyses, especially since the impacts on the "
@@ -384,11 +360,11 @@ msgstr ""
 "des quantiles d'ensemble ou l'évaluation de l'accord sur le signe du "
 "changement."
 
-#: ../../notebooks/climate_change.ipynb:3261
+#: ../../notebooks/climate_change.ipynb:331
 msgid "Weighting simulations"
 msgstr "Pondération des simulations"
 
-#: ../../notebooks/climate_change.ipynb:3263
+#: ../../notebooks/climate_change.ipynb:333
 msgid ""
 "When the ensemble of climate models is heterogeneous—such as when one "
 "model provides more simulations than others—it is recommended to weight "
@@ -406,21 +382,21 @@ msgstr ""
 "créer une approximation des poids en fonction des métadonnées "
 "disponibles."
 
-#: ../../notebooks/climate_change.ipynb:3265
+#: ../../notebooks/climate_change.ipynb:335
 msgid "The following attributes are required for the function to work properly:"
 msgstr ""
 "Les attributs suivants sont nécessaires pour que la fonction fonctionne "
 "correctement :"
 
-#: ../../notebooks/climate_change.ipynb:3267
+#: ../../notebooks/climate_change.ipynb:337
 msgid "``'cat:source'`` in all datasets"
 msgstr "``'cat:source'`` dans tous les jeux de données"
 
-#: ../../notebooks/climate_change.ipynb:3268
+#: ../../notebooks/climate_change.ipynb:338
 msgid "``'cat:driving_model'`` in regional climate models"
 msgstr "``'cat:driving_model'`` dans les modèles climatiques régionaux"
 
-#: ../../notebooks/climate_change.ipynb:3269
+#: ../../notebooks/climate_change.ipynb:339
 msgid ""
 "``'cat:institution'`` in all datasets (if "
 "``independence_level='institution'``)"
@@ -428,13 +404,13 @@ msgstr ""
 "``'cat:institution'`` dans tous les jeux de données (si "
 "``independence_level='institution'``)"
 
-#: ../../notebooks/climate_change.ipynb:3270
+#: ../../notebooks/climate_change.ipynb:340
 msgid "``'cat:experiment'`` in all datasets (if ``split_experiments=True``)"
 msgstr ""
 "``'cat:experiment'`` dans tous les jeux de données (si "
 "``split_experiments=True``)"
 
-#: ../../notebooks/climate_change.ipynb:3272
+#: ../../notebooks/climate_change.ipynb:342
 msgid ""
 "The ``xscen.generate_weights`` function offers three possible "
 "independence levels:"
@@ -442,7 +418,7 @@ msgstr ""
 "La fonction ``xscen.generate_weights`` propose trois niveaux "
 "d'indépendance possibles :"
 
-#: ../../notebooks/climate_change.ipynb:3274
+#: ../../notebooks/climate_change.ipynb:344
 msgid ""
 "``model`` (1 Model - 1 Vote): This assigns a total weight of 1 to all "
 "unique combinations of ``'cat:source'`` and ``'cat:driving_model'``."
@@ -451,7 +427,7 @@ msgstr ""
 "toutes les combinaisons uniques de ``'cat:source'`` et "
 "``'cat:driving_model'``."
 
-#: ../../notebooks/climate_change.ipynb:3275
+#: ../../notebooks/climate_change.ipynb:345
 msgid ""
 "``GCM`` (1 GCM - 1 Vote): This assigns a total weight of 1 to all unique "
 "global climate models (GCMs), effectively averaging together regional "
@@ -461,7 +437,7 @@ msgstr ""
 "modèles climatiques globaux (GCM), en moyennant les simulations "
 "climatiques régionales provenant du même modèle pilote."
 
-#: ../../notebooks/climate_change.ipynb:3276
+#: ../../notebooks/climate_change.ipynb:346
 msgid ""
 "``institution`` (1 institution - 1 Vote): This assigns a total weight of "
 "1 to all unique ``'cat:institution'`` values."
@@ -469,7 +445,7 @@ msgstr ""
 "``institution`` (1 institution - 1 vote) : Cela attribue un poids total "
 "de 1 à toutes les valeurs uniques ``'cat:institution'``."
 
-#: ../../notebooks/climate_change.ipynb:3278
+#: ../../notebooks/climate_change.ipynb:348
 msgid ""
 "In all cases, the \"total weight of 1\" is not distributed equally "
 "between the involved simulations. The function will attempt to respect "
@@ -486,11 +462,11 @@ msgstr ""
 "donnerait un poids de 0,125 pour chaque simulation du Modèle A et 0,5 "
 "pour la simulation unique du Modèle B."
 
-#: ../../notebooks/climate_change.ipynb:3912
+#: ../../notebooks/climate_change.ipynb:375
 msgid "Ensemble statistics with deterministic reference data"
 msgstr "Statistiques d'ensemble avec des données de référence déterministes"
 
-#: ../../notebooks/climate_change.ipynb:3914
+#: ../../notebooks/climate_change.ipynb:377
 msgid ""
 "In most cases, you will have deterministic data for the reference period."
 " This means that, for a given location, the 30-year average for a "
@@ -501,7 +477,7 @@ msgstr ""
 "sur 30 ans d'un indicateur spécifique est représentée par une seule "
 "valeur."
 
-#: ../../notebooks/climate_change.ipynb:3936
+#: ../../notebooks/climate_change.ipynb:398
 msgid ""
 "Given that biases may still persist in climate simulations even after "
 "bias adjustment, which can impact hydrological modeling, we need to "
@@ -523,7 +499,7 @@ msgstr ""
 "mais la comparaison des différentes approches dépasse le cadre de cet "
 "exemple."
 
-#: ../../notebooks/climate_change.ipynb:3939
+#: ../../notebooks/climate_change.ipynb:401
 msgid ""
 "The perturbation technique involves calculating ensemble percentiles on "
 "the deltas and then applying those percentiles to the reference dataset. "
@@ -538,7 +514,7 @@ msgstr ""
 " signe du changement, en utilisant la fonction "
 "``xhydro.cc.ensemble_stats``."
 
-#: ../../notebooks/climate_change.ipynb:4732
+#: ../../notebooks/climate_change.ipynb:436
 msgid ""
 "This results in a large amount of data with many unique variables. To "
 "simplify the results, we'll compute three new statistics:"
@@ -547,19 +523,19 @@ msgstr ""
 " uniques. Pour simplifier les résultats, nous allons calculer trois "
 "nouvelles statistiques :"
 
-#: ../../notebooks/climate_change.ipynb:4734
+#: ../../notebooks/climate_change.ipynb:438
 msgid "The median change."
 msgstr "Le changement médian."
 
-#: ../../notebooks/climate_change.ipynb:4735
+#: ../../notebooks/climate_change.ipynb:439
 msgid "The interquartile range of the change."
 msgstr "L'écart interquartile du changement."
 
-#: ../../notebooks/climate_change.ipynb:4736
+#: ../../notebooks/climate_change.ipynb:440
 msgid "The agreement between models using the IPCC categories."
 msgstr "L'accord entre les modèles en utilisant les catégories du GIEC."
 
-#: ../../notebooks/climate_change.ipynb:4738
+#: ../../notebooks/climate_change.ipynb:442
 msgid ""
 "The last statistic is slightly more complex. For more details on the "
 "categories of agreement for the sign of change, refer to the technical "
@@ -577,7 +553,7 @@ msgstr ""
 "<https://www.cambridge.org/core/books/climate-change-2021-the-physical-"
 "science-basis/atlas/24E1C016DBBE4725BDFBC343695DE7DB>`__."
 
-#: ../../notebooks/climate_change.ipynb:4740
+#: ../../notebooks/climate_change.ipynb:444
 #, python-format
 msgid ""
 "To compute this, you can use the results produced by "
@@ -599,7 +575,7 @@ msgstr ""
 "changement significatif, et 80% des simulations montrent un changement "
 "positif."
 
-#: ../../notebooks/climate_change.ipynb:4793
+#: ../../notebooks/climate_change.ipynb:495
 msgid ""
 "Finally, using a perturbation method, future values for QMOYAN can be "
 "obtained by multiplying the reference indicator with the percentiles of "
@@ -609,11 +585,11 @@ msgstr ""
 " QMOYAN peuvent être obtenues en multipliant l'indicateur de référence "
 "avec les percentiles des delta de l'ensemble."
 
-#: ../../notebooks/climate_change.ipynb:5302
+#: ../../notebooks/climate_change.ipynb:525
 msgid "Ensemble statistics with probabilistic reference data"
 msgstr "Statistiques d'ensemble avec des données de référence probabilistes"
 
-#: ../../notebooks/climate_change.ipynb:5304
+#: ../../notebooks/climate_change.ipynb:527
 msgid ""
 "This method is similar to the previous section, but it applies to cases "
 "like the `Hydrological Atlas of Southern Quebec <https://cehq.gouv.qc.ca"
@@ -632,7 +608,7 @@ msgstr ""
 " valeur discrète. Dans de tels cas, les percentiles de l'ensemble ne "
 "peuvent pas simplement être multipliés par la valeur de référence."
 
-#: ../../notebooks/climate_change.ipynb:5306
+#: ../../notebooks/climate_change.ipynb:529
 msgid ""
 "In this example, instead of a single value, ``QMOYAN`` is represented by "
 "21 percentiles that capture the uncertainty surrounding this statistic. "
@@ -644,11 +620,11 @@ msgstr ""
 "statistique. Comme pour les simulations futures, nous avons également 6 "
 "plateformes hydrologiques à prendre en compte."
 
-#: ../../notebooks/climate_change.ipynb:5312
+#: ../../notebooks/climate_change.ipynb:535
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#: ../../notebooks/climate_change.ipynb:5314
+#: ../../notebooks/climate_change.ipynb:537
 msgid ""
 "In these cases, the percentiles in ``ref`` represent uncertainty (e.g., "
 "related to hydrological modeling or input data uncertainty), not "
@@ -660,7 +636,7 @@ msgstr ""
 "données d'entrée), et non la variabilité interannuelle. À ce stade, la "
 "moyenne temporelle devrait déjà avoir été calculée."
 
-#: ../../notebooks/climate_change.ipynb:6140
+#: ../../notebooks/climate_change.ipynb:583
 msgid ""
 "Due to their probabilistic nature, the historical reference values cannot"
 " be easily combined with the future deltas. To address this, the "
@@ -675,7 +651,7 @@ msgstr ""
 "``xhydro.cc.sampled_indicators`` ont été conçues. Ensemble, ces fonctions"
 " vont :"
 
-#: ../../notebooks/climate_change.ipynb:6142
+#: ../../notebooks/climate_change.ipynb:585
 msgid ""
 "Sample 'n' values from the historical distribution, in accordance with "
 "the 'percentile' dimension."
@@ -683,13 +659,13 @@ msgstr ""
 "Échantillonner 'n' valeurs de la distribution historique, en fonction de "
 "la dimension 'percentile'."
 
-#: ../../notebooks/climate_change.ipynb:6143
+#: ../../notebooks/climate_change.ipynb:586
 msgid "Sample 'n' values from the delta distribution, using the provided weights."
 msgstr ""
 "Échantillonner 'n' valeurs de la distribution des deltas, en utilisant "
 "les poids fournis."
 
-#: ../../notebooks/climate_change.ipynb:6144
+#: ../../notebooks/climate_change.ipynb:587
 msgid ""
 "Create the future distribution by applying the sampled deltas to the "
 "sampled historical distribution element-wise."
@@ -697,11 +673,11 @@ msgstr ""
 "Créer la distribution future en appliquant les deltas échantillonnés à la"
 " distribution historique échantillonnée élément par élément."
 
-#: ../../notebooks/climate_change.ipynb:6145
+#: ../../notebooks/climate_change.ipynb:588
 msgid "Compute the percentiles of the future distribution."
 msgstr "Calculer les percentiles de la distribution future."
 
-#: ../../notebooks/climate_change.ipynb:6147
+#: ../../notebooks/climate_change.ipynb:590
 msgid ""
 "First, we will sample within the reference dataset to combine the results"
 " of the 6 hydrological platforms together."
@@ -710,7 +686,7 @@ msgstr ""
 "référence pour combiner les résultats des 6 plateformes hydrologiques "
 "ensemble."
 
-#: ../../notebooks/climate_change.ipynb:7137
+#: ../../notebooks/climate_change.ipynb:666
 msgid ""
 "We can do the same for the deltas. Since ``weights`` already contains all"
 " dimensions that we want to sample from, we don't need ``include_dims`` "
@@ -720,7 +696,7 @@ msgstr ""
 "déjà toutes les dimensions que nous voulons échantillonner, nous n'avons "
 "pas besoin de ``include_dims`` ici."
 
-#: ../../notebooks/climate_change.ipynb:7948
+#: ../../notebooks/climate_change.ipynb:716
 msgid ""
 "Once the two distributions have been acquired, "
 "``xhydro.cc.sampled_indicators`` can be used to combine them element-wise"
@@ -735,7 +711,7 @@ msgstr ""
 " données. Ici, cela signifie que nous obtenons une distribution "
 "reconstruite pour chaque horizon futur."
 
-#: ../../notebooks/climate_change.ipynb:8902
+#: ../../notebooks/climate_change.ipynb:752
 msgid ""
 "Since we used the ``percentiles`` argument, it also computed a series of "
 "percentiles."
@@ -743,7 +719,7 @@ msgstr ""
 "Puisque nous avons utilisé l'argument ``percentiles``, il a également "
 "calculé une série de percentiles."
 
-#: ../../notebooks/climate_change.ipynb:9649
+#: ../../notebooks/climate_change.ipynb:793
 msgid ""
 "The same statistics as before can also be computed by using the 10,000 "
 "samples within ``delta_dist``."
