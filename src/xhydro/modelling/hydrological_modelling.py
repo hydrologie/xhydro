@@ -11,6 +11,7 @@ import numpy as np
 import xarray as xr
 import xclim as xc
 from clisops.utils.dataset_utils import cf_convert_between_lon_frames
+from xclim.core.utils import uses_dask
 from xscen.spatial import get_grid_mapping
 from xscen.utils import change_units, clean_up, stack_drop_nans
 
@@ -485,9 +486,9 @@ def format_input(  # noqa: C901
                 ds = ds.drop_vars(y_name)
 
         else:
-            # Reorder dimensions to match Raven's expectations for .rvt (x, y, t)
+            # Reorder dimensions to match Raven's expectations (T,Y,X)
             # Raven is faster with gridded inputs than with stations
-            ds = ds.transpose(x_name[0], y_name[0], "time")
+            ds = ds.transpose("time", y_name[0], x_name[0])
 
     else:
         raise ValueError(
@@ -497,6 +498,8 @@ def format_input(  # noqa: C901
 
     # Ensure that longitude is in the range [-180, 180]
     if "longitude" in ds:
+        if uses_dask(ds.longitude):
+            ds = ds.load()
         ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
 
     # Additional data processing specific to Hydrotel

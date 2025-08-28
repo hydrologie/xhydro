@@ -680,7 +680,7 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False) -> str | xr.Dataset:
+    def run(self, *, overwrite: bool = False) -> xr.Dataset:
         """Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
@@ -798,6 +798,8 @@ class RavenpyModel(HydrologicalModel):
         -------
         xr.Dataset
             The streamflow file.
+        Path
+            The path to the streamflow file if output is set to "path".
         """
         outputs = ravenpy.OutputReader(
             run_name=self.run_name, path=self.workdir / "output"
@@ -806,11 +808,11 @@ class RavenpyModel(HydrologicalModel):
         if output == "path":
             return Path(outputs.files["hydrograph"])
         else:
-            ds = xr.open_dataset(outputs.files["hydrograph"], **kwargs)
-            if output == "q":
-                return ds[["q"]]
-            elif output == "all":
-                return ds
+            with xr.open_dataset(outputs.files["hydrograph"], **kwargs) as ds:
+                if output == "q":
+                    return ds[["q"]]
+                elif output == "all":
+                    return ds
 
     def _read_qobs(
         self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q"
@@ -1110,6 +1112,20 @@ class RavenpyModel(HydrologicalModel):
                     ds.cf.coordinates["longitude"][0],
                     ds.cf.coordinates["latitude"][0],
                 )
+                self.meteo["elevation_name"] = ds.cf.coordinates["vertical"][0]
+
+                # Raven requires that the data is in T,Y,X order
+                for v in self.meteo["data_type"]:
+                    v = alt_names_meteo.get(v, v)
+                    if ds[v].dims != (
+                        "time",
+                        self.meteo["dim_names"][1],
+                        self.meteo["dim_names"][0],
+                    ):
+                        raise ValueError(
+                            "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
+                            "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
+                        )
 
             else:
                 raise ValueError(
@@ -1167,7 +1183,13 @@ class RavenpyModel(HydrologicalModel):
                     station_idx=None,  # FIXME: This can be removed once we have ravenpy >= 0.18.3
                     engine="h5netcdf",
                     GridWeights=rc.commands.RedirectToFile(weight_file),
-                    ElevationVarNameNC="elevation",
+                    ElevationVarNameNC=self.meteo["elevation_name"],
+                    DimNamesNC=list(self.meteo["dim_names"])
+                    + [
+                        "time"
+                    ],  # This must always be X, Y, T regardless of the input data
+                    LongitudeVarNameNC=self.meteo["var_names"][0],
+                    LatitudeVarNameNC=self.meteo["var_names"][1],
                 )
                 for v in data_type
             ]
