@@ -878,12 +878,13 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) 
     Returns
     -------
     float:
-        Relative error error in flow that is exceeded 10 % of the time.
-        ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
+        Relative error in flow that is exceeded 10 % of the time.
 
     Notes
     -----
     High Flow Relative Error should AIM TO BE ZERO, therefor it cannot be used for optimization
+    ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
+
 
     """
 
@@ -912,11 +913,12 @@ def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
     -------
     float
         The modified Kling-Gupta Efficiency (KGE) modified metric of 2021: KGE".
-        It can take values from -inf to 1 (best case).
-        ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
+
     Notes
     -----
-    The kge_2021 should be MAXIMIZED.
+    The kge_2021 should be MAXIMIZED: values from -inf to 1 (best case).
+    ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
+
     """
 
     # These pop up a lot, precalculate
@@ -937,7 +939,12 @@ def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """ Least-squares combined efficiency
+    """
+    Least-squares combined efficiency:
+    Performance criterion combining the least-squares regression coefficients from the two regression lines
+    in both-way regression analysis between simulations and observations
+    Performance criterion that avoids tendency towards underestimation of flow variability
+
     Parameters
     ----------
     qsim : array_like
@@ -949,11 +956,13 @@ def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
     -------
     float
         The least-squares combined efficiency.
-        It produces values from -inf to 1 (best case).
-        ref : Lee, J. S., & Choi, H. I. (2022). A rebalanced performance criterion for hydrological model calibration. Journal of Hydrology, 606, 127372. https://doi.org/10.1016/j.jhydrol.2021.127372
+
+
     Notes
     -----
-    The LCE should be MAXIMIZED.
+    The LCE should be MAXIMIZED; values from -inf to 1 (best case).
+    ref : Lee, J. S., & Choi, H. I. (2022). A rebalanced performance criterion for hydrological model calibration. Journal of Hydrology, 606, 127372. https://doi.org/10.1016/j.jhydrol.2021.127372
+
     """
     # These pop up a lot, precalculate
     qsim_mean = np.mean(qsim)
@@ -986,12 +995,12 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     Returns
     -------
     float:
-        Relative error error in flow that is exceeded 90 % of the time.
-        ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
+        Relative error in flow that is exceeded 90 % of the time.
 
     Notes
     -----
     Low Flow Relative Error should AIM TO BE ZERO, therefor it cannot be used for optimization
+    ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
 
     """
 
@@ -1007,7 +1016,10 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
 
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """Persistence index or persistence model efficiency
+    """
+    Persistence index or persistence model efficiency;
+    Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+    obtained by the use of a simple persistence model that assumes “tomorrow's flow will be the same as today's”.
 
     Parameters
     ----------
@@ -1019,15 +1031,14 @@ def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     Returns
     -------
     float
-        Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
-        obtained by the use of a simple persistence model that assumes “tomorrow's flow will be the same as today's”;
-        the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
-
-        Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models: comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143. http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+       Persistence index single value obtained by given time step
 
     Notes
     -----
-    The Persistence index should be MAXIMIZED
+    The Persistence index should be MAXIMIZED.
+    The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+    Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models: comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143. http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+
     """
     if len(qobs) < 2:
         raise ValueError("At least 2 timesteps are needed to compute persistence index.")
@@ -1046,7 +1057,10 @@ def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def persistence_index_weekly(qsim, qobs):
-    """   Persistence index or persistence model efficiency based on weekly averages
+    """
+    Persistence index or persistence model efficiency based on weekly averages;
+    Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+    obtained by the use of a simple persistence model that assumes “Netx weeks flow will be the same as this week's”.
 
     Parameters
     ----------
@@ -1058,15 +1072,15 @@ def persistence_index_weekly(qsim, qobs):
     Returns
     -------
     float
-        Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
-        obtained by the use of a simple persistence model that assumes “Netx weeks flow will be the same as this week's”;
+        Persistence index based on weekly averages
         the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
 
         Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models: comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143. http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
 
     Notes
     -----
-    The weekly persistence index should be MAXIMIZED
+    The weekly persistence index should be MAXIMIZED.
+    The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
 
     # Resample to weekly means (weeks starting on Monday)
@@ -1095,7 +1109,9 @@ def persistence_index_weekly(qsim, qobs):
 
 
 def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """Volumetric efficiency
+    """
+    Volumetric efficiency;
+    Represents the fraction of water delivered at the proper time.
 
     Parameters
     ----------
@@ -1107,16 +1123,19 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     Returns
     -------
     float
-        Volumetric efficiency (VE) ranges from -inf to 1 and
-        Represents the fraction of water delivered at the proper time.
-        For values= 0 : Simulation error equals total observed flow
-        For negative values : Simulation error exceeds observed volume.
-        Ref: Criss, R. E., & Winston, W. E. (2008). Do Nash values have value? Discussion and alternate proposals. Hydrological Processes, 22(14), 2723-2725. http://dx.doi.org/10.1002/hyp.7072.
+        Volumetric efficiency (VE)
 
-        It is important to multiply by the duration of the time-step to obtain actual volumes.
+
     Notes
     -----
-    The Volumetric efficiency should be MAXIMIZED
+    The Volumetric efficiency should be MAXIMIZED ; ranges from -inf to 1
+    For values= 0 : Simulation error equals total observed flow
+    For negative values : Simulation error exceeds observed volume.
+    Multiplying by the duration of the time-step computes actual volumes and not values in flow units.
+
+    Ref: Criss, R. E., & Winston, W. E. (2008). Do Nash values have value? Discussion and alternate proposals. Hydrological Processes, 22(14), 2723-2725. http://dx.doi.org/10.1002/hyp.7072.
+
+
     """
     return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
 
@@ -1149,11 +1168,11 @@ def _high_flow_timing_error(
     -------
     float
         Difference in Julian day occurence of high flows, e.g. flows that are exceeded 10 % of the time.
-        ref : Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models at gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures. Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
 
     Notes
     -----
     High Flow timing Error should AIM TO BE ZERO
+    ref : Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models at gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures. Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
 
 
     """
