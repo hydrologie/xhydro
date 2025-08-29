@@ -14,10 +14,10 @@ except ImportError:
     KappaGen = None
 
 from xhydro.frequency_analysis.regional import (
+    _cluster_indices,
     _moment_l_vector,
     calc_h_z,
-    calculate_return_period_from_afr,
-    cluster_indices,
+    calculate_return_period,
     fit_pca,
     get_group_from_fit,
 )
