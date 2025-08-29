@@ -801,10 +801,10 @@ def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
     id_dim = ds.cf.cf_roles["timeseries_id"][0]
     ds_groups = xr.concat(
         [
-            ds.sel(**{id_dim: groups[i]})
+            ds.sel(**{id_dim: regions[i]})
             .assign_coords(region_id=i)
             .expand_dims("group_id")
-            for i in range(len(groups))
+            for i in range(len(regions))
         ],
         dim="group_id",
     )
