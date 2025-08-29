@@ -346,7 +346,11 @@ def format_input(  # noqa: C901
     )  # FIXME: Until xscen>=0.13, run twice to ensure all variables have the exact units requested
 
     # Convert calendar
-    if convert_calendar_missing is not False:
+    if convert_calendar_missing is not False and ds.time.dt.calendar not in [
+        "standard",
+        "gregorian",
+        "proleptic_gregorian",
+    ]:
         var_no_time = [v for v in ds.data_vars if "time" not in ds[v].dims]
         convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
         if isinstance(convert_calendar_missing, dict):
@@ -486,8 +490,8 @@ def format_input(  # noqa: C901
                 ds = ds.drop_vars(y_name)
 
         else:
-            # Reorder dimensions to match Raven's expectations (T,Y,X)
-            # Raven is faster with gridded inputs than with stations
+            # Elevation data in Raven seems to be sensitive to the order of dimensions (T,Y,X)
+            # Until this is resolved, we will enforce this order
             ds = ds.transpose("time", y_name[0], x_name[0])
 
     else:

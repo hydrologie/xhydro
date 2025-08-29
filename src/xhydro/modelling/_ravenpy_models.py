@@ -1114,18 +1114,18 @@ class RavenpyModel(HydrologicalModel):
                 )
                 self.meteo["elevation_name"] = ds.cf.coordinates["vertical"][0]
 
-                # Raven requires that the data is in T,Y,X order
-                for v in self.meteo["data_type"]:
-                    v = alt_names_meteo.get(v, v)
-                    if ds[v].dims != (
-                        "time",
-                        self.meteo["dim_names"][1],
-                        self.meteo["dim_names"][0],
-                    ):
-                        raise ValueError(
-                            "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
-                            "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
-                        )
+                # # Raven requires that the data is in T,Y,X order
+                # for v in self.meteo["data_type"]:
+                #     v = alt_names_meteo.get(v, v)
+                #     if ds[v].dims != (
+                #         "time",
+                #         self.meteo["dim_names"][1],
+                #         self.meteo["dim_names"][0],
+                #     ):
+                #         raise ValueError(
+                #             "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
+                #             "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
+                #         )
 
             else:
                 raise ValueError(
@@ -1184,12 +1184,21 @@ class RavenpyModel(HydrologicalModel):
                     engine="h5netcdf",
                     GridWeights=rc.commands.RedirectToFile(weight_file),
                     ElevationVarNameNC=self.meteo["elevation_name"],
-                    DimNamesNC=list(self.meteo["dim_names"])
-                    + [
-                        "time"
-                    ],  # This must always be X, Y, T regardless of the input data
-                    LongitudeVarNameNC=self.meteo["var_names"][0],
-                    LatitudeVarNameNC=self.meteo["var_names"][1],
+                    DimNamesNC=list(
+                        self.meteo["dim_names"]
+                    )  # This must always be X, Y, T regardless of the input data
+                    + ["time"],
+                    # Longitude/Latitude names are only set if they differ from the dimension names (aka. non-regular grids)
+                    LongitudeVarNameNC=(
+                        self.meteo["var_names"][0]
+                        if self.meteo["var_names"][0] != self.meteo["dim_names"][0]
+                        else None
+                    ),
+                    LatitudeVarNameNC=(
+                        self.meteo["var_names"][1]
+                        if self.meteo["var_names"][1] != self.meteo["dim_names"][1]
+                        else None
+                    ),
                 )
                 for v in data_type
             ]
