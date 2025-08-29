@@ -11,10 +11,15 @@ New features and enhancements
 * Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
 * Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
 * New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
-* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`).
-* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.write_rv()` method has been added to the class to write the files. (:pull:`303`).
+* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`, :pull:`339`).
+* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.create_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
+* The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
+* Two functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`).
+* A `executable` argument has been added to the `RavenpyModel` class's `run` method to specify a custom path to the Raven executable. (:pull:`341`).
+* The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
+* Additional options can now be passed to the Hydrotel executable via the `run_options` argument in the `run` method. (:pull:`331`).
 
 Bug fixes
 ^^^^^^^^^
@@ -22,6 +27,7 @@ Bug fixes
 * If returning a GeoDataFrame in `xh.gis.watershed_properties`, column names have been changed to include the units. (:issue:`266`, :pull:`303`).
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
 * Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
+* Fixed a bug in Hydrotel modelling where the simulation file's name was not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -29,12 +35,18 @@ Breaking changes
 * The default CRS in `xh.gis.watershed_properties` and `surface_properties` has been changed to a call to `geopandas.estimate_utm_crs` instead of an hardcoded value. (:pull:`303`).
 * The `RavenpyModel` class has abandoned the `longitude`, `latitude`, `drainage_area` and `elevation` arguments in favor of a `hru` argument. (:pull:`303`).
 * The `RavenpyModel` class has abandoned the explicit `evaporation` and `rain_snow_fraction`, but they can still be passed as kwargs. (:pull:`303`).
+* The `basin_name` coordinate produced by Raven is now renamed to `subbasin_id`. (:pull:`339`).
 * The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from `xhfa.regional.calculate_rp_from_afr` and `return_periods` from `xhfa.uncertainties.calc_q_iter` all renamed `return_period`. (:issue:`269`, :pull:`317`).
 * The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
+* The `use_defaults` argument in the `Hydrotel` class has been removed. (:pull:`331`).
+* The internal `xh.modelling._hydrotel._basic_checks` function has been removed, as Hydrotel itself performs most of these checks. Checks that are still relevant have been moved to the `run` function. (:pull:`331`).
+* The `station_id` dimension in the output of Hydrotel has been renamed to `subbasin_id`. (:pull:`331`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
+* Added a security policy (``SECURITY.md``) to the repository. (:pull:`340`).
+* The `RavenpyModel` class has been heavily refactored to improve code readability and maintainability. (:pull:`339`, :pull:`341`).
 
 v0.5.0 (2025-04-24)
 -------------------
