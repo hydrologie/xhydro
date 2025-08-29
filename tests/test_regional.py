@@ -16,7 +16,7 @@ except ImportError:
 from xhydro.frequency_analysis.regional import (
     _moment_l_vector,
     calc_h_z,
-    calculate_return_period_from_afr,
+    calculate_return_period,
     cluster_indices,
     fit_pca,
     get_group_from_fit,

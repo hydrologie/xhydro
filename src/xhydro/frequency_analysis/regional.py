@@ -779,17 +779,17 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
+def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
     """
-    Group a dataset by a list of groups.
+    Group a dataset by a list of regions.
 
     Parameters
     ----------
     ds : xr.Dataset
         The input dataset to be grouped.
         The associated dimension must have a 'cf_role: timeseries_id' attribute.
-    groups : list
-        A list of groups to be used for grouping the dataset.
+    regions : list
+        A list of regions to be used for grouping the dataset.
 
     Returns
     -------
@@ -800,7 +800,7 @@ def group_ds(ds: xr.Dataset, *, groups: list) -> xr.Dataset:
     ds_groups = xr.concat(
         [
             ds.sel(**{id_dim: groups[i]})
-            .assign_coords(group_id=i)
+            .assign_coords(region_id=i)
             .expand_dims("group_id")
             for i in range(len(groups))
         ],
