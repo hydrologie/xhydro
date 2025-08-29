@@ -1114,18 +1114,18 @@ class RavenpyModel(HydrologicalModel):
                 )
                 self.meteo["elevation_name"] = ds.cf.coordinates["vertical"][0]
 
-                # # Raven requires that the data is in T,Y,X order
-                # for v in self.meteo["data_type"]:
-                #     v = alt_names_meteo.get(v, v)
-                #     if ds[v].dims != (
-                #         "time",
-                #         self.meteo["dim_names"][1],
-                #         self.meteo["dim_names"][0],
-                #     ):
-                #         raise ValueError(
-                #             "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
-                #             "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
-                #         )
+                # Raven requires that the data is in T,Y,X order
+                for v in self.meteo["data_type"]:
+                    v = alt_names_meteo.get(v, v)
+                    if ds[v].dims != (
+                        "time",
+                        self.meteo["dim_names"][1],
+                        self.meteo["dim_names"][0],
+                    ):
+                        raise ValueError(
+                            "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
+                            "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
+                        )
 
             else:
                 raise ValueError(
