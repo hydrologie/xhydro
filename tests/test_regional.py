@@ -39,7 +39,7 @@ class TestRegionalFrequencyAnalysis:
     def test_cluster_indices(self):
         clusters = np.array([0, 1, 0, 2, 1])
         expected = [0, 2]
-        result = cluster_indices(clusters, 0)
+        result = _cluster_indices(clusters, 0)
         np.testing.assert_array_equal(result, expected)
 
     def test_get_group_from_fit(self):
@@ -94,7 +94,7 @@ class TestRegionalFrequencyAnalysis:
 
     def test_cluster_indices_no_matches(self):
         clusters = np.array([1, 1, 1])
-        result = cluster_indices(clusters, 0)
+        result = _cluster_indices(clusters, 0)
         assert len(result) == 0
 
 
@@ -391,7 +391,7 @@ class TestRegionalFrequencyAnalysisKappa:
     def test_calculate_return_period_from_afr(
         self, sample_ds_groups, sample_ds_moments_groups
     ):
-        result = calculate_return_period_from_afr(
+        result = calculate_return_period(
             sample_ds_groups, sample_ds_moments_groups, return_period=[100, 1000, 10000]
         )
         np.testing.assert_almost_equal(
@@ -405,7 +405,7 @@ class TestRegionalFrequencyAnalysisKappa:
         self, sample_ds_groups, sample_ds_moments_groups
     ):
         l1 = sample_ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all") * 1.1
-        result = calculate_return_period_from_afr(
+        result = calculate_return_period(
             sample_ds_groups,
             sample_ds_moments_groups,
             return_period=[100, 1000, 10000],

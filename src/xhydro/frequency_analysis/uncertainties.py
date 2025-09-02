@@ -238,7 +238,7 @@ def _calc_q_iter_da(
         dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
-    qt = calculate_return_period_from_afr(
+    qt = calculate_return_period(
         da_groups.to_dataset(),
         ds_moments_groups.to_dataset(),
         return_period=return_period,
