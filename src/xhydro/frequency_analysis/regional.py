@@ -803,12 +803,12 @@ def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
         [
             ds.sel(**{id_dim: regions[i]})
             .assign_coords(region_id=i)
-            .expand_dims("group_id")
+            .expand_dims("region_id")
             for i in range(len(regions))
         ],
-        dim="group_id",
+        dim="region_id",
     )
-    ds_groups["group_id"].attrs["cf_role"] = "group_id"
+    ds_groups["region_id"].attrs["cf_role"] = "region_id"
     for v in ds_groups.var():
         ds_groups[v].attrs["history"] = update_history("Grouped with", ds_groups[v])
     return ds_groups

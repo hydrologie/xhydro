@@ -289,8 +289,8 @@ class TestRegionalFrequencyAnalysisKappa:
             ]
         )
         ds = xr.Dataset(
-            {"Qp": (("group_id", "id", "time"), data)},
-            coords={"time": time, "id": ["A", "B", "C"], "group_id": ["G1"]},
+            {"Qp": (("region_id", "id", "time"), data)},
+            coords={"time": time, "id": ["A", "B", "C"], "region_id": ["G1"]},
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         ds["Qp"].attrs["units"] = "m^3 s-1"
@@ -336,8 +336,8 @@ class TestRegionalFrequencyAnalysisKappa:
             ]
         )
         ds = xr.Dataset(
-            {"Qp": (("group_id", "id", "lmom"), data)},
-            coords={"lmom": lmom, "id": ["A", "B", "C"], "group_id": ["G1"]},
+            {"Qp": (("region_id", "id", "lmom"), data)},
+            coords={"lmom": lmom, "id": ["A", "B", "C"], "region_id": ["G1"]},
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         return ds
@@ -353,13 +353,13 @@ class TestRegionalFrequencyAnalysisKappa:
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
         sample_ds_groups = xr.concat(
-            [sample_ds_groups, sample_ds_groups], dim="group_id"
+            [sample_ds_groups, sample_ds_groups], dim="region_id"
         )
         sample_ds_moments_groups = xr.concat(
-            [sample_ds_moments_groups, sample_ds_moments_groups], dim="group_id"
+            [sample_ds_moments_groups, sample_ds_moments_groups], dim="region_id"
         )
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
-        assert result.group_id.count().values == 2
+        assert result.region_id.count().values == 2
 
     def test_calc_h_z_values(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
@@ -383,7 +383,7 @@ class TestRegionalFrequencyAnalysisKappa:
     ):
         a = np.empty((1, 3, 6))
         a[:] = np.nan
-        sample_ds_moments_groups["Qp"] = (["group_id", "id", "lmom"], a)
+        sample_ds_moments_groups["Qp"] = (["region_id", "id", "lmom"], a)
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
