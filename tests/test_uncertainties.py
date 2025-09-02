@@ -270,8 +270,8 @@ def test_calc_q_iter_ds():
         ]
     )
     ds_groups = xr.Dataset(
-        {"streamflow": (("group_id", "id", "time"), data)},
-        coords={"time": time, "id": ["S1", "B", "C"], "group_id": ["G1"]},
+        {"streamflow": (("region_id", "id", "time"), data)},
+        coords={"time": time, "id": ["S1", "B", "C"], "region_id": ["G1"]},
     )
     ds_groups["id"].attrs["cf_role"] = "timeseries_id"
     ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
@@ -288,10 +288,14 @@ def test_calc_q_iter_ds():
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
-    assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
+    assert len(result.samples) == len(ds_moments_iter.samples) * len(
+        ds_groups.region_id
+    )
     np.testing.assert_almost_equal(
         260.68926104,
-        result.streamflow.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
+        result.streamflow.sel(id="S1", region_id="G1", return_period=1000).quantile(
+            0.5
+        ),
     )
 
 
@@ -493,8 +497,8 @@ def test_calc_q_iter_da():
         ]
     )
     ds_groups = xr.Dataset(
-        {"streamflow": (("group_id", "id", "time"), data)},
-        coords={"time": time, "id": ["S1", "B", "C"], "group_id": ["G1"]},
+        {"streamflow": (("region_id", "id", "time"), data)},
+        coords={"time": time, "id": ["S1", "B", "C"], "region_id": ["G1"]},
     )
     ds_groups["id"].attrs["cf_role"] = "timeseries_id"
     ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
@@ -511,10 +515,12 @@ def test_calc_q_iter_da():
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
-    assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.group_id)
+    assert len(result.samples) == len(ds_moments_iter.samples) * len(
+        ds_groups.region_id
+    )
     np.testing.assert_almost_equal(
         260.68926104,
-        result.sel(id="S1", group_id="G1", return_period=1000).quantile(0.5),
+        result.sel(id="S1", region_id="G1", return_period=1000).quantile(0.5),
     )
 
 
