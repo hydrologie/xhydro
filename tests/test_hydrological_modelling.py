@@ -40,7 +40,7 @@ class TestHydrologicalModelRequirements:
     @pytest.mark.parametrize("model_name", ["Hydrotel", "GR4JCN"])
     def test_get_model_requirements(self, model_name):
         """Test for required inputs for models"""
-        expected_keys = {"Hydrotel": (7, 4), "GR4JCN": (17, 2)}
+        expected_keys = {"Hydrotel": (7, 4), "GR4JCN": (18, 2)}
 
         all_config, _ = get_hydrological_model_inputs(model_name)
         assert len(all_config.keys()) == expected_keys[model_name][0]
@@ -351,13 +351,13 @@ class TestFormatInputs:
         assert ds_out.equals(ds_loaded)
 
         if "rlon" in ds.dims:
-            spatial = ["rlon", "rlat"]
-            assert tuple(ds_out.tas.sizes.keys()) == (*spatial, "time")
+            spatial = ["rlat", "rlon"]
+            assert tuple(ds_out.tas.sizes.keys()) == ("time", *spatial)
         else:
-            spatial = ["longitude", "latitude"]
-            assert tuple(ds_out.tasmin.sizes.keys()) == (*spatial, "time")
-            assert tuple(ds_out.tasmax.sizes.keys()) == (*spatial, "time")
-        assert tuple(ds_out.pr.sizes.keys()) == (*spatial, "time")
+            spatial = ["latitude", "longitude"]
+            assert tuple(ds_out.tasmin.sizes.keys()) == ("time", *spatial)
+            assert tuple(ds_out.tasmax.sizes.keys()) == ("time", *spatial)
+        assert tuple(ds_out.pr.sizes.keys()) == ("time", *spatial)
 
         if "rlon" in ds.dims:
             assert ("rlon" in ds_out.dims) and ("rlon" in ds_out.coords)
