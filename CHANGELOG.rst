@@ -16,7 +16,8 @@ New features and enhancements
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
 * The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
 * Two functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`).
-* A `executable` argument has been added to the `RavenpyModel` class's `run` method to specify a custom path to the Raven executable. (:pull:`341`).
+* A `executable` argument has been added to the `RavenpyModel` class to specify a custom path to the Raven executable. (:pull:`341`).
+* A `gridweights` argument has been added to the `RavenpyModel` class to specify a custom path to a grid weights file when using gridded meteorological data. (:pull:`344`).
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
 * The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
 * Additional options can now be passed to the Hydrotel executable via the `run_options` argument in the `run` method. (:pull:`331`).
@@ -28,6 +29,7 @@ Bug fixes
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
 * Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
 * Fixed a bug in Hydrotel modelling where the simulation file's name was not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`).
+* Fixed a bug in distributed Raven models where the order of the dimensions in the input data was not consistent with the expected order. (:pull:`344`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
