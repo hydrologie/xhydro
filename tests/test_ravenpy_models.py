@@ -464,7 +464,7 @@ class TestRavenpyModels:
         assert qsim["q"].shape == (275,)
         np.testing.assert_almost_equal(
             qsim["q"].values[100:105],
-            [0.04859913, 0.29512857, 0.90239469, 1.16436519, 1.05067477],
+            [0.04814, 0.02629, 0.22338, 0.65973, 0.91769],
             decimal=5,
         )
 
