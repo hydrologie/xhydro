@@ -27,7 +27,7 @@ import xhydro.frequency_analysis as xhfa
 
 from .regional import (
     calc_moments,
-    calculate_return_period_from_afr,
+    calculate_return_period,
     remove_small_regions,
 )
 
@@ -217,28 +217,28 @@ def _calc_q_iter_da(
     # We select groups for all or one id
     id_dim = da_groups.cf.cf_roles["timeseries_id"][0]
     if bv == "all":
-        ds_temp = da_groups.dropna("group_id", how="all")
+        ds_temp = da_groups.dropna("region_id", how="all")
     else:
-        ds_temp = da_groups.sel(**{id_dim: bv}).dropna("group_id", how="all")
+        ds_temp = da_groups.sel(**{id_dim: bv}).dropna("region_id", how="all")
     ds_mom = []
 
     # For each group, we find which id are in it
-    for group_id in ds_temp.group_id.values:
-        id_list = da_groups.sel(group_id=group_id).dropna(id_dim, how="all").id.values
+    for region_id in ds_temp.region_id.values:
+        id_list = da_groups.sel(region_id=region_id).dropna(id_dim, how="all").id.values
         # We use moments with ressample previously done, and we create ds_moment_group with iterations
         ds_mom.append(
             da_moments_iter.sel(**{id_dim: id_list})
-            .assign_coords(group_id=group_id)
-            .expand_dims("group_id")
+            .assign_coords(region_id=region_id)
+            .expand_dims("region_id")
         )
 
-    # Concat along group_id
-    ds_moments_groups = xr.concat(ds_mom, dim="group_id")
-    da_groups = da_groups.sel(group_id=ds_moments_groups.group_id).dropna(
+    # Concat along region_id
+    ds_moments_groups = xr.concat(ds_mom, dim="region_id")
+    da_groups = da_groups.sel(region_id=ds_moments_groups.region_id).dropna(
         dim="id", how="all"
     )
     # With obs and moments  of same dims, we calculate
-    qt = calculate_return_period_from_afr(
+    qt = calculate_return_period(
         da_groups.to_dataset(),
         ds_moments_groups.to_dataset(),
         return_period=return_period,
@@ -249,14 +249,14 @@ def _calc_q_iter_da(
     if bv == "all":
         return (
             qt.rename({"samples": "obs_samples"})
-            .stack(samples=["group_id", "obs_samples"])
+            .stack(samples=["region_id", "obs_samples"])
             .to_dataarray()
             .squeeze()
         )
     else:
         return (
             qt.rename({"samples": "obs_samples"})
-            .stack(samples=["group_id", "obs_samples"])
+            .stack(samples=["region_id", "obs_samples"])
             .sel(**{id_dim: bv})
             .to_dataarray()
             .squeeze()
@@ -264,6 +264,58 @@ def _calc_q_iter_da(
 
 
 def calc_q_iter(
+    bv: str,
+    groups: xr.DataArray | xr.Dataset,
+    moments_iter: xr.DataArray | xr.Dataset,
+    return_period: np.array,
+    small_regions_threshold: int | None = 5,
+    l1: xr.DataArray | None = None,
+    return_periods: np.ndarray | None = None,
+) -> xr.DataArray:
+    """
+    Calculate quantiles for each bootstrap sample and group.
+
+    Parameters
+    ----------
+    bv : str
+        The basin identifier or 'all' to proceed on all basins (needed for ungauged).
+        The associated dimension must have a 'cf_role: timeseries_id' attribute.
+    groups : xr.DataArray or xr.Dataset
+        The grouped data.
+    moments_iter : xr.DataArray or xr.Dataset
+        The L-moments for each bootstrap sample.
+    return_period : array-like
+        The return periods to calculate quantiles for.
+    small_regions_threshold : int, optional
+        The threshold for removing small regions. Default is 5.
+    l1 : xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If `None`, values are taken from ds_moments_iter.
+    return_periods :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
+
+    Returns
+    -------
+    xr.DataArray or xr.Dataset
+        Quantiles for each bootstrap sample and group. Returns a Dataset if input groups
+        and moments_iter are Datasets, otherwise returns a DataArray.
+    """
+    warnings.warn(
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_quantiles_over_boostraped_groups instead.",
+        FutureWarning,
+    )
+    return calculate_quantiles_over_boostraped_groups(
+        bv,
+        groups,
+        moments_iter,
+        return_period,
+        small_regions_threshold,
+        l1,
+        return_periods,
+    )
+
+
+def calculate_quantiles_over_boostraped_groups(
     bv: str,
     groups: xr.DataArray | xr.Dataset,
     moments_iter: xr.DataArray | xr.Dataset,

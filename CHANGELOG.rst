@@ -29,6 +29,7 @@ Bug fixes
 * Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
 * Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
 * Fixed a bug in Hydrotel modelling where the simulation file's name was not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`).
+* Multiple changes to regional frequency analysis to have functions and variable names more explicit. (:pull:`332`).
 * Fixed a bug in distributed Raven models where the order of the dimensions in the input data was not consistent with the expected order. (:pull:`344`).
 
 Breaking changes

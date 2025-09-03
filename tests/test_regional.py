@@ -14,10 +14,10 @@ except ImportError:
     KappaGen = None
 
 from xhydro.frequency_analysis.regional import (
+    _cluster_indices,
     _moment_l_vector,
     calc_h_z,
-    calculate_return_period_from_afr,
-    cluster_indices,
+    calculate_return_period,
     fit_pca,
     get_group_from_fit,
 )
@@ -39,7 +39,7 @@ class TestRegionalFrequencyAnalysis:
     def test_cluster_indices(self):
         clusters = np.array([0, 1, 0, 2, 1])
         expected = [0, 2]
-        result = cluster_indices(clusters, 0)
+        result = _cluster_indices(clusters, 0)
         np.testing.assert_array_equal(result, expected)
 
     def test_get_group_from_fit(self):
@@ -94,7 +94,7 @@ class TestRegionalFrequencyAnalysis:
 
     def test_cluster_indices_no_matches(self):
         clusters = np.array([1, 1, 1])
-        result = cluster_indices(clusters, 0)
+        result = _cluster_indices(clusters, 0)
         assert len(result) == 0
 
 
@@ -289,8 +289,8 @@ class TestRegionalFrequencyAnalysisKappa:
             ]
         )
         ds = xr.Dataset(
-            {"Qp": (("group_id", "id", "time"), data)},
-            coords={"time": time, "id": ["A", "B", "C"], "group_id": ["G1"]},
+            {"Qp": (("region_id", "id", "time"), data)},
+            coords={"time": time, "id": ["A", "B", "C"], "region_id": ["G1"]},
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         ds["Qp"].attrs["units"] = "m^3 s-1"
@@ -336,8 +336,8 @@ class TestRegionalFrequencyAnalysisKappa:
             ]
         )
         ds = xr.Dataset(
-            {"Qp": (("group_id", "id", "lmom"), data)},
-            coords={"lmom": lmom, "id": ["A", "B", "C"], "group_id": ["G1"]},
+            {"Qp": (("region_id", "id", "lmom"), data)},
+            coords={"lmom": lmom, "id": ["A", "B", "C"], "region_id": ["G1"]},
         )
         ds["id"].attrs["cf_role"] = "timeseries_id"
         return ds
@@ -353,13 +353,13 @@ class TestRegionalFrequencyAnalysisKappa:
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
     ):
         sample_ds_groups = xr.concat(
-            [sample_ds_groups, sample_ds_groups], dim="group_id"
+            [sample_ds_groups, sample_ds_groups], dim="region_id"
         )
         sample_ds_moments_groups = xr.concat(
-            [sample_ds_moments_groups, sample_ds_moments_groups], dim="group_id"
+            [sample_ds_moments_groups, sample_ds_moments_groups], dim="region_id"
         )
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
-        assert result.group_id.count().values == 2
+        assert result.region_id.count().values == 2
 
     def test_calc_h_z_values(
         self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
@@ -383,7 +383,7 @@ class TestRegionalFrequencyAnalysisKappa:
     ):
         a = np.empty((1, 3, 6))
         a[:] = np.nan
-        sample_ds_moments_groups["Qp"] = (["group_id", "id", "lmom"], a)
+        sample_ds_moments_groups["Qp"] = (["region_id", "id", "lmom"], a)
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
@@ -391,7 +391,7 @@ class TestRegionalFrequencyAnalysisKappa:
     def test_calculate_return_period_from_afr(
         self, sample_ds_groups, sample_ds_moments_groups
     ):
-        result = calculate_return_period_from_afr(
+        result = calculate_return_period(
             sample_ds_groups, sample_ds_moments_groups, return_period=[100, 1000, 10000]
         )
         np.testing.assert_almost_equal(
@@ -405,7 +405,7 @@ class TestRegionalFrequencyAnalysisKappa:
         self, sample_ds_groups, sample_ds_moments_groups
     ):
         l1 = sample_ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all") * 1.1
-        result = calculate_return_period_from_afr(
+        result = calculate_return_period(
             sample_ds_groups,
             sample_ds_moments_groups,
             return_period=[100, 1000, 10000],

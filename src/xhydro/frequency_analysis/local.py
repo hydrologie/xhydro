@@ -135,7 +135,7 @@ def parametric_quantiles(
     """
     if t is not None:
         warnings.warn(
-            "The 't' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            "The 't' parameter has been renamed to 'return_period' and will be removed in xhydro v0.7.0.",
             FutureWarning,
         )
         return_period = t
