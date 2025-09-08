@@ -102,6 +102,10 @@ class RavenpyModel(HydrologicalModel):
         Additional properties of the weather stations providing the meteorological data. Only required if absent from the 'meteo_file'.
         For single stations, the format is {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}.
         This has not been tested for multiple stations or gridded data.
+    gridweights : str | Path | None
+        If using gridded meteorological data, path to a text file containing the weights linking the grid cells to the HRUs.
+        If None, the weights will be computed using ravenpy.extractors.GridWeightExtractor and saved in a 'weights' subdirectory
+        of the project folder, using a "{meteo_file}_vs_{hru_file}_weights.txt" pattern.
     \*\*kwargs : dict, optional
         Additional parameters to pass to the RavenPy emulator, to modify the default modules used by a given hydrological model.
         Typical entries include RainSnowFraction, Evaporation, GlobalParameters, etc.
@@ -131,6 +135,7 @@ class RavenpyModel(HydrologicalModel):
         data_type: list[str] | None = None,
         alt_names_meteo: dict | None = None,
         meteo_station_properties: dict | None = None,
+        gridweights: str | os.PathLike | None = None,
         **kwargs,
     ):
         """Initialize the RavenPy model class."""
@@ -167,6 +172,7 @@ class RavenpyModel(HydrologicalModel):
                 data_type=data_type,
                 alt_names_meteo=alt_names_meteo,
                 meteo_station_properties=meteo_station_properties,
+                gridweights=gridweights,
             )
 
         # Check for existing project files
@@ -390,6 +396,7 @@ class RavenpyModel(HydrologicalModel):
         data_type: list[str] | None = None,
         alt_names_meteo: dict | None = None,
         meteo_station_properties: dict | None = None,
+        gridweights: str | os.PathLike | None = None,
     ):
         """Update the model configuration with new observed data (self.qobs), HRU properties (self.hru), or meteorological data (self.meteo).
 
@@ -440,6 +447,10 @@ class RavenpyModel(HydrologicalModel):
             Additional properties of the weather stations providing the meteorological data. Only required if absent from the 'meteo_file'.
             For single stations, the format is {"ALL": {"elevation": elevation, "latitude": latitude, "longitude": longitude}}.
             This has not been tested for multiple stations or gridded data.
+        gridweights : str | Path | None
+            If using gridded meteorological data, path to a text file containing the weights linking the grid cells to the HRUs.
+            If None, the weights will be computed using ravenpy.extractors.GridWeightExtractor and saved in a 'weights' subdirectory
+            of the project folder, using a "{meteo_file}_vs_{hru_file}_weights.txt" pattern.
 
         Notes
         -----
@@ -479,6 +490,7 @@ class RavenpyModel(HydrologicalModel):
                 data_type=data_type,
                 alt_names_meteo=alt_names_meteo,
                 meteo_station_properties=meteo_station_properties,
+                gridweights=gridweights,
             )
 
     def update_config(  # noqa: C901
@@ -680,7 +692,7 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False) -> str | xr.Dataset:
+    def run(self, *, overwrite: bool = False) -> xr.Dataset:
         """Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
@@ -798,6 +810,8 @@ class RavenpyModel(HydrologicalModel):
         -------
         xr.Dataset
             The streamflow file.
+        Path
+            The path to the streamflow file if output is set to "path".
         """
         outputs = ravenpy.OutputReader(
             run_name=self.run_name, path=self.workdir / "output"
@@ -806,11 +820,11 @@ class RavenpyModel(HydrologicalModel):
         if output == "path":
             return Path(outputs.files["hydrograph"])
         else:
-            ds = xr.open_dataset(outputs.files["hydrograph"], **kwargs)
-            if output == "q":
-                return ds[["q"]]
-            elif output == "all":
-                return ds
+            with xr.open_dataset(outputs.files["hydrograph"], **kwargs) as ds:
+                if output == "q":
+                    return ds[["q"]]
+                elif output == "all":
+                    return ds
 
     def _read_qobs(
         self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q"
@@ -1069,6 +1083,7 @@ class RavenpyModel(HydrologicalModel):
         data_type: list[str],
         alt_names_meteo: dict | None = None,
         meteo_station_properties: dict | None = None,
+        gridweights: os.PathLike | str | None = None,
     ) -> None:
         """Read the meteorological data from a NetCDF file and update the .meteo properties of the RavenPy model."""
         self.meteo = {
@@ -1110,6 +1125,20 @@ class RavenpyModel(HydrologicalModel):
                     ds.cf.coordinates["longitude"][0],
                     ds.cf.coordinates["latitude"][0],
                 )
+                self.meteo["elevation_name"] = ds.cf.coordinates["vertical"][0]
+
+                # Raven requires that the data is in T,Y,X order
+                for v in self.meteo["data_type"]:
+                    v = alt_names_meteo.get(v, v)
+                    if ds[v].dims != (
+                        "time",
+                        self.meteo["dim_names"][1],
+                        self.meteo["dim_names"][0],
+                    ):
+                        raise ValueError(
+                            "All variables in the meteorological dataset must have the dimensions (time, Y, X). "
+                            "Please use the 'xhydro.modelling.format_input' function to ensure the data is in the correct format."
+                        )
 
             else:
                 raise ValueError(
@@ -1136,22 +1165,23 @@ class RavenpyModel(HydrologicalModel):
                 self.hru["saved_on_disk"] = True
 
             # Compute the weights
-            weight_file = (
-                self.workdir
-                / "weights"
-                / f"{self.meteo['file'].stem}_vs_{self.hru['file'].stem}_weights.txt"
-            )
+            if gridweights is None:
+                gridweights = (
+                    self.workdir
+                    / "weights"
+                    / f"{self.meteo['file'].stem}_vs_{self.hru['file'].stem}_weights.txt"
+                )
 
-            weights = ravenpy.extractors.GridWeightExtractor(
-                input_file_path=self.meteo["file"],
-                routing_file_path=self.hru["file"],
-                dim_names=self.meteo["dim_names"],
-                var_names=self.meteo["var_names"],
-                routing_id_field="HRU_ID",
-            ).extract()
-            gw_cmd = rc.commands.GridWeights(**weights)
-            Path(weight_file.parent).mkdir(parents=True, exist_ok=True)
-            weight_file.write_text(gw_cmd.to_rv() + "\n")
+                weights = ravenpy.extractors.GridWeightExtractor(
+                    input_file_path=self.meteo["file"],
+                    routing_file_path=self.hru["file"],
+                    dim_names=self.meteo["dim_names"],
+                    var_names=self.meteo["var_names"],
+                    routing_id_field="HRU_ID",
+                ).extract()
+                gw_cmd = rc.commands.GridWeights(**weights)
+                gridweights.parent.mkdir(parents=True, exist_ok=True)
+                gridweights.write_text(gw_cmd.to_rv() + "\n")
 
             # Meteo configuration
             self.meteo["keys"]["GriddedForcing"] = [
@@ -1166,8 +1196,23 @@ class RavenpyModel(HydrologicalModel):
                     data_kwds=self.meteo["station_properties"],
                     station_idx=None,  # FIXME: This can be removed once we have ravenpy >= 0.18.3
                     engine="h5netcdf",
-                    GridWeights=rc.commands.RedirectToFile(weight_file),
-                    ElevationVarNameNC="elevation",
+                    GridWeights=rc.commands.RedirectToFile(gridweights),
+                    ElevationVarNameNC=self.meteo["elevation_name"],
+                    DimNamesNC=list(
+                        self.meteo["dim_names"]
+                    )  # This must always be X, Y, T regardless of the input data
+                    + ["time"],
+                    # Longitude/Latitude names are only set if they differ from the dimension names (aka. non-regular grids)
+                    LongitudeVarNameNC=(
+                        self.meteo["var_names"][0]
+                        if self.meteo["var_names"][0] != self.meteo["dim_names"][0]
+                        else None
+                    ),
+                    LatitudeVarNameNC=(
+                        self.meteo["var_names"][1]
+                        if self.meteo["var_names"][1] != self.meteo["dim_names"][1]
+                        else None
+                    ),
                 )
                 for v in data_type
             ]
