@@ -368,8 +368,8 @@ msgid ""
 "monthly precipitable water and the precipitable water during the major "
 "precipitation events."
 msgstr ""
-"** Calculez le rapport **: Premièrement, calculez le rapport entre "
-"l'eau précipitable mensuelle de 100 ans et l'eau précipitable lors des "
+"**Calculer le rapport**: Premièrement, calculez le rapport entre "
+"l'eau précipitable mensuelle de récurrence 100 ans et l'eau précipitable lors des "
 "principaux événements de précipitation."
 
 #: ../../notebooks/pmp.ipynb:303
