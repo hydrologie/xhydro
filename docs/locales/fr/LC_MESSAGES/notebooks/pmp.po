@@ -17,7 +17,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb:9
 msgid "Inputs for the Probable Maximum flood (PMF)"
-msgstr "Entrées pour l'inondation maximale probable (PMF)"
+msgstr "Entrées pour la crue maximale probable (CMP)"
 
 #: ../../notebooks/pmp.ipynb:21
 msgid "Probable Maximum Precipitation (PMP)"
