@@ -358,8 +358,8 @@ msgid ""
 "function for this step, it can be accomplished by following these steps:"
 msgstr ""
 "Avec les informations recueillies jusqu'à présent, nous pouvons "
-"désormais procéder à maximiser les événements de précipitation. Bien que `` "
-"xhydro '' ne fournisse pas de fonction explicite pour cette étape, elle peut "
+"procéder à la maximisation des événements de précipitation. Bien que "
+"``xhydro`` ne fournisse pas de fonction explicite pour cette étape, elle peut "
 "être accomplie en suivant ces étapes:"
 
 #: ../../notebooks/pmp.ipynb:301
