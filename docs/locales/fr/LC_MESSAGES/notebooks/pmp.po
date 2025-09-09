@@ -188,7 +188,7 @@ msgid ""
 "is the final result."
 msgstr ""
 "À cette étape, les événements de précipitation sont maximisés en "
-"fonction du rapport entre l'eau précipitable mensuelle de 100 ans et l'eau "
+"fonction du rapport entre l'eau précipitable mensuelle de récurrence 100 ans et l'eau "
 "précipitable lors des principaux événements de précipitation. Dans les régions "
 "sans neige, c'est le résultat final."
 
