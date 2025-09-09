@@ -834,19 +834,19 @@ msgid ""
 "event:"
 msgstr ""
 "Les auteurs ont utilisé différents seuils en fonction de la durée de "
-"l'événement:"
+"l'événement :"
 
 #: ../../notebooks/pmp.ipynb:778
 msgid "6-hour duration: 3, 4, 5, 6 mm"
-msgstr "Durée de 6 heures: 3, 4, 5, 6 mm"
+msgstr "Durée de 6 heures : 3, 4, 5, 6 mm"
 
 #: ../../notebooks/pmp.ipynb:779
 msgid "12-hour duration: 4, 5, 6, 7 mm"
-msgstr "Durée de 12 heures: 4, 5, 6, 7 mm"
+msgstr "Durée de 12 heures : 4, 5, 6, 7 mm"
 
 #: ../../notebooks/pmp.ipynb:780
 msgid "24-hour duration: 5, 6, 7, 8 mm\\`"
-msgstr "Durée 24h / 24: 5, 6, 7, 8 mm \\ `"
+msgstr "Durée de 24 heures : 5, 6, 7, 8 mm\\`"
 
 #: ../../notebooks/pmp.ipynb:782
 msgid "In this example, a 6-mm threshold was selected for the 1-day duration."
@@ -860,11 +860,11 @@ msgid ""
 "non-maximized events throughout a winter"
 msgstr ""
 "L'accumulation de neige maximisée (MSA) est la somme des "
-"événements maximisés et non maximalisés tout au long d'un hiver"
+"événements maximisés et non maximisés tout au long d'un hiver"
 
 #: ../../notebooks/pmp.ipynb:850
 msgid "PMSA estimation"
-msgstr "Estimation PMSA"
+msgstr "Estimation du PMSA"
 
 #: ../../notebooks/pmp.ipynb:852
 msgid "The PMSA is the highest total among all winters defined."
