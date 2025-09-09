@@ -148,7 +148,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Identification of Major Precipitation Events**:"
-msgstr "** Identification des principaux événements de précipitations **:"
+msgstr "**Identification des grands événements de précipitation**:"
 
 #: ../../notebooks/pmp.ipynb
 msgid ""
