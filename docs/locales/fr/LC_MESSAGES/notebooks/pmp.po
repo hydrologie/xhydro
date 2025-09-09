@@ -604,7 +604,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Maximization of Snowfall Events**:"
-msgstr "** Maximisation des événements des chutes de neige **:"
+msgstr "**Maximisation des événements de chutes de neige** :"
 
 #: ../../notebooks/pmp.ipynb
 msgid ""
@@ -612,13 +612,13 @@ msgid ""
 "monthly precipitable water leading to snowfall and the precipitable water"
 " observed during snowfall events."
 msgstr ""
-"Les événements des chutes de neige sont maximisés en fonction du "
-"ratio entre l'eau précipitable mensuelle de 100 ans, entraînant des chutes "
-"de neige et de l'eau précipitable observée lors des chutes de neige."
+"Les événements de chutes de neige sont maximisés en fonction du ratio entre "
+"l'eau précipitable mensuelle centennale entraînant des chutes de neige et "
+"l'eau précipitable observée lors de ces événements."
 
 #: ../../notebooks/pmp.ipynb
 msgid "**PMSA estimation**:"
-msgstr "** Estimation PMSA **:"
+msgstr "**Estimation du PMSA** :"
 
 #: ../../notebooks/pmp.ipynb
 msgid ""
@@ -626,9 +626,9 @@ msgid ""
 "aggregated. The PMSA is then defined as the highest total among all "
 "winters."
 msgstr ""
-"Pour chaque hiver, les événements de neige maximisés et non "
-"maximalisés sont agrégés. Le PMSA est ensuite défini comme le total le plus élevé "
-"parmi tous les hivers."
+"Pour chaque hiver, les événements de neige maximisés et non maximisés sont "
+"agrégés. Le PMSA est ensuite défini comme le total le plus élevé parmi tous "
+"les hivers."
 
 #: ../../notebooks/pmp.ipynb:615
 msgid "Identification of the Precipitable Water leading to Snowfall"
@@ -643,11 +643,11 @@ msgid ""
 "example we are working with daily time steps, these thresholds were "
 "adjusted to 1 mm/day and 0.4 mm/day, respectively."
 msgstr ""
-"`Klein et al. (2016) "
-"<https://doi.org/10.1016/j.jhydrol.2016.03.031> `__ ont proposé que seules les valeurs d'eau précipitées des pas de "
-"temps avec au moins 0,25 mm / 6h de précipitation solide doivent être "
-"considérées. Étant donné que dans cet exemple, nous travaillons avec des pas de temps "
-"quotidiens, ces seuils ont été ajustés à 1 mm / jour et 0,4 mm / jour, respectivement."
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ ont proposé de ne considérer que les valeurs "
+"d'eau précipitable correspondant à des pas de temps présentant au moins 0,25 mm/6h "
+"de précipitations solides (exprimées en équivalent en eau) et moins de 0,1 mm/6h "
+"de pluie. Étant donné que dans cet exemple nous utilisons des pas de temps quotidiens, "
+"ces seuils ont été ajustés à 1 mm/jour et 0,4 mm/jour, respectivement."
 
 #: ../../notebooks/pmp.ipynb:638
 msgid ""
