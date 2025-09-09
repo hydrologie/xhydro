@@ -162,7 +162,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Computation of Monthly 100-Year Precipitable Water**:"
-msgstr "** Calcul de l'eau précipitable mensuelle à 100 ans **:"
+msgstr "**Calcul de l'eau précipitable mensuelle de récurrence 100 ans**:"
 
 #: ../../notebooks/pmp.ipynb
 #, python-format
