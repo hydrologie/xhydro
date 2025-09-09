@@ -178,7 +178,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Maximization of Precipitation During Events**:"
-msgstr "** Maximisation des précipitations lors des événements **:"
+msgstr "**Maximisation des précipitations lors des événements**:"
 
 #: ../../notebooks/pmp.ipynb
 msgid ""
