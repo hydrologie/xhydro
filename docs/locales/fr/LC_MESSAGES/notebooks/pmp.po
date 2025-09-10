@@ -547,7 +547,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb:587
 msgid "Probable Maximum Snow Accumulation (PMSA)"
-msgstr "Accumulation de neige maximale probable (PMSA)"
+msgstr "Accumulation de neige maximale probable (ANMP)"
 
 #: ../../notebooks/pmp.ipynb:589
 msgid ""
