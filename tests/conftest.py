@@ -50,8 +50,10 @@ def nimbus(threadsafe_data_dir, worker_id) -> pooch.Pooch:
 def era5_example(nimbus):
     # Prepare a dataset with the required fields
     file = nimbus.fetch("ERA5/daily_surface_cancities_1990-1993.nc")
-    ds = xr.open_dataset(file)[["huss", "pr", "snw"]]
+    ds = xr.open_dataset(file)[["huss", "pr", "prsn", "snw"]]
     ds = ds.rename({"huss": "hus"})
+
+    ds["rf"] = ds["pr"] - ds["prsn"]
 
     # Fake Geopotential field
     np.random.seed(42)
