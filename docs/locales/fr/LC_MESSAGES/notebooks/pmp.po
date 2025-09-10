@@ -144,7 +144,7 @@ msgid ""
 "<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ follows these steps:"
 msgstr ""
 "La méthode décrite par `Clavet-Gaumont et al. (2017) "
-"<https://doi.org/10.1016/j.ejrh.2017.07.003> `__ suit ces étapes:"
+"<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ suit ces étapes :"
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Identification of Major Precipitation Events**:"
