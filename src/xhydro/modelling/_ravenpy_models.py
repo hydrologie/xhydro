@@ -496,7 +496,8 @@ class RavenpyModel(HydrologicalModel):
     def update_config(  # noqa: C901
         self,
         *,
-        rvi: bool = False,
+        rvi_dates: bool = False,
+        rvi_commands: list[str] | None = None,
         rvt: bool = False,
         rvh: bool = False,
     ) -> None:
@@ -504,8 +505,11 @@ class RavenpyModel(HydrologicalModel):
 
         Parameters
         ----------
-        rvi : bool
+        rvi_dates : bool
             If True, update the .rvi file with the 'start_date' and 'end_date' defined in the model.
+        rvi_commands : list[str] | None
+            A list of commands to include in the .rvi file. If None, no additional commands will be added.
+            Warning: These commands will be added at the end of the .rvi file, with no checks. Use with caution.
         rvt : bool
             If True, update the .rvt file with the meteorological data and observed streamflow data defined in the model.
         rvh : bool
@@ -528,7 +532,7 @@ class RavenpyModel(HydrologicalModel):
         A backup of the original files will be created before any modifications are made.
         """
         # Update the .rvi file
-        if rvi:
+        if rvi_dates:
             # Backup the existing .rvi file
             shutil.copy(
                 self.workdir / f"{self.run_name}.rvi",
@@ -552,6 +556,14 @@ class RavenpyModel(HydrologicalModel):
 
             with (self.workdir / f"{self.run_name}.rvi").open("w") as file:
                 file.writelines(lines)
+
+        if rvi_commands is not None:
+            if not isinstance(rvi_commands, list):
+                raise ValueError("rvi_commands must be a list of strings.")
+            with (self.workdir / f"{self.run_name}.rvi").open("a") as file:
+                file.write("\n")
+                for command in rvi_commands:
+                    file.write(command + "\n")
 
         if rvt:
             if all(data is None for data in [self.meteo, self.qobs]):
@@ -1234,7 +1246,15 @@ class RavenpyModel(HydrologicalModel):
 
         with self.get_streamflow(output="all", **kwargs) as ds:
             ds = ds.rename({"q_sim": "q"})
-            ds["q"] = convert_units_to(ds["q"], "m3/s")
+            ds["q"] = convert_units_to(ds["q"], "m3 s-1")
+            ds["q"].attrs.update(
+                {
+                    "standard_name": "water_volume_transport_in_river_channel",
+                    "cell_methods": "time: mean",
+                    "long_name": "Simulated streamflow",
+                    "description": "Simulated streamflow at the outlet of the subbasin.",
+                }
+            )
 
             ds = ds.swap_dims({"nbasins": "basin_name"}).rename(
                 {"basin_name": "subbasin_id"}
