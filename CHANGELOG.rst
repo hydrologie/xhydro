@@ -15,7 +15,7 @@ New features and enhancements
 * The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.create_rv()` method has been added to the class to write the files. (:pull:`303`).
 * The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
 * The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
-* Two functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`, :pull:`345`).
+* Two new functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`, :pull:`345`).
 * A `executable` argument has been added to the `RavenpyModel` class to specify a custom path to the Raven executable. (:pull:`341`).
 * A `gridweights` argument has been added to the `RavenpyModel` class to specify a custom path to a grid weights file when using gridded meteorological data. (:pull:`344`).
 * The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
