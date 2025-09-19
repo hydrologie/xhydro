@@ -591,7 +591,7 @@ class TestRavenpyModels:
             UserWarning,
             match="Changes to the .rvh file were requested, but no output subbasins",
         ):
-            rpm.update_config(rvi=True, rvt=True, rvh=True)
+            rpm.update_config(rvi_dates=True, rvt=True, rvh=True)
 
         with (rpm.workdir / f"{rpm.run_name}.rvt").open("r") as file:
             lines = file.readlines()
@@ -973,7 +973,16 @@ class TestDistributedRavenpy:
             hru=df,
             output_subbasins="qobs",
         )
-        rpm.update_config(rvi=True, rvt=True, rvh=True)
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=[":CustomOutput DAILY AVERAGE PRECIP BY_BASIN"],
+            rvt=True,
+            rvh=True,
+        )
 
         ds2 = rpm.run(overwrite=True)
         np.testing.assert_array_equal(ds2["subbasin_id"].values, ["sub_13", "sub_17"])
+
+        assert Path(
+            rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc"
+        ).exists()

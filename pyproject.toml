@@ -167,7 +167,7 @@ values = [
 
 [tool.codespell]
 ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic,algotrithm"
-skip = ["*.po", "docs/notebooks/gis.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
+skip = ["*.po", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
