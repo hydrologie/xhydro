@@ -2,7 +2,7 @@
 Changelog
 =========
 
-v0.6.0 (Unreleased)
+v0.6.0 (2025-09-22)
 -------------------
 Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
 
