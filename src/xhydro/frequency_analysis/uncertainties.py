@@ -354,7 +354,7 @@ def calculate_quantiles_over_boostraped_groups(
     """
     if return_periods is not None:
         warnings.warn(
-            "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in a future release.",
+            "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in xHydro v0.7.0.",
             FutureWarning,
         )
         return_period = return_periods

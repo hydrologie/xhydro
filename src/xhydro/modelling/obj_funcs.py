@@ -140,7 +140,7 @@ def get_objective_function(
         if "streamflow" in qsim and "q" not in qsim:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                 FutureWarning,
             )
             qsim = qsim.streamflow
@@ -151,7 +151,7 @@ def get_objective_function(
         if "streamflow" in qobs and "q" not in qobs:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                 FutureWarning,
             )
             qobs = qobs.streamflow

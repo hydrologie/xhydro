@@ -75,7 +75,7 @@ def watershed_delineation(
     """
     if map is not None:
         warnings.warn(
-            "The `map` argument is deprecated and will be removed in a future version. Use `m` instead.",
+            "The `map` argument is deprecated and will be removed in xHydro v0.7.0. Use `m` instead.",
             FutureWarning,
         )
         if m is None:
@@ -184,7 +184,8 @@ def watershed_properties(
     if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
+            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
+            "This warning will be removed in xHydro v0.7.0.",
             FutureWarning,
         )
     if not gdf.crs:
@@ -428,7 +429,8 @@ def surface_properties(
     if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
+            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
+            "This warning will be removed in xHydro v0.7.0.",
             FutureWarning,
         )
     # Geometries are projected to make calculations more accurate
