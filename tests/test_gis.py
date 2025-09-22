@@ -43,7 +43,7 @@ class TestWatershedDelineation:
         ]
         with pytest.warns(
             FutureWarning,
-            match="argument is deprecated and will be removed in a future version.",
+            match="argument is deprecated and will be removed",
         ):
             gdf = xh.gis.watershed_delineation(map=self.m)
         np.testing.assert_allclose(

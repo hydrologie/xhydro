@@ -233,7 +233,7 @@ class SpotSetup:
                 if "streamflow" in qobs and "q" not in qobs:
                     warnings.warn(
                         "Default variable name has changed from 'streamflow' to 'q'. "
-                        "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                        "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                         FutureWarning,
                     )
                     da = qobs.streamflow
@@ -246,7 +246,7 @@ class SpotSetup:
                     if "streamflow" in ds and "q" not in ds:
                         warnings.warn(
                             "Default variable name has changed from 'streamflow' to 'q'. "
-                            "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                            "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                             FutureWarning,
                         )
                         da = ds.streamflow

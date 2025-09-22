@@ -67,7 +67,7 @@ class Hydrotel(HydrologicalModel):
     ):
         if use_defaults is not None:
             warnings.warn(
-                "The 'use_defaults' parameter is deprecated and will be ignored. It will be removed in a future version. "
+                "The 'use_defaults' parameter is deprecated and will be ignored. It will be removed in xHydro v0.7.0. "
                 "Please refer to the DemoProject in https://github.com/INRS-Modelisation-hydrologique/hydrotel "
                 "to get an idea of the configuration options to use.",
                 FutureWarning,
@@ -228,13 +228,14 @@ class Hydrotel(HydrologicalModel):
         if check_missing is not None:
             warnings.warn(
                 "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The Hydrotel executable already performs checks on the input files.",
+                "The Hydrotel executable already performs checks on the input files."
+                "This parameter will be removed in xHydro v0.7.0.",
                 FutureWarning,
             )
         if xr_open_kwargs_in is not None:
             warnings.warn(
                 "The 'xr_open_kwargs_in' parameter is deprecated and will be ignored. "
-                "It is not used anymore.",
+                "It is not used anymore and will be removed in xHydro v0.7.0.",
                 FutureWarning,
             )
 
