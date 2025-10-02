@@ -67,7 +67,7 @@ dependencies = [
 dev = [
   # Dev tools and testing
   "black ==25.9.0",
-  "blackdoc ==0.4.1",
+  "blackdoc ==0.4.3",
   "bump-my-version >=0.32.1",
   "coverage >=7.5.0",
   "flake8 >=7.1.1",
