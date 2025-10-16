@@ -171,7 +171,7 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     """
     ds = _scale_data(ds)
     df = ds.to_dataframe()
-    # Prevent a bug with pip environments where `to_dataframe` does not add the MultiIndex as data columns
+    # PCA needs the MultiIndex to be included in the dataframe columns, which is no longer the case with xarray >=2025.9.1
     if not all(c in df.columns for c in df.index.names):
         df_tmp = df.reset_index()
         df_tmp.index = df.index
