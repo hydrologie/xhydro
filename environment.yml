@@ -11,6 +11,8 @@ dependencies:
   - dask-geopandas
   - geopandas >=1.0
   - haversine >=2.8.1
+  - h5netcdf >=1.5.0
+  - h5py >=3.12.1
   - leafmap
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
   - numpy >=1.24
