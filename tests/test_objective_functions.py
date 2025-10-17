@@ -71,7 +71,8 @@ def test_obj_funcs():
 
 
 def test_objective_function_failure_data_length():
-    """Test for the objective function calculation failure mode:
+    """
+    Test for the objective function calculation failure mode:
     qobs and qsim length are different
     """
     with pytest.raises(ValueError):
@@ -83,7 +84,8 @@ def test_objective_function_failure_data_length():
 
 
 def test_objective_function_failure_mask_length():
-    """Test for the objective function calculation failure mode:
+    """
+    Test for the objective function calculation failure mode:
     qobs and mask length are different
     """
     with pytest.raises(ValueError):
@@ -96,7 +98,8 @@ def test_objective_function_failure_mask_length():
 
 
 def test_objective_function_failure_unknown_objfun():
-    """Test for the objective function calculation failure mode:
+    """
+    Test for the objective function calculation failure mode:
     Objective function is unknown
     """
     with pytest.raises(ValueError):
@@ -108,7 +111,8 @@ def test_objective_function_failure_unknown_objfun():
 
 
 def test_objective_function_failure_mask_contents():
-    """Test for the objective function calculation failure mode:
+    """
+    Test for the objective function calculation failure mode:
     Mask contains other than 0 and 1
     """
     with pytest.raises(ValueError):
@@ -121,7 +125,8 @@ def test_objective_function_failure_mask_contents():
 
 
 def test_maximizer_objfun_failure_modes_bias():
-    """Test for maximize-minimize failure mode:
+    """
+    Test for maximize-minimize failure mode:
     Use of bias objfun which is unbounded
     """
     with pytest.raises(ValueError):
@@ -129,7 +134,8 @@ def test_maximizer_objfun_failure_modes_bias():
 
 
 def test_maximizer_objfun_failure_modes_pbias():
-    """Test for maximize-minimize failure mode:
+    """
+    Test for maximize-minimize failure mode:
     Use of pbias objfun which is unbounded
     """
     with pytest.raises(ValueError):
@@ -137,7 +143,8 @@ def test_maximizer_objfun_failure_modes_pbias():
 
 
 def test_maximizer_objfun_failure_modes_volume_error():
-    """Test for maximize-minimize failure mode:
+    """
+    Test for maximize-minimize failure mode:
     Use of volume_error objfun which is unbounded
     """
     with pytest.raises(ValueError):
@@ -145,7 +152,8 @@ def test_maximizer_objfun_failure_modes_volume_error():
 
 
 def test_maximizer_objfun_failure_modes_unknown_metric():
-    """Test for maximize-minimize failure mode:
+    """
+    Test for maximize-minimize failure mode:
     Use of unknown objfun
     """
     with pytest.raises(NotImplementedError):

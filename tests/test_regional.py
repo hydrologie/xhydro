@@ -7,10 +7,11 @@ import xarray as xr
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 
+
 try:
     from lmoments3.distr import KappaGen
 except ImportError:
-    warnings.warn("lmoments3 is not installed. Please install it")
+    warnings.warn("lmoments3 is not installed. Please install it", stacklevel=2)
     KappaGen = None
 
 from xhydro.frequency_analysis.regional import (
@@ -35,7 +36,6 @@ def sample_dataset():
 
 
 class TestRegionalFrequencyAnalysis:
-
     def test_cluster_indices(self):
         clusters = np.array([0, 1, 0, 2, 1])
         expected = [0, 2]
@@ -54,9 +54,7 @@ class TestRegionalFrequencyAnalysis:
         )
         station = np.array(["020302", "020404", "020502", "020602", "020802"])
         components = [0, 1, 2]
-        data = xr.DataArray(
-            data=df, coords=[station, components], dims=["Station", "components"]
-        )
+        data = xr.DataArray(data=df, coords=[station, components], dims=["Station", "components"])
         expected = [["020404", "020602"], ["020502"], ["020302", "020802"]]
         result = get_group_from_fit(AgglomerativeClustering, {"n_clusters": 3}, data)
         # return result
@@ -100,7 +98,6 @@ class TestRegionalFrequencyAnalysis:
 
 @pytest.mark.skipif(KappaGen is None, reason="lmoments3 is not installed")
 class TestRegionalFrequencyAnalysisKappa:
-
     @pytest.fixture
     def sample_kappa3(self):
         return KappaGen()
@@ -342,45 +339,29 @@ class TestRegionalFrequencyAnalysisKappa:
         ds["id"].attrs["cf_role"] = "timeseries_id"
         return ds
 
-    def test_calc_h_z_output_structure(
-        self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
-    ):
+    def test_calc_h_z_output_structure(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert isinstance(result, xr.Dataset)
         assert "crit" in result.coords
 
-    def test_calc_h_z_dimensions(
-        self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
-    ):
-        sample_ds_groups = xr.concat(
-            [sample_ds_groups, sample_ds_groups], dim="region_id"
-        )
-        sample_ds_moments_groups = xr.concat(
-            [sample_ds_moments_groups, sample_ds_moments_groups], dim="region_id"
-        )
+    def test_calc_h_z_dimensions(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
+        sample_ds_groups = xr.concat([sample_ds_groups, sample_ds_groups], dim="region_id")
+        sample_ds_moments_groups = xr.concat([sample_ds_moments_groups, sample_ds_moments_groups], dim="region_id")
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert result.region_id.count().values == 2
 
-    def test_calc_h_z_values(
-        self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
-    ):
-        result = calc_h_z(
-            sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3, seed=42
-        )
+    def test_calc_h_z_values(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
+        result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3, seed=42)
         np.testing.assert_almost_equal(0.42279565, result.sel(crit="H").Qp)
         np.testing.assert_almost_equal(0.2568702, result.sel(crit="Z").Qp)
 
-    def test_calc_h_z_values_error(
-        self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
-    ):
+    def test_calc_h_z_values_error(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
         sample_ds_moments_groups = -sample_ds_moments_groups
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3)
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
 
-    def test_calc_h_z_nan(
-        self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3
-    ):
+    def test_calc_h_z_nan(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
         a = np.empty((1, 3, 6))
         a[:] = np.nan
         sample_ds_moments_groups["Qp"] = (["region_id", "id", "lmom"], a)
@@ -388,22 +369,12 @@ class TestRegionalFrequencyAnalysisKappa:
         assert np.isnan(result.sel(crit="H").Qp)
         assert np.isnan(result.sel(crit="Z").Qp)
 
-    def test_calculate_return_period_from_afr(
-        self, sample_ds_groups, sample_ds_moments_groups
-    ):
-        result = calculate_return_period(
-            sample_ds_groups, sample_ds_moments_groups, return_period=[100, 1000, 10000]
-        )
-        np.testing.assert_almost_equal(
-            197.83515837, result.Qp.sel(return_period=100, id="A")
-        )
-        np.testing.assert_almost_equal(
-            98.87950615, result.Qp.sel(return_period=1000, id="B")
-        )
+    def test_calculate_return_period_from_afr(self, sample_ds_groups, sample_ds_moments_groups):
+        result = calculate_return_period(sample_ds_groups, sample_ds_moments_groups, return_period=[100, 1000, 10000])
+        np.testing.assert_almost_equal(197.83515837, result.Qp.sel(return_period=100, id="A"))
+        np.testing.assert_almost_equal(98.87950615, result.Qp.sel(return_period=1000, id="B"))
 
-    def test_calculate_return_period_from_afr_with_l1(
-        self, sample_ds_groups, sample_ds_moments_groups
-    ):
+    def test_calculate_return_period_from_afr_with_l1(self, sample_ds_groups, sample_ds_moments_groups):
         l1 = sample_ds_moments_groups.sel(lmom="l1").dropna(dim="id", how="all") * 1.1
         result = calculate_return_period(
             sample_ds_groups,
@@ -411,9 +382,5 @@ class TestRegionalFrequencyAnalysisKappa:
             return_period=[100, 1000, 10000],
             l1=l1,
         )
-        np.testing.assert_almost_equal(
-            217.618674207, result.Qp.sel(return_period=100, id="A")
-        )
-        np.testing.assert_almost_equal(
-            108.767456765, result.Qp.sel(return_period=1000, id="B")
-        )
+        np.testing.assert_almost_equal(217.618674207, result.Qp.sel(return_period=100, id="A"))
+        np.testing.assert_almost_equal(108.767456765, result.Qp.sel(return_period=1000, id="B"))

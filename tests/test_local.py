@@ -90,26 +90,18 @@ class TestFit:
         )
 
         min_years = 30 if periods == ["2001", "2020"] else None
-        params = xhfa.local.fit(
-            ds, distributions=["gumbel_r"], periods=periods, min_years=min_years
-        )
+        params = xhfa.local.fit(ds, distributions=["gumbel_r"], periods=periods, min_years=min_years)
 
         if periods is None:
-            np.testing.assert_array_almost_equal(
-                params.q.squeeze(), [528.9, 129.23], decimal=2
-            )
+            np.testing.assert_array_almost_equal(params.q.squeeze(), [528.9, 129.23], decimal=2)
 
         elif isinstance(periods[0], str):
-            np.testing.assert_array_equal(
-                params.horizon, [f"{periods[0]}-{periods[1]}"]
-            )
+            np.testing.assert_array_equal(params.horizon, [f"{periods[0]}-{periods[1]}"])
             results = {
                 "1962": np.array([370.35, 12.96]),
                 "2001": np.array([np.nan, np.nan]),
             }
-            np.testing.assert_array_almost_equal(
-                params.q.squeeze(), results[periods[0]], decimal=2
-            )
+            np.testing.assert_array_almost_equal(params.q.squeeze(), results[periods[0]], decimal=2)
 
         elif periods[0] == ["2001", "2020"]:
             np.testing.assert_array_equal(params.horizon, ["2001-2020", "2041-2060"])
@@ -138,15 +130,10 @@ def test_quantiles(mode):
         rp = xhfa.local.parametric_quantiles(params, [10, 20], mode=mode)
 
         np.testing.assert_array_equal(rp.return_period, [10, 20])
-        np.testing.assert_array_equal(
-            rp.p_quantile, [0.1, 0.05] if mode == "min" else [0.9, 0.95]
-        )
+        np.testing.assert_array_equal(rp.p_quantile, [0.1, 0.05] if mode == "min" else [0.9, 0.95])
         np.testing.assert_array_equal(rp.scipy_dist, ["gumbel_r", "pearson3"])
         assert rp.q.attrs["long_name"] == "Return period"
-        assert (
-            rp.q.attrs["description"]
-            == f"Return period ({mode}) estimated with statistic distributions"
-        )
+        assert rp.q.attrs["description"] == f"Return period ({mode}) estimated with statistic distributions"
         assert rp.q.attrs["cell_methods"] == "dparams: ppf"
         assert rp.q.attrs["mode"] == mode
 
@@ -168,24 +155,15 @@ def test_criteria():
     )
     params = xhfa.local.fit(ds, distributions=["gumbel_r", "pearson3"])
     crit = xhfa.local.criteria(ds, params)
-    crit_with_otherdim = xhfa.local.criteria(
-        ds.expand_dims("otherdim"), params.expand_dims("otherdim")
-    )
-    np.testing.assert_array_almost_equal(
-        crit.q, crit_with_otherdim.q.squeeze("otherdim")
-    )
+    crit_with_otherdim = xhfa.local.criteria(ds.expand_dims("otherdim"), params.expand_dims("otherdim"))
+    np.testing.assert_array_almost_equal(crit.q, crit_with_otherdim.q.squeeze("otherdim"))
 
     np.testing.assert_array_equal(crit.scipy_dist, ["gumbel_r", "pearson3"])
     np.testing.assert_array_equal(crit.criterion, ["aic", "bic", "aicc"])
     assert crit.q.attrs["long_name"] == "Information criteria"
-    assert (
-        crit.q.attrs["description"]
-        == "Information criteria for the distribution parameters."
-    )
+    assert crit.q.attrs["description"] == "Information criteria for the distribution parameters."
     assert crit.q.attrs["scipy_dist"] == ["gumbel_r", "pearson3"]
-    assert all(
-        attr not in crit.q.attrs for attr in ["estimator", "method", "min_years"]
-    )
+    assert all(attr not in crit.q.attrs for attr in ["estimator", "method", "min_years"])
 
     np.testing.assert_array_almost_equal(
         crit.q,

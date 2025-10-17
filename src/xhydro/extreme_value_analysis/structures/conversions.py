@@ -2,6 +2,7 @@
 
 import numpy as np
 
+
 try:
     from juliacall import convert as jl_convert
 
@@ -36,9 +37,7 @@ def py_variable_to_jl_variable(py_var: Variable):
     julia.Extremes.Variable
         The converted Julia Variable object.
     """
-    return jl.Extremes.Variable(
-        py_var.name, jl_convert(jl.Vector[jl.Real], py_var.value)
-    )
+    return jl.Extremes.Variable(py_var.name, jl_convert(jl.Vector[jl.Real], py_var.value))
 
 
 def py_str_to_jl_symbol(string: str):
@@ -84,16 +83,10 @@ def py_list_to_jl_vector(py_list: list):
         return jl_convert(jl.Vector[jl.Real], py_list)
     elif all(isinstance(i, str) for i in py_list):
         return jl_convert(jl.Vector[jl.String], py_list)
-    elif not (
-        all(isinstance(i, float) or isinstance(i, int) for i in py_list)
-    ) and not (all(isinstance(i, str) for i in py_list)):
-        raise ValueError(
-            f" Cannot convert unsupported type {type(py_list)} to julia vector: all values are not strings or numbers"
-        )
+    elif not (all(isinstance(i, float) or isinstance(i, int) for i in py_list)) and not (all(isinstance(i, str) for i in py_list)):
+        raise ValueError(f" Cannot convert unsupported type {type(py_list)} to julia vector: all values are not strings or numbers")
     else:
-        raise ValueError(
-            f" Cannot convert unsupported type {type(py_list)} to julia vector"
-        )
+        raise ValueError(f" Cannot convert unsupported type {type(py_list)} to julia vector")
 
 
 def jl_vector_to_py_list(jl_vector) -> list:

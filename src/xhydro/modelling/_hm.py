@@ -6,14 +6,16 @@ import xarray as xr
 
 
 class HydrologicalModel(ABC):
-    """Hydrological model class.
+    """
+    Hydrological model class.
 
     This class is a wrapper for the different hydrological models that can be used in xhydro.
     """
 
     @abstractmethod
     def run(self, **kwargs) -> xr.Dataset:
-        r"""Run the hydrological model.
+        r"""
+        Run the hydrological model.
 
         Parameters
         ----------
@@ -29,7 +31,8 @@ class HydrologicalModel(ABC):
 
     @abstractmethod
     def get_inputs(self, **kwargs) -> xr.Dataset:
-        r"""Get the input data for the hydrological model.
+        r"""
+        Get the input data for the hydrological model.
 
         Parameters
         ----------
@@ -45,7 +48,8 @@ class HydrologicalModel(ABC):
 
     @abstractmethod
     def get_streamflow(self, **kwargs) -> xr.Dataset:
-        r"""Get the simulated streamflow data from the hydrological model.
+        r"""
+        Get the simulated streamflow data from the hydrological model.
 
         Parameters
         ----------
