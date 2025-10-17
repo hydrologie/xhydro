@@ -2,6 +2,14 @@
 Changelog
 =========
 
+v0.7.0 (Unreleased)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
+
 v0.6.0 (2025-09-22)
 -------------------
 Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
