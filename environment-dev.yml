@@ -12,7 +12,7 @@ dependencies:
   - haversine >=2.8.1
   - leafmap
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
-  - numpy >=1.24
+  - numpy >=1.25
   - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0

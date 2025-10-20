@@ -238,7 +238,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
-          disable-sudo: true
+          disable-sudo: false
           egress-policy: audit
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -249,6 +249,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      - name: Install HDF5
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev
       - name: Install CI libraries
         run: |
           python -m pip install --require-hashes -r CI/requirements_ci.txt

@@ -2,6 +2,18 @@
 Changelog
 =========
 
+v0.7.0 (Unreleased)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated minimum `numpy` to v1.25+ and adjusted `tox` configuration to recompile the `h5py` library in order to deal with compatibility problems from pre-compiled wheels. (:pull:`357`).
+
 v0.6.0 (2025-09-22)
 -------------------
 Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).

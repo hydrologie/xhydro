@@ -155,6 +155,11 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     """
     ds = _scale_data(ds)
     df = ds.to_dataframe()
+    # PCA needs the MultiIndex to be included in the dataframe columns, which is no longer the case with xarray >=2025.9.1
+    if not all(c in df.columns for c in df.index.names):
+        df_tmp = df.reset_index()
+        df_tmp.index = df.index
+        df = df_tmp
     pca = PCA(**kwargs)
     obj_pca = pca.fit(df)
     data_pca = pca.transform(df)
