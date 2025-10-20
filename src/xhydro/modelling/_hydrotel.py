@@ -263,7 +263,23 @@ class Hydrotel(HydrologicalModel):
             )
         )
         run_options = [*run_options, "-t 1"] if "-t" not in run_options else run_options
-        call = [self.executable, str(self.config_files["project"])] + run_options
+        # Hydrotel cares about the order of the arguments
+        call = [
+            self.executable,
+            *[
+                r
+                for r in run_options
+                if any(opt in r for opt in ["-i", "-g", "-n", "-u", "-v"])
+            ],
+            str(self.config_files["project"]),
+            *[
+                r
+                for r in run_options
+                if any(opt in r for opt in ["-c", "-d", "-r", "-s"])
+            ],
+            *[r for r in run_options if any(opt in r for opt in ["-t"])],
+            *[r for r in run_options if any(opt in r for opt in ["-l"])],
+        ]
 
         if dry_run:
             return " ".join(call)
@@ -272,6 +288,7 @@ class Hydrotel(HydrologicalModel):
         subprocess.run(  # noqa: S603
             call,
             check=True,
+            stdin=subprocess.DEVNULL,
         )
 
         # Standardize the outputs
@@ -408,8 +425,10 @@ class Hydrotel(HydrologicalModel):
             ds["q"].attrs[
                 "standard_name"
             ] = "outgoing_water_volume_transport_along_river_channel"
-            ds["q"].attrs["long_name"] = "Streamflow"
-            ds["q"].attrs["description"] = "Streamflow at the outlet of the river reach"
+            ds["q"].attrs["long_name"] = "Simulated streamflow"
+            ds["q"].attrs[
+                "description"
+            ] = "Simulated streamflow at the outlet of the subbasin."
             ds["q"] = xc.units.convert_units_to(ds["q"], "m3 s-1")
             for attr in orig_attrs:
                 ds["q"].attrs[attr] = orig_attrs[attr]
@@ -428,10 +447,10 @@ class Hydrotel(HydrologicalModel):
                 stdout = "HYDROTEL version unspecified"
             else:
                 stdout = subprocess.check_output(  # noqa: S603
-                    [self.executable],
+                    [self.executable], stdin=subprocess.DEVNULL, text=True
                 )
             ds.attrs["Hydrotel_version"] = (
-                str(stdout).split("HYDROTEL ")[1].split("\\n")[0]
+                str(stdout).split("HYDROTEL ")[1].split("\n")[0]
             )
             ds.attrs["Hydrotel_config_version"] = self.simulation_config[
                 "SIMULATION HYDROTEL VERSION"
