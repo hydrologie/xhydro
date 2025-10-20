@@ -30,6 +30,7 @@ This module is designed for hydrologists and data scientists working with region
 import math
 import warnings
 from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -318,10 +319,13 @@ def calc_h_z(
 
     ds_h = _append_ds_vars_names(ds_h, "_H")
     ds = _combine_h_z(xr.merge([z_score, ds_h]))
-    ds["crit"].attrs["description"] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    description = (
+        f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    )
+    ds["crit"].attrs["description"] = description
     ds["crit"].attrs["long_name"] = "Score"
     for v in ds.var():
-        ds[v].attrs["description"] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+        ds[v].attrs["description"] = description
     return ds
 
 
@@ -332,11 +336,11 @@ def _calculate_gev_tau4(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset) 
     k = _calc_k(lambda_r_2, lambda_r_3)
 
     # Hosking et Wallis, eq. A53
-    tau4 = (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k)
+    tau4 = cast(xr.Dataset, (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k))
     return tau4
 
 
-def _heterogeneite_et_score_z(kap: Callable, n: np.array, t: np.array, t3: np.array, t4: np.array, seed=None) -> tuple:
+def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: np.ndarray, t4: np.ndarray, seed=None) -> tuple:
     # We remove nan or 0 length
     # If not enough values to calculate some moments, other moments are removed as well
     bool_maks = (n != 0) & (~np.isnan(t)) & (~np.isnan(t3)) & (~np.isnan(t4))
@@ -504,7 +508,7 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     new_ds = xr.Dataset()
     for v in ds:
         if "_Z" in v:
-            new_ds[v.removesuffix("_Z")] = xr.concat([ds[v.replace("_Z", "_H")], ds[v]], dim="crit").assign_coords(crit=["H", "Z"])
+            new_ds[str(v).removesuffix("_Z")] = xr.concat([ds[str(v).replace("_Z", "_H")], ds[v]], dim="crit").assign_coords(crit=["H", "Z"])
     return new_ds
 
 
@@ -548,7 +552,7 @@ def calculate_rp_from_afr(
     warnings.warn(
         "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.", FutureWarning, stacklevel=2
     )
-    return calculate_return_period(ds_regions, ds_moments_regions, return_period, l1, rp)
+    return calculate_return_period(ds_regions, ds_moments_regions, return_period=return_period, l1=l1, rp=rp)
 
 
 def calculate_return_period(
