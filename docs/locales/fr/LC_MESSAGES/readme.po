@@ -29,7 +29,6 @@ msgid "Versions"
 msgstr "Versions"
 
 #: ../../../README.rst:6
-#, fuzzy
 msgid "|pypi| |conda|"
 msgstr "|pypi| |conda|"
 

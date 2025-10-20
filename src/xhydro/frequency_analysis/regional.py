@@ -318,14 +318,10 @@ def calc_h_z(
 
     ds_h = _append_ds_vars_names(ds_h, "_H")
     ds = _combine_h_z(xr.merge([z_score, ds_h]))
-    ds["crit"].attrs["description"] = (
-        f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
-    )
+    ds["crit"].attrs["description"] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
     ds["crit"].attrs["long_name"] = "Score"
     for v in ds.var():
-        ds[v].attrs["description"] = (
-            f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
-        )
+        ds[v].attrs["description"] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
     return ds
 
 
