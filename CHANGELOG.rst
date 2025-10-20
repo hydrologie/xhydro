@@ -13,6 +13,12 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Updated minimum `numpy` to v1.25+ and adjusted `tox` configuration to recompile the `h5py` library in order to deal with compatibility problems from pre-compiled wheels. (:pull:`357`).
+* Updated the cookiecutter template to the latest commit. (:pull:`358`):
+    * `black`, `blackdoc` and `isort` have been dropped for modern `ruff`.
+    * Some development dependencies have been updated to their latest versions.
+    * Contributor Covenant Agreement has been updated to v3.0.
+    * License metadata now follows `PEP 639 <https://peps.python.org/pep-0639/>`_ conventions.
+    * Linting hooks are slightly more strict.
 
 v0.6.0 (2025-09-22)
 -------------------
