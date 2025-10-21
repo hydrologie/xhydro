@@ -169,9 +169,9 @@ class TestHydrotel:
         assert set(ds.dims) == {"time", "subbasin_id"}
         correct_attrs = {
             "units": ("m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"),
-            "description": "Streamflow at the outlet of the river reach",
+            "description": "Simulated streamflow at the outlet of the subbasin.",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
-            "long_name": "Streamflow",
+            "long_name": "Simulated streamflow",
             "_original_name": "debit_aval",
             "_original_description": "Debit en aval du troncon",
         }
@@ -258,7 +258,7 @@ class TestHydrotel:
                         xr_open_kwargs_in=xr_open_kwargs_in,
                     )
                 assert len(w) == 2
-                assert command == (f"hydrotel {ht.config_files['project']} -t 10 -c -s")
+                assert command == (f"hydrotel {ht.config_files['project']} -c -s -t 10")
             elif test == "raise":
                 with pytest.raises(
                     ValueError,

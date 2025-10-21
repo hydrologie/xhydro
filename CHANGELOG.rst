@@ -9,6 +9,8 @@ Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor
 Bug fixes
 ^^^^^^^^^
 * Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
+* Fixed a bug where the process would hang indefinitely on Windows systems when calling hydrological models through command line arguments. (:pull:`358`).
+* The long_name and description attributes of the `q` variable in Hydrotel outputs have been slightly modified to match `RavenPy` outputs. (:pull:`358`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^

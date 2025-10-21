@@ -685,7 +685,7 @@ class RavenpyModel(HydrologicalModel):
             run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
         else:
             executable = str(Path(self.executable))
-            if "raven" not in executable:
+            if "raven" not in executable.lower():
                 raise ValueError("The executable command does not seem to be a valid Raven command. Please check the 'executable' parameter.")
 
             # Since we bypassed RavenPy, we need to clean up the output directory
@@ -700,6 +700,7 @@ class RavenpyModel(HydrologicalModel):
                     self.workdir / "output",
                 ],
                 check=True,
+                stdin=subprocess.DEVNULL,
             )
 
         self._standardise_outputs()
@@ -768,11 +769,10 @@ class RavenpyModel(HydrologicalModel):
         if output == "path":
             return Path(outputs.files["hydrograph"])
         else:
-            with xr.open_dataset(outputs.files["hydrograph"], **kwargs) as ds:
-                if output == "q":
-                    return ds[["q"]]
-                elif output == "all":
-                    return ds
+            if output == "q":
+                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
+            else:
+                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)
 
     def _read_qobs(self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q") -> None:
         """Read the observed streamflow data from a NetCDF file and update the .qobs properties of the RavenPy model."""

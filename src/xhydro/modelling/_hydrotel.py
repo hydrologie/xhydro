@@ -208,7 +208,7 @@ class Hydrotel(HydrologicalModel):
         if check_missing is not None:
             warnings.warn(
                 "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The Hydrotel executable already performs checks on the input files."
+                "The Hydrotel executable already performs checks on the input files. "
                 "This parameter will be removed in xHydro v0.7.0.",
                 FutureWarning,
                 stacklevel=2,
@@ -234,10 +234,26 @@ class Hydrotel(HydrologicalModel):
 
         # Prepare the input call
         run_options = run_options or []
+
         # Unwrap elements that contain spaces
         run_options = list(itertools.chain.from_iterable([a.split() if isinstance(a, str) else a for a in run_options]))
-        run_options = [*run_options, "-t 1"] if "-t" not in run_options else run_options
-        call = [self.executable, str(self.config_files["project"])] + run_options
+
+        # If the '-t' flag is supplied, merge the next item in the list with it
+        if "-t" in run_options:
+            t_index = run_options.index("-t")
+            run_options[t_index : t_index + 2] = [" ".join(run_options[t_index : t_index + 2])]
+        else:
+            run_options.append("-t 1")
+
+        # Hydrotel cares about the order of the arguments
+        call = [
+            self.executable,
+            *[r for r in run_options if any(opt in r for opt in ["-i", "-g", "-n", "-u", "-v"])],
+            str(self.config_files["project"]),
+            *[r for r in run_options if any(opt in r for opt in ["-c", "-d", "-r", "-s"])],
+            *[r for r in run_options if any(opt in r for opt in ["-t"])],
+            *[r for r in run_options if any(opt in r for opt in ["-l"])],
+        ]
 
         if dry_run:
             return " ".join(call)
@@ -246,6 +262,7 @@ class Hydrotel(HydrologicalModel):
         subprocess.run(  # noqa: S603
             call,
             check=True,
+            stdin=subprocess.DEVNULL,
         )
 
         # Standardize the outputs
@@ -368,8 +385,8 @@ class Hydrotel(HydrologicalModel):
                 if attr in ds["q"].attrs:
                     orig_attrs[f"_original_{attr}"] = ds["q"].attrs[attr]
             ds["q"].attrs["standard_name"] = "outgoing_water_volume_transport_along_river_channel"
-            ds["q"].attrs["long_name"] = "Streamflow"
-            ds["q"].attrs["description"] = "Streamflow at the outlet of the river reach"
+            ds["q"].attrs["long_name"] = "Simulated streamflow"
+            ds["q"].attrs["description"] = "Simulated streamflow at the outlet of the subbasin."
             ds["q"] = xc.units.convert_units_to(ds["q"], "m3 s-1")
             for attr in orig_attrs:
                 ds["q"].attrs[attr] = orig_attrs[attr]
@@ -386,7 +403,7 @@ class Hydrotel(HydrologicalModel):
                 stdout = "HYDROTEL version unspecified"
             else:
                 stdout = subprocess.check_output(  # noqa: S603
-                    [self.executable],
+                    [self.executable], stdin=subprocess.DEVNULL, text=True
                 )
             ds.attrs["Hydrotel_version"] = str(stdout).split("HYDROTEL ")[1].split("\\n")[0]
             ds.attrs["Hydrotel_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
