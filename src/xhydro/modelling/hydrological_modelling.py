@@ -18,11 +18,13 @@ from xscen.utils import change_units, clean_up, stack_drop_nans
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
 
+
 __all__ = ["format_input", "get_hydrological_model_inputs", "hydrological_model"]
 
 
 def hydrological_model(model_config):
-    """Initialize an instance of a hydrological model.
+    """
+    Initialize an instance of a hydrological model.
 
     Parameters
     ----------
@@ -61,10 +63,9 @@ def hydrological_model(model_config):
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
 
-def get_hydrological_model_inputs(
-    model_name, required_only: bool = False
-) -> tuple[dict, str]:
-    """Get the required inputs for a given hydrological model.
+def get_hydrological_model_inputs(model_name, required_only: bool = False) -> tuple[dict, str]:
+    """
+    Get the required inputs for a given hydrological model.
 
     Parameters
     ----------
@@ -98,11 +99,7 @@ def get_hydrological_model_inputs(
 
     all_config = inspect.getfullargspec(model.__init__).annotations
     if required_only:
-        all_config = {
-            k: v
-            for k, v in all_config.items()
-            if k in inspect.getfullargspec(model.__init__).args
-        }
+        all_config = {k: v for k, v in all_config.items() if k in inspect.getfullargspec(model.__init__).args}
 
     # Add the model name to the configuration
     all_config = {"model_name": model_name, **all_config}
@@ -117,7 +114,8 @@ def format_input(  # noqa: C901
     save_as: str | PathLike | None = None,
     **kwargs,
 ) -> tuple[xr.Dataset, dict]:
-    r"""Reformat CF-compliant meteorological data for use in hydrological models. See the "Notes" section for important details.
+    r"""
+    Reformat CF-compliant meteorological data for use in hydrological models. See the "Notes" section for important details.
 
     Parameters
     ----------
@@ -254,20 +252,18 @@ def format_input(  # noqa: C901
     other_vars = [v for v in ds.data_vars if v not in variables]
     if len(other_vars) > 0:
         warnings.warn(
-            f"The dataset contains the following variables that are not recognized: {other_vars}. These variables will be ignored."
+            f"The dataset contains the following variables that are not recognized: {other_vars}. These variables will be ignored.", stacklevel=2
         )
 
     # Check if the dataset contains the required variables
     required_vars = ["time"]
     if model in ["Raven"]:
         # Spatial coordinates can only be missing if the dataset is a single time series
-        if (
-            any(v not in ds for v in ["longitude", "latitude", "elevation"])
-            and len(ds.squeeze().dims) == 1
-        ):
+        if any(v not in ds for v in ["longitude", "latitude", "elevation"]) and len(ds.squeeze().dims) == 1:
             warnings.warn(
                 "The dataset is missing one or many of: 'longitude', 'latitude', or 'elevation'. They will need to be added "
-                "manually using the 'meteo_station_properties' argument in the model configuration."
+                "manually using the 'meteo_station_properties' argument in the model configuration.",
+                stacklevel=2,
             )
         else:
             required_vars.extend(["longitude", "latitude", "elevation"])
@@ -278,38 +274,28 @@ def format_input(  # noqa: C901
         if "tas" in ds:
             required_vars.extend(["tas"])
         if not all(v in ds for v in ["tasmax", "tasmin"]) and "tas" not in ds:
-            raise ValueError(
-                "The dataset is missing the required variables for Raven: 'tasmax/tasmin' or 'tas'."
-            )
+            raise ValueError("The dataset is missing the required variables for Raven: 'tasmax/tasmin' or 'tas'.")
         # Precipitation could be either pr or rainfall/snowfall
         if "pr" in ds:
             required_vars.extend(["pr"])
         if all(v in ds for v in ["prra", "prsn"]):
             required_vars.extend(["prra", "prsn"])
         if not all(v in ds for v in ["prra", "prsn"]) and "pr" not in ds:
-            raise ValueError(
-                "The dataset is missing the required variables for Raven: 'pr' or 'prra/prsn'."
-            )
+            raise ValueError("The dataset is missing the required variables for Raven: 'pr' or 'prra/prsn'.")
 
-        if all(v in ds for v in ["prra", "prsn", "pr"]) or all(
-            v in ds for v in ["tasmax", "tasmin", "tas"]
-        ):
+        if all(v in ds for v in ["prra", "prsn", "pr"]) or all(v in ds for v in ["tasmax", "tasmin", "tas"]):
             warnings.warn(
                 "The dataset contains multiple variables for precipitation or temperature. "
-                "Please ensure that only the correct variables are used in 'data_type' and 'alt_names_meteo'."
+                "Please ensure that only the correct variables are used in 'data_type' and 'alt_names_meteo'.",
+                stacklevel=2,
             )
 
     elif model == "Hydrotel":
-        required_vars.extend(
-            ["longitude", "latitude", "elevation", "tasmax", "tasmin", "pr"]
-        )
+        required_vars.extend(["longitude", "latitude", "elevation", "tasmax", "tasmin", "pr"])
 
     if not all(v in ds for v in required_vars):
         missing = set(required_vars).difference(set(ds.variables))
-        raise ValueError(
-            f"The dataset is missing the following required variables for '{model}': "
-            f"{missing}."
-        )
+        raise ValueError(f"The dataset is missing the following required variables for '{model}': {missing}.")
 
     # Convert units
     # Precipitation first, since it is more complex
@@ -320,17 +306,12 @@ def format_input(  # noqa: C901
     for pr in {"pr", "prra", "prsn"}.intersection(ds.variables):
         if _is_rate(ds[pr].attrs.get("units", "")):
             ds[pr] = xc.units.rate2amount(ds[pr])
-        if (
-            pr == "prsn"
-            and xc.core.units.str2pint(
-                ds[pr].attrs.get("units", "")
-            ).dimensionality.get("[mass]", 0)
-            > 0
-        ):
+        if pr == "prsn" and xc.core.units.str2pint(ds[pr].attrs.get("units", "")).dimensionality.get("[mass]", 0) > 0:
             warnings.warn(
                 "The snowfall units contain mass. They will be converted to volume using the density of water (1000 kg/m³),"
                 " which is correct if the data is the liquid flux of the solid phase of precipitation (i.e. already in water equivalent). "
-                "If your data is anything else, please convert it to water equivalent before using this function."
+                "If your data is anything else, please convert it to water equivalent before using this function.",
+                stacklevel=2,
             )
         ds[pr] = xc.units.convert_units_to(ds[pr], "mm", context="hydro")
 
@@ -341,9 +322,7 @@ def format_input(  # noqa: C901
     for t in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
         variables_and_units[t] = "degC"
     ds = change_units(ds, variables_and_units)
-    ds = change_units(
-        ds, variables_and_units
-    )  # FIXME: Until xscen>=0.13, run twice to ensure all variables have the exact units requested
+    ds = change_units(ds, variables_and_units)  # FIXME: Until xscen>=0.13, run twice to ensure all variables have the exact units requested
 
     # Convert calendar
     if convert_calendar_missing is not False and ds.time.dt.calendar not in [
@@ -366,14 +345,11 @@ def format_input(  # noqa: C901
         else:
             missing_by_var = None
             convert_calendar_kwargs["missing"] = convert_calendar_missing
-            if (
-                ds.time.dt.calendar
-                not in ["standard", "gregorian", "proleptic_gregorian"]
-                and convert_calendar_missing is np.nan
-            ):
+            if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"] and convert_calendar_missing is np.nan:
                 warnings.warn(
                     f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
-                    f"NaNs will need to be filled manually before running Hydrotel or Raven."
+                    f"NaNs will need to be filled manually before running Hydrotel or Raven.",
+                    stacklevel=2,
                 )
 
         ds = clean_up(
@@ -389,8 +365,7 @@ def format_input(  # noqa: C901
         # Hydrotel requires the calendar to be "standard"
         if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"]:
             raise ValueError(
-                f"The calendar '{ds.time.dt.calendar}' is not supported by Hydrotel. "
-                "Please convert it to 'standard' before running the model."
+                f"The calendar '{ds.time.dt.calendar}' is not supported by Hydrotel. Please convert it to 'standard' before running the model."
             )
 
     # Ensure that the spatial coordinates are recognized by cf_xarray (primarily for RavenPy, but useful anyway)
@@ -421,24 +396,20 @@ def format_input(  # noqa: C901
         ds = ds.transpose("station_id", "time")
 
     # Case 2: Time series with a station dimension
-    elif (
-        ds.cf.axes.get("X") is None and ds.cf.cf_roles.get("timeseries_id") is not None
-    ) or len(ds.squeeze().dims) == 2:
+    elif (ds.cf.axes.get("X") is None and ds.cf.cf_roles.get("timeseries_id") is not None) or len(ds.squeeze().dims) == 2:
         station_d = ds.cf.cf_roles.get("timeseries_id")
         if station_d is None:
             station_d = list(set(ds.squeeze().dims).difference({"time"}))
             warnings.warn(
-                f"The dataset does not contain a dimension with the cf_role 'timeseries_id'. "
-                f"Using '{station_d}' as the station dimension.",
+                f"The dataset does not contain a dimension with the cf_role 'timeseries_id'. Using '{station_d}' as the station dimension.",
                 UserWarning,
+                stacklevel=2,
             )
         station_d = station_d[0]
 
         # Format the dataset to have an easier matching with Raven
         ds = ds.rename({station_d: "station_id"})
-        ds["station_id"] = ds["station_id"].astype(
-            str
-        )  # Raven needs the station dimension to be a string
+        ds["station_id"] = ds["station_id"].astype(str)  # Raven needs the station dimension to be a string
         ds["station_id"].attrs["cf_role"] = "timeseries_id"
 
         # Reorder dimensions to match Raven's expectations for .rvt (station, t)
@@ -458,9 +429,7 @@ def format_input(  # noqa: C901
                 y_name = [d for d in ds.dims if d in ["lat", "latitude", "y", "rlat"]]
                 ds[y_name[0]].attrs["axis"] = "Y"
             if x_name is None or y_name is None:
-                raise ValueError(
-                    "The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined."
-                )
+                raise ValueError("The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined.")
 
         if model == "Hydrotel":
             # Hydrotel is faster with 1D time series
@@ -470,9 +439,7 @@ def format_input(  # noqa: C901
             ds = stack_drop_nans(ds, mask=mask, new_dim="station_id")
 
             # Add station ID
-            ds = ds.assign_coords(
-                station_id=("station_id", np.arange(len(ds.station_id)))
-            )
+            ds = ds.assign_coords(station_id=("station_id", np.arange(len(ds.station_id))))
             ds["station_id"].attrs = {
                 "cf_role": "timeseries_id",
             }
@@ -510,11 +477,7 @@ def format_input(  # noqa: C901
     if model == "Hydrotel":
         # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
         # We need to convert the time variable to a 1D array of integers to prevent xarray from trying to convert it to a datetime64 array
-        new_time = (
-            (ds["time"].values - np.datetime64("1970-01-01 00:00:00"))
-            .astype("timedelta64[D]")
-            .astype(int)
-        )
+        new_time = (ds["time"].values - np.datetime64("1970-01-01 00:00:00")).astype("timedelta64[D]").astype(int)
         ds["time"] = xr.DataArray(
             new_time,
             dims="time",
@@ -569,17 +532,11 @@ def format_input(  # noqa: C901
     return ds, cfg
 
 
-def _detect_variable(
-    ds: xr.Dataset, attributes: dict, names: list, return_ds: bool = False
-) -> xr.Dataset | str:
+def _detect_variable(ds: xr.Dataset, attributes: dict, names: list, return_ds: bool = False) -> xr.Dataset | str:
     """Find a variable in the dataset based on its attributes or name."""
     out = []
     # Search for variables based on attributes
-    [
-        out.append(v)
-        for v in list(ds.variables.keys())
-        if all(re.fullmatch(attributes[a], ds[v].attrs.get(a, "")) for a in attributes)
-    ]
+    [out.append(v) for v in list(ds.variables.keys()) if all(re.fullmatch(attributes[a], ds[v].attrs.get(a, "")) for a in attributes)]
     # Search for variables based on name
     [out.append(v) for v in names if v in ds.variables]
 

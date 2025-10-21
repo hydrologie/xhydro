@@ -7,7 +7,7 @@ import xhydro as xh
 
 # Smoke test for xscen functions that are imported into xhydro
 def test_xscen_imported():
-    assert callable(getattr(xh.indicators, "compute_indicators"))
+    assert callable(xh.indicators.compute_indicators)
 
 
 class TestComputeVolume:
@@ -80,9 +80,7 @@ class TestGetYearlyOp:
             )
             np.testing.assert_array_equal(
                 out.q_max_winterdate,
-                np.add(
-                    np.array([365 + 59, 365 + 59, 365]), np.array([0, 365, 365 * 2])
-                ),
+                np.add(np.array([365 + 59, 365 + 59, 365]), np.array([0, 365, 365 * 2])),
             )
             np.testing.assert_array_equal(out.q_max_winterdoy, out.q_max_winterdate)
             np.testing.assert_array_equal(out.q_max_winterdjf, out.q_max_winterdate)
@@ -121,9 +119,7 @@ class TestGetYearlyOp:
         out = xh.indicators.get_yearly_op(self.ds, op="max", window=2)
 
         assert all(["q2" in v for v in out.data_vars])
-        np.testing.assert_array_equal(
-            out.q2_max_annual, np.array([364.5, 729.5, 1094.5])
-        )
+        np.testing.assert_array_equal(out.q2_max_annual, np.array([364.5, 729.5, 1094.5]))
 
     def test_sum(self):
         ds = timeseries(
@@ -134,21 +130,15 @@ class TestGetYearlyOp:
             as_dataset=True,
         )
         ds["volume"] = xh.indicators.compute_volume(ds.q)
-        ds["volume"] = ds["volume"].where(
-            ~((ds.time.dt.month == 1) & (ds.time.dt.day == 3))
-        )
+        ds["volume"] = ds["volume"].where(~((ds.time.dt.month == 1) & (ds.time.dt.day == 3)))
 
         timeargs = {
             "annual": {},
             "winterdate": {"date_bounds": ["12-01", "02-28"], "freq": "YS-DEC"},
             "summer": {"doy_bounds": [200, 300]},
         }
-        out_sum = xh.indicators.get_yearly_op(
-            ds, input_var="volume", op="sum", timeargs=timeargs
-        )
-        out_interp = xh.indicators.get_yearly_op(
-            ds, input_var="volume", op="sum", timeargs=timeargs, interpolate_na=True
-        )
+        out_sum = xh.indicators.get_yearly_op(ds, input_var="volume", op="sum", timeargs=timeargs)
+        out_interp = xh.indicators.get_yearly_op(ds, input_var="volume", op="sum", timeargs=timeargs, interpolate_na=True)
 
         ans = {
             "annual": np.array(
@@ -167,12 +157,7 @@ class TestGetYearlyOp:
             ),
             "winterdate": np.array(
                 [
-                    np.sum(
-                        np.concatenate(
-                            (np.arange(335, 365 + 1), np.arange(1 + 365, 59 + 365 + 1))
-                        )
-                    )
-                    * 86400.0,
+                    np.sum(np.concatenate((np.arange(335, 365 + 1), np.arange(1 + 365, 59 + 365 + 1)))) * 86400.0,
                     np.sum(
                         np.concatenate(
                             (
@@ -188,14 +173,10 @@ class TestGetYearlyOp:
         }
 
         assert all(["volume" in v for v in out_interp.data_vars])
-        np.testing.assert_array_equal(
-            out_interp.volume_sum_summer, out_sum.volume_sum_summer
-        )
+        np.testing.assert_array_equal(out_interp.volume_sum_summer, out_sum.volume_sum_summer)
         np.testing.assert_array_equal(out_interp.volume_sum_annual, ans["annual"])
         np.testing.assert_array_equal(out_interp.volume_sum_summer, ans["summer"])
-        np.testing.assert_array_equal(
-            out_interp.volume_sum_winterdate, ans["winterdate"]
-        )
+        np.testing.assert_array_equal(out_interp.volume_sum_winterdate, ans["winterdate"])
 
         np.testing.assert_array_equal(
             out_sum.volume_sum_annual,
@@ -213,9 +194,7 @@ class TestGetYearlyOp:
         with pytest.raises(ValueError, match="Cannot use a rolling window"):
             xh.indicators.get_yearly_op(self.ds, op="sum", window=2)
         with pytest.raises(ValueError, match="Frequency D is not supported"):
-            xh.indicators.get_yearly_op(
-                self.ds, op="max", timeargs={"annual": {"freq": "D"}}
-            )
+            xh.indicators.get_yearly_op(self.ds, op="max", timeargs={"annual": {"freq": "D"}})
         with pytest.raises(ValueError, match="Only one indexer"):
             xh.indicators.get_yearly_op(
                 self.ds,
@@ -223,9 +202,7 @@ class TestGetYearlyOp:
                 timeargs={"annual": {"season": ["DJF"], "doy_bounds": [200, 300]}},
             )
         with pytest.warns(UserWarning, match="The frequency is not YS-DEC"):
-            xh.indicators.get_yearly_op(
-                self.ds, op="max", timeargs={"annual": {"season": ["DJF"]}}
-            )
+            xh.indicators.get_yearly_op(self.ds, op="max", timeargs={"annual": {"season": ["DJF"]}})
         with pytest.warns(UserWarning, match="The bounds wrap around the year"):
             xh.indicators.get_yearly_op(
                 self.ds,
@@ -236,7 +213,5 @@ class TestGetYearlyOp:
             xh.indicators.get_yearly_op(
                 self.ds,
                 op="max",
-                timeargs={
-                    "annual": {"date_bounds": ["06-01", "04-30"], "freq": "YS-DEC"}
-                },
+                timeargs={"annual": {"date_bounds": ["06-01", "04-30"], "freq": "YS-DEC"}},
             )

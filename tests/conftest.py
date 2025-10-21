@@ -32,9 +32,7 @@ def deveraux(threadsafe_data_dir, worker_id) -> pooch.Pooch:
     return _deveraux(
         repo=TESTDATA_REPO_URL,
         branch=TESTDATA_BRANCH,
-        cache_dir=(
-            TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir
-        ),
+        cache_dir=(TESTDATA_CACHE_DIR if worker_id == "master" else threadsafe_data_dir),
     )
 
 
@@ -103,7 +101,6 @@ def era5_example(nimbus):
 
 @pytest.fixture(scope="session")
 def oi_data(deveraux):
-
     # Get data with pooch
     oi_data = "optimal_interpolation/OI_data.zip"
     test_data_path = deveraux.fetch(oi_data, pooch.Unzip())
@@ -112,21 +109,13 @@ def oi_data(deveraux):
     # Correct files to get them into the correct shape.
     df = pd.read_csv(common / "Info_Station.csv", sep=None, dtype=str, engine="python")
     qobs = xr.open_dataset(common / "A20_HYDOBS_TEST.nc")
-    qobs = qobs.assign(
-        {"centroid_lat": ("station", df["Latitude Centroide BV"].astype(np.float32))}
-    )
-    qobs = qobs.assign(
-        {"centroid_lon": ("station", df["Longitude Centroide BV"].astype(np.float32))}
-    )
+    qobs = qobs.assign({"centroid_lat": ("station", df["Latitude Centroide BV"].astype(np.float32))})
+    qobs = qobs.assign({"centroid_lon": ("station", df["Longitude Centroide BV"].astype(np.float32))})
     qobs = qobs.assign({"classement": ("station", df["Classement"].astype(np.float32))})
-    qobs = qobs.assign(
-        {"station_id": ("station", qobs["station_id"].values.astype(str))}
-    )
+    qobs = qobs.assign({"station_id": ("station", qobs["station_id"].values.astype(str))})
     qobs = qobs.assign({"streamflow": (("station", "time"), qobs["Dis"].values)})
 
-    df = pd.read_csv(
-        common / "Correspondance_Station.csv", sep=None, dtype=str, engine="python"
-    )
+    df = pd.read_csv(common / "Correspondance_Station.csv", sep=None, dtype=str, engine="python")
     station_correspondence = xr.Dataset(
         {
             "reach_id": ("station", df["troncon_id"]),
@@ -135,26 +124,14 @@ def oi_data(deveraux):
     )
 
     qsim = xr.open_dataset(common / "A20_HYDREP_TEST.nc")
-    qsim = qsim.assign(
-        {"station_id": ("station", qsim["station_id"].values.astype(str))}
-    )
+    qsim = qsim.assign({"station_id": ("station", qsim["station_id"].values.astype(str))})
     qsim = qsim.assign({"streamflow": (("station", "time"), qsim["Dis"].values)})
-    qsim["station_id"].values[
-        143
-    ] = "SAGU99999"  # Forcing to change due to double value wtf.
-    qsim["station_id"].values[
-        7
-    ] = "BRKN99999"  # Forcing to change due to double value wtf.
+    qsim["station_id"].values[143] = "SAGU99999"  # Forcing to change due to double value wtf.
+    qsim["station_id"].values[7] = "BRKN99999"  # Forcing to change due to double value wtf.
 
-    flow_l1o = xr.open_dataset(
-        common / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc"
-    )
-    flow_l1o = flow_l1o.assign(
-        {"station_id": ("station", flow_l1o["station_id"].values.astype(str))}
-    )
-    flow_l1o = flow_l1o.assign(
-        {"streamflow": (("percentile", "station", "time"), flow_l1o["Dis"].values)}
-    )
+    flow_l1o = xr.open_dataset(common / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST.nc")
+    flow_l1o = flow_l1o.assign({"station_id": ("station", flow_l1o["station_id"].values.astype(str))})
+    flow_l1o = flow_l1o.assign({"streamflow": (("percentile", "station", "time"), flow_l1o["Dis"].values)})
     tt = flow_l1o["time"].dt.round(freq="D")
     flow_l1o = flow_l1o.assign_coords(time=tt.values)
 
@@ -178,7 +155,6 @@ def oi_data(deveraux):
 
 @pytest.fixture(scope="session")
 def corrected_oi_data(deveraux):
-
     # Get data with pooch
     oi_data = "optimal_interpolation/OI_data_corrected.zip"
     test_data_path = deveraux.fetch(oi_data, pooch.Unzip())
@@ -192,9 +168,7 @@ def corrected_oi_data(deveraux):
         engine="python",
     )
     data = {
-        "flow_l1o": xr.open_dataset(
-            common / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST_corrected.nc"
-        ),
+        "flow_l1o": xr.open_dataset(common / "A20_ANALYS_FLOWJ_RESULTS_CROSS_VALIDATION_L1O_TEST_corrected.nc"),
         "observation_stations": list(df_validation["No_station"]),
         "qobs": xr.open_dataset(common / "A20_HYDOBS_TEST_corrected.nc"),
         "qsim": xr.open_dataset(common / "A20_HYDREP_TEST_corrected.nc"),

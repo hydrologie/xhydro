@@ -8,7 +8,6 @@ from xhydro.indicators import pmp
 
 
 class TestPMP:
-
     def test_major_precipitation_events(self, era5_example):
         da = era5_example.pr.sel(location="Halifax").isel(plev=0)
 
@@ -34,17 +33,11 @@ class TestPMP:
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
 
-        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(
-            dict(time=-1)
-        )
-        result = pmp.major_precipitation_events(
-            precip_agg, windows=[1, 2], quantile=0.9
-        )
+        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(dict(time=-1))
+        result = pmp.major_precipitation_events(precip_agg, windows=[1, 2], quantile=0.9)
 
         assert "window" in result.dims
-        np.testing.assert_array_equal(
-            result.conf, ["2.1", "2.2", "3.1", "3.2", "3.3", "3.4", "4.1"]
-        )
+        np.testing.assert_array_equal(result.conf, ["2.1", "2.2", "3.1", "3.2", "3.3", "3.4", "4.1"])
         np.testing.assert_array_almost_equal(
             result.sel(window=2, conf=["2.2", "3.4"]).values,
             np.array(
@@ -189,13 +182,9 @@ class TestPMP:
         )
         da = da.rename("pw")
 
-        result = pmp.precipitable_water_100y(
-            da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=0.2
-        )
+        result = pmp.precipitable_water_100y(da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=0.2)
 
-        result_no_mf = pmp.precipitable_water_100y(
-            da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=None
-        )
+        result_no_mf = pmp.precipitable_water_100y(da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=None)
 
         result_no_mf_n = pmp.precipitable_water_100y(
             da,
@@ -268,13 +257,8 @@ class TestPMP:
                 ),
             )
 
-        assert (
-            result.isel(y=0, x=0).max().values <= da.isel(y=0, x=0).max().values * 1.2
-        )
-        assert (
-            result_no_mf.isel(y=0, x=0).max().values
-            > da.isel(y=0, x=0).max().values * 1.2
-        )
+        assert result.isel(y=0, x=0).max().values <= da.isel(y=0, x=0).max().values * 1.2
+        assert result_no_mf.isel(y=0, x=0).max().values > da.isel(y=0, x=0).max().values * 1.2
         assert result_no_mf_n.isel(y=0, x=0).max().values == da.isel(y=0, x=0).max()
 
     def test_precipitable_water_100_conf(self):
@@ -294,9 +278,7 @@ class TestPMP:
             },
         )
         da_pw = da_pw.rename("pw")
-        result = pmp.precipitable_water_100y(
-            da_pw, dist="genextreme", method="ML", mf=0.2
-        )
+        result = pmp.precipitable_water_100y(da_pw, dist="genextreme", method="ML", mf=0.2)
         np.testing.assert_array_almost_equal(
             [
                 np.unique(result[0, 1:30]),
@@ -488,39 +470,23 @@ class TestPMP:
         # Year 3: 365 days of no snow
         # Year 4: 20 days of no snow, 105 days of snow, 240 days of no snow
 
-        results = pmp.compute_spring_and_summer_mask(
-            da, window_wint_start=7, window_wint_end=45, spr_start=30, spr_end=25
-        )
+        results = pmp.compute_spring_and_summer_mask(da, window_wint_start=7, window_wint_end=45, spr_start=30, spr_end=25)
 
         # Checkups for spring
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 29)
-                & (results.time.dt.dayofyear <= 30)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 29) & (results.time.dt.dayofyear <= 30)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 85)
-                & (results.time.dt.dayofyear <= 86)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 85) & (results.time.dt.dayofyear <= 86)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 1)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 1)),
             np.array([1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2011)
-                & (results.time.dt.dayofyear >= 55)
-                & (results.time.dt.dayofyear <= 56)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear >= 55) & (results.time.dt.dayofyear <= 56)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
@@ -528,68 +494,38 @@ class TestPMP:
             365,
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 94)
-                & (results.time.dt.dayofyear <= 95)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 94) & (results.time.dt.dayofyear <= 95)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 150)
-                & (results.time.dt.dayofyear <= 151)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 150) & (results.time.dt.dayofyear <= 151)),
             np.array([1, np.nan]),
         )
 
         # Checkups for summer
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 60)
-                & (results.time.dt.dayofyear <= 61)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 60) & (results.time.dt.dayofyear <= 61)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 260)
-                & (results.time.dt.dayofyear <= 261)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 260) & (results.time.dt.dayofyear <= 261)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2011)
-                & (results.time.dt.dayofyear >= 30)
-                & (results.time.dt.dayofyear <= 31)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear >= 30) & (results.time.dt.dayofyear <= 31)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 365)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 365)),
             np.array([1]),
         )
+        np.testing.assert_array_equal(results.mask_summer.sel(time=(results.time.dt.year == 2012)).sum(), 365)
         np.testing.assert_array_equal(
-            results.mask_summer.sel(time=(results.time.dt.year == 2012)).sum(), 365
-        )
-        np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 125)
-                & (results.time.dt.dayofyear <= 126)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 125) & (results.time.dt.dayofyear <= 126)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear == 365)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear == 365)),
             np.array([1]),
         )
 

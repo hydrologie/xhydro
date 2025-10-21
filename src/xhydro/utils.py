@@ -5,6 +5,7 @@ import datetime as dt
 import xarray as xr
 from xscen.diagnostics import health_checks
 
+
 __all__ = ["health_checks", "merge_attributes", "update_history"]
 
 
@@ -14,7 +15,8 @@ def update_history(
     new_name: str | None = None,
     **inputs_kws: xr.DataArray | xr.Dataset,
 ) -> str:
-    r"""Return a history string with the timestamped message and the combination of the history of all inputs.
+    r"""
+    Return a history string with the timestamped message and the combination of the history of all inputs.
 
     The new history entry is formatted as "[<timestamp>] <new_name>: <hist_str> - xhydro version: <xhydro.__version__>."
 
@@ -49,10 +51,7 @@ def update_history(
     )
     if len(merged_history) > 0 and not merged_history.endswith("\n"):
         merged_history += "\n"
-    merged_history += (
-        f"[{dt.datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: "
-        f"{hist_str} - xhydro version: {__version__}"
-    )
+    merged_history += f"[{dt.datetime.now():%Y-%m-%d %H:%M:%S}] {new_name or ''}: {hist_str} - xhydro version: {__version__}"
     return merged_history
 
 
@@ -63,7 +62,8 @@ def merge_attributes(
     missing_str: str | None = None,
     **inputs_kws: xr.DataArray | xr.Dataset,
 ) -> str:
-    r"""Merge attributes from several DataArrays or Datasets.
+    r"""
+    Merge attributes from several DataArrays or Datasets.
 
     If more than one input is given, its name (if available) is prepended as: "<input name> : <input attribute>".
 
@@ -97,9 +97,7 @@ def merge_attributes(
         if attribute in in_ds.attrs or missing_str is not None:
             if in_name is not None and len(inputs) > 1:
                 merged_attr += f"{in_name}: "
-            merged_attr += in_ds.attrs.get(
-                attribute, "" if in_name is None else missing_str
-            )
+            merged_attr += in_ds.attrs.get(attribute, "" if in_name is None else missing_str)
             merged_attr += new_line
 
     if len(new_line) > 0:
