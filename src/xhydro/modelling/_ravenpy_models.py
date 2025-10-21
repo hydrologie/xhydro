@@ -686,10 +686,7 @@ class RavenpyModel(HydrologicalModel):
         else:
             executable = str(Path(self.executable))
             if "raven" not in executable.lower():
-                raise ValueError(
-                    "The executable command does not seem to be a valid Raven command. "
-                    "Please check the 'executable' parameter."
-                )
+                raise ValueError("The executable command does not seem to be a valid Raven command. Please check the 'executable' parameter.")
 
             # Since we bypassed RavenPy, we need to clean up the output directory
             for file in (self.workdir / "output").glob(f"{self.run_name}*.nc"):

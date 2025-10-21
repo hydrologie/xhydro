@@ -240,17 +240,9 @@ class Hydrotel(HydrologicalModel):
         # Hydrotel cares about the order of the arguments
         call = [
             self.executable,
-            *[
-                r
-                for r in run_options
-                if any(opt in r for opt in ["-i", "-g", "-n", "-u", "-v"])
-            ],
+            *[r for r in run_options if any(opt in r for opt in ["-i", "-g", "-n", "-u", "-v"])],
             str(self.config_files["project"]),
-            *[
-                r
-                for r in run_options
-                if any(opt in r for opt in ["-c", "-d", "-r", "-s"])
-            ],
+            *[r for r in run_options if any(opt in r for opt in ["-c", "-d", "-r", "-s"])],
             *[r for r in run_options if any(opt in r for opt in ["-t"])],
             *[r for r in run_options if any(opt in r for opt in ["-l"])],
         ]
@@ -384,13 +376,9 @@ class Hydrotel(HydrologicalModel):
             for attr in ["standard_name", "long_name", "description"]:
                 if attr in ds["q"].attrs:
                     orig_attrs[f"_original_{attr}"] = ds["q"].attrs[attr]
-            ds["q"].attrs[
-                "standard_name"
-            ] = "outgoing_water_volume_transport_along_river_channel"
+            ds["q"].attrs["standard_name"] = "outgoing_water_volume_transport_along_river_channel"
             ds["q"].attrs["long_name"] = "Simulated streamflow"
-            ds["q"].attrs[
-                "description"
-            ] = "Simulated streamflow at the outlet of the subbasin."
+            ds["q"].attrs["description"] = "Simulated streamflow at the outlet of the subbasin."
             ds["q"] = xc.units.convert_units_to(ds["q"], "m3 s-1")
             for attr in orig_attrs:
                 ds["q"].attrs[attr] = orig_attrs[attr]
