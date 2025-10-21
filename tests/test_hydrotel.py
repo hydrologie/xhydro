@@ -169,7 +169,7 @@ class TestHydrotel:
         assert set(ds.dims) == {"time", "subbasin_id"}
         correct_attrs = {
             "units": ("m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"),
-            "description": "Simulated streamflow at the outlet of the subbasin",
+            "description": "Simulated streamflow at the outlet of the subbasin.",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
             "long_name": "Simulated streamflow",
             "_original_name": "debit_aval",
