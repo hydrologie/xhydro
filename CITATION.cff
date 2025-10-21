@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit and templated with cookiecutter.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: "1.2.0"
+title: "xHydro"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: "software"
+authors:
+  - given-names: 'Thomas-Charles '
+    family-names: 'Fortier Filion'
+    email: 'tcff_hydro@outlook.com'
+contact:
+  - given-names: 'Thomas-Charles '
+    family-names: 'Fortier Filion'
+    email: 'tcff_hydro@outlook.com'
+repository-code: "https://github.com/hydrologie/xHydro"
+abstract: "Hydrological analysis library built with xarray."
+license: "Apache-2.0"
+version: "0.6.0"

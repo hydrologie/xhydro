@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.10.1,<4"]
+requires = ["flit_core >=3.11.0,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -16,22 +16,23 @@ maintainers = [
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.10.0"
 keywords = ["xhydro"]
-license = {file = "LICENSE"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  # "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
-  "Topic :: Scientific/Engineering :: Hydrology"
+  "Topic :: Scientific/Engineering :: Hydrology",
+  "Typing :: Typed"
 ]
 dynamic = ["description", "version"]
 dependencies = [
@@ -43,7 +44,7 @@ dependencies = [
   "haversine >=2.8.1",
   "leafmap",
   "mapclassify", # Hidden dependency needed to extract watershed delineation using leafmap objects
-  "numpy >=1.24",
+  "numpy >=1.25",
   "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
@@ -66,25 +67,24 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   # Dev tools and testing
-  "black ==25.9.0",
-  "blackdoc ==0.4.1",
-  "bump-my-version >=0.32.1",
+  "bump-my-version >=1.2.3",
   "coverage >=7.5.0",
-  "flake8 >=7.1.1",
-  "flake8-rst-docstrings >=0.3.0",
-  "flit >=3.10.1,<4.0",
-  "isort ==6.0.1",
-  "mypy >=1.14.1",
-  "numpydoc >=1.8.0",
+  "deptry >=0.23.1",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.3.1",
+  "flit >=3.11.0,<4.0",
+  "mypy >=1.18.2",
+  "numpydoc >=1.9.0",
   "packaging >=23.0",
-  "pip >=25.0",
+  "pip >=25.2",
   "pre-commit >=3.5.0",
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
   "pytest-xdist[psutil] >=3.2",
-  "ruff >=0.9.0",
-  "tox >=4.24.1",
+  "ruff >=0.13.3",
+  "tox >=4.30.3",
   "watchdog >=4.0.0",
+  "vulture >=2.14",
   "xdatasets >=0.3.8" # Needed for test_gis.py
 ]
 docs = [
@@ -119,16 +119,8 @@ all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
 
 [tool]
 
-[tool.black]
-target-version = [
-  "py310",
-  "py311",
-  "py312",
-  "py313"
-]
-
 [tool.bumpversion]
-current_version = "0.6.0"
+current_version = "0.6.1-dev.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -176,6 +168,10 @@ source = ["src/xhydro/", "*/site-packages/xhydro/"]
 omit = ["tests/*.py"]
 relative_files = true
 
+[tool.deptry]
+extend_exclude = ["docs"]
+pep621_dev_dependency_groups = ["all", "dev", "docs"]
+
 [tool.flit.sdist]
 include = [
   ".zenodo.json",
@@ -218,13 +214,9 @@ exclude = [
   "xhydro/testing/data/*"
 ]
 
-[tool.isort]
-profile = "black"
-py_version = 310
-
 [tool.mypy]
 files = "."
-python_version = 3.10
+python_version = "3.10"
 show_error_codes = true
 warn_no_return = true
 warn_return_any = true
@@ -266,6 +258,7 @@ override_SS05 = [
 
 [tool.pytest.ini_options]
 addopts = [
+  "-ra",
   "--color=yes",
   "--numprocesses=0",
   "--maxprocesses=8",
@@ -275,7 +268,9 @@ addopts = [
   "--verbose"
 ]
 filterwarnings = ["ignore::UserWarning"]
-testpaths = "tests"
+testpaths = [
+  "tests"
+]
 markers = [
   "online: mark tests that require access to the internet",
   "requires_docs: mark tests that can only be run with documentation present (deselect with '-m \"not requires_docs\"')",
@@ -293,13 +288,16 @@ exclude = [
 ]
 
 [tool.ruff.format]
-quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
 indent-style = "space"
+quote-style = "double"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
 extend-select = [
+  "D213", # multi-line-summary-second-line
   "RUF022" # unsorted-dunder-all
 ]
 ignore = [
@@ -310,12 +308,15 @@ ignore = [
 ]
 preview = true
 select = [
+  "B", # bugbear
   "BLE", # blind-except
   "C90", # mccabe-complexity
   "D", # docstrings
   "E", # pycodestyle errors
+  "F", # pyflakes
   "FLY002", # static-join-to-fstring
   "G", # logging-format
+  "I", # imports
   "N", # naming conventions
   "PERF", # iterator performance
   "PTH", # pathlib
@@ -342,6 +343,7 @@ max-complexity = 15
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["E402"]
 "src/xhydro/**/__init__.py" = ["F401", "F403"]
+"src/xhydro/modelling/__init__.py" = ["I001"]
 "tests/**" = ["D100", "D101", "D102", "D103", "S101"]
 
 [tool.ruff.lint.pycodestyle]

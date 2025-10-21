@@ -10,6 +10,7 @@ from xclim.core.units import rate2amount
 from xscen import compute_indicators
 from xscen.utils import clean_up
 
+
 __all__ = [
     "compute_indicators",
     "compute_volume",
@@ -17,10 +18,9 @@ __all__ = [
 ]
 
 
-def compute_volume(
-    da: xr.DataArray, *, out_units: str = "m3", attrs: dict | None = None
-) -> xr.DataArray:
-    """Compute the volume of water from a streamflow variable, keeping the same frequency.
+def compute_volume(da: xr.DataArray, *, out_units: str = "m3", attrs: dict | None = None) -> xr.DataArray:
+    """
+    Compute the volume of water from a streamflow variable, keeping the same frequency.
 
     Parameters
     ----------
@@ -64,7 +64,8 @@ def get_yearly_op(  # noqa: C901
     missing_options: dict | None = None,
     interpolate_na: bool = False,
 ) -> xr.Dataset:
-    """Compute yearly operations on a variable.
+    """
+    Compute yearly operations on a variable.
 
     Parameters
     ----------
@@ -111,9 +112,7 @@ def get_yearly_op(  # noqa: C901
     timeargs = timeargs or {"annual": {}}
 
     if op not in ["max", "min", "mean", "sum"]:
-        raise ValueError(
-            f"Operation {op} is not supported. Please use one of ['max', 'min', 'mean', 'sum']."
-        )
+        raise ValueError(f"Operation {op} is not supported. Please use one of ['max', 'min', 'mean', 'sum'].")
     if op == "sum":
         if window > 1:
             raise ValueError("Cannot use a rolling window with a sum operation.")
@@ -127,6 +126,7 @@ def get_yearly_op(  # noqa: C901
             "Support for 'streamflow' will be removed in xHydro v0.7.0. Please use 'input_var=\"streamflow\"' "
             "or change the variable name in your dataset.",
             FutureWarning,
+            stacklevel=2,
         )
 
     # Add the variable to xclim to avoid raising an error
@@ -145,11 +145,7 @@ def get_yearly_op(  # noqa: C901
     # FIXME: This should be handled by xclim once it supports rolling stats (Issue #1480)
     # rolling window
     if window > 1:
-        ds[input_var] = (
-            ds[input_var]
-            .rolling(dim={"time": window}, min_periods=window, center=False)
-            .mean()
-        )
+        ds[input_var] = ds[input_var].rolling(dim={"time": window}, min_periods=window, center=False).mean()
 
     indicators = []
     month_labels = [
@@ -169,30 +165,16 @@ def get_yearly_op(  # noqa: C901
     for i in timeargs:
         freq = timeargs[i].get("freq", "YS-JAN")
         if not xc.core.calendar.compare_offsets(freq, "==", "YS"):
-            raise ValueError(
-                f"Frequency {freq} is not supported. Please use a yearly frequency."
-            )
+            raise ValueError(f"Frequency {freq} is not supported. Please use a yearly frequency.")
         indexer = {k: v for k, v in timeargs[i].items() if k != "freq"}
         if len(indexer) > 1:
             raise ValueError("Only one indexer is supported per operation.")
 
         # Manage the frequency
-        if (
-            "season" in indexer.keys()
-            and "DJF" in indexer["season"]
-            and freq != "YS-DEC"
-        ):
-            warnings.warn(
-                "The frequency is not YS-DEC, but the season indexer includes DJF. "
-                "This will lead to misleading results."
-            )
-        elif (
-            "doy_bounds" in indexer.keys()
-            and indexer["doy_bounds"][0] >= indexer["doy_bounds"][1]
-        ) or (
-            "date_bounds" in indexer.keys()
-            and int(indexer["date_bounds"][0].split("-")[0])
-            >= int(indexer["date_bounds"][1].split("-")[0])
+        if "season" in indexer.keys() and "DJF" in indexer["season"] and freq != "YS-DEC":
+            warnings.warn("The frequency is not YS-DEC, but the season indexer includes DJF. This will lead to misleading results.", stacklevel=2)
+        elif ("doy_bounds" in indexer.keys() and indexer["doy_bounds"][0] >= indexer["doy_bounds"][1]) or (
+            "date_bounds" in indexer.keys() and int(indexer["date_bounds"][0].split("-")[0]) >= int(indexer["date_bounds"][1].split("-")[0])
         ):
             if "doy_bounds" in indexer.keys():
                 # transform doy to a date to find the month
@@ -211,12 +193,14 @@ def get_yearly_op(  # noqa: C901
             if month_end == month_start:
                 warnings.warn(
                     "The bounds wrap around the year, but the month is the same between the both of them. "
-                    "This is not supported and will lead to wrong results."
+                    "This is not supported and will lead to wrong results.",
+                    stacklevel=2,
                 )
             if freq == "YS" or (month_start != month_labels.index(freq.split("-")[1])):
                 warnings.warn(
                     f"The frequency is {freq}, but the bounds are between months {month_start} and {month_end}. "
-                    f"You should use 'YS-{month_labels[month_start - 1]}' as the frequency."
+                    f"You should use 'YS-{month_labels[month_start - 1]}' as the frequency.",
+                    stacklevel=2,
                 )
 
         identifier = f"{input_var}{window if window > 1 else ''}_{op}_{i.lower()}"

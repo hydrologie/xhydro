@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
+
 __all__ = [
     "plot_results",
     "prepare_flow_percentiles_dataset",
@@ -11,7 +12,8 @@ __all__ = [
 
 
 def plot_results(kge, kge_l1o, nse, nse_l1o):
-    """Generate a plot of the results of model evaluation using various metrics.
+    """
+    Generate a plot of the results of model evaluation using various metrics.
 
     Parameters
     ----------
@@ -47,10 +49,9 @@ def plot_results(kge, kge_l1o, nse, nse_l1o):
     plt.show()
 
 
-def prepare_flow_percentiles_dataset(
-    station_id, lon, lat, drain_area, time, percentile, discharge
-):
-    """Write discharge data as an xarray.Dataset.
+def prepare_flow_percentiles_dataset(station_id, lon, lat, drain_area, time, percentile, discharge):
+    """
+    Write discharge data as an xarray.Dataset.
 
     Parameters
     ----------

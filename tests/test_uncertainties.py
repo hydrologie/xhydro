@@ -82,11 +82,7 @@ def test_calc_q_iter_ds():
     )
 
     n_samples = 1000
-    bo = (
-        bootstrap_obs(ds, n_samples=n_samples, seed=42)
-        .assign_coords(id="S1")
-        .expand_dims("id")
-    )
+    bo = bootstrap_obs(ds, n_samples=n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
     ds_moments_iter = calc_moments_iter(bo)
     time = pd.date_range("2020-01-01", periods=54)
     data = np.array(
@@ -275,9 +271,7 @@ def test_calc_q_iter_ds():
     )
     ds_groups["id"].attrs["cf_role"] = "timeseries_id"
     ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
-    ds_moments_iter = xr.concat(
-        [ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id"
-    )
+    ds_moments_iter = xr.concat([ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id")
     ds_moments_iter["id"] = ["S1", "B", "C"]
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
     result = calc_q_iter(
@@ -288,14 +282,10 @@ def test_calc_q_iter_ds():
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
-    assert len(result.samples) == len(ds_moments_iter.samples) * len(
-        ds_groups.region_id
-    )
+    assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.region_id)
     np.testing.assert_almost_equal(
         260.68926104,
-        result.streamflow.sel(id="S1", region_id="G1", return_period=1000).quantile(
-            0.5
-        ),
+        result.streamflow.sel(id="S1", region_id="G1", return_period=1000).quantile(0.5),
     )
 
 
@@ -309,11 +299,7 @@ def test_calc_q_iter_da():
     )
 
     n_samples = 1000
-    bo = (
-        bootstrap_obs(ds, n_samples=n_samples, seed=42)
-        .assign_coords(id="S1")
-        .expand_dims("id")
-    )
+    bo = bootstrap_obs(ds, n_samples=n_samples, seed=42).assign_coords(id="S1").expand_dims("id")
     ds_moments_iter = calc_moments_iter(bo)
     time = pd.date_range("2020-01-01", periods=54)
     data = np.array(
@@ -502,9 +488,7 @@ def test_calc_q_iter_da():
     )
     ds_groups["id"].attrs["cf_role"] = "timeseries_id"
     ds_groups["streamflow"].attrs["units"] = "m^3 s-1"
-    ds_moments_iter = xr.concat(
-        [ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id"
-    )
+    ds_moments_iter = xr.concat([ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id")
     ds_moments_iter["id"] = ["S1", "B", "C"]
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
     result = calc_q_iter(
@@ -515,9 +499,7 @@ def test_calc_q_iter_da():
         small_regions_threshold=1,
     )
     assert "obs_samples" in result.coords
-    assert len(result.samples) == len(ds_moments_iter.samples) * len(
-        ds_groups.region_id
-    )
+    assert len(result.samples) == len(ds_moments_iter.samples) * len(ds_groups.region_id)
     np.testing.assert_almost_equal(
         260.68926104,
         result.sel(id="S1", region_id="G1", return_period=1000).quantile(0.5),
@@ -536,9 +518,7 @@ def test_generate_combinations():
     )
     station = np.array(["020302", "020404", "020502", "020602", "020802"])
     components = [0, 1, 2]
-    da = xr.DataArray(
-        data=df, coords=[station, components], dims=["Station", "components"]
-    )
+    da = xr.DataArray(data=df, coords=[station, components], dims=["Station", "components"])
     n_omit = 2
     result = generate_combinations(da, n=n_omit)
     assert 16 == len(result)

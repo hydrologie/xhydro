@@ -31,6 +31,7 @@ from .regional import (
     remove_small_regions,
 )
 
+
 __all__ = [
     "bootstrap_dist",
     "bootstrap_obs",
@@ -41,9 +42,7 @@ __all__ = [
 ]
 
 
-def bootstrap_obs(
-    obs: xr.DataArray, *, n_samples: int, seed: int | None = None
-) -> xr.DataArray:
+def bootstrap_obs(obs: xr.DataArray, *, n_samples: int, seed: int | None = None) -> xr.DataArray:
     """
     Generate bootstrap samples from observed data.
 
@@ -81,9 +80,7 @@ def bootstrap_obs(
     ).assign_coords(samples=range(n_samples))
 
 
-def bootstrap_dist(
-    ds_obs: xr.Dataset, ds_params: xr.Dataset, *, n_samples: int
-) -> xr.Dataset:
+def bootstrap_dist(ds_obs: xr.Dataset, ds_params: xr.Dataset, *, n_samples: int) -> xr.Dataset:
     """
     Generate bootstrap samples from a fitted distribution.
 
@@ -115,9 +112,7 @@ def bootstrap_dist(
         params = params[~np.isnan(params)]
         ordered_params = [params[d == p_names] for d in dist_params]
 
-        samples = getattr(stats, dist).rvs(
-            *ordered_params, size=(n_samples, data_length)
-        )
+        samples = getattr(stats, dist).rvs(*ordered_params, size=(n_samples, data_length))
         samples[:, np.isnan(data)] = np.nan
         return samples
 
@@ -153,9 +148,7 @@ def fit_boot_dist(ds: xr.Dataset) -> xr.Dataset:
     params_ince = []
     for dist in ds.scipy_dist.values:
         ds.sel(scipy_dist=dist)
-        params_ince.append(
-            xhfa.local.fit(ds.sel(scipy_dist=dist), distributions=[dist])
-        )
+        params_ince.append(xhfa.local.fit(ds.sel(scipy_dist=dist), distributions=[dist]))
     return xr.concat(params_ince, dim="scipy_dist")
 
 
@@ -226,17 +219,11 @@ def _calc_q_iter_da(
     for region_id in ds_temp.region_id.values:
         id_list = da_groups.sel(region_id=region_id).dropna(id_dim, how="all").id.values
         # We use moments with ressample previously done, and we create ds_moment_group with iterations
-        ds_mom.append(
-            da_moments_iter.sel(**{id_dim: id_list})
-            .assign_coords(region_id=region_id)
-            .expand_dims("region_id")
-        )
+        ds_mom.append(da_moments_iter.sel(**{id_dim: id_list}).assign_coords(region_id=region_id).expand_dims("region_id"))
 
     # Concat along region_id
     ds_moments_groups = xr.concat(ds_mom, dim="region_id")
-    da_groups = da_groups.sel(region_id=ds_moments_groups.region_id).dropna(
-        dim="id", how="all"
-    )
+    da_groups = da_groups.sel(region_id=ds_moments_groups.region_id).dropna(dim="id", how="all")
     # With obs and moments  of same dims, we calculate
     qt = calculate_return_period(
         da_groups.to_dataset(),
@@ -247,20 +234,9 @@ def _calc_q_iter_da(
     qt = remove_small_regions(qt, thresh=small_regions_threshold)
     # For each station we stack regions et bootstrap
     if bv == "all":
-        return (
-            qt.rename({"samples": "obs_samples"})
-            .stack(samples=["region_id", "obs_samples"])
-            .to_dataarray()
-            .squeeze()
-        )
+        return qt.rename({"samples": "obs_samples"}).stack(samples=["region_id", "obs_samples"]).to_dataarray().squeeze()
     else:
-        return (
-            qt.rename({"samples": "obs_samples"})
-            .stack(samples=["region_id", "obs_samples"])
-            .sel(**{id_dim: bv})
-            .to_dataarray()
-            .squeeze()
-        )
+        return qt.rename({"samples": "obs_samples"}).stack(samples=["region_id", "obs_samples"]).sel(**{id_dim: bv}).to_dataarray().squeeze()
 
 
 def calc_q_iter(
@@ -303,6 +279,7 @@ def calc_q_iter(
     warnings.warn(
         "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_quantiles_over_boostraped_groups instead.",
         FutureWarning,
+        stacklevel=2,
     )
     return calculate_quantiles_over_boostraped_groups(
         bv,
@@ -356,6 +333,7 @@ def calculate_quantiles_over_boostraped_groups(
         warnings.warn(
             "The 'return_periods' parameter has been renamed to 'return_period' and will be dropped in xHydro v0.7.0.",
             FutureWarning,
+            stacklevel=2,
         )
         return_period = return_periods
     if all(isinstance(input, xr.DataArray) for input in [groups, moments_iter]):
@@ -363,9 +341,7 @@ def calculate_quantiles_over_boostraped_groups(
     elif all(isinstance(input, xr.Dataset) for input in [groups, moments_iter]):
         ds = True
     else:
-        raise TypeError(
-            "groups and moments_iter must be both xr.DataArray or xr.Dataset"
-        )
+        raise TypeError("groups and moments_iter must be both xr.DataArray or xr.Dataset")
 
     if ds:
         ds = xr.Dataset()
