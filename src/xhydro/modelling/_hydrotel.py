@@ -208,7 +208,7 @@ class Hydrotel(HydrologicalModel):
         if check_missing is not None:
             warnings.warn(
                 "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The Hydrotel executable already performs checks on the input files."
+                "The Hydrotel executable already performs checks on the input files. "
                 "This parameter will be removed in xHydro v0.7.0.",
                 FutureWarning,
                 stacklevel=2,
@@ -234,9 +234,16 @@ class Hydrotel(HydrologicalModel):
 
         # Prepare the input call
         run_options = run_options or []
+
         # Unwrap elements that contain spaces
         run_options = list(itertools.chain.from_iterable([a.split() if isinstance(a, str) else a for a in run_options]))
         run_options = [*run_options, "-t 1"] if "-t" not in run_options else run_options
+
+        # If the '-t' flag is supplied, merge the next item in the list with it
+        if "-t" in run_options:
+            t_index = run_options.index("-t")
+            run_options[t_index : t_index + 2] = [" ".join(run_options[t_index : t_index + 2])]
+
         # Hydrotel cares about the order of the arguments
         call = [
             self.executable,
