@@ -241,6 +241,10 @@ class Hydrotel(HydrologicalModel):
         # If the '-t' flag is supplied, merge the next item in the list with it
         if "-t" in run_options:
             t_index = run_options.index("-t")
+            try:
+                int(run_options[t_index + 1])
+            except (IndexError, ValueError) as err:
+                raise ValueError("The '-t' flag must be followed by an integer specifying the number of threads to use.") from err
             run_options[t_index : t_index + 2] = [" ".join(run_options[t_index : t_index + 2])]
         else:
             run_options.append("-t 1")
