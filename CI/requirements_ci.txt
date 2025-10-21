@@ -20,9 +20,9 @@ bracex==2.4 \
     --hash=sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb \
     --hash=sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418
     # via wcmatch
-bump-my-version==1.2.1 \
-    --hash=sha256:96c48f880c149c299312f983d06b50e0277ffc566e64797bf3a6c240bce2dfcc \
-    --hash=sha256:ddb41d5f30abdccce9d2dc873e880bdf04ec8c7e7237c73a4c893aa10b7d7587
+bump-my-version==1.2.3 \
+    --hash=sha256:620eac65828c86e60c6a9becf9eadc376181e81b47c0097a7b63e113b5cb256f \
+    --hash=sha256:7352af6f9454469a020493c2747cd7c88b0c7017dd216e3abb270a13745afa1b
     # via -r CI/requirements_ci.in
 cachetools==6.1.0 \
     --hash=sha256:1c7bb3cf9193deaf3508b7c5f2a79986c13ea38965c5adcff1f84519cf39163e \
@@ -353,9 +353,9 @@ pygments==2.18.0 \
     --hash=sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199 \
     --hash=sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a
     # via rich
-pylint==3.3.7 \
-    --hash=sha256:2b11de8bde49f9c5059452e0c310c079c746a0a8eeaa789e5aa966ecc23e4559 \
-    --hash=sha256:43860aafefce92fca4cf6b61fe199cdc5ae54ea28f9bf4cd49de267b5195803d
+pylint==3.3.8 \
+    --hash=sha256:26698de19941363037e2937d3db9ed94fb3303fdadf7d98847875345a8bb6b05 \
+    --hash=sha256:7ef94aa692a600e82fabdd17102b73fc226758218c97473c7ad67bd4cb905d83
     # via -r CI/requirements_ci.in
 pyproject-api==1.9.1 \
     --hash=sha256:43c9918f49daab37e302038fc1aed54a8c7a91a9fa935d00b9a485f37e0f5335 \
@@ -439,9 +439,9 @@ tomlkit==0.13.0 \
     # via
     #   bump-my-version
     #   pylint
-tox==4.30.2 \
-    --hash=sha256:772925ad6c57fe35c7ed5ac3e958ac5ced21dff597e76fc40c1f5bf3cd1b6a2e \
-    --hash=sha256:efd261a42e8c82a59f9026320a80a067f27f44cad2e72a6712010c311d31176b
+tox==4.30.3 \
+    --hash=sha256:a9f17b4b2d0f74fe0d76207236925a119095011e5c2e661a133115a8061178c9 \
+    --hash=sha256:f3dd0735f1cd4e8fbea5a3661b77f517456b5f0031a6256432533900e34b90bf
     # via
     #   -r CI/requirements_ci.in
     #   tox-gh

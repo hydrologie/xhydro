@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2025-10-20 09:24-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "xHydro |logo| |logo-light| |logo-dark|"
 msgstr "xHydro |logo| |logo-light| |logo-dark|"
 
-#: ../../../README.rst:72
+#: ../../../README.rst:63
 msgid "xHydro"
 msgstr "xHydro"
 
@@ -29,28 +29,33 @@ msgid "Versions"
 msgstr "Versions"
 
 #: ../../../README.rst:6
-msgid "|pypi| |versions|"
-msgstr "|pypi| |versions|"
+msgid "|pypi| |conda|"
+msgstr "|pypi| |conda|"
 
-#: ../../../README.rst:99
+#: ../../../README.rst:90
 msgid "PyPI"
 msgstr "PyPI"
 
-#: ../../../README.rst:111
-msgid "Supported Python Versions"
-msgstr "Versions Python prises en charge"
+#: ../../../README.rst:47
+msgid "Conda-forge Build Version"
+msgstr "Version de construction Conda-forge"
 
 #: ../../../README.rst:8
 msgid "Documentation and Support"
 msgstr "Documentation et support"
 
 #: ../../../README.rst:8
-msgid "|docs|"
-msgstr "|docs|"
+#, fuzzy
+msgid "|docs| |versions|"
+msgstr "|pypi| |versions|"
 
-#: ../../../README.rst:60
+#: ../../../README.rst:55
 msgid "Documentation Status"
 msgstr "État de la documentation"
+
+#: ../../../README.rst:102
+msgid "Supported Python Versions"
+msgstr "Versions Python prises en charge"
 
 #: ../../../README.rst:10
 msgid "Open Source"
@@ -60,11 +65,11 @@ msgstr "Source ouverte"
 msgid "|license| |ossf-score|"
 msgstr "|license| |ossf-score|"
 
-#: ../../../README.rst:68
+#: ../../../README.rst:59
 msgid "License"
 msgstr "Licence"
 
-#: ../../../README.rst:91
+#: ../../../README.rst:82
 msgid "OpenSSF Scorecard"
 msgstr "OpenSSF Scorecard"
 
@@ -73,22 +78,15 @@ msgid "Coding Standards"
 msgstr "Normes de codage"
 
 #: ../../../README.rst:12
-msgid "|black| |isort| |ruff| |pre-commit|"
-msgstr "|black| |isort| |ruff| |pre-commit|"
+#, fuzzy
+msgid "|ruff| |pre-commit|"
+msgstr "|ruff| |pre-commit|"
 
-#: ../../../README.rst:43
-msgid "Python Black"
-msgstr "Python Black"
-
-#: ../../../README.rst:64
-msgid "Isort"
-msgstr "Isort"
-
-#: ../../../README.rst:103
+#: ../../../README.rst:94
 msgid "Ruff"
 msgstr "Ruff"
 
-#: ../../../README.rst:95
+#: ../../../README.rst:86
 msgid "pre-commit.ci Status"
 msgstr "État de pre-commit.ci"
 
@@ -100,15 +98,15 @@ msgstr "État du développement"
 msgid "|status| |build| |coveralls|"
 msgstr "|status| |build| |coveralls|"
 
-#: ../../../README.rst:107
+#: ../../../README.rst:98
 msgid ""
 "Project Status: Active – The project has reached a stable, usable state "
 "and is being actively developed."
 msgstr ""
-"Statut du projet : Actif – Le projet a atteint un état stable et utilisable "
-"et est en développement actif."
+"Statut du projet : Actif – Le projet a atteint un état stable et "
+"utilisable et est en développement actif."
 
-#: ../../../README.rst:47
+#: ../../../README.rst:43
 msgid "Build Status"
 msgstr "État de la construction"
 
@@ -142,39 +140,46 @@ msgid ""
 "and watershed boundaries from the HydroSHEDS API over any area of "
 "interest."
 msgstr ""
-"Trouvez et extrayez facilement des données géospatiales depuis l'API Planetary Computer "
-"et les frontières des bassins versants depuis l'API HydroSHEDS sur n'importe quelle zone d'intérêt."
+"Trouvez et extrayez facilement des données géospatiales depuis l'API "
+"Planetary Computer et les frontières des bassins versants depuis l'API "
+"HydroSHEDS sur n'importe quelle zone d'intérêt."
 
 #: ../../../README.rst:27
 msgid "Calibrate and execute Hydrotel and Raven-emulated hydrological models."
-msgstr "Calibrez et exécutez les modèles hydrologiques Hydrotel et émulés par Raven."
+msgstr ""
+"Calibrez et exécutez les modèles hydrologiques Hydrotel et émulés par "
+"Raven."
 
 #: ../../../README.rst:28
 msgid ""
 "Perform optimal interpolation on hydrological data (daily streamflow and "
 "indices)."
 msgstr ""
-"Effectuez une interpolation optimale sur les données hydrologiques (débit quotidien et indices)."
+"Effectuez une interpolation optimale sur les données hydrologiques (débit"
+" quotidien et indices)."
 
 #: ../../../README.rst:29
 msgid ""
 "Compute hydrological indicators (e.g. n-day peak flow, annual maximum "
 "series, low flow, average flow, etc.) over custom date ranges."
 msgstr ""
-"Calculez des indicateurs hydrologiques (par exemple, débit de crue sur n jours, série maximale annuelle, "
-"débit de base, débit moyen, etc.) sur des plages de dates personnalisées."
+"Calculez des indicateurs hydrologiques (par exemple, débit de crue sur n "
+"jours, série maximale annuelle, débit de base, débit moyen, etc.) sur des"
+" plages de dates personnalisées."
 
 #: ../../../README.rst:30
 msgid ""
 "Perform frequency analyses on hydrological indicators using a variety of "
 "methods (e.g. Gumbel, GEV, etc.)."
 msgstr ""
-"Effectuez des analyses fréquentielles sur des indicateurs hydrologiques en utilisant diverses méthodes "
-"(par exemple, Gumbel, GEV, etc.)."
+"Effectuez des analyses fréquentielles sur des indicateurs hydrologiques "
+"en utilisant diverses méthodes (par exemple, Gumbel, GEV, etc.)."
 
 #: ../../../README.rst:31
 msgid "Perform climate change impact analyses of hydrological data."
-msgstr "Effectuez des analyses d'impact du changement climatique sur les données hydrologiques."
+msgstr ""
+"Effectuez des analyses d'impact du changement climatique sur les données "
+"hydrologiques."
 
 #: ../../../README.rst:34
 msgid "Credits"
@@ -185,13 +190,13 @@ msgid ""
 "This package was created with Cookiecutter_ and the `Ouranosinc"
 "/cookiecutter-pypackage`_ project template."
 msgstr ""
-"Cette libraire a été créée avec Cookiecutter_ et le modèle de projet `Ouranosinc"
-"/cookiecutter-pypackage`_."
+"Cette libraire a été créée avec Cookiecutter_ et le modèle de projet "
+"`Ouranosinc/cookiecutter-pypackage`_."
 
 #: ../../../README.rst:38
 msgid ""
 "This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal"
 " (@lou-a), with inputs from the `xHydro` team."
 msgstr ""
-"Ce logo a été conçu par Élyse Fournier (@elysefounier) et Louise Arnal"
-" (@lou-a), avec la contribution de l'équipe `xHydro`."
+"Ce logo a été conçu par Élyse Fournier (@elysefounier) et Louise Arnal "
+"(@lou-a), avec la contribution de l'équipe `xHydro`."

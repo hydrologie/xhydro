@@ -15,6 +15,7 @@ import xhydro.gis as xhg
 import xhydro.modelling as xhm
 from xhydro.modelling import RavenpyModel
 
+
 try:
     import raven_hydro
     import ravenpy
@@ -42,9 +43,7 @@ class TestRavenpyModels:
     }
 
     # Station properties. Using the same as for the catchment, but could be different.
-    meteo_station_properties = {
-        "ALL": {"elevation": 250.5, "latitude": 46.0, "longitude": -80.75}
-    }
+    meteo_station_properties = {"ALL": {"elevation": 250.5, "latitude": 46.0, "longitude": -80.75}}
     rain_snow_fraction = "RAINSNOW_DINGMAN"
     evaporation = "PET_PRIESTLEY_TAYLOR"
 
@@ -91,19 +90,15 @@ class TestRavenpyModels:
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
 
-        with pytest.warns(
-            UserWarning, match="The meteorological data and/or HRU are not provided."
-        ):
+        with pytest.warns(UserWarning, match="The meteorological data and/or HRU are not provided."):
             rpm_empty = RavenpyModel()
 
-        with pytest.raises(
-            ValueError, match="The following required inputs are missing"
-        ):
+        with pytest.raises(ValueError, match="The following required inputs are missing"):
             rpm_empty.create_rv()
 
         if backwards:
             # Test backward compatibility
-            with pytest.warns(FutureWarning) as msg:
+            with pytest.warns(FutureWarning):
                 rpm_empty.create_rv(
                     model_name=model_name,
                     parameters=parameters,
@@ -175,9 +170,7 @@ class TestRavenpyModels:
     )
     def test_ravenpy_from_funcs(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
-        meteo, cfg = xhm.format_input(
-            meteo, model="GR4JCN", save_as=tmp_path / "test.nc"
-        )
+        meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
         hru = xhg.watershed_to_raven_hru((-80.75, 46.0))
 
         model_config = {
@@ -222,11 +215,7 @@ class TestRavenpyModels:
         rpm.run(overwrite=True)
 
         # Try to overwrite the model again
-        config2 = {
-            k: v
-            for k, v in model_config.items()
-            if k in ["parameters", "start_date", "end_date"]
-        }
+        config2 = {k: v for k, v in model_config.items() if k in ["parameters", "start_date", "end_date"]}
         with pytest.raises(FileExistsError):
             rpm.create_rv(**config2)
         rpm.create_rv(overwrite=True, **config2)
@@ -315,9 +304,7 @@ class TestRavenpyModels:
         meteo["elevation"].attrs["units"] = "m"
         meteo = xr.concat([meteo, meteo2], dim="station")
 
-        meteo, cfg = xhm.format_input(
-            meteo, model="GR4JCN", save_as=tmp_path / "test.nc"
-        )
+        meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
 
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
@@ -428,9 +415,7 @@ class TestRavenpyModels:
         if input_type == "gpd":
             cfg2 = cfg.copy()
             cfg2["meteo_file"] = tmp_path / "test_bad.nc"
-            with pytest.raises(
-                ValueError, match="Could not determine the type of meteorological data"
-            ):
+            with pytest.raises(ValueError, match="Could not determine the type of meteorological data"):
                 qsim = RavenpyModel(
                     model_name="GR4JCN",
                     parameters=parameters,
@@ -583,9 +568,7 @@ class TestRavenpyModels:
             meteo_file=str(tmp_path / "new_meteo.nc"),
             data_type=self.data_type,
             alt_names_meteo=self.alt_names_meteo,
-            meteo_station_properties={
-                "ALL": {"elevation": 1150.5, "latitude": 43.0, "longitude": -78.75}
-            },
+            meteo_station_properties={"ALL": {"elevation": 1150.5, "latitude": 43.0, "longitude": -78.75}},
         )
         with pytest.warns(
             UserWarning,
@@ -596,16 +579,12 @@ class TestRavenpyModels:
         with (rpm.workdir / f"{rpm.run_name}.rvt").open("r") as file:
             lines = file.readlines()
         assert len([line for line in lines if "1150.5\n" in line]) == 1
-        assert (
-            len([line for line in lines if f"{tmp_path / 'new_meteo.nc'}" in line]) == 3
-        )
+        assert len([line for line in lines if f"{tmp_path / 'new_meteo.nc'}" in line]) == 3
 
         ds = rpm.run()  # Actually test that it runs
 
         np.testing.assert_array_equal(ds.time.isel(time=0), np.datetime64("1985-01-02"))
-        np.testing.assert_array_equal(
-            ds.time.isel(time=-1), np.datetime64("1987-11-30")
-        )
+        np.testing.assert_array_equal(ds.time.isel(time=-1), np.datetime64("1987-11-30"))
 
 
 @pytest.mark.skipif(ravenpy is None, reason="RavenPy is not installed.")
@@ -730,11 +709,7 @@ class TestDistributedRavenpy:
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
-                assert (
-                    len(qsim["subbasin_id"]) == 47
-                    if output_sub == "all"
-                    else len(output_sub)
-                )
+                assert len(qsim["subbasin_id"]) == 47 if output_sub == "all" else len(output_sub)
 
     @pytest.mark.parametrize("output_sub", ["qobs", None, "fail", "fail2"])
     def test_ravenpy_qobs(self, tmp_path, df, gridded_meteo, output_sub):
@@ -770,9 +745,7 @@ class TestDistributedRavenpy:
             qobs.to_netcdf(tmp_path / "qobs.nc")
             kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
             kwargs["alt_name_flow"] = "qobs"
-            with pytest.raises(
-                ValueError, match="The observed streamflow dataset must contain a "
-            ):
+            with pytest.raises(ValueError, match="The observed streamflow dataset must contain a "):
                 RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
@@ -804,9 +777,7 @@ class TestDistributedRavenpy:
                 ).run()
         # Bad initialisation order
         elif output_sub == "fail2":
-            with pytest.raises(
-                ValueError, match=", but no observed streamflow data is provided."
-            ):
+            with pytest.raises(ValueError, match=", but no observed streamflow data is provided."):
                 RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
@@ -822,9 +793,7 @@ class TestDistributedRavenpy:
             qobs.to_netcdf(tmp_path / "qobs.nc")
             kwargs["qobs_file"] = str(tmp_path / "qobs.nc")
             kwargs["alt_name_flow"] = "qobs"
-            with pytest.raises(
-                ValueError, match="HRU properties must be defined before "
-            ):
+            with pytest.raises(ValueError, match="HRU properties must be defined before "):
                 RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
@@ -855,9 +824,7 @@ class TestDistributedRavenpy:
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
-                np.testing.assert_array_equal(
-                    qsim["subbasin_id"].values, ["sub_13", "sub_17"]
-                )
+                np.testing.assert_array_equal(qsim["subbasin_id"].values, ["sub_13", "sub_17"])
 
     def test_hbvec_reservoirs(self, tmp_path, df, gridded_meteo):
         meteo, cfg = gridded_meteo
@@ -983,6 +950,4 @@ class TestDistributedRavenpy:
         ds2 = rpm.run(overwrite=True)
         np.testing.assert_array_equal(ds2["subbasin_id"].values, ["sub_13", "sub_17"])
 
-        assert Path(
-            rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc"
-        ).exists()
+        assert Path(rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc").exists()

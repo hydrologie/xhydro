@@ -6,14 +6,13 @@ import time
 import warnings
 from pathlib import Path
 
+
 try:
     import deep_translator
 
     can_translate = True
 except ImportError:
-    warnings.warn(
-        "The deep_translator package is not installed. Automatic translation will not work."
-    )
+    warnings.warn("The deep_translator package is not installed. Automatic translation will not work.", stacklevel=2)
     can_translate = False
 logger = logging.getLogger(__name__)
 
@@ -27,11 +26,12 @@ def translate_missing_po_entries(  # noqa: C901
     overwrite_fuzzy: bool = True,
     **kwargs,
 ):
-    r"""Translate missing msgstr entries in .po files using the specified translator.
+    r"""
+    Translate missing msgstr entries in .po files using the specified translator.
 
     Parameters
     ----------
-    dir_path : str
+    dir_path : str or Path
         The path to the directory containing the .po files.
     translator : str
         The translator to use. Can be any translator supported by `deep_translator`.
@@ -55,16 +55,10 @@ def translate_missing_po_entries(  # noqa: C901
 
     if can_translate and translator is not None:
         # Initialize the translator
-        translator = getattr(deep_translator, translator)(
-            source=source_lang, target=target_lang, **kwargs
-        )
+        translator = getattr(deep_translator, translator)(source=source_lang, target=target_lang, **kwargs)
 
     # Get all .po files
-    files = [
-        f
-        for f in Path(dir_path).rglob("*.po")
-        if not any(d in str(f) for d in ["changelog", "apidoc"])
-    ]
+    files = [f for f in Path(dir_path).rglob("*.po") if not any(d in str(f) for d in ["changelog", "apidoc"])]
 
     number_of_calls = 0
     for file_path in files:
@@ -102,14 +96,12 @@ def translate_missing_po_entries(  # noqa: C901
                 msgids.extend([ids])
                 msgstrs.extend([strs])
 
-            for msgid, msgstr in zip(msgids, msgstrs):
+            for msgid, msgstr in zip(msgids, msgstrs, strict=False):
                 # Check if translation is missing
                 if msgid and not msgstr:
                     if can_translate and translator is not None:
                         # Translate the missing string
-                        translated_text = translator.translate(
-                            msgid.replace('\\"', "'").replace('"', "").replace("\n", "")
-                        )
+                        translated_text = translator.translate(msgid.replace('\\"', "'").replace('"', "").replace("\n", ""))
 
                         # Split the translated text into lines of max 60 characters
                         if len(translated_text) > 70:  # 70 to include the spaces
@@ -138,9 +130,7 @@ def translate_missing_po_entries(  # noqa: C901
                         else:
                             time.sleep(1)
                     else:
-                        warnings.warn(
-                            f"There are missing translations in {file_path}, but no translator is specified."
-                        )
+                        warnings.warn(f"There are missing translations in {file_path}, but no translator is specified.", stacklevel=2)
 
             if clean_old_entries:
                 is_old = str(content).split("#~")

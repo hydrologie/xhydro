@@ -56,9 +56,7 @@ class TestWatershedDelineation:
         bad_coordinates = (-35.0, 45.0)
         with pytest.warns(
             UserWarning,
-            match=warnings.warn(
-                f"Could not return a watershed boundary for coordinates {bad_coordinates}."
-            ),
+            match=warnings.warn(f"Could not return a watershed boundary for coordinates {bad_coordinates}.", stacklevel=2),
         ):
             xh.gis.watershed_delineation(coordinates=bad_coordinates)
 
@@ -114,9 +112,7 @@ class TestWatershedOperations:
 
         df_properties = xh.gis.watershed_properties(self.gdf, projected_crs=6622)
 
-        pd.testing.assert_frame_equal(
-            df_properties[_properties_name], watershed_properties_data[_properties_name]
-        )
+        pd.testing.assert_frame_equal(df_properties[_properties_name], watershed_properties_data[_properties_name])
 
         with pytest.warns(
             FutureWarning,
@@ -139,9 +135,7 @@ class TestWatershedOperations:
         ]
         unique_id = "Station"
 
-        df_properties = xh.gis.watershed_properties(
-            self.gdf, unique_id=unique_id, projected_crs=6622
-        )
+        df_properties = xh.gis.watershed_properties(self.gdf, unique_id=unique_id, projected_crs=6622)
 
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
@@ -150,9 +144,7 @@ class TestWatershedOperations:
 
     @pytest.mark.parametrize("unique_id", ["Station", None])
     def test_watershed_properties_xarray(self, watershed_properties_data, unique_id):
-        ds_properties = xh.gis.watershed_properties(
-            self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622
-        )
+        ds_properties = xh.gis.watershed_properties(self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
 
         unique_id = "Station" if unique_id is not None else "index"
 
@@ -182,9 +174,7 @@ class TestWatershedOperations:
         output_dataset["centroid_lon"].attrs = {"units": "degrees_east"}
         output_dataset["centroid_lat"].attrs = {"units": "degrees_north"}
 
-        xr.testing.assert_allclose(
-            ds_properties[[v for v in output_dataset.data_vars]], output_dataset
-        )
+        xr.testing.assert_allclose(ds_properties[[v for v in output_dataset.data_vars]], output_dataset)
 
     def test_errors(self):
         with pytest.warns(
@@ -196,7 +186,6 @@ class TestWatershedOperations:
 
 
 class TestSurfaceProperties:
-
     gdf = xd.Query(
         **{
             "datasets": {
@@ -260,9 +249,7 @@ class TestSurfaceProperties:
         _properties_name = ["elevation", "slope", "aspect"]
         unique_id = "Station"
 
-        df_properties = xh.gis.surface_properties(
-            self.gdf, unique_id=unique_id, projected_crs=6622
-        )
+        df_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id, projected_crs=6622)
 
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
@@ -278,12 +265,8 @@ class TestSurfaceProperties:
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
-        ds_properties = xh.gis.surface_properties(
-            self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622
-        )
-        ds_properties = ds_properties.drop(
-            list(set(ds_properties.coords) - set(ds_properties.dims))
-        )
+        ds_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
+        ds_properties = ds_properties.drop(list(set(ds_properties.coords) - set(ds_properties.dims)))
 
         assert ds_properties.elevation.attrs["units"] == "m"
         assert ds_properties.slope.attrs["units"] == "degrees"
@@ -304,7 +287,6 @@ class TestSurfaceProperties:
     raises=APIError,
 )
 class TestLandClassification:
-
     gdf = xd.Query(
         **{
             "datasets": {
@@ -372,9 +354,7 @@ class TestLandClassification:
         strict=False,
     )
     @pytest.mark.parametrize("year,", ["latest", "2018"])
-    def test_land_classification(
-        self, land_classification_data_latest, land_classification_data_2018, year
-    ):
+    def test_land_classification(self, land_classification_data_latest, land_classification_data_2018, year):
         if year == "latest":
             df_expected = land_classification_data_latest
         elif year == "2018":
@@ -383,20 +363,14 @@ class TestLandClassification:
             raise ValueError(f"Invalid year argument {year}.")
 
         for unique_id in ["Station", None]:
-            df = xh.gis.land_use_classification(
-                self.gdf, unique_id=unique_id, year=year
-            )
+            df = xh.gis.land_use_classification(self.gdf, unique_id=unique_id, year=year)
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
-            pd.testing.assert_frame_equal(
-                df, df_expected, check_exact=False, atol=0.0001
-            )
+            pd.testing.assert_frame_equal(df, df_expected, check_exact=False, atol=0.0001)
 
     @pytest.mark.parametrize("year,", ["latest", "2018"])
-    def test_land_classification_xarray(
-        self, land_classification_data_latest, land_classification_data_2018, year
-    ):
+    def test_land_classification_xarray(self, land_classification_data_latest, land_classification_data_2018, year):
         for unique_id in ["Station", None]:
             if year == "latest":
                 df_expected = land_classification_data_latest
@@ -486,9 +460,7 @@ class TestToRaven:
             gdf.to_file(str(Path(tmp_path) / "test.shp"), index="HYBAS_ID")
             data = str(Path(tmp_path) / "test.shp")
 
-        out = xh.gis.watershed_to_raven_hru(
-            data, unique_id="HYBAS_ID" if not isinstance(data, tuple) else None
-        )
+        out = xh.gis.watershed_to_raven_hru(data, unique_id="HYBAS_ID" if not isinstance(data, tuple) else None)
 
         assert all(
             col in out.columns
@@ -506,9 +478,7 @@ class TestToRaven:
         assert out.crs == "EPSG:4326"
 
     def test_error(self):
-        data = xh.gis.watershed_delineation(
-            coordinates=[(-73.118597, 46.042467), (-66.153789, 50.265321)]
-        )
+        data = xh.gis.watershed_delineation(coordinates=[(-73.118597, 46.042467), (-66.153789, 50.265321)])
         with pytest.raises(
             ValueError,
             match="The input must be a single watershed",
