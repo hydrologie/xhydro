@@ -133,6 +133,13 @@ serialize = [
 ]
 
 [[tool.bumpversion.files]]
+filename = "CITATION.cff"
+include_bumps = ["release"]
+search = "^version: \"[0-9]+\\.[0-9]+\\.[0-9]\""
+regex = true
+replace = "version: \"{new_version}\""
+
+[[tool.bumpversion.files]]
 filename = "src/xhydro/__init__.py"
 search = "__version__ = \"{current_version}\""
 replace = "__version__ = \"{new_version}\""
