@@ -19,6 +19,7 @@ Internal changes
     * `black`, `blackdoc` and `isort` have been dropped for modern `ruff`.
     * Some development dependencies have been updated to their latest versions.
     * Contributor Covenant Agreement has been updated to v3.0.
+    * Added a CITATION.cff file to the repository.
     * License metadata now follows `PEP 639 <https://peps.python.org/pep-0639/>`_ conventions.
     * Linting hooks are slightly more strict.
 
