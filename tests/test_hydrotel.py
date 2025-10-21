@@ -1,12 +1,9 @@
 import os
-import shutil
 from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
-import xarray as xr
 from packaging.version import parse
 from xclim import __version__ as __xclim_version__
 from xclim.testing.helpers import test_timeseries as timeseries
@@ -171,9 +168,7 @@ class TestHydrotel:
         assert list(ds.data_vars) == ["q"]
         assert set(ds.dims) == {"time", "subbasin_id"}
         correct_attrs = {
-            "units": (
-                "m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"
-            ),
+            "units": ("m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"),
             "description": "Simulated streamflow at the outlet of the river reach",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
             "long_name": "Simulated streamflow",
@@ -238,16 +233,12 @@ class TestHydrotel:
                 "DATE DEBUT": "2001-01-01",
                 "DATE FIN": "2001-12-31",
                 "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
-                "PAS DE TEMPS": (
-                    24 if test != "pdt" else None
-                ),  # xHydro no longer checks the configuration files
+                "PAS DE TEMPS": (24 if test != "pdt" else None),  # xHydro no longer checks the configuration files
             },
         )
 
         if os.name == "nt":
-            with pytest.raises(
-                ValueError, match="You must specify the path to Hydrotel.exe"
-            ):
+            with pytest.raises(ValueError, match="You must specify the path to Hydrotel.exe"):
                 ht.run(dry_run=True)
         else:
             if test in ["ok", "pdt"]:
@@ -304,9 +295,7 @@ class TestHydrotel:
             FileNotFoundError,
             match="/abc/abc.csv",
         ):
-            Hydrotel(
-                tmpdir, "SLNO.csv", executable="command", project_config=project_config
-            )
+            Hydrotel(tmpdir, "SLNO.csv", executable="command", project_config=project_config)
 
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
         # Remove simulation.csv
@@ -316,9 +305,7 @@ class TestHydrotel:
 
     def test_bad_overwrite(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
-        with pytest.raises(
-            ValueError, match="Could not find the following keys in the file"
-        ):
+        with pytest.raises(ValueError, match="Could not find the following keys in the file"):
             _overwrite_csv(
                 tmpdir / "simulation" / "simulation" / "output.csv",
                 {"foo": "bar"},

@@ -1,7 +1,6 @@
 """Parameter estimation functions for the extreme value analysis module."""
 
 from __future__ import annotations
-
 import warnings
 from typing import Any
 
@@ -10,10 +9,11 @@ import scipy.stats
 import xarray as xr
 from xclim.indices.stats import get_dist
 
+
 try:
     from juliacall import JuliaError
 
-    from xhydro.extreme_value_analysis import Extremes, jl
+    from xhydro.extreme_value_analysis import Extremes, jl  # noqa: F401
     from xhydro.extreme_value_analysis.structures.conversions import (
         py_list_to_jl_vector,
     )
@@ -105,9 +105,7 @@ def _fit_model(
 
     distm = dist_methods.get(dist, {}).get(method)
     if not distm:
-        raise ValueError(
-            f"Fitting distribution {dist} or method {method} not recognized"
-        )
+        raise ValueError(f"Fitting distribution {dist} or method {method} not recognized")
 
     args_per_func = {
         "gevfit": {
@@ -147,9 +145,7 @@ def _fit_model(
 
     except JuliaError:
         warnings.warn(
-            f"There was an error in fitting the data to a {dist} distribution using {method}. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
+            f"There was an error in fitting the data to a {dist} distribution using {method}. Returned parameters are numpy.nan.", stacklevel=2
         )
 
 
@@ -211,10 +207,7 @@ def fit(
     shapecov = shapecov or []
 
     if any(var.chunks for var in ds.variables.values()):
-        warnings.warn(
-            "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
-            UserWarning,
-        )
+        warnings.warn("Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.", stacklevel=2)
 
     variables = variables or ds.data_vars
     method = method.upper()
@@ -272,7 +265,7 @@ def fit(
         )
         par, low, upp = results
 
-        par.attrs.update(dict(long_name=f"Distribution parameters") | attrs_dist)
+        par.attrs.update(dict(long_name="Distribution parameters") | attrs_dist)
         low.attrs.update(
             dict(
                 long_name="Lower limit of confidence interval for the distribution parameters",
@@ -292,12 +285,8 @@ def fit(
         result_lower = xr.merge([result_lower, low])
         result_upper = xr.merge([result_upper, upp])
 
-    cint_lower_data = result_lower.rename(
-        {var: f"{var}_lower" for var in result_lower.data_vars}
-    )
-    cint_upper_data = result_upper.rename(
-        {var: f"{var}_upper" for var in result_upper.data_vars}
-    )
+    cint_lower_data = result_lower.rename({var: f"{var}_lower" for var in result_lower.data_vars})
+    cint_upper_data = result_upper.rename({var: f"{var}_upper" for var in result_upper.data_vars})
     data = xr.merge([result_params, cint_lower_data, cint_upper_data])
 
     # Add coordinates for the distribution parameters and transpose to original shape (with dim -> dparams)
@@ -360,9 +349,7 @@ def _fitfunc_param_cint(
 
     locationcov_data = arg[1 : n_loccov + 1]
     scalecov_data = arg[n_loccov + 1 : n_loccov + n_scalecov + 1]
-    shapecov_data = arg[
-        n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1
-    ]
+    shapecov_data = arg[n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1]
 
     nan_mask = create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
 
@@ -374,9 +361,8 @@ def _fitfunc_param_cint(
     # Sanity check
     if len(arr_pruned) <= nparams:
         warnings.warn(
-            "The fitting data contains fewer entries than the number of parameters for the given distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
+            "The fitting data contains fewer entries than the number of parameters for the given distribution. Returned parameters are numpy.nan.",
+            stacklevel=2,
         )
         return tuple(return_nan(nparams))
 
@@ -394,9 +380,7 @@ def _fitfunc_param_cint(
     if jl_model is None:
         param_list = return_nan(nparams)
     else:
-        param_list = param_cint(
-            jl_model, confidence_level=confidence_level, method=method
-        )
+        param_list = param_cint(jl_model, confidence_level=confidence_level, method=method)
 
     if dist == "genextreme" or str(type(dist)) == DIST_NAMES["genextreme"]:
         shape_pos = 2 + n_loccov + n_scalecov
@@ -490,10 +474,7 @@ def return_level(
     shapecov = shapecov or []
 
     if any(var.chunks for var in ds.variables.values()):
-        warnings.warn(
-            "Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.",
-            UserWarning,
-        )
+        warnings.warn("Dataset contains chunks. It is recommended to use scheduler='processes' to compute the results.", stacklevel=2)
 
     variables = variables or ds.data_vars
     method = method.upper()
@@ -540,11 +521,7 @@ def return_level(
             _fitfunc_return_level,
             *args,
             input_core_dims=[[dim]] * len(args),
-            output_core_dims=(
-                [["return_period"], ["return_period"], ["return_period"]]
-                if stationary
-                else [[dim], [dim], [dim]]
-            ),
+            output_core_dims=([["return_period"], ["return_period"], ["return_period"]] if stationary else [[dim], [dim], [dim]]),
             vectorize=True,
             dask="parallelized",
             keep_attrs=True,
@@ -565,16 +542,12 @@ def return_level(
                 nobs_pareto=nobs_pareto,
                 nobsperblock_pareto=nobsperblock_pareto,
             ),
-            dask_gufunc_kwargs={
-                "output_sizes": {
-                    "return_period" if stationary else dim: len(return_level_dim)
-                }
-            },
+            dask_gufunc_kwargs={"output_sizes": {"return_period" if stationary else dim: len(return_level_dim)}},
         )
 
         par, low, upp = results
 
-        par.attrs.update(dict(long_name=f"Distribution parameters") | attrs_dist)
+        par.attrs.update(dict(long_name="Distribution parameters") | attrs_dist)
         low.attrs.update(
             dict(
                 long_name="Lower limit of confidence interval for the distribution parameters",
@@ -594,12 +567,8 @@ def return_level(
         result_lower = xr.merge([result_lower, results[1]])
         result_upper = xr.merge([result_upper, results[2]])
 
-    cint_lower_data = result_lower.rename(
-        {var: f"{var}_lower" for var in result_lower.data_vars}
-    )
-    cint_upper_data = result_upper.rename(
-        {var: f"{var}_upper" for var in result_upper.data_vars}
-    )
+    cint_lower_data = result_lower.rename({var: f"{var}_lower" for var in result_lower.data_vars})
+    cint_upper_data = result_upper.rename({var: f"{var}_upper" for var in result_upper.data_vars})
 
     data = xr.merge([result_return, cint_lower_data, cint_upper_data])
 
@@ -677,9 +646,7 @@ def _fitfunc_return_level(
 
     locationcov_data = arg[1 : n_loccov + 1]
     scalecov_data = arg[n_loccov + 1 : n_loccov + n_scalecov + 1]
-    shapecov_data = arg[
-        n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1
-    ]
+    shapecov_data = arg[n_loccov + n_scalecov + 1 : n_loccov + n_scalecov + n_shapecov + 1]
 
     nan_mask = create_nan_mask([arr], locationcov_data, scalecov_data, shapecov_data)
 
@@ -688,16 +655,13 @@ def _fitfunc_return_level(
     shapecov_data_pruned = remove_nan(nan_mask, shapecov_data)
     arr_pruned = remove_nan(nan_mask, [arr])[0]
 
-    stationary = not (
-        locationcov_data_pruned or scalecov_data_pruned or shapecov_data_pruned
-    )
+    stationary = not (locationcov_data_pruned or scalecov_data_pruned or shapecov_data_pruned)
 
     # Sanity check
     if len(arr_pruned) <= nparams:
         warnings.warn(
-            "The fitting data contains fewer entries than the number of parameters for the given distribution. "
-            "Returned parameters are numpy.nan.",
-            UserWarning,
+            "The fitting data contains fewer entries than the number of parameters for the given distribution. Returned parameters are numpy.nan.",
+            stacklevel=2,
         )
         return tuple(return_nan(main_dim_length))
 
@@ -732,10 +696,9 @@ def _fitfunc_return_level(
     return tuple(return_level_list)
 
 
-def _get_params(
-    dist: str, shapecov: list[str], locationcov: list[str], scalecov: list[str]
-) -> list[str]:
-    r"""Return a list of parameter names based on the specified distribution and covariates.
+def _get_params(dist: str, shapecov: list[str], locationcov: list[str], scalecov: list[str]) -> list[str]:
+    r"""
+    Return a list of parameter names based on the specified distribution and covariates.
 
     Parameters
     ----------
@@ -803,7 +766,8 @@ def _check_fit_params(
     nobs_pareto: int | None = None,
     nobsperblock_pareto: int | None = None,
 ) -> None:
-    r"""Validate the parameters for fitting a univariate distribution. This function is called at the start of fit()
+    r"""
+    Validate the parameters for fitting a univariate distribution. This function is called at the start of fit()
         to make sure that the parameters it is called with are valid.
 
     Parameters
@@ -843,59 +807,29 @@ def _check_fit_params(
         raise ValueError(f"Unrecognized distribution: {dist}")
 
     # PWM estimation does not work in non-stationary context
-    if method == "PWM" and (
-        len(locationcov) != 0 or len(scalecov) != 0 or len(shapecov) != 0
-    ):
+    if method == "PWM" and (len(locationcov) != 0 or len(scalecov) != 0 or len(shapecov) != 0):
         covariates = locationcov + scalecov + shapecov
-        raise ValueError(
-            f"Probability weighted moment parameter estimation cannot have covariates {covariates}"
-        )
+        raise ValueError(f"Probability weighted moment parameter estimation cannot have covariates {covariates}")
 
     # Gumbel dist has no shape covariate and Pareto dist has no location covariate
-    if (dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]) and len(
-        shapecov
-    ) != 0:
-        raise ValueError(
-            f"Gumbel distribution has no shape parameter and thus cannot have shape covariates {shapecov}"
-        )
-    elif (dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]) and len(
-        locationcov
-    ) != 0:
-        raise ValueError(
-            f"Pareto distribution has no location parameter and thus cannot have location covariates {locationcov}"
-        )
+    if (dist == "gumbel_r" or str(type(dist)) == DIST_NAMES["gumbel_r"]) and len(shapecov) != 0:
+        raise ValueError(f"Gumbel distribution has no shape parameter and thus cannot have shape covariates {shapecov}")
+    elif (dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]) and len(locationcov) != 0:
+        raise ValueError(f"Pareto distribution has no location parameter and thus cannot have location covariates {locationcov}")
 
     # Check
-    if (
-        return_type == "returnlevel"
-        and dist == "genpareto"
-        and (
-            threshold_pareto is None
-            or nobs_pareto is None
-            or nobsperblock_pareto is None
-        )
-    ):
-        raise ValueError(
-            "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'."
-        )
+    if return_type == "returnlevel" and dist == "genpareto" and (threshold_pareto is None or nobs_pareto is None or nobsperblock_pareto is None):
+        raise ValueError("'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when using dist 'genpareto'.")
 
     # Confidence level must be between 0 and 1
     if confidence_level >= 1 or confidence_level <= 0:
-        raise ValueError(
-            f"Confidence level must be strictly smaller than 1 and strictly larger than 0"
-        )
+        raise ValueError("Confidence level must be strictly smaller than 1 and strictly larger than 0")
 
     # Must contain data variables present in the Dataset
     for var in variables:
         if var not in ds.data_vars:
-            raise ValueError(
-                f"{var} is not a variable in the Dataset. "
-                f"Dataset variables are: {list(ds.data_vars)}"
-            )
+            raise ValueError(f"{var} is not a variable in the Dataset. Dataset variables are: {list(ds.data_vars)}")
 
     # Return period has to be strictly positive
     if return_period <= 0:
-        raise ValueError(
-            f"Return period has to be strictly larger than 0. "
-            f"Current return period value is {return_period}"
-        )
+        raise ValueError(f"Return period has to be strictly larger than 0. Current return period value is {return_period}")

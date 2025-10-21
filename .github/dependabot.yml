@@ -6,7 +6,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /.github/workflows
     schedule:
-      interval: monthly
+      interval: "quarterly"
     groups:
       actions:
         patterns:
@@ -15,7 +15,7 @@ updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: monthly
+      interval: "quarterly"
     groups:
       ci:
         patterns:

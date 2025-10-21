@@ -30,6 +30,7 @@ This module is designed for hydrologists and data scientists working with region
 import math
 import warnings
 from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -41,9 +42,7 @@ from xhydro import __version__
 from xhydro.utils import update_history
 
 
-def _cluster_indices(
-    clust_num: int | np.ndarray, labels_array: int | np.ndarray
-) -> np.ndarray:
+def _cluster_indices(clust_num: int | np.ndarray, labels_array: int | np.ndarray) -> np.ndarray:
     """
     Get the indices of elements with a specific cluster number using NumPy.
 
@@ -78,16 +77,11 @@ def _get_clusters_indices(cluster: list, sample: xr.Dataset) -> list:
     list
         Indices for each non-excluded group.
     """
-    grouped: list = [
-        sample.index.to_numpy()[_cluster_indices(i, cluster.labels_)]
-        for i in range(np.max(cluster.labels_) + 1)
-    ]
+    grouped: list = [sample.index.to_numpy()[_cluster_indices(i, cluster.labels_)] for i in range(np.max(cluster.labels_) + 1)]
     return grouped
 
 
-def get_group_from_fit(
-    model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
-) -> list:
+def get_group_from_fit(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
 
@@ -105,10 +99,7 @@ def get_group_from_fit(
     list :
         List of indices for each non-excluded group.
     """
-    warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.7.0. Use get_clusters instead.",
-        FutureWarning,
-    )
+    warnings.warn("This function is deprecated and will be removed in xhydro v0.7.0. Use get_clusters instead.", FutureWarning, stacklevel=2)
     return get_clusters(
         model,
         param,
@@ -116,9 +107,7 @@ def get_group_from_fit(
     )
 
 
-def get_clusters(
-    model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
-) -> list:
+def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
 
@@ -136,11 +125,7 @@ def get_clusters(
     list :
         List of indices for each non-excluded group.
     """
-    sample = (
-        sample.to_dataframe(name="value")
-        .reset_index()
-        .pivot(index="Station", columns="components")
-    )
+    sample = sample.to_dataframe(name="value").reset_index().pivot(index="Station", columns="components")
     return _get_clusters_indices(model(**param).fit(sample), sample)
 
 
@@ -171,6 +156,11 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     """
     ds = _scale_data(ds)
     df = ds.to_dataframe()
+    # PCA needs the MultiIndex to be included in the dataframe columns, which is no longer the case with xarray >=2025.9.1
+    if not all(c in df.columns for c in df.index.names):
+        df_tmp = df.reset_index()
+        df_tmp.index = df.index
+        df = df_tmp
     pca = PCA(**kwargs)
     obj_pca = pca.fit(df)
     data_pca = pca.transform(df)
@@ -183,9 +173,7 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     )
 
     data_pca.attrs["long_name"] = "Fitted Scaled Data"
-    data_pca.attrs["description"] = (
-        "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
-    )
+    data_pca.attrs["description"] = "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
     data_pca.attrs["fitted_variables"] = [v for v in ds.var()]
 
     return data_pca, obj_pca
@@ -196,9 +184,7 @@ def _scale_data(ds: xr.Dataset) -> xr.Dataset:
     df = ds.to_dataframe()
 
     scaled_data = pd.DataFrame(scalar.fit_transform(df))  # scaling the data
-    scaled_data.columns = (
-        df.columns
-    )  # Sets columns name and index from original dataframe to scaled dataframe
+    scaled_data.columns = df.columns  # Sets columns name and index from original dataframe to scaled dataframe
     scaled_data.index = df.index
     return xr.Dataset(scaled_data)
 
@@ -250,9 +236,7 @@ def _moment_l(x: np.array) -> list:
     b0 = np.mean(x_sort)
     b1 = np.dot((n - j) / (n * (n - 1)), x_sort)
     b2 = np.dot((n - j) * (n - j - 1) / (n * (n - 1) * (n - 2)), x_sort)
-    b3 = np.dot(
-        (n - j) * (n - j - 1) * (n - j - 2) / (n * (n - 1) * (n - 2) * (n - 3)), x_sort
-    )
+    b3 = np.dot((n - j) * (n - j - 1) * (n - j - 2) / (n * (n - 1) * (n - 2) * (n - 3)), x_sort)
 
     # L-Moment
     lambda1 = b0
@@ -335,34 +319,28 @@ def calc_h_z(
 
     ds_h = _append_ds_vars_names(ds_h, "_H")
     ds = _combine_h_z(xr.merge([z_score, ds_h]))
-    ds["crit"].attrs[
-        "description"
-    ] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    description = (
+        f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+    )
+    ds["crit"].attrs["description"] = description
     ds["crit"].attrs["long_name"] = "Score"
     for v in ds.var():
-        ds[v].attrs[
-            "description"
-        ] = f"H and Z score based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240). - xhydro version: {__version__}"
+        ds[v].attrs["description"] = description
     return ds
 
 
-def _calculate_gev_tau4(
-    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset
-) -> xr.Dataset:
+def _calculate_gev_tau4(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset) -> xr.Dataset:
     # H&W
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
 
     k = _calc_k(lambda_r_2, lambda_r_3)
 
     # Hosking et Wallis, eq. A53
-    tau4 = (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k)
+    tau4 = cast(xr.Dataset, (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k))
     return tau4
 
 
-def _heterogeneite_et_score_z(
-    kap: Callable, n: np.array, t: np.array, t3: np.array, t4: np.array, seed=None
-) -> tuple:
-
+def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: np.ndarray, t4: np.ndarray, seed=None) -> tuple:
     # We remove nan or 0 length
     # If not enough values to calculate some moments, other moments are removed as well
     bool_maks = (n != 0) & (~np.isnan(t)) & (~np.isnan(t3)) & (~np.isnan(t4))
@@ -386,7 +364,7 @@ def _heterogeneite_et_score_z(
     except ValueError as error:
         # FIXME: Cette message could be plus informative.
         warnings.warn(
-            f"Kappa distribution fit blablabla (quelle serait la cause d'un ValueError?), returning all NaNs. Error: {error}."
+            f"Kappa distribution fit blablabla (quelle serait la cause d'un ValueError?), returning all NaNs. Error: {error}.", stacklevel=2
         )
         return (
             np.nan,
@@ -395,9 +373,7 @@ def _heterogeneite_et_score_z(
             np.nan,
         )  # Returning nans for H, b4, sigma4, tau4_r
     except Exception as error:
-        warnings.warn(
-            f"Kappa distribution fit failed to converge, returning all NaNs. Error: {error}."
-        )
+        warnings.warn(f"Kappa distribution fit failed to converge, returning all NaNs. Error: {error}.", stacklevel=2)
         if "Failed to converge" in repr(error):
             return (
                 np.nan,
@@ -409,10 +385,7 @@ def _heterogeneite_et_score_z(
             raise error
     n_sim = 500  # Number of "virtual regions" simulated
 
-    def _calc_tsim(
-        _kappa_param: dict, _length: float, _n_sim: int, _seed=seed
-    ) -> np.array:
-
+    def _calc_tsim(_kappa_param: dict, _length: float, _n_sim: int, _seed=seed) -> np.array:
         # For each station, we get n_sim vectors de same length than the observations
         rvs = kap.rvs(
             _kappa_param["k"],
@@ -427,16 +400,12 @@ def _heterogeneite_et_score_z(
 
     t_sim_tau4m = [_calc_tsim(kappa_param, length, n_sim) for length in n]
 
-    t_sim = np.array(
-        [tt[3] for tt in t_sim_tau4m]
-    )  # Tau corresponds to the 3rd moment.
+    t_sim = np.array([tt[3] for tt in t_sim_tau4m])  # Tau corresponds to the 3rd moment.
     tau4m = np.array([tt[5] for tt in t_sim_tau4m])  # Tau4 corresponds to the 5th term.
 
     b4 = np.mean(tau4m - tau4_r)
 
-    sigma4 = np.sqrt(
-        (1 / (n_sim - 1)) * (np.sum((tau4m - tau4_r) ** 2) - (n_sim * b4 * b4))
-    )
+    sigma4 = np.sqrt((1 / (n_sim - 1)) * (np.sum((tau4m - tau4_r) ** 2) - (n_sim * b4 * b4)))
 
     # Calculating V
     tau_r_sim = np.dot(n, t_sim) / np.sum(n)
@@ -504,9 +473,7 @@ def _append_ds_vars_names(ds: xr.Dataset, suffix: str) -> xr.Dataset:
     return ds
 
 
-def mask_h_z(
-    ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | None = 1.64
-) -> xr.DataArray:
+def mask_h_z(ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | None = 1.64) -> xr.DataArray:
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
 
@@ -541,9 +508,7 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     new_ds = xr.Dataset()
     for v in ds:
         if "_Z" in v:
-            new_ds[v.removesuffix("_Z")] = xr.concat(
-                [ds[v.replace("_Z", "_H")], ds[v]], dim="crit"
-            ).assign_coords(crit=["H", "Z"])
+            new_ds[str(v).removesuffix("_Z")] = xr.concat([ds[str(v).replace("_Z", "_H")], ds[v]], dim="crit").assign_coords(crit=["H", "Z"])
     return new_ds
 
 
@@ -585,12 +550,9 @@ def calculate_rp_from_afr(
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.",
-        FutureWarning,
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.", FutureWarning, stacklevel=2
     )
-    return calculate_return_period(
-        ds_regions, ds_moments_regions, return_period, l1, rp
-    )
+    return calculate_return_period(ds_regions, ds_moments_regions, return_period=return_period, l1=l1, rp=rp)
 
 
 def calculate_return_period(
@@ -631,10 +593,7 @@ def calculate_return_period(
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
     if rp is not None:
-        warnings.warn(
-            "The 'rp' parameter has been renamed to 'return_period' and will be dropped in a future release.",
-            FutureWarning,
-        )
+        warnings.warn("The 'rp' parameter has been renamed to 'return_period' and will be dropped in a future release.", FutureWarning, stacklevel=2)
         return_period = rp
 
     if l1 is None:
@@ -643,18 +602,13 @@ def calculate_return_period(
     ds = _calculate_ic_from_afr(ds_regions, ds_moments_regions, return_period) * l1
     for v in ds.var():
         ds[v].attrs["long_name"] = "Return period"
-        ds[v].attrs[
-            "description"
-        ] = "Calculated return periods for each region and specified return period."
+        ds[v].attrs["description"] = "Calculated return periods for each region and specified return period."
         ds[v].attrs["history"] = update_history("Computed return periods", ds[v])
         ds[v].attrs["units"] = ds_regions[v].attrs["units"]
     return ds
 
 
-def _calculate_ic_from_afr(
-    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, return_period: list
-) -> xr.Dataset:
-
+def _calculate_ic_from_afr(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, return_period: list) -> xr.Dataset:
     lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
 
     # alpha = location
@@ -670,9 +624,7 @@ def _calculate_ic_from_afr(
     xi = lambda_r_1 + (alpha * (term - 1)) / k
 
     # Calculating wanted return periods
-    t = xr.DataArray(data=return_period, dims="return_period").assign_coords(
-        return_period=return_period
-    )
+    t = xr.DataArray(data=return_period, dims="return_period").assign_coords(return_period=return_period)
 
     # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
     q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** k) / k
@@ -702,16 +654,12 @@ def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
     """
     station_dim = ds.cf.cf_roles["timeseries_id"][0]
     for gr in ds.region_id:
-        if (
-            len(ds.sel(region_id=gr).dropna(dim=station_dim, how="all")[station_dim])
-            < thresh
-        ):
+        if len(ds.sel(region_id=gr).dropna(dim=station_dim, how="all")[station_dim]) < thresh:
             ds = ds.drop_sel(region_id=gr)
     return ds
 
 
 def _calc_k(lambda_r_2, lambda_r_3):
-
     # Hosking et Wallis, éq. A55
     c = (2 / (3 + (lambda_r_3 / lambda_r_2))) - (np.log(2) / np.log(3))
 
@@ -720,9 +668,7 @@ def _calc_k(lambda_r_2, lambda_r_3):
     return k
 
 
-def _calc_lambda_r(
-    ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset
-) -> tuple[int, xr.Dataset, xr.Dataset]:
+def _calc_lambda_r(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset) -> tuple[int, xr.Dataset, xr.Dataset]:
     station_dim = ds_regions.cf.cf_roles["timeseries_id"][0]
 
     nr = ds_moments_regions.count(dim=station_dim).isel(lmom=0)
@@ -772,9 +718,7 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
     # TODO: add attributes
     for v in ds.var():
         ds[v].attrs["long_name"] = "L-moments"
-        ds[v].attrs[
-            "description"
-        ] = "L-moments based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240)"
+        ds[v].attrs["description"] = "L-moments based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240)"
         ds[v].attrs["history"] = update_history("Computed L-moments", ds[v])
         ds[v].attrs.pop("cell_methods", None)
         ds[v].attrs.pop("units", None)
@@ -800,12 +744,7 @@ def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
     """
     id_dim = ds.cf.cf_roles["timeseries_id"][0]
     ds_groups = xr.concat(
-        [
-            ds.sel(**{id_dim: regions[i]})
-            .assign_coords(region_id=i)
-            .expand_dims("region_id")
-            for i in range(len(regions))
-        ],
+        [ds.sel(**{id_dim: regions[i]}).assign_coords(region_id=i).expand_dims("region_id") for i in range(len(regions))],
         dim="region_id",
     )
     ds_groups["region_id"].attrs["cf_role"] = "region_id"

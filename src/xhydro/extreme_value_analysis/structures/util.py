@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+
 try:
     from juliacall import JuliaError
     from juliacall import convert as jl_convert
@@ -64,12 +65,8 @@ def jl_variable_fit_parameters(covariate_list: list[list]) -> Any:
     This function is necessary for non-stationary parameter estimation:
     see example at extreme_value_analysis/parameterestimation.gevfit().
     """
-    py_variables = [
-        Variable("", values) for values in covariate_list
-    ]  # it is not important that variables have a name
-    jl_variables = [
-        py_variable_to_jl_variable(py_variable) for py_variable in py_variables
-    ]
+    py_variables = [Variable("", values) for values in covariate_list]  # it is not important that variables have a name
+    jl_variables = [py_variable_to_jl_variable(py_variable) for py_variable in py_variables]
     jl_vector_variables = jl_convert(jl.Vector[jl.Extremes.Variable], jl_variables)
     return jl_vector_variables
 
@@ -102,15 +99,10 @@ def param_cint(
     if method == "BAYES":
         jl_params_sims = jl_model.sim.value
 
-        py_params_sims = [
-            jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :]))
-            for i in range(jl_params_sims.shape[0])
-        ]
-        params = np.mean(
-            np.stack(py_params_sims), axis=0
-        )  # each parameter is estimated to be the average over all simulations
+        py_params_sims = [jl_vector_to_py_list(jl.vec(jl_params_sims[i, :, :])) for i in range(jl_params_sims.shape[0])]
+        params = np.mean(np.stack(py_params_sims), axis=0)  # each parameter is estimated to be the average over all simulations
     else:
-        params = np.array(jl_vector_to_py_list(getattr(jl_model, "θ̂")))
+        params = np.array(jl_vector_to_py_list(jl_model.θ̂))
 
     try:
         jl_cint = Extremes.cint(jl_model, confidence_level)
@@ -121,9 +113,7 @@ def param_cint(
         return [params, cint_lower, cint_upper]
 
     except JuliaError:
-        warnings.warn(
-            f"There was an error in computing confidence interval.", UserWarning
-        )
+        warnings.warn("There was an error in computing confidence interval.", stacklevel=2)
 
         return [
             params,
@@ -175,14 +165,8 @@ def return_level_cint(
     """
     try:
         if dist == "genpareto" or str(type(dist)) == DIST_NAMES["genpareto"]:
-            if (
-                threshold_pareto is None
-                or nobs_pareto is None
-                or nobsperblock_pareto is None
-            ):
-                raise ValueError(
-                    "'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when jl_model use a 'genpareto'."
-                )
+            if threshold_pareto is None or nobs_pareto is None or nobsperblock_pareto is None:
+                raise ValueError("'threshold_pareto', 'nobs_pareto', and 'nobsperblock_pareto' must be defined when jl_model use a 'genpareto'.")
             else:
                 jl_return_level = Extremes.returnlevel(
                     jl_model,
@@ -201,10 +185,8 @@ def return_level_cint(
         else:
             py_return_level = np.array(jl_vector_to_py_list(jl_return_level.value))
 
-    except JuliaError:
-        raise ValueError(
-            f"There was an error in computing confidence interval for the return level."
-        )
+    except JuliaError as err:
+        raise ValueError("There was an error in computing confidence interval for the return level.") from err
 
     try:
         jl_cint = Extremes.cint(jl_return_level, confidence_level)
@@ -214,15 +196,11 @@ def return_level_cint(
 
         return [py_return_level, cint_lower, cint_upper]
 
-    except JuliaError:
-        raise ValueError(
-            f"There was an error in computing confidence interval for the return level."
-        )
+    except JuliaError as err:
+        raise ValueError("There was an error in computing confidence interval for the return level.") from err
 
 
-def insert_covariates(
-    param_names: list[str], covariates: list[str], param_name: str
-) -> list[str]:
+def insert_covariates(param_names: list[str], covariates: list[str], param_name: str) -> list[str]:
     r"""
     Insert appropriate covariate names in the parameter names list.
 
@@ -246,11 +224,7 @@ def insert_covariates(
     >>> ["shape", "loc", "loc_temperature_covariate", "loc_year_covariate", "scale"]
     """
     index = param_names.index(param_name)
-    return (
-        param_names[: index + 1]
-        + [f"{param_name}_{covariate}_covariate" for covariate in covariates]
-        + param_names[index + 1 :]
-    )
+    return param_names[: index + 1] + [f"{param_name}_{covariate}_covariate" for covariate in covariates] + param_names[index + 1 :]
 
 
 def remove_nan(mask: np.array, covariates: list[list]) -> list[list]:
@@ -377,9 +351,7 @@ def create_nan_mask(*nested_lists) -> list:
     return mask
 
 
-def recover_nan(
-    mask: np.ndarray | list[bool], lists: np.ndarray | list[list[float]]
-) -> list[list[float]]:
+def recover_nan(mask: np.ndarray | list[bool], lists: np.ndarray | list[list[float]]) -> list[list[float]]:
     """
     Recover the original length of lists by filling NaN in masked positions.
 

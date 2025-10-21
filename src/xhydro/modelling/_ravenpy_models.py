@@ -18,6 +18,7 @@ import xarray as xr
 from xclim.core.units import convert_units_to
 from xscen.io import estimate_chunks, save_to_netcdf
 
+
 try:
     import ravenpy
     import ravenpy.config as rc
@@ -32,13 +33,15 @@ except (ImportError, RuntimeError) as e:
 
 from ._hm import HydrologicalModel
 
+
 logger = logging.getLogger(__name__)
 
 __all__ = ["RavenpyModel"]
 
 
 class RavenpyModel(HydrologicalModel):
-    r"""Initialize the RavenPy model class.
+    r"""
+    Initialize the RavenPy model class.
 
     Parameters
     ----------
@@ -119,10 +122,7 @@ class RavenpyModel(HydrologicalModel):
         workdir: str | os.PathLike | None = None,
         executable: str | os.PathLike | None = None,
         run_name: str | None = None,
-        model_name: (
-            Literal["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"]
-            | None
-        ) = None,
+        model_name: (Literal["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"] | None) = None,
         start_date: dt.datetime | str | None = None,
         end_date: dt.datetime | str | None = None,
         parameters: np.ndarray | list[float] | None = None,
@@ -184,7 +184,8 @@ class RavenpyModel(HydrologicalModel):
                 warnings.warn(
                     "Meteorological data, HRU, or observed streamflow data were provided, but the project files already exist "
                     "and 'overwrite' is set to False. These data will not be used. If you want to update the "
-                    "project files, use the 'update_config' method."
+                    "project files, use the 'update_config' method.",
+                    stacklevel=2,
                 )
             else:
                 logger.info("Project already exists and files will not be overwritten.")
@@ -195,7 +196,8 @@ class RavenpyModel(HydrologicalModel):
             if self.meteo is None or self.hru is None:
                 warnings.warn(
                     "The meteorological data and/or HRU are not provided. Project files will not be created. Please provide the missing data, "
-                    "then call the 'create_rv' method to create the project files."
+                    "then call the 'create_rv' method to create the project files.",
+                    stacklevel=2,
                 )
                 return
             if len(files) > 0:
@@ -225,7 +227,8 @@ class RavenpyModel(HydrologicalModel):
         output_subbasins=None,
         **kwargs,
     ):
-        r"""Write the RavenPy project files.
+        r"""
+        Write the RavenPy project files.
 
         Parameters
         ----------
@@ -272,6 +275,7 @@ class RavenpyModel(HydrologicalModel):
                 "The 'parameters' parameter is deprecated and will be removed in a future version. "
                 "Please set the 'parameters' attribute directly on the RavenPy model instance.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.parameters = parameters
         if model_name is not None:
@@ -279,6 +283,7 @@ class RavenpyModel(HydrologicalModel):
                 "The 'model_name' parameter is deprecated and will be removed in a future version. "
                 "Please set the 'model_name' attribute directly on the RavenPy model instance.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.model_name = model_name
         if start_date is not None:
@@ -286,6 +291,7 @@ class RavenpyModel(HydrologicalModel):
                 "The 'start_date' parameter is deprecated and will be removed in a future version. "
                 "Please set the 'start_date' attribute directly on the RavenPy model instance.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.start_date = start_date
         if end_date is not None:
@@ -293,6 +299,7 @@ class RavenpyModel(HydrologicalModel):
                 "The 'end_date' parameter is deprecated and will be removed in a future version. "
                 "Please set the 'end_date' attribute directly on the RavenPy model instance.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.end_date = end_date
         if len(kwargs) > 0:
@@ -301,6 +308,7 @@ class RavenpyModel(HydrologicalModel):
                 "Set them when first instantiating the RavenPy model, or later by setting the attributes in "
                 "a dictionary under the 'kwargs' attribute of the class.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.kwargs = kwargs
         if any(
@@ -318,9 +326,9 @@ class RavenpyModel(HydrologicalModel):
             ]
         ):
             warnings.warn(
-                "Data-related parameters are deprecated and will be removed in a future version. "
-                "Please use the 'update_data' method instead.",
+                "Data-related parameters are deprecated and will be removed in a future version. Please use the 'update_data' method instead.",
                 FutureWarning,
+                stacklevel=2,
             )
             self.update_data(
                 qobs_file=qobs_file,
@@ -345,9 +353,7 @@ class RavenpyModel(HydrologicalModel):
         ]
         missing = [input for input in required if getattr(self, input) is None]
         if missing:
-            raise ValueError(
-                f"The following required inputs are missing: {', '.join(missing)}"
-            )
+            raise ValueError(f"The following required inputs are missing: {', '.join(missing)}")
 
         # Remove any existing files in the project directory
         if len([f for f in self.workdir.rglob(f"{self.run_name}.rv*")]) > 0:
@@ -355,9 +361,7 @@ class RavenpyModel(HydrologicalModel):
                 for file in self.workdir.rglob(f"{self.run_name}*.*"):
                     file.unlink()
             else:
-                raise FileExistsError(
-                    f"Project {self.run_name} in {self.workdir} already exists, but 'overwrite' is set to False."
-                )
+                raise FileExistsError(f"Project {self.run_name} in {self.workdir} already exists, but 'overwrite' is set to False.")
 
         kwargs = deepcopy(self.kwargs)
 
@@ -398,7 +402,8 @@ class RavenpyModel(HydrologicalModel):
         meteo_station_properties: dict | None = None,
         gridweights: str | os.PathLike | None = None,
     ):
-        """Update the model configuration with new observed data (self.qobs), HRU properties (self.hru), or meteorological data (self.meteo).
+        """
+        Update the model configuration with new observed data (self.qobs), HRU properties (self.hru), or meteorological data (self.meteo).
 
         Parameters
         ----------
@@ -457,19 +462,10 @@ class RavenpyModel(HydrologicalModel):
         If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance and saved
         in a 'weights' subdirectory of the project folder, under the name 'meteo-name_vs_hru-name.txt'.
         """
-        if (
-            any(opt is not None for opt in [output_subbasins, minimum_reservoir_area])
-            and hru is None
-        ) or (
-            any(
-                opt is not None
-                for opt in [data_type, alt_names_meteo, meteo_station_properties]
-            )
-            and meteo_file is None
+        if (any(opt is not None for opt in [output_subbasins, minimum_reservoir_area]) and hru is None) or (
+            any(opt is not None for opt in [data_type, alt_names_meteo, meteo_station_properties]) and meteo_file is None
         ):
-            raise ValueError(
-                "All relevant inputs must be provided if updating the HRU properties or meteorological data"
-            )
+            raise ValueError("All relevant inputs must be provided if updating the HRU properties or meteorological data")
 
         # Q_obs must be read first, as it might be used to update the subbasins to output
         if qobs_file is not None:
@@ -501,7 +497,8 @@ class RavenpyModel(HydrologicalModel):
         rvt: bool = False,
         rvh: bool = False,
     ) -> None:
-        """Manually update some aspects of the configuration of the RavenPy model.
+        """
+        Manually update some aspects of the configuration of the RavenPy model.
 
         Parameters
         ----------
@@ -536,8 +533,7 @@ class RavenpyModel(HydrologicalModel):
             # Backup the existing .rvi file
             shutil.copy(
                 self.workdir / f"{self.run_name}.rvi",
-                self.workdir
-                / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvi",
+                self.workdir / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvi",
             )
 
             # Read the existing .rvi file and update the start date and end date
@@ -545,9 +541,7 @@ class RavenpyModel(HydrologicalModel):
                 lines = file.readlines()
 
             start_date = pd.to_datetime(self.start_date).strftime("%Y-%m-%d %H:%M:%S")
-            idx = [i for i, line in enumerate(lines) if line.startswith(":StartDate")][
-                0
-            ]
+            idx = [i for i, line in enumerate(lines) if line.startswith(":StartDate")][0]
             lines[idx] = f":StartDate            {start_date}\n"
 
             end_date = pd.to_datetime(self.end_date).strftime("%Y-%m-%d %H:%M:%S")
@@ -568,27 +562,17 @@ class RavenpyModel(HydrologicalModel):
         if rvt:
             if all(data is None for data in [self.meteo, self.qobs]):
                 warnings.warn(
-                    "Meteorological data and/or observed streamflow data were not provided. The .rvt file will not be updated."
+                    "Meteorological data and/or observed streamflow data were not provided. The .rvt file will not be updated.", stacklevel=2
                 )
             else:
                 # Backup the existing .rvt file
                 shutil.copy(
                     self.workdir / f"{self.run_name}.rvt",
-                    self.workdir
-                    / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvt",
+                    self.workdir / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvt",
                 )
 
                 # Update the meteorological data and observed streamflow data in the .rvt file
-                rvt = rc.rvs.RVT(
-                    **(
-                        self.meteo["keys"]
-                        | (
-                            {"observation_data": self.qobs["rc"]}
-                            if self.qobs is not None
-                            else {}
-                        )
-                    )
-                )
+                rvt = rc.rvs.RVT(**(self.meteo["keys"] | ({"observation_data": self.qobs["rc"]} if self.qobs is not None else {})))
                 rvt_lines = rvt.to_rv() + "\n"
                 rvt_lines = rvt_lines.split("\n")
                 rvt_lines = [line + "\n" for line in rvt_lines]
@@ -600,11 +584,7 @@ class RavenpyModel(HydrologicalModel):
                 output_lines = []
                 for line in lines:
                     # If the line starts with :GriddedForcing, :Gauge, or :ObservationalData, replace everything after with the new rvt_lines
-                    if (
-                        line.startswith(":GriddedForcing")
-                        or line.startswith(":Gauge")
-                        or line.startswith(":ObservationalData")
-                    ):
+                    if line.startswith(":GriddedForcing") or line.startswith(":Gauge") or line.startswith(":ObservationalData"):
                         output_lines.extend(rvt_lines)
                         break
                     else:
@@ -620,14 +600,14 @@ class RavenpyModel(HydrologicalModel):
             if output is None:
                 warnings.warn(
                     "Changes to the .rvh file were requested, but no output subbasins were defined in the HRU properties. "
-                    "The .rvh file will not be updated."
+                    "The .rvh file will not be updated.",
+                    stacklevel=2,
                 )
             else:
                 # Backup the existing .rvh file
                 shutil.copy(
                     self.workdir / f"{self.run_name}.rvh",
-                    self.workdir
-                    / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvh",
+                    self.workdir / f"{self.run_name}_backup_{dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.rvh",
                 )
 
                 # Read the existing .rvh file and update the hydrological response variables
@@ -648,21 +628,11 @@ class RavenpyModel(HydrologicalModel):
                     if changes_active:
                         if "GAUGED" in line:
                             l_split = line.split(",")
-                            l_split = [
-                                li for li in l_split if li.strip() != ":Attributes"
-                            ]
-                            hruid_idx = [
-                                idx for idx, line in enumerate(l_split) if " ID" in line
-                            ]
-                            gauged_idx = [
-                                idx
-                                for idx, line in enumerate(l_split)
-                                if "GAUGED" in line
-                            ]
+                            l_split = [li for li in l_split if li.strip() != ":Attributes"]
+                            hruid_idx = [idx for idx, line in enumerate(l_split) if " ID" in line]
+                            gauged_idx = [idx for idx, line in enumerate(l_split) if "GAUGED" in line]
                             if len(hruid_idx) != 1 and len(gauged_idx) != 1:
-                                raise ValueError(
-                                    "Could not determine unique HRU and GAUGED columns in the .rvh file."
-                                )
+                                raise ValueError("Could not determine unique HRU and GAUGED columns in the .rvh file.")
                             hruid_idx = hruid_idx[0]
                             gauged_idx = gauged_idx[0]
                         if gauged_idx is not None:
@@ -671,21 +641,9 @@ class RavenpyModel(HydrologicalModel):
                                 idx = int(l_split[hruid_idx])
 
                                 # Replace the gauged element, accounting for the real whitespace between each non-space value
-                                whitespaces = np.diff(
-                                    [i for i, c in enumerate(line) if c == " "]
-                                )
-                                actual_gauged_idx = (
-                                    np.array(
-                                        [
-                                            i
-                                            for i, val in enumerate(whitespaces)
-                                            if val != 1
-                                        ]
-                                    )
-                                )[gauged_idx]
-                                actual_gauged_idx = (
-                                    np.sum(whitespaces[:actual_gauged_idx]) + 1
-                                )
+                                whitespaces = np.diff([i for i, c in enumerate(line) if c == " "])
+                                actual_gauged_idx = (np.array([i for i, val in enumerate(whitespaces) if val != 1]))[gauged_idx]
+                                actual_gauged_idx = np.sum(whitespaces[:actual_gauged_idx]) + 1
                                 line = [li for li in line]
                                 if idx in output:
                                     line[actual_gauged_idx] = "1"
@@ -705,7 +663,8 @@ class RavenpyModel(HydrologicalModel):
                     file.writelines(output_lines)
 
     def run(self, *, overwrite: bool = False) -> xr.Dataset:
-        """Run the Raven hydrological model and return simulated streamflow.
+        """
+        Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
         ----------
@@ -719,22 +678,15 @@ class RavenpyModel(HydrologicalModel):
         """
         # TODO: Compare the tagged version of the files with the raven-hydro version
         # FIXME: overwrite is currently not working as intended in RavenPy. Remove this once it is fixed.
-        if overwrite is False and Path.is_file(
-            self.workdir / "output" / f"{self.run_name}_Hydrographs.nc"
-        ):
-            raise FileExistsError(
-                f"Output files already exist in {self.workdir / 'output'}. Use 'overwrite=True' to overwrite them."
-            )
+        if overwrite is False and Path.is_file(self.workdir / "output" / f"{self.run_name}_Hydrographs.nc"):
+            raise FileExistsError(f"Output files already exist in {self.workdir / 'output'}. Use 'overwrite=True' to overwrite them.")
 
         if self.executable is None:
             run(modelname=self.run_name, configdir=self.workdir, overwrite=overwrite)
         else:
             executable = str(Path(self.executable))
             if "raven" not in executable.lower():
-                raise ValueError(
-                    "The executable command does not seem to be a valid Raven command. "
-                    "Please check the 'executable' parameter."
-                )
+                raise ValueError("The executable command does not seem to be a valid Raven command. Please check the 'executable' parameter.")
 
             # Since we bypassed RavenPy, we need to clean up the output directory
             for file in (self.workdir / "output").glob(f"{self.run_name}*.nc"):
@@ -756,7 +708,8 @@ class RavenpyModel(HydrologicalModel):
         return self.get_streamflow()
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
-        r"""Return the inputs used to run the Raven model.
+        r"""
+        Return the inputs used to run the Raven model.
 
         Parameters
         ----------
@@ -773,11 +726,7 @@ class RavenpyModel(HydrologicalModel):
         rvt_file = self.workdir / f"{self.run_name}.rvt"
         with Path.open(rvt_file) as f:
             lines = f.readlines()
-        all_files = {
-            line.split(":FileNameNC")[1].replace("\n", "").replace(" ", "")
-            for line in lines
-            if ":FileNameNC" in line
-        }
+        all_files = {line.split(":FileNameNC")[1].replace("\n", "").replace(" ", "") for line in lines if ":FileNameNC" in line}
 
         ds = xr.open_mfdataset(*list(all_files), **kwargs)
 
@@ -785,30 +734,19 @@ class RavenpyModel(HydrologicalModel):
             rvi_file = self.workdir / f"{self.run_name}.rvi"
             with Path.open(rvi_file) as f:
                 lines = f.readlines()
-            start_date = {
-                line.split(":StartDate")[1].replace("\n", "").replace(" ", "")
-                for line in lines
-                if ":StartDate" in line
-            }
-            end_date = {
-                line.split(":EndDate")[1].replace("\n", "").replace(" ", "")
-                for line in lines
-                if ":EndDate" in line
-            }
+            start_date = {line.split(":StartDate")[1].replace("\n", "").replace(" ", "") for line in lines if ":StartDate" in line}
+            end_date = {line.split(":EndDate")[1].replace("\n", "").replace(" ", "") for line in lines if ":EndDate" in line}
             if len(start_date) != 1 or len(end_date) != 1:
-                raise ValueError(
-                    "Could not find a valid start or end date in the .rvi file."
-                )
+                raise ValueError("Could not find a valid start or end date in the .rvi file.")
             start_date = dt.datetime.strptime(list(start_date)[0], "%Y-%m-%d%H:%M:%S")
             end_date = dt.datetime.strptime(list(end_date)[0], "%Y-%m-%d%H:%M:%S")
             ds = ds.sel(time=slice(start_date, end_date))
 
         return ds
 
-    def get_streamflow(
-        self, output: Literal["q", "all", "path"] = "q", **kwargs
-    ) -> xr.Dataset | Path:
-        r"""Return the simulated streamflow from the Raven model.
+    def get_streamflow(self, output: Literal["q", "all", "path"] = "q", **kwargs) -> xr.Dataset | Path:
+        r"""
+        Return the simulated streamflow from the Raven model.
 
         Parameters
         ----------
@@ -826,9 +764,7 @@ class RavenpyModel(HydrologicalModel):
         Path
             The path to the streamflow file if output is set to "path".
         """
-        outputs = ravenpy.OutputReader(
-            run_name=self.run_name, path=self.workdir / "output"
-        )
+        outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
 
         if output == "path":
             return Path(outputs.files["hydrograph"])
@@ -838,9 +774,7 @@ class RavenpyModel(HydrologicalModel):
             else:
                 return xr.open_dataset(outputs.files["hydrograph"], **kwargs)
 
-    def _read_qobs(
-        self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q"
-    ) -> None:
+    def _read_qobs(self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q") -> None:
         """Read the observed streamflow data from a NetCDF file and update the .qobs properties of the RavenPy model."""
         self.qobs = {
             "file": Path(qobs_file),
@@ -855,9 +789,7 @@ class RavenpyModel(HydrologicalModel):
             if "timeseries_id" in ds_qobs.cf.cf_roles:
                 basin_id = ds_qobs.cf.cf_roles["timeseries_id"][0]
             else:
-                basin_name = [
-                    a for a in ["basin_id", "basin_name", "subbasin_id"] if a in ds_qobs
-                ]
+                basin_name = [a for a in ["basin_id", "basin_name", "subbasin_id"] if a in ds_qobs]
                 if len(basin_name) == 1:
                     basin_id = basin_name[0]
                 elif len(basin_name) > 1:
@@ -870,11 +802,7 @@ class RavenpyModel(HydrologicalModel):
             # If the dataset is a single time series, we can manage a missing basin_id
             if basin_id is None and ds_qobs.dims.keys() == {"time"}:
                 self.qobs["basin_id"] = [1]
-                self.qobs["station_id"] = (
-                    ["0"]
-                    if station_id is None
-                    else ds_qobs[station_id].astype(str).values.tolist()
-                )
+                self.qobs["station_id"] = ["0"] if station_id is None else ds_qobs[station_id].astype(str).values.tolist()
             elif basin_id is None:
                 raise ValueError(
                     "The observed streamflow dataset must contain a basin ID variable. Please ensure one of 'basin_id', 'basin_name', "
@@ -884,9 +812,7 @@ class RavenpyModel(HydrologicalModel):
                 # Extract the basin and station IDs
                 self.qobs["basin_id"] = [int(i) for i in ds_qobs[basin_id].values]
                 self.qobs["station_id"] = (
-                    [str(i) for i in range(len(self.qobs["basin_id"]))]
-                    if station_id is None
-                    else ds_qobs[station_id].astype(str).values.tolist()
+                    [str(i) for i in range(len(self.qobs["basin_id"]))] if station_id is None else ds_qobs[station_id].astype(str).values.tolist()
                 )
 
         self.qobs["rc"] = [
@@ -926,23 +852,19 @@ class RavenpyModel(HydrologicalModel):
                 crs=hru.get("crs"),
             )
         elif not isinstance(hru, gpd.GeoDataFrame):
-            raise TypeError(
-                "The 'hru' parameter must be a GeoDataFrame, a dictionary, or a path to a shapefile."
-            )
+            raise TypeError("The 'hru' parameter must be a GeoDataFrame, a dictionary, or a path to a shapefile.")
 
         # Manage the output subbasins
         if output_subbasins is not None:
             has_changed = True
             if output_subbasins == "qobs":
                 if self.qobs is None:
-                    raise ValueError(
-                        "The 'qobs' parameter is set to 'qobs', but no observed streamflow data is provided."
-                    )
+                    raise ValueError("The 'qobs' parameter is set to 'qobs', but no observed streamflow data is provided.")
                 basin_ids = self.qobs["basin_id"]
 
                 # Also fill in the station names to match the observed streamflow data
                 station_ids = self.qobs["station_id"]
-                hru["Obs_NM"] = hru["SubId"].map(dict(zip(basin_ids, station_ids)))
+                hru["Obs_NM"] = hru["SubId"].map(dict(zip(basin_ids, station_ids, strict=False)))
             elif output_subbasins == "all":
                 basin_ids = hru["SubId"].unique()
             elif isinstance(output_subbasins, list):
@@ -950,7 +872,7 @@ class RavenpyModel(HydrologicalModel):
             else:
                 raise ValueError(
                     f"The 'output_subbasins' parameter must be either 'all', 'qobs', or a list of basin IDs. Got '{output_subbasins}' instead."
-                )
+                ) from None
 
             self.hru["output_subbasins"] = basin_ids
             hru["Has_Gauge"] = hru["SubId"].isin(basin_ids)
@@ -961,17 +883,14 @@ class RavenpyModel(HydrologicalModel):
             rvh_config = ravenpy.extractors.BasinMakerExtractor(hru).extract()
             self.hru["keys"]["HRUs"] = rvh_config["hrus"]
 
-        except KeyError:
+        except KeyError as err:
             rvh_config = None
             # If the HRU is not compatible with the BasinMakerExtractor, we try to manage it manually
             if len(hru) != 1:
                 raise ValueError(
                     "If using multiple HRUs, the HRU GeoDataFrame must contain every property required by the BasinMakerExtractor."
-                )
-            if any(
-                col not in hru.columns
-                for col in ["HRU_ID", "hru_type", "SubId", "DowSubId"]
-            ):
+                ) from err
+            if any(col not in hru.columns for col in ["HRU_ID", "hru_type", "SubId", "DowSubId"]):
                 has_changed = True
 
             hru["HRU_ID"] = hru.get("HRU_ID", "1")
@@ -1002,31 +921,22 @@ class RavenpyModel(HydrologicalModel):
 
         # Special considerations for HBVEC
         if rvh_config is not None and self.model_name == "HBVEC":
-
             # Q_REFERENCE is needed for the DIFFUSIVE_ROUTE routing scheme, which is not default but could be used by the user.
-            if "sub_basins" in rvh_config and any(
-                q in hru.columns for q in ["Q_Mean", "Q_REFERENCE"]
-            ):
-                if any(
-                    k in self.kwargs
-                    for k in ["SubBasinProperties", "sub_basin_properties"]
-                ):
+            if "sub_basins" in rvh_config and any(q in hru.columns for q in ["Q_Mean", "Q_REFERENCE"]):
+                if any(k in self.kwargs for k in ["SubBasinProperties", "sub_basin_properties"]):
                     warnings.warn(
                         "The 'SubBasinProperties' parameter is already set in the model configuration. "
-                        "The Q_REFERENCE values from the HRU file will not be added to it."
+                        "The Q_REFERENCE values from the HRU file will not be added to it.",
+                        stacklevel=2,
                     )
                 else:
                     col_name = "Q_Mean" if "Q_Mean" in hru.columns else "Q_REFERENCE"
 
                     # Warning: This entry would completely overwrite the default SubBasinProperties, so we need to copy the existing ones first
                     # and add Q_REFERENCE to it.
-                    default_sub_basin_properties = rc.emulators.HBVEC.model_fields[
-                        "sub_basin_properties"
-                    ].default
+                    default_sub_basin_properties = rc.emulators.HBVEC.model_fields["sub_basin_properties"].default
                     sb_parameters = default_sub_basin_properties["parameters"].copy()
-                    records_values = default_sub_basin_properties["records"][0][
-                        "values"
-                    ]
+                    records_values = default_sub_basin_properties["records"][0]["values"]
 
                     self.hru["keys"]["sub_basin_properties"] = {
                         "parameters": sb_parameters + ["Q_REFERENCE"],
@@ -1052,13 +962,12 @@ class RavenpyModel(HydrologicalModel):
                 if "hru_state_variable_table" in self.kwargs:
                     warnings.warn(
                         "The 'hru_state_variable_table' parameter is already set in the model configuration. "
-                        "The initial storage for implicit lakes will not be modified."
+                        "The initial storage for implicit lakes will not be modified.",
+                        stacklevel=2,
                     )
                 else:
                     storage_name = (
-                        self.kwargs.get("LakeStorage")
-                        or self.kwargs.get("lake_storage")
-                        or "SOIL[2]"  # Default for HBVEC
+                        self.kwargs.get("LakeStorage") or self.kwargs.get("lake_storage") or "SOIL[2]"  # Default for HBVEC
                     )
                     self.hru["keys"]["hru_state_variable_table"] = [
                         {
@@ -1070,19 +979,12 @@ class RavenpyModel(HydrologicalModel):
 
                 # Filter the reservoirs based on the minimum reservoir area, but after setting an initial storage on all lakes
                 if minimum_reservoir_area is not None:
-                    minimum_reservoir_area = convert_units_to(
-                        minimum_reservoir_area, "m2"
-                    )
+                    minimum_reservoir_area = convert_units_to(minimum_reservoir_area, "m2")
                     reservoirs = hru.loc[
-                        (hru["LakeArea"] >= minimum_reservoir_area)
-                        & (hru["HRU_IsLake"] > 0),
+                        (hru["LakeArea"] >= minimum_reservoir_area) & (hru["HRU_IsLake"] > 0),
                         "SubId",
                     ].unique()
-                    rvh_config["reservoirs"] = [
-                        r
-                        for r in rvh_config["reservoirs"]
-                        if r["subbasin_id"] in reservoirs
-                    ]
+                    rvh_config["reservoirs"] = [r for r in rvh_config["reservoirs"] if r["subbasin_id"] in reservoirs]
 
             # Add information from the BasinMakerExtractor
             for key in rvh_config.keys():
@@ -1108,26 +1010,22 @@ class RavenpyModel(HydrologicalModel):
 
         # Get some properties from the meteorological file
         with xr.open_dataset(self.meteo["file"]) as ds:
-
             # Station-based meteorological data (Hard-coding is fine here, since RavenPy only supports station data with a 'station_id' dimension)
             if "station_id" in ds.dims or ds.dims.keys() == {"time"}:
                 self.meteo["type"] = "station"
-                self.meteo["station_len"] = (
-                    len(ds.station_id) if "station_id" in ds.dims else 1
-                )
+                self.meteo["station_len"] = len(ds.station_id) if "station_id" in ds.dims else 1
 
                 if self.meteo["station_len"] > 5:
                     warnings.warn(
                         "Multiple stations were provided in the meteorological data. Be aware that Raven is very inefficient and will"
                         " open the file for each station and each variable. Try to use gridded data if possible for better performance.",
                         UserWarning,
+                        stacklevel=2,
                     )
 
             elif ds.cf.axes.get("X") is not None:
                 if self.hru is None:
-                    raise ValueError(
-                        "The HRU properties must be defined before reading gridded meteorological data."
-                    )
+                    raise ValueError("The HRU properties must be defined before reading gridded meteorological data.")
 
                 self.meteo["type"] = "grid"
 
@@ -1178,11 +1076,7 @@ class RavenpyModel(HydrologicalModel):
 
             # Compute the weights
             if gridweights is None:
-                gridweights = (
-                    self.workdir
-                    / "weights"
-                    / f"{self.meteo['file'].stem}_vs_{self.hru['file'].stem}_weights.txt"
-                )
+                gridweights = self.workdir / "weights" / f"{self.meteo['file'].stem}_vs_{self.hru['file'].stem}_weights.txt"
 
                 weights = ravenpy.extractors.GridWeightExtractor(
                     input_file_path=self.meteo["file"],
@@ -1200,37 +1094,24 @@ class RavenpyModel(HydrologicalModel):
                 rc.commands.GriddedForcing.from_nc(
                     self.meteo["file"],
                     data_type=v,
-                    alt_names=(
-                        self.meteo["alt_names_meteo"][v]
-                        if self.meteo["alt_names_meteo"] is not None
-                        else None
-                    ),
+                    alt_names=(self.meteo["alt_names_meteo"][v] if self.meteo["alt_names_meteo"] is not None else None),
                     data_kwds=self.meteo["station_properties"],
                     station_idx=None,  # FIXME: This can be removed once we have ravenpy >= 0.18.3
                     engine="h5netcdf",
                     GridWeights=rc.commands.RedirectToFile(gridweights),
                     ElevationVarNameNC=self.meteo["elevation_name"],
-                    DimNamesNC=list(
-                        self.meteo["dim_names"]
-                    )  # This must always be X, Y, T regardless of the input data
+                    DimNamesNC=list(self.meteo["dim_names"])  # This must always be X, Y, T regardless of the input data
                     + ["time"],
                     # Longitude/Latitude names are only set if they differ from the dimension names (aka. non-regular grids)
-                    LongitudeVarNameNC=(
-                        self.meteo["var_names"][0]
-                        if self.meteo["var_names"][0] != self.meteo["dim_names"][0]
-                        else None
-                    ),
-                    LatitudeVarNameNC=(
-                        self.meteo["var_names"][1]
-                        if self.meteo["var_names"][1] != self.meteo["dim_names"][1]
-                        else None
-                    ),
+                    LongitudeVarNameNC=(self.meteo["var_names"][0] if self.meteo["var_names"][0] != self.meteo["dim_names"][0] else None),
+                    LatitudeVarNameNC=(self.meteo["var_names"][1] if self.meteo["var_names"][1] != self.meteo["dim_names"][1] else None),
                 )
                 for v in data_type
             ]
 
     def _standardise_outputs(self, **kwargs):
-        r"""Standardise the outputs of the simulation to be more consistent with CF conventions.
+        r"""
+        Standardise the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
         ----------
@@ -1256,9 +1137,7 @@ class RavenpyModel(HydrologicalModel):
                 }
             )
 
-            ds = ds.swap_dims({"nbasins": "basin_name"}).rename(
-                {"basin_name": "subbasin_id"}
-            )
+            ds = ds.swap_dims({"nbasins": "basin_name"}).rename({"basin_name": "subbasin_id"})
             ds = ds.squeeze()
             if "subbasin_id" in ds.dims:
                 ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
@@ -1276,9 +1155,7 @@ class RavenpyModel(HydrologicalModel):
 
             # Global attributes are already pretty good, but make the Raven version explicit
             # Since the executable used might differ from raven-hydro, we trust the dataset's history
-            ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split(
-                "Raven "
-            )[-1]
+            ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
             if run is not None:
                 ds.attrs["RavenPy_version"] = ravenpy.__version__
 
@@ -1287,11 +1164,7 @@ class RavenpyModel(HydrologicalModel):
                 ds,
                 filename.parent / "streamflow_tmp.nc",
                 rechunk=chunks,
-                netcdf_kwargs={
-                    "encoding": {
-                        "q": {"dtype": "float32", "zlib": True, "complevel": 1}
-                    }
-                },
+                netcdf_kwargs={"encoding": {"q": {"dtype": "float32", "zlib": True, "complevel": 1}}},
             )
 
         # Remove the original file and rename the new one
