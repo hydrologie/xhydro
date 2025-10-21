@@ -237,12 +237,13 @@ class Hydrotel(HydrologicalModel):
 
         # Unwrap elements that contain spaces
         run_options = list(itertools.chain.from_iterable([a.split() if isinstance(a, str) else a for a in run_options]))
-        run_options = [*run_options, "-t 1"] if "-t" not in run_options else run_options
 
         # If the '-t' flag is supplied, merge the next item in the list with it
         if "-t" in run_options:
             t_index = run_options.index("-t")
             run_options[t_index : t_index + 2] = [" ".join(run_options[t_index : t_index + 2])]
+        else:
+            run_options.append("-t 1")
 
         # Hydrotel cares about the order of the arguments
         call = [
