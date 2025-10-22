@@ -47,4 +47,4 @@ contact:
 repository-code: "https://github.com/hydrologie/xHydro"
 abstract: "Hydrological analysis library built with xarray."
 license: "Apache-2.0"
-version: "0.6.0"
+version: "0.6.1"
