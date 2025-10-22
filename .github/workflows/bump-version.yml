@@ -16,6 +16,7 @@ on:
       - .zenodo.json
       - AUTHORS.rst
       - CHANGELOG.rst
+      - CITATION.cff
       - CI/**/*.in
       - CI/**/*.py
       - CI/**/*.txt
