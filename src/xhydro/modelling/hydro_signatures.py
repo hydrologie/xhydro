@@ -13,7 +13,6 @@ import xarray
 from numpy import ndarray, dtype, float64
 from xclim.core.units import convert_units_to, declare_units, rate2amount, to_agg_units
 
-from . import generic
 
 __all__ = [
         "elasticity_index",

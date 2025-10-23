@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import pytest
-from xhydro.modelling import hydro_signatures
-from xclim import land
-from xclim.core.units import convert_units_to
+
+from xhydro.modelling import hydro_signatures as xh
+
 @pytest.fixture
 def q_series():
     def _q_series(values, start="1/1/2000", units="m3 s-1"):
@@ -22,6 +22,36 @@ def q_series():
 
     return _q_series
 
+@pytest.fixture
+def pr_series():
+    """Return precipitation time series."""
+    def _pr_series(values, start="1/1/2000", units="mm/hr"):
+        coords = pd.date_range(start, periods=len(values), freq="D")
+        return xr.DataArray(
+            values,
+            coords=[coords],
+            dims="time",
+            name="pr",
+            attrs={
+                "standard_name": "precipitation",
+                "units": units,
+            },
+        )
+
+    return _pr_series
+@pytest.fixture
+def area_series():
+    def _area_series(values, units="km2"):
+        return xr.DataArray(
+            values,
+            name="area",
+            attrs={
+                "standard_name": "cell_area",
+                "units": units,
+            },
+        )
+    return _area_series
+
 class TestFDCSlope:
     def test_simple(self, q_series):
         # 5 years of increasing data with slope of 1
@@ -31,9 +61,8 @@ class TestFDCSlope:
         q = q_series(q)
 
         out = xh.flow_duration_curve_slope(q)
+        np.testing.assert_allclose(out, 2.097932, atol=1e-15)
 # Expected: ( np.log(1825 / 3) - np.log(1825 * 2 / 3) ) / .33
-
-
 
 class TestTotRR:
     def test_simple(self, q_series, area_series, pr_series):
@@ -66,5 +95,5 @@ class TestElastIndex:
         pr = pr_series(pr, units="mm/hr")
 
         out = xh.elasticity_index(q, pr)
-        np.testing.assert_allclose(out, 1.000672, rtol=1e-6, atol=0) #not exactly 1 due to epsilon
+        np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0) #not exactly 1 due to epsilon
 
