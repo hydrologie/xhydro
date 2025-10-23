@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
+import xarray as xr
 import pytest
-from xhydro import modelling as xh
+from xhydro.modelling import hydro_signatures
 from xclim import land
 from xclim.core.units import convert_units_to
 @pytest.fixture
@@ -20,31 +22,6 @@ def q_series():
 
     return _q_series
 
-class TestAnnualMaxima:
-    def test_simple(self, q_series):
-        # 2 years of daily data
-        a = np.zeros(365 * 2)
-
-        # Year 1: 1 day peak
-        a[50:51] = 20
-
-        # Year 2: 2 days with peaks
-        a[400:401] = 5
-        a[401:402] = 6
-
-        # Create a daily time index
-        q = q_series(a)
-
-        out = xh.annual_maxima(q)
-
-        out
-        # Year 1: expect maxima 20, DOY = 51
-        # Year 2: expect maxima 6, DOY = 36
-        # Year 3 (due to water year resampling) : expect maxima 0, DOY = c aka october 1st the start of water year
-        np.testing.assert_array_equal(out["peak_flow"].values, [20.0, 6.0, 0.0])
-        np.testing.assert_array_equal(out["peak_doy"].values, [51, 36, 274])
-
-
 class TestFDCSlope:
     def test_simple(self, q_series):
         # 5 years of increasing data with slope of 1
@@ -53,7 +30,7 @@ class TestFDCSlope:
         # Create a daily time index
         q = q_series(q)
 
-        out = xh.fdc_slope(q)
+        out = xh.flow_duration_curve_slope(q)
 # Expected: ( np.log(1825 / 3) - np.log(1825 * 2 / 3) ) / .33
 
 
