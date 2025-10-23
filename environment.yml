@@ -13,7 +13,7 @@ dependencies:
   - haversine >=2.8.1
   - leafmap
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
-  - numpy >=1.24
+  - numpy >=1.25
   - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
@@ -30,7 +30,7 @@ dependencies:
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
   - xclim
-  - xscen >=0.12.1,<0.13
+  - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
   - xvec
 
   - xhydro

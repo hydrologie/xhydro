@@ -1,7 +1,6 @@
 """Module to compute geospatial operations useful in hydrology."""
 
 from __future__ import annotations
-
 import os
 import tempfile
 import urllib.request
@@ -31,6 +30,7 @@ from xrspatial import aspect, slope
 
 from xhydro.utils import update_history
 
+
 __all__ = [
     "land_use_classification",
     "land_use_plot",
@@ -47,7 +47,8 @@ def watershed_delineation(
     m: leafmap.Map | None = None,
     map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
-    """Calculate watershed delineation from pour point.
+    """
+    Calculate watershed delineation from pour point.
 
     Watershed delineation can be computed at any location in North America using HydroBASINS (hybas_na_lev01-12_v1c).
     The process involves assessing all upstream sub-basins from a specified pour point and consolidating them into a
@@ -75,8 +76,9 @@ def watershed_delineation(
     """
     if map is not None:
         warnings.warn(
-            "The `map` argument is deprecated and will be removed in a future version. Use `m` instead.",
+            "The `map` argument is deprecated and will be removed in xHydro v0.7.0. Use `m` instead.",
             FutureWarning,
+            stacklevel=2,
         )
         if m is None:
             m = map
@@ -93,7 +95,7 @@ def watershed_delineation(
         gdf_markers = gpd.GeoDataFrame.from_features(m.draw_features)[["geometry"]]
         gdf_markers = gdf_markers.loc[gdf_markers.type == "Point"]
 
-        marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y))
+        marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y, strict=False))
         coordinates = coordinates + marker_coordinates
 
     # cache and read level 12 HydroBASINS polygons' file
@@ -113,16 +115,9 @@ def watershed_delineation(
 
     # compute watershed boundaries
     if coordinates is None:
-        raise ValueError(
-            "Either coordinates or a map with markers must be provided to delineate watersheds."
-        )
+        raise ValueError("Either coordinates or a map with markers must be provided to delineate watersheds.")
     gdf = (
-        pd.concat(
-            [
-                _compute_watershed_boundaries(tuple(coords), gdf_hydrobasins)
-                for coords in coordinates
-            ]
-        )[["HYBAS_ID", "UP_AREA", "geometry"]]
+        pd.concat([_compute_watershed_boundaries(tuple(coords), gdf_hydrobasins) for coords in coordinates])[["HYBAS_ID", "UP_AREA", "geometry"]]
         .rename(columns={"UP_AREA": "Upstream Area (sq. km)."})
         .reset_index(drop=True)
     )
@@ -150,11 +145,10 @@ def watershed_properties(
     *,
     unique_id: str | None = None,
     projected_crs: int | str | None = "NAD83",
-    output_format: Literal[
-        "xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"
-    ] = "geopandas",
+    output_format: Literal["xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"] = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Watershed properties extracted from a gpd.GeoDataFrame.
+    """
+    Watershed properties extracted from a gpd.GeoDataFrame.
 
     The calculated properties are :
     - area
@@ -184,17 +178,17 @@ def watershed_properties(
     if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
+            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
+            "This warning will be removed in xHydro v0.7.0.",
             FutureWarning,
+            stacklevel=2,
         )
     if not gdf.crs:
         raise ValueError("The provided gpd.GeoDataFrame is missing the crs attribute.")
     if isinstance(projected_crs, str):
         projected_crs = gdf.estimate_utm_crs(projected_crs)
         if projected_crs is None:
-            raise ValueError(
-                "Unable to estimate a projected CRS for the provided gpd.GeoDataFrame."
-            )
+            raise ValueError("Unable to estimate a projected CRS for the provided gpd.GeoDataFrame.")
     projected_gdf = gdf.to_crs(projected_crs)
 
     # Calculate watershed properties
@@ -203,25 +197,15 @@ def watershed_properties(
 
     # Compare the area calculated with the original source (using nomenclature from HydroBASINS and xdatasets; might not always work)
     if any(est in gdf.columns for est in ["Upstream Area (sq. km).", "Superficie"]):
-        est = (
-            "Upstream Area (sq. km)."
-            if "Upstream Area (sq. km)." in gdf.columns
-            else "Superficie"
-        )
-        output_dataset["estimated_area_diff (%)"] = (
-            (output_dataset["area (m2)"] / 1e6 - gdf[est]) / gdf[est] * 100
-        )
+        est = "Upstream Area (sq. km)." if "Upstream Area (sq. km)." in gdf.columns else "Superficie"
+        output_dataset["estimated_area_diff (%)"] = (output_dataset["area (m2)"] / 1e6 - gdf[est]) / gdf[est] * 100
         if output_dataset["estimated_area_diff (%)"].abs().max() > 5:
             warnings.warn(
-                "The area calculated from your original source differs significantly from the area calculated using the projected CRS."
+                "The area calculated from your original source differs significantly from the area calculated using the projected CRS.", stacklevel=2
             )
 
     output_dataset["perimeter (m)"] = projected_gdf.length
-    output_dataset["gravelius (m/m)"] = (
-        output_dataset["perimeter (m)"]
-        / 2
-        / np.sqrt(np.pi * output_dataset["area (m2)"])
-    )
+    output_dataset["gravelius (m/m)"] = output_dataset["perimeter (m)"] / 2 / np.sqrt(np.pi * output_dataset["area (m2)"])
     output_dataset["centroid_lon"] = gdf.centroid.x
     output_dataset["centroid_lat"] = gdf.centroid.y
 
@@ -262,9 +246,7 @@ def watershed_properties(
             "long_name": "Latitude of the centroid of the watershed",
         }
         if "estimated_area_diff (%)" in output_dataset:
-            output_dataset = output_dataset.rename(
-                {"estimated_area_diff (%)": "estimated_area_diff"}
-            )
+            output_dataset = output_dataset.rename({"estimated_area_diff (%)": "estimated_area_diff"})
             output_dataset["estimated_area_diff"].attrs = {
                 "units": "%",
                 "long_name": "Estimated difference between the calculated area and the original source",
@@ -304,30 +286,21 @@ def _compute_watershed_boundaries(
 
     # find all sub-basins indexes upstream of polygon_index
     gdf_main_basin = gdf[gdf["MAIN_BAS"].isin(polygon_index["MAIN_BAS"])]
-    all_sub_basins_indexes = _recursive_upstream_lookup(
-        gdf_main_basin, polygon_index["HYBAS_ID"].to_list()
-    )
+    all_sub_basins_indexes = _recursive_upstream_lookup(gdf_main_basin, polygon_index["HYBAS_ID"].to_list())
     all_sub_basins_indexes.extend(polygon_index["HYBAS_ID"])
 
     # create GeoDataFrame from all sub-basins indexes and dissolve to a unique basin (new unique index)
-    gdf_sub_basins = gdf_main_basin[
-        gdf_main_basin["HYBAS_ID"].isin(set(all_sub_basins_indexes))
-    ]
+    gdf_sub_basins = gdf_main_basin[gdf_main_basin["HYBAS_ID"].isin(set(all_sub_basins_indexes))]
     gdf_basin = gdf_sub_basins.dissolve(by="MAIN_BAS")
 
     # keep largest polygon if MultiPolygon
-    if (
-        gdf_basin.shape[0] > 0
-        and gdf_basin.iloc[0].geometry.geom_type == "MultiPolygon"
-    ):
+    if gdf_basin.shape[0] > 0 and gdf_basin.iloc[0].geometry.geom_type == "MultiPolygon":
         gdf_basin_exploded = gdf_basin.explode()
         gdf_basin = gdf_basin_exploded.loc[[gdf_basin_exploded.area.idxmax()]]
 
     # Raise warning for invalid or out of extent coordinates
     if gdf_basin.shape[0] == 0:
-        warnings.warn(
-            f"Could not return a watershed boundary for coordinates {coordinates}."
-        )
+        warnings.warn(f"Could not return a watershed boundary for coordinates {coordinates}.", stacklevel=2)
     return gdf_basin
 
 
@@ -357,9 +330,7 @@ def _recursive_upstream_lookup(
         all_upstream_indexes = []
 
     # get direct upstream indexes
-    direct_upstream_indexes = gdf[gdf["NEXT_DOWN"].isin(direct_upstream_indexes)][
-        "HYBAS_ID"
-    ].to_list()
+    direct_upstream_indexes = gdf[gdf["NEXT_DOWN"].isin(direct_upstream_indexes)]["HYBAS_ID"].to_list()
     if len(direct_upstream_indexes) > 0:
         all_upstream_indexes.extend(direct_upstream_indexes)
         _recursive_upstream_lookup(gdf, direct_upstream_indexes, all_upstream_indexes)
@@ -381,9 +352,7 @@ def surface_properties(
     operation: str = "mean",
     dataset_date: str = "2021-04-22",
     collection: str = "cop-dem-glo-90",
-    output_format: Literal[
-        "xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"
-    ] = "geopandas",
+    output_format: Literal["xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"] = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
     """
     Surface properties for watersheds.
@@ -428,16 +397,16 @@ def surface_properties(
     if projected_crs == "NAD83":
         warnings.warn(
             "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'.",
+            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
+            "This warning will be removed in xHydro v0.7.0.",
             FutureWarning,
+            stacklevel=2,
         )
     # Geometries are projected to make calculations more accurate
     if isinstance(projected_crs, str):
         projected_crs = gdf.estimate_utm_crs(projected_crs)
         if projected_crs is None:
-            raise ValueError(
-                "Unable to estimate a projected CRS for the provided gpd.GeoDataFrame."
-            )
+            raise ValueError("Unable to estimate a projected CRS for the provided gpd.GeoDataFrame.")
     projected_gdf = gdf.to_crs(projected_crs)
 
     catalog = pystac_client.Client.open(
@@ -455,9 +424,7 @@ def surface_properties(
     # Create a mosaic of
     epsg = ProjectionExtension.ext(items[0]).epsg
     da = stackstac.stack(items, epsg=epsg)
-    da = _flatten(
-        da, dim="time"
-    )  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
+    da = _flatten(da, dim="time")  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
     ds = (
         da.sel(time=dataset_date)
         .coarsen({"y": 5, "x": 5}, boundary="trim")
@@ -469,23 +436,17 @@ def surface_properties(
     )
 
     # Use Xvec to extract elevation for each geometry in the projected gdf
-    da_elevation = ds.xvec.zonal_stats(
-        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-    )["elevation"].squeeze()
+    da_elevation = ds.xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["elevation"].squeeze()
 
     da_slope = slope(ds.elevation)
 
     # Use Xvec to extract slope for each geometry in the projected gdf
-    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(
-        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-    )["slope"]
+    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["slope"]
 
     da_aspect = aspect(ds.elevation)
 
     # Use Xvec to extract aspect for each geometry in the projected gdf
-    da_aspect = da_aspect.to_dataset(name="aspect").xvec.zonal_stats(
-        projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation
-    )["aspect"]
+    da_aspect = da_aspect.to_dataset(name="aspect").xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["aspect"]
 
     output_dataset = xr.merge([da_elevation, da_slope, da_aspect]).astype("float32")
 
@@ -506,9 +467,7 @@ def surface_properties(
             output_dataset = output_dataset.drop_vars(c)
 
     if unique_id is not None:
-        output_dataset = output_dataset.assign_coords(
-            {unique_id: ("geometry", gdf[unique_id])}
-        )
+        output_dataset = output_dataset.assign_coords({unique_id: ("geometry", gdf[unique_id])})
         output_dataset = output_dataset.swap_dims({"geometry": unique_id})
         output_dataset[unique_id].attrs["long_name"] = unique_id
         output_dataset[unique_id].attrs["cf_role"] = "timeseries_id"
@@ -545,11 +504,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
             sortby_date=False,
             rescale=False,
         )
-        .assign_coords(
-            time=pd.to_datetime([item.properties["start_datetime"] for item in items])
-            .tz_convert(None)
-            .to_numpy()
-        )
+        .assign_coords(time=pd.to_datetime([item.properties["start_datetime"] for item in items]).tz_convert(None).to_numpy())
         .sortby("time")
     )
 
@@ -567,9 +522,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
     return merged, item
 
 
-def _count_pixels_from_bbox(
-    gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection
-):
+def _count_pixels_from_bbox(gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection):
     bbox_of_interest = gdf.iloc[[idx]].total_bounds
 
     merged, item = _merge_stac_dataset(catalog, bbox_of_interest, year, collection)
@@ -581,9 +534,7 @@ def _count_pixels_from_bbox(
     data = merged.data.ravel()
     data = data[data != 0]
 
-    df = pd.DataFrame(
-        pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0]
-    )
+    df = pd.DataFrame(pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0])
 
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
@@ -598,9 +549,7 @@ def _count_pixels_from_bbox(
     ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
 
     ds.attrs = merged.attrs
-    ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"][
-        "spatial_resolution"
-    ]
+    ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"]["spatial_resolution"]
     return ds
 
 
@@ -610,11 +559,10 @@ def land_use_classification(
     unique_id: str | None = None,
     collection="io-lulc-annual-v02",
     year: str | int = "latest",
-    output_format: Literal[
-        "xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"
-    ] = "geopandas",
+    output_format: Literal["xarray", "xr.Dataset", "geopandas", "gpd.GeoDataFrame"] = "geopandas",
 ) -> gpd.GeoDataFrame | xr.Dataset:
-    """Calculate land use classification.
+    """
+    Calculate land use classification.
 
     Calculate land use classification for each polygon from a gpd.GeoDataFrame. By default,
     the classes are generated from the Planetary Computer's STAC catalog using the
@@ -651,10 +599,7 @@ def land_use_classification(
     x = ia.item_assets["data"]
     class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
 
-    values_to_classes = {
-        v: "_".join(("pct", k.lower().replace(" ", "_")))
-        for k, v in class_names.items()
-    }
+    values_to_classes = {v: "_".join(("pct", k.lower().replace(" ", "_"))) for k, v in class_names.items()}
     if unique_id is None:
         dim_name = "index"
     else:
@@ -662,26 +607,17 @@ def land_use_classification(
 
     pbar = tqdm(gdf.index, position=0, leave=True)
 
-    liste = [
-        _count_pixels_from_bbox(
-            gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection.id
-        )
-        for idx in pbar
-    ]
+    liste = [_count_pixels_from_bbox(gdf, idx, catalog, unique_id, values_to_classes, year, pbar, collection.id) for idx in pbar]
     output_dataset = xr.concat(liste, dim=dim_name).fillna(0)
 
     if output_format in ("xarray", "xr.Dataset"):
         output_dataset[dim_name].attrs["long_name"] = (
-            dim_name
-            if "long_name" not in output_dataset[dim_name].attrs
-            else output_dataset[dim_name].attrs["long_name"]
+            dim_name if "long_name" not in output_dataset[dim_name].attrs else output_dataset[dim_name].attrs["long_name"]
         )
         output_dataset[dim_name].attrs["cf_role"] = "timeseries_id"
         for var in output_dataset:
             output_dataset[var].attrs = {"units": "percent"}
-            output_dataset[var].attrs["history"] = update_history(
-                "Calculated land_use_classification"
-            )
+            output_dataset[var].attrs["history"] = update_history("Calculated land_use_classification")
         return output_dataset
     else:
         if unique_id is None:
@@ -700,7 +636,8 @@ def land_use_plot(
     collection: str = "io-lulc-annual-v02",
     year: str | int = "latest",
 ) -> None:
-    """Plot a land use map for a specific year and watershed.
+    """
+    Plot a land use map for a specific year and watershed.
 
     Parameters
     ----------
@@ -751,9 +688,7 @@ def land_use_plot(
 
     with rasterio.open(item.assets["data"].href) as src:
         colormap_def = src.colormap(1)  # get metadata colormap for band 1
-        colormap = [
-            np.array(colormap_def[i]) / 255 for i in range(class_count)
-        ]  # transform to matplotlib color format
+        colormap = [np.array(colormap_def[i]) / 255 for i in range(class_count)]  # transform to matplotlib color format
 
     cmap = ListedColormap(colormap)
     fig, ax = plt.subplots(
@@ -786,7 +721,8 @@ def watershed_to_raven_hru(
     projected_crs: int | str | None = "NAD83",
     **kwargs,
 ) -> gpd.GeoDataFrame:
-    r"""Extract the necessary properties for Raven hydrological models.
+    r"""
+    Extract the necessary properties for Raven hydrological models.
 
     Parameters
     ----------
@@ -825,24 +761,16 @@ def watershed_to_raven_hru(
         watershed = gpd.read_file(watershed)
     elif isinstance(watershed, tuple):
         if unique_id is not None and unique_id != "HYBAS_ID":
-            warnings.warn(
-                "The unique_id argument is ignored when using coordinates to delineate a watershed."
-            )
+            warnings.warn("The unique_id argument is ignored when using coordinates to delineate a watershed.", stacklevel=2)
         unique_id = "HYBAS_ID"  # We know that the unique_id will be HYBAS_ID
         watershed = watershed_delineation(coordinates=watershed)
 
     if len(watershed) != 1:
-        raise ValueError(
-            "The input must be a single watershed or a single coordinate to delineate."
-        )
+        raise ValueError("The input must be a single watershed or a single coordinate to delineate.")
 
     # TODO: Explore the possibility of using cf_xarray.geometry.encode/decode_geometry to allow for a 'output_format' argument
-    wprops = watershed_properties(
-        watershed, unique_id=unique_id, projected_crs=projected_crs
-    )
-    sprops = surface_properties(
-        watershed, unique_id=unique_id, projected_crs=projected_crs, **kwargs
-    )
+    wprops = watershed_properties(watershed, unique_id=unique_id, projected_crs=projected_crs)
+    sprops = surface_properties(watershed, unique_id=unique_id, projected_crs=projected_crs, **kwargs)
 
     # Extract the properties needed for Raven hydrological models
     watershed = watershed.set_index(unique_id)
@@ -852,9 +780,7 @@ def watershed_to_raven_hru(
             "latitude": wprops["centroid_lat"],
             "longitude": wprops["centroid_lon"],
             "elevation": sprops["elevation"],
-            "SubId": [
-                1
-            ],  # We need to set the SubId/DowSubId for RavenPy compatibility in the case of gridded meteorological data
+            "SubId": [1],  # We need to set the SubId/DowSubId for RavenPy compatibility in the case of gridded meteorological data
             "DowSubId": [-1],
         },
         geometry=watershed.geometry,

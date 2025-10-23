@@ -9,14 +9,11 @@ import xhydro.testing.utils as xhu
 
 
 class TestFakeHydrotelProject:
-
     def test_defaults(self, tmp_path):
         xhu.fake_hydrotel_project(tmp_path / "fake")
         assert (tmp_path / "fake").exists()
         assert (tmp_path / "fake" / "SLNO.csv").exists()
-        assert (
-            tmp_path / "fake" / "simulation" / "simulation" / "simulation.csv"
-        ).exists()
+        assert (tmp_path / "fake" / "simulation" / "simulation" / "simulation.csv").exists()
         assert (tmp_path / "fake" / "simulation" / "simulation" / "output.csv").exists()
 
     def test_files(self, tmp_path):
@@ -28,9 +25,7 @@ class TestFakeHydrotelProject:
         # Open the files to check if they are valid
         ds_meteo = xr.open_dataset(tmp_path / "meteo" / "SLNO_meteo_GC3H.nc")
         assert ds_meteo.time.size == 730
-        ds_debit_aval = xr.open_dataset(
-            tmp_path / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
-        )
+        ds_debit_aval = xr.open_dataset(tmp_path / "simulation" / "simulation" / "resultat" / "debit_aval.nc")
         assert ds_debit_aval.time.size == 730
 
     def test_custom(self, tmp_path):

@@ -13,6 +13,7 @@ import xarray as xr
 import yaml
 from xclim.testing.helpers import test_timeseries as timeseries
 
+
 __all__ = [
     "fake_hydrotel_project",
     "publish_release_notes",
@@ -25,7 +26,8 @@ def fake_hydrotel_project(
     meteo: bool | xr.Dataset = False,
     debit_aval: bool | xr.Dataset = False,
 ):
-    """Create a fake Hydrotel project in the given directory.
+    """
+    Create a fake Hydrotel project in the given directory.
 
     Parameters
     ----------
@@ -46,17 +48,10 @@ def fake_hydrotel_project(
     """
     project_dir = Path(project_dir)
 
-    with (
-        Path(__file__)
-        .parent.joinpath("data")
-        .joinpath("hydrotel_structure.yml")
-        .open() as f
-    ):
+    with Path(__file__).parent.joinpath("data").joinpath("hydrotel_structure.yml").open() as f:
         struct = yaml.safe_load(f)["structure"]
 
-    default_csv = (
-        Path(__file__).parent.parent / "modelling" / "data" / "hydrotel_defaults"
-    )
+    default_csv = Path(__file__).parent.joinpath("data")
 
     project_dir.mkdir(exist_ok=True, parents=True)
     for k, v in struct.items():
@@ -69,7 +64,7 @@ def fake_hydrotel_project(
                     (project_dir / k / file).touch()
     for file in struct["_main"]:
         if file in ["SLNO.csv"]:
-            shutil.copy(default_csv / "project.csv", project_dir / file)
+            shutil.copy(default_csv / "SLNO.csv", project_dir / file)
         elif file is not None:
             (project_dir / file).touch()
 
@@ -147,13 +142,9 @@ def fake_hydrotel_project(
             "initial_simulation_path": "path/to/initial/simulation",
         }
     if isinstance(debit_aval, xr.Dataset):
-        debit_aval.to_netcdf(
-            project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
-        )
+        debit_aval.to_netcdf(project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc")
     else:
-        (
-            project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc"
-        ).touch()
+        (project_dir / "simulation" / "simulation" / "resultat" / "debit_aval.nc").touch()
 
 
 def publish_release_notes(
@@ -162,7 +153,8 @@ def publish_release_notes(
     changes: str | os.PathLike | None = None,
     latest: bool = True,
 ) -> str | None:
-    """Format release history in Markdown or ReStructuredText.
+    """
+    Format release history in Markdown or ReStructuredText.
 
     Parameters
     ----------
@@ -226,9 +218,7 @@ def publish_release_notes(
         for title_expression, level in titles.items():
             found = re.findall(title_expression, changes)
             for grouping in found:
-                fixed_grouping = (
-                    str(grouping[0]).replace("(", r"\(").replace(")", r"\)")
-                )
+                fixed_grouping = str(grouping[0]).replace("(", r"\(").replace(")", r"\)")
                 search = rf"({fixed_grouping})\n([\{level}]{'{' + str(len(grouping[1])) + '}'})"
                 replacement = f"{'##' if level == '-' else '###'} {grouping[0]}"
                 changes = re.sub(search, replacement, changes)

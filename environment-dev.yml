@@ -2,7 +2,7 @@ name: xhydro-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.13
+  - python >=3.10,<3.14
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
@@ -12,7 +12,7 @@ dependencies:
   - haversine >=2.8.1
   - leafmap
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
-  - numpy >=1.24
+  - numpy >=1.25
   - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
@@ -29,44 +29,43 @@ dependencies:
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
   - xclim
-  - xscen >=0.12.1,<0.13  # xscen controls the version of xclim
+  - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
   - xvec
   # Julia
   # - julia >=1.6.0  # Works locally, breaks remotely
   # - pyjuliacall >=0.9.20
   # Dev tools and testing
-  - pip >=25.0
-  - black ==25.1.0
-  - blackdoc ==0.3.9
-  - bump-my-version >=0.32.1
+  - pip >=25.2
+  - bump-my-version >=1.2.3
   - coverage >=7.5.0
-  - coveralls >=4.0.1
-  - flake8 >=7.1.1
-  - flake8-rst-docstrings >=0.3.0
-  - flit >=3.10.1,<4.0
+  - deptry >=0.23.1
+  - flake8 >=7.3.0
+  - flake8-rst-docstrings >=0.3.1
+  - flit >=3.11.0,<4.0
   - furo
   - ipykernel
   - ipython >=8.5.0
-  - isort ==6.0.0
   - jupyter_client
   - lmoments3 >=1.0.7
-  - mypy >=1.14.1
+  - mypy >=1.18.2
   - nbsphinx >=0.9.5
   - nbval >=0.11.0
-  - numpydoc >=1.8.0
+  - numpydoc >=1.9.0
   - packaging >=23.0
   - pre-commit >=3.5.0
   - pytest >=8.3.2
   - pytest-cov >=5.0.0
   - pytest-xdist >=3.2
-  - ruff >=0.9.0
+  - ruff >=0.13.3
   - watchdog >=4.0.0
   - sphinx >=7.1.0,<8.2.0  # Pinned until nbsphinx supports Sphinx 8.2
   - sphinx-codeautolink >=0.16.2
   - sphinx-copybutton
   - sphinx-intl
+  - vulture >=2.14
+  - watchdog >=4.0.0
   # Testing
-  - tox >=4.24.1
+  - tox >=4.30.3
   - xdatasets >=0.3.8
   # Notebooks
   - hvplot

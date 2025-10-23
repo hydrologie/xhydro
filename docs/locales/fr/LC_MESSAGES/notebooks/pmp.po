@@ -2,12 +2,11 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2025-09-18 13:22-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +16,14 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: ../../notebooks/pmp.ipynb:9
-msgid "Probable Maximum Precipitation (PMP)"
-msgstr "Précipitation Maximale Probable (PMP)"
+msgid "Inputs for the Probable Maximum flood (PMF)"
+msgstr "Entrées pour la crue maximale probable (CMP)"
 
-#: ../../notebooks/pmp.ipynb:11
+#: ../../notebooks/pmp.ipynb:21
+msgid "Probable Maximum Precipitation (PMP)"
+msgstr "Précipitation maximale probable (PMP)"
+
+#: ../../notebooks/pmp.ipynb:23
 msgid ""
 "Probable Maximum Precipitation (PMP) is the theoretical maximum amount of"
 " precipitation that could occur at a specific location within a given "
@@ -35,7 +38,7 @@ msgstr ""
 "hydrologie, en particulier pour la conception d'infrastructures telles "
 "que les barrages, réservoirs et systèmes de drainage."
 
-#: ../../notebooks/pmp.ipynb:13
+#: ../../notebooks/pmp.ipynb:25
 msgid ""
 "There are several methods for calculating PMP, each varying in complexity"
 " and the type of data used. The method currently implemented in "
@@ -59,35 +62,11 @@ msgstr ""
 "précipitation maximale qui pourrait théoriquement se produire à cet "
 "endroit."
 
-#: ../../notebooks/pmp.ipynb:333
-msgid ""
-"Data type cannot be displayed: application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-msgstr ""
-"Type de données non affichable : application/javascript, "
-"application/vnd.holoviews_load.v0+json"
-
-#: ../../notebooks/pmp.ipynb:597
-msgid ""
-"Data type cannot be displayed: application/vnd.holoviews_load.v0+json, "
-"application/javascript"
-msgstr ""
-"Type de données non affichable : application/vnd.holoviews_load.v0+json, "
-"application/javascript"
-
-#: ../../notebooks/pmp.ipynb:686
-msgid ""
-"Data type cannot be displayed: text/html, "
-"application/vnd.holoviews_exec.v0+json"
-msgstr ""
-"Type de données non affichable : text/html, "
-"application/vnd.holoviews_exec.v0+json"
-
-#: ../../notebooks/pmp.ipynb:696
+#: ../../notebooks/pmp.ipynb:57
 msgid "Acquiring data"
 msgstr "Acquisition des données"
 
-#: ../../notebooks/pmp.ipynb:698
+#: ../../notebooks/pmp.ipynb:59
 msgid ""
 "The acquisition of climatological data is outside the scope of "
 "``xHydro``. However, some examples of how to obtain and handle such data "
@@ -106,41 +85,41 @@ msgstr ""
 "CanESM5. Dans une application réelle, il serait préférable d'avoir autant"
 " d'années de données que possible."
 
-#: ../../notebooks/pmp.ipynb:700
+#: ../../notebooks/pmp.ipynb:61
 msgid "To perform the analysis, certain climatological variables are required."
 msgstr ""
 "Pour effectuer l'analyse, certaines variables climatiques sont "
 "nécessaires."
 
-#: ../../notebooks/pmp.ipynb:702
+#: ../../notebooks/pmp.ipynb:63
 msgid "**Daily Timestep Variables**:"
 msgstr "**Variables au pas de temps quotidien**:"
 
-#: ../../notebooks/pmp.ipynb:704
+#: ../../notebooks/pmp.ipynb:65
 msgid "``pr`` → Precipitation flux"
 msgstr "``pr`` → Flux de précipitations"
 
-#: ../../notebooks/pmp.ipynb:705
+#: ../../notebooks/pmp.ipynb:66
 msgid "``snw`` → Snow water equivalent"
 msgstr "``snw`` → Équivalent en eau de neige"
 
-#: ../../notebooks/pmp.ipynb:706
+#: ../../notebooks/pmp.ipynb:67
 msgid "``hus`` → Specific humidity for multiple pressure levels"
 msgstr "``hus`` → Humidité spécifique pour plusieurs niveaux de pression"
 
-#: ../../notebooks/pmp.ipynb:707
+#: ../../notebooks/pmp.ipynb:68
 msgid "``zg`` → Geopotential height for multiple pressure levels"
 msgstr "``zg`` → Hauteur géopotentielle pour plusieurs niveaux de pression"
 
-#: ../../notebooks/pmp.ipynb:709
+#: ../../notebooks/pmp.ipynb:70
 msgid "**Fixed Field Variables**:"
 msgstr "**Variables de champ fixe**:"
 
-#: ../../notebooks/pmp.ipynb:711
+#: ../../notebooks/pmp.ipynb:72
 msgid "``orog`` → Surface altitude"
 msgstr "``orog`` → Altitude de la surface"
 
-#: ../../notebooks/pmp.ipynb:713
+#: ../../notebooks/pmp.ipynb:74
 msgid ""
 "In cold regions, it may be necessary to split total precipitation into "
 "rainfall and snowfall components. Many climate models already provide "
@@ -155,11 +134,11 @@ msgstr ""
 "``xclim`` peuvent approximer la division en utilisant les données de "
 "précipitations et de température."
 
-#: ../../notebooks/pmp.ipynb:2158
+#: ../../notebooks/pmp.ipynb:119
 msgid "Computing the PMP"
 msgstr "Calcul de la PMP"
 
-#: ../../notebooks/pmp.ipynb:2160
+#: ../../notebooks/pmp.ipynb:121
 msgid ""
 "The method outlined by `Clavet-Gaumont et al. (2017) "
 "<https://doi.org/10.1016/j.ejrh.2017.07.003>`__ follows these steps:"
@@ -183,7 +162,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Computation of Monthly 100-Year Precipitable Water**:"
-msgstr "**Calcul de l'eau précipitable mensuelle de récurrence 100 ans** :"
+msgstr "**Calcul de l'eau précipitable mensuelle de récurrence 100 ans**:"
 
 #: ../../notebooks/pmp.ipynb
 #, python-format
@@ -199,7 +178,7 @@ msgstr ""
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Maximization of Precipitation During Events**:"
-msgstr "**Maximisation des précipitations pendant les événements**:"
+msgstr "**Maximisation des précipitations lors des événements**:"
 
 #: ../../notebooks/pmp.ipynb
 msgid ""
@@ -208,10 +187,10 @@ msgid ""
 "water during the major precipitation events. In snow-free regions, this "
 "is the final result."
 msgstr ""
-"Dans cette étape, les événements de précipitation sont maximisés en "
-"fonction du rapport entre l'eau précipitable mensuelle de récurrence 100 "
-"ans et l'eau précipitable pendant les grands événements de précipitation."
-" Dans les régions sans neige, c'est le résultat final."
+"À cette étape, les événements de précipitation sont maximisés en fonction"
+" du rapport entre l'eau précipitable mensuelle de récurrence 100 ans et "
+"l'eau précipitable lors des principaux événements de précipitation. Dans "
+"les régions sans neige, c'est le résultat final."
 
 #: ../../notebooks/pmp.ipynb
 msgid "**Seasonal Separation in Cold Regions**:"
@@ -227,7 +206,7 @@ msgstr ""
 "exemple, printemps, été) pour tenir compte de la neige lors du calcul des"
 " Crues Maximales Probables (CMP)."
 
-#: ../../notebooks/pmp.ipynb:2174
+#: ../../notebooks/pmp.ipynb:135
 msgid ""
 "This method provides a comprehensive approach for estimating the PMP, "
 "taking into account both temperature and precipitation variations across "
@@ -237,11 +216,11 @@ msgstr ""
 "tenant compte à la fois des variations de température et de "
 "précipitations à travers différentes régions et saisons."
 
-#: ../../notebooks/pmp.ipynb:2177
+#: ../../notebooks/pmp.ipynb:138
 msgid "Major precipitation events"
 msgstr "Grands événements de précipitation"
 
-#: ../../notebooks/pmp.ipynb:2179
+#: ../../notebooks/pmp.ipynb:140
 msgid ""
 "The first step in calculating the Probable Maximum Precipitation (PMP) "
 "involves filtering the precipitation data to retain only the events that "
@@ -262,7 +241,7 @@ msgstr ""
 "de tempête. Pour les données 2D, comme dans cet exemple, chaque point de "
 "grille est traité indépendamment."
 
-#: ../../notebooks/pmp.ipynb:2182
+#: ../../notebooks/pmp.ipynb:143
 msgid ""
 "In this example, we will filter out the 10% most intense storms to avoid "
 "overemphasizing smaller precipitation events during the maximization "
@@ -276,15 +255,15 @@ msgstr ""
 "concentrerons sur les précipitations liquides (``rf``) plutôt que sur les"
 " précipitations totales (``pr``) afin d'exclure les tempêtes de neige."
 
-#: ../../notebooks/pmp.ipynb:2434
+#: ../../notebooks/pmp.ipynb:179
 msgid "Daily precipitable water"
 msgstr "Eau précipitable quotidienne"
 
-#: ../../notebooks/pmp.ipynb:2440
+#: ../../notebooks/pmp.ipynb:185
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#: ../../notebooks/pmp.ipynb:2442
+#: ../../notebooks/pmp.ipynb:187
 msgid ""
 "This step should be avoided if possible, as it involves approximating "
 "precipitable water from the integral of specific humidity and will be "
@@ -299,7 +278,7 @@ msgstr ""
 "variable ou une combinaison de variables qui représentent directement "
 "l'eau précipitable."
 
-#: ../../notebooks/pmp.ipynb:2448
+#: ../../notebooks/pmp.ipynb:193
 msgid ""
 "Precipitable water can be estimated using "
 "``xhydro.indicators.pmp.precipitable_water`` by integrating the vertical "
@@ -315,11 +294,11 @@ msgstr ""
 " représente la quantité totale de vapeur d'eau qui pourrait être "
 "précipitée de l'atmosphère sous des conditions idéales."
 
-#: ../../notebooks/pmp.ipynb:2747
+#: ../../notebooks/pmp.ipynb:231
 msgid "Monthly 100-year precipitable water"
 msgstr "Eau précipitable mensuelle de récurrence 100 ans"
 
-#: ../../notebooks/pmp.ipynb:2749
+#: ../../notebooks/pmp.ipynb:233
 #, python-format
 msgid ""
 "According to Clavet-Gaumont et al. (2017), a monthly 100-year "
@@ -336,7 +315,7 @@ msgstr ""
 "précipitable pour un mois donné. Cette approche garantit que l'événement "
 "estimé sur 100 ans est réaliste et contraint par les données observées."
 
-#: ../../notebooks/pmp.ipynb:2751
+#: ../../notebooks/pmp.ipynb:235
 msgid ""
 "To compute this, you can use the "
 "``xh.indicators.pmp.precipitable_water_100y`` function. If using "
@@ -348,15 +327,15 @@ msgstr ""
 "``rebuild_time``, la sortie aura le même axe temporel que les données "
 "d'origine."
 
-#: ../../notebooks/pmp.ipynb:3023
+#: ../../notebooks/pmp.ipynb:285
 msgid "Maximized precipitation"
 msgstr "Précipitations maximisées"
 
-#: ../../notebooks/pmp.ipynb:3029
+#: ../../notebooks/pmp.ipynb:291 ../../notebooks/pmp.ipynb:650
 msgid "INFO"
 msgstr "INFO"
 
-#: ../../notebooks/pmp.ipynb:3031
+#: ../../notebooks/pmp.ipynb:293
 msgid ""
 "This step follows the methodology described in Clavet-Gaumont et al., "
 "2017. It is referred to as \"Maximizing precipitation\", however, it "
@@ -372,28 +351,28 @@ msgstr ""
 "cette valeur—comme cela a été observé pour janvier 2011—le résultat peut "
 "en réalité réduire les précipitations, plutôt que de les augmenter."
 
-#: ../../notebooks/pmp.ipynb:3037
+#: ../../notebooks/pmp.ipynb:299
 msgid ""
 "With the information gathered so far, we can now proceed to maximize the "
 "precipitation events. Although ``xHydro`` does not provide an explicit "
 "function for this step, it can be accomplished by following these steps:"
 msgstr ""
-"Grâce aux informations recueillies jusqu'à présent, nous pouvons "
-"maintenant procéder à la maximisation des événements de précipitation. "
-"Bien que ``xHydro`` ne fournisse pas de fonction explicite pour cette "
-"étape, cela peut être accompli en suivant ces étapes :"
+"Avec les informations recueillies jusqu'à présent, nous pouvons procéder "
+"à la maximisation des événements de précipitation. Bien que ``xhydro`` ne"
+" fournisse pas de fonction explicite pour cette étape, elle peut être "
+"accomplie en suivant ces étapes:"
 
-#: ../../notebooks/pmp.ipynb:3039
+#: ../../notebooks/pmp.ipynb:301
 msgid ""
 "**Compute the Ratio**: First, calculate the ratio between the 100-year "
 "monthly precipitable water and the precipitable water during the major "
 "precipitation events."
 msgstr ""
-"**Calculer le rapport** : Tout d'abord, calculez le rapport entre l'eau "
-"précipitable mensuelle de récurrence 100 ans et l'eau précipitable "
-"pendant les grands événements de précipitation."
+"**Calculer le rapport**: Premièrement, calculez le rapport entre l'eau "
+"précipitable mensuelle de récurrence 100 ans et l'eau précipitable lors "
+"des principaux événements de précipitation."
 
-#: ../../notebooks/pmp.ipynb:3041
+#: ../../notebooks/pmp.ipynb:303
 msgid ""
 "**Apply the Ratio**: Next, apply this ratio to the precipitation values "
 "themselves to maximize the precipitation events accordingly."
@@ -402,7 +381,7 @@ msgstr ""
 "précipitations elles-mêmes pour maximiser les événements de précipitation"
 " en conséquence."
 
-#: ../../notebooks/pmp.ipynb:3043
+#: ../../notebooks/pmp.ipynb:305
 msgid ""
 "This process effectively scales the precipitation events based on the "
 "100-year precipitable water, giving an estimate of the maximum possible "
@@ -412,11 +391,11 @@ msgstr ""
 "précipitable de récurrence 100 ans, fournissant une estimation des "
 "précipitations maximales possibles."
 
-#: ../../notebooks/pmp.ipynb:3199
+#: ../../notebooks/pmp.ipynb:336
 msgid "Seasonal Mask"
 msgstr "Masque saisonnier"
 
-#: ../../notebooks/pmp.ipynb:3201
+#: ../../notebooks/pmp.ipynb:338
 msgid ""
 "In cold regions, computing Probable Maximum Floods (PMFs) often involves "
 "scenarios that combine both rainfall and snowpack. Therefore, PMP values "
@@ -429,7 +408,7 @@ msgstr ""
 " être séparées en deux catégories : pluie-sur-neige (c'est-à-dire, "
 "\"printemps\") et précipitations sans neige (c'est-à-dire, \"été\")."
 
-#: ../../notebooks/pmp.ipynb:3203
+#: ../../notebooks/pmp.ipynb:340
 msgid ""
 "This can be computed easily using "
 "``xhydro.indicators.pmp.compute_spring_and_summer_mask``, which defines "
@@ -441,11 +420,11 @@ msgstr ""
 " dates de début et de fin du printemps, de l'été et de l'hiver en "
 "fonction de la présence de neige au sol, selon les critères suivants :"
 
-#: ../../notebooks/pmp.ipynb:3205
+#: ../../notebooks/pmp.ipynb:342
 msgid "**Winter**:"
 msgstr "**Hiver** :"
 
-#: ../../notebooks/pmp.ipynb:3207
+#: ../../notebooks/pmp.ipynb:344
 msgid ""
 "Winter start: The first day after which there are at least 14 consecutive"
 " days with snow on the ground."
@@ -453,7 +432,7 @@ msgstr ""
 "Début de l'hiver : Le premier jour après lequel il y a au moins 14 jours "
 "consécutifs avec de la neige au sol."
 
-#: ../../notebooks/pmp.ipynb:3208
+#: ../../notebooks/pmp.ipynb:345
 msgid ""
 "Winter end: The last day with snow on the ground, followed by at least 45"
 " consecutive snow-free days."
@@ -461,23 +440,23 @@ msgstr ""
 "Fin de l'hiver : Le dernier jour avec de la neige au sol, suivi d'au "
 "moins 45 jours consécutifs sans neige."
 
-#: ../../notebooks/pmp.ipynb:3210
+#: ../../notebooks/pmp.ipynb:347
 msgid "**Spring**:"
 msgstr "**Printemps** :"
 
-#: ../../notebooks/pmp.ipynb:3212
+#: ../../notebooks/pmp.ipynb:349
 msgid "Spring start: 60 days before the end of winter."
 msgstr "Début du printemps : 60 jours avant la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3213
+#: ../../notebooks/pmp.ipynb:350
 msgid "Spring end: 30 days after the end of winter."
 msgstr "Fin du printemps : 30 jours après la fin de l'hiver."
 
-#: ../../notebooks/pmp.ipynb:3215
+#: ../../notebooks/pmp.ipynb:352
 msgid "**Summer**:"
 msgstr "**Été** :"
 
-#: ../../notebooks/pmp.ipynb:3217
+#: ../../notebooks/pmp.ipynb:354
 msgid ""
 "The summer period is defined as the time between winters. This period is "
 "not influenced by whether it falls in the traditional summer or fall "
@@ -488,11 +467,11 @@ msgstr ""
 "l'automne traditionnels, mais marque simplement l'intervalle entre les "
 "saisons de neige."
 
-#: ../../notebooks/pmp.ipynb:4120
+#: ../../notebooks/pmp.ipynb:404
 msgid "Final PMP"
 msgstr "PMP finale"
 
-#: ../../notebooks/pmp.ipynb:4122
+#: ../../notebooks/pmp.ipynb:406
 msgid ""
 "The final PMP is obtained by finding the maximum value over the ``time`` "
 "dimension. In our case, since we computed a season mask, we can further "
@@ -503,11 +482,11 @@ msgstr ""
 "saisonnier, nous pouvons affiner les résultats en une PMP pour le "
 "printemps et l'été."
 
-#: ../../notebooks/pmp.ipynb:4197
+#: ../../notebooks/pmp.ipynb:445
 msgid "PMPs with aggregated storm configurations"
 msgstr "PMP avec configurations de tempêtes agrégées"
 
-#: ../../notebooks/pmp.ipynb:4199
+#: ../../notebooks/pmp.ipynb:447
 msgid ""
 "In some cases, it may be preferable to avoid processing each grid cell "
 "independently. Instead, storms can be aggregated using various "
@@ -524,7 +503,7 @@ msgstr ""
 "aider à réduire la variabilité entre les points de grille et fournir des "
 "résultats plus fiables."
 
-#: ../../notebooks/pmp.ipynb:4201
+#: ../../notebooks/pmp.ipynb:449
 msgid ""
 "Different aggregation configurations are discussed in Clavet-Gaumont et "
 "al. (2017) and have been implemented in ``xHydro`` under the function "
@@ -534,7 +513,7 @@ msgstr ""
 "Gaumont et al. (2017) et ont été implémentées dans ``xHydro`` sous la "
 "fonction ``xhydro.indicators.pmp.spatial_average_storm_configurations``."
 
-#: ../../notebooks/pmp.ipynb:4203
+#: ../../notebooks/pmp.ipynb:451
 msgid ""
 "Note that precipitable water must first be calculated in a distributed "
 "manner and then spatially averaged to obtain the aggregated precipitable "
@@ -544,7 +523,7 @@ msgstr ""
 "distribuée puis moyennée spatialement pour obtenir l'eau précipitable "
 "agrégée."
 
-#: ../../notebooks/pmp.ipynb:5133
+#: ../../notebooks/pmp.ipynb:499
 msgid ""
 "After applying storm aggregation, the subsequent steps remain the same as"
 " before, following the standard PMP calculation process outlined earlier."
@@ -553,7 +532,7 @@ msgstr ""
 "restent les mêmes qu'auparavant, suivant le processus standard de calcul "
 "da le PMP."
 
-#: ../../notebooks/pmp.ipynb:5805
+#: ../../notebooks/pmp.ipynb:547
 msgid ""
 "Previously, the final PMP for each season was obtained by taking the "
 "maximum value over the ``time`` dimension. In this updated approach, we "
@@ -565,3 +544,343 @@ msgstr ""
 "jour, nous pouvons désormais prendre la valeur maximale à la fois sur les"
 " dimensions ``time`` et ``conf``, en utilisant nos multiples "
 "configurations de tempêtes."
+
+#: ../../notebooks/pmp.ipynb:587
+msgid "Probable Maximum Snow Accumulation (PMSA)"
+msgstr "Accumulation de neige maximale probable (ANMP)"
+
+#: ../../notebooks/pmp.ipynb:589
+msgid ""
+"The PMSA represents the theoretical maximum snow water equivalent (SWE) "
+"that could accumulate in a year under the most extreme meteorological "
+"conditions. The method currently implemented in ``xHydro`` follows the "
+"approach introduced by `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__. In this study, the "
+"authors developed a PMSA estimation technique using simulated data from "
+"regional climate models to maximize the precipitable water leading to "
+"snowfall."
+msgstr ""
+"L'ANMP représente l’équivalent en eau de neige (ÉEN) maximal théorique "
+"pouvant s’accumuler en une année dans les conditions météorologiques les "
+"plus extrêmes. La méthode actuellement implémentée dans ``xHydro`` suit "
+"l’approche présentée par `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__. Dans cette étude, les"
+" auteurs ont développé une technique d’estimation de l'ANMP à partir de "
+"données simulées issues de modèles climatiques régionaux, dans le but de "
+"maximiser l’eau précipitable associée aux chutes de neige."
+
+#: ../../notebooks/pmp.ipynb:591
+msgid ""
+"The method outlined by `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ follows these steps:"
+msgstr ""
+"La méthode décrite par `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ suit les étapes "
+"suivantes :"
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Identification of the Precipitable Water leading to Snowfall**:"
+msgstr "**Identification de l’eau précipitable menant à des chutes de neige** :"
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"Precipitable water data are filtered using specified thresholds for "
+"rainfall and snowfall to isolate values associated with snowfall events."
+msgstr ""
+"Les données d’eau précipitable sont filtrées à l’aide de seuils définis "
+"pour la pluie et la neige, afin d’isoler les valeurs associées aux "
+"événements neigeux."
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"**Computation of Monthly 100-Year Precipitable Water leading to "
+"Snowfall**:"
+msgstr ""
+"**Calcul de l’eau précipitable mensuelle centennale associée à la neige**"
+" :"
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"Monthly 100-year precipitable water values associated with snowfall are "
+"estimated using the Gamma distribution."
+msgstr ""
+"Les valeurs mensuelles centennales d’eau précipitable associées aux "
+"chutes de neige sont estimées à l’aide de la distribution Gamma."
+
+#: ../../notebooks/pmp.ipynb
+msgid "**Maximization of Snowfall Events**:"
+msgstr "**Maximisation des événements de chutes de neige** :"
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"Snowfall events are maximized based on the ratio between the 100-year "
+"monthly precipitable water leading to snowfall and the precipitable water"
+" observed during snowfall events."
+msgstr ""
+"Les événements de chutes de neige sont maximisés en fonction du ratio "
+"entre l'eau précipitable mensuelle centennale entraînant des chutes de "
+"neige et l'eau précipitable observée lors de ces événements."
+
+#: ../../notebooks/pmp.ipynb
+msgid "**PMSA estimation**:"
+msgstr "**Estimation de l'ANMP** :"
+
+#: ../../notebooks/pmp.ipynb
+msgid ""
+"For each winter, both maximized and non-maximized snowfall events are "
+"aggregated. The PMSA is then defined as the highest total among all "
+"winters."
+msgstr ""
+"Pour chaque hiver, les événements de neige maximisés et non maximisés "
+"sont agrégés. L'ANMP est ensuite définie comme le total le plus élevé "
+"parmi tous les hivers."
+
+#: ../../notebooks/pmp.ipynb:615
+msgid "Identification of the Precipitable Water leading to Snowfall"
+msgstr "Identification de l'eau précipitable conduisant à des chutes de neige"
+
+#: ../../notebooks/pmp.ipynb:617
+msgid ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"proposed that only precipitable water values from time steps with at "
+"least 0.25 mm/6h of solid precipitation (expressed as water equivalent) "
+"and less than 0.1 mm/6h of rain should be considered. Since in this "
+"example we are working with daily time steps, these thresholds were "
+"adjusted to 1 mm/day and 0.4 mm/day, respectively."
+msgstr ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"ont proposé de ne considérer que les valeurs d'eau précipitable "
+"correspondant à des pas de temps présentant au moins 0,25 mm/6h de "
+"précipitations solides (exprimées en équivalent en eau) et moins de 0,1 "
+"mm/6h de pluie. Étant donné que dans cet exemple nous utilisons des pas "
+"de temps quotidiens, ces seuils ont été ajustés à 1 mm/jour et 0,4 "
+"mm/jour, respectivement."
+
+#: ../../notebooks/pmp.ipynb:638
+msgid ""
+"In some cases, both snowfall and rainfall occur during the same time "
+"step. However, it is typically not possible to distinguish between them. "
+"To avoid including precipitable water values associated with rainfall "
+"events, the authors proposed the following three methods:"
+msgstr ""
+"Dans certains cas, des chutes de neige et des précipitations ont lieu au "
+"cours du même pas de temps. Cependant, il n’est généralement pas possible"
+" de les distinguer. Pour éviter d’inclure des valeurs d’eau précipitable "
+"associées aux événements pluvieux, les auteurs ont proposé les trois "
+"méthodes suivantes :"
+
+#: ../../notebooks/pmp.ipynb:640
+msgid ""
+"**m1**: Only snowfall events that are not accompanied by rain, are "
+"considered for maximization. For the precipitable water corresponding to "
+"a certain event, we consider only time steps that show at least the "
+"minimum amount of snowfall and less than the minimum amount of rain."
+msgstr ""
+"**m1** : Seuls les événements de neige non accompagnés de pluie sont pris"
+" en compte pour la maximisation. Pour l’eau précipitable correspondant à "
+"un événement donné, on ne considère que les pas de temps présentant au "
+"moins la quantité minimale de neige et moins que la quantité minimale de "
+"pluie."
+
+#: ../../notebooks/pmp.ipynb:641
+msgid ""
+"**m2**: Snowfall events that exceed the established threshold for "
+"maximization (i.e., minimum amount of snowfall) are maximized, regardless"
+" whether they are accompanied by rain or not. For the precipitable water "
+"corresponding to a certain event, we consider only time steps that show "
+"at least the minimum amount snowfall."
+msgstr ""
+"**m2** : Les événements de neige dépassant le seuil établi pour la "
+"maximisation (c’est-à-dire la quantité minimale de neige) sont maximisés,"
+" qu’ils soient accompagnés de pluie ou non. Pour l’eau précipitable "
+"correspondant à un événement donné, on considère uniquement les pas de "
+"temps présentant au moins la quantité minimale de neige."
+
+#: ../../notebooks/pmp.ipynb:642
+msgid ""
+"**m3**: Same events as those selected for M2, but if additionally more "
+"than the minimum amount of rain occurs, the precipitable water is "
+"multiplied by the ratio of snowfall [mm water equivalent] over total "
+"precipitation. The multiplication provides a means to estimate the amount"
+" of precipitable water that leads to snowfall."
+msgstr ""
+"**m3** : Ce sont les mêmes événements que ceux sélectionnés pour m2, mais"
+" si la quantité de pluie dépasse également le seuil minimal, l’eau "
+"précipitable est multipliée par le rapport entre la neige (en mm "
+"équivalent d'eau) et les précipitations totales. Cette multiplication "
+"permet d’estimer la quantité d’eau précipitable conduisant aux chutes de "
+"neige."
+
+#: ../../notebooks/pmp.ipynb:644
+msgid ""
+"We start by calculating the precipitation events and their rain and snow "
+"components for a given accumulation."
+msgstr ""
+"Nous commençons par calculer les événements de précipitation et leurs "
+"composantes de pluie et de neige pour une accumulation donnée."
+
+#: ../../notebooks/pmp.ipynb:652
+msgid ""
+"To keep the example simple, the duration of the precipitation event is "
+"set to one time step (windows=[1]). When computing the PMSA, users should"
+" pay close attention to the window parameter as it can significantly "
+"influences the PMSA results. `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ suggests to use an "
+"algorithm that actually determines the real duration of every simulated "
+"snowfall rather than using predefined durations."
+msgstr ""
+"Pour simplifier l'exemple, la durée de l'événement de précipitation est "
+"fixée à un seul pas de temps (windows = [1]). Lors du calcul de l'ANMP, "
+"les utilisateurs doivent porter une attention particulière au paramètre "
+"*window*, car il peut influencer de manière significative les résultats. "
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"suggèrent d’utiliser un algorithme permettant de déterminer la durée "
+"réelle de chaque chute de neige simulée, plutôt que d’utiliser des durées"
+" prédéfinies."
+
+#: ../../notebooks/pmp.ipynb:714
+msgid ""
+"As suggested by `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__, in this example we "
+"used the methodology M3."
+msgstr ""
+"Comme suggéré par `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__, nous avons utilisé la"
+" méthodologie M3 dans cet exemple."
+
+#: ../../notebooks/pmp.ipynb:726
+msgid ""
+"Computation of Monthly 100-Year Precipitable Water leading to Snowfall "
+"(pw100)"
+msgstr ""
+"Calcul de l’eau précipitable mensuelle centennale menant à des chutes de "
+"neige (pw100)"
+
+#: ../../notebooks/pmp.ipynb:728
+msgid ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"recommend fitting a non-stationary Gamma distribution. Currently, only "
+"the stationary Gamma distribution is implemented, but a non-stationary "
+"version is planned for a future release. The GEV distribution can also be"
+" used for extrapolation purposes. A non-stationnary version of it is "
+"available in the xhydro package."
+msgstr ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"recommandent d’ajuster une distribution Gamma non stationnaire. "
+"Actuellement, seule la version stationnaire est implémentée, mais une "
+"version non stationnaire est prévue pour une future mise à jour. La "
+"distribution GEV peut également être utilisée à des fins d’extrapolation."
+" Une version non stationnaire de celle-ci est disponible dans le package "
+"*xhydro*."
+
+#: ../../notebooks/pmp.ipynb:730
+msgid ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"also suggests using the maximum observed precipitable water as pw100 when"
+" there are fewer than 20 data points in a month (i.e., ``n=20``). "
+"Furthermore, in line with `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ methodology, pw100 is "
+"not limited (i.e., ``mf=None``). However, this assumption should be "
+"reviewed for each specific case."
+msgstr ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"suggèrent également d’utiliser l’eau précipitable maximale observée comme"
+" *pw100* lorsqu’il y a moins de 20 points de données dans un mois "
+"(c’est-à-dire ``n = 20``). De plus, conformément à leur méthodologie, "
+"*pw100* n’est pas limité (c’est-à-dire ``mf=None``). Cependant, cette "
+"hypothèse doit être examinée au cas par cas."
+
+#: ../../notebooks/pmp.ipynb:764
+msgid "Maximization of Snowfall Events"
+msgstr "Maximisation des événements de neige"
+
+#: ../../notebooks/pmp.ipynb:766
+msgid ""
+"With the information gathered so far, we can now proceed to maximize the "
+"snowfall events. Although ``xHydro`` does not provide an explicit "
+"function for this step, it can be accomplished by following these steps:"
+msgstr ""
+"Avec les informations recueillies jusqu’à présent, nous pouvons "
+"maintenant procéder à la maximisation des événements de neige. Bien que "
+"``xHydro`` ne fournisse pas de fonction explicite pour cette étape, cela "
+"peut être accompli en suivant les étapes suivantes :"
+
+#: ../../notebooks/pmp.ipynb:768
+msgid ""
+"**Compute the maximitation ratio (r)**: Calculate the ratio between the "
+"100-year monthly precipitable water leading to snowfall and the "
+"precipitable water during snowfall events."
+msgstr ""
+"**Calcul du rapport de maximisation (r)** : Calculez le ratio entre l’eau"
+" précipitable mensuelle centennale menant à des chutes de neige et l’eau "
+"précipitable observée lors des événements neigeux."
+
+#: ../../notebooks/pmp.ipynb:770
+msgid ""
+"**Limit the ratio (r)**: Limit the ratio to 1≤r≤2.5 as suggested by "
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__."
+msgstr ""
+"**Limiter le rapport (r)** : Limitez le ratio à 1 ≤ r ≤ 2,5 comme suggéré"
+" par `Klein et al. (2016) "
+"<https://doi.org/10.1016/j.jhydrol.2016.03.031>`__."
+
+#: ../../notebooks/pmp.ipynb:772
+msgid "**Apply the ratio**:"
+msgstr "**Appliquer le rapport** :"
+
+#: ../../notebooks/pmp.ipynb:774
+msgid ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"suggest maximizing only those snowfall events that exceed a given "
+"threshold for a specified duration. Therefore, only events that meet this"
+" criterion are multiplied by the corresponding maximization ratio (r). If"
+" the criterion is not met, the snowfall event is not maximized."
+msgstr ""
+"`Klein et al. (2016) <https://doi.org/10.1016/j.jhydrol.2016.03.031>`__ "
+"suggèrent de maximiser uniquement les événements de neige qui dépassent "
+"un seuil donné pendant une durée spécifiée. Ainsi, seuls les événements "
+"répondant à ce critère sont multipliés par le rapport de maximisation "
+"correspondant (r). Si le critère n’est pas rempli, l’événement neigeux "
+"n’est pas maximisé."
+
+#: ../../notebooks/pmp.ipynb:776
+msgid ""
+"The authors used different thresholds depending on the duration of the "
+"event:"
+msgstr ""
+"Les auteurs ont utilisé différents seuils en fonction de la durée de "
+"l'événement :"
+
+#: ../../notebooks/pmp.ipynb:778
+msgid "6-hour duration: 3, 4, 5, 6 mm"
+msgstr "Durée de 6 heures : 3, 4, 5, 6 mm"
+
+#: ../../notebooks/pmp.ipynb:779
+msgid "12-hour duration: 4, 5, 6, 7 mm"
+msgstr "Durée de 12 heures : 4, 5, 6, 7 mm"
+
+#: ../../notebooks/pmp.ipynb:780
+msgid "24-hour duration: 5, 6, 7, 8 mm"
+msgstr "Durée de 24 heures : 5, 6, 7, 8 mm"
+
+#: ../../notebooks/pmp.ipynb:782
+msgid "In this example, a 6-mm threshold was selected for the 1-day duration."
+msgstr ""
+"Dans cet exemple, un seuil de 6 mm a été sélectionné pour la durée d'un "
+"jour."
+
+#: ../../notebooks/pmp.ipynb:817
+msgid ""
+"The maximized snow accumulation (MSA) is the sum of the maximized and "
+"non-maximized events throughout a winter"
+msgstr ""
+"L'accumulation de neige maximisée (ANM) est la somme des événements "
+"maximisés et non maximisés tout au long d'un hiver"
+
+#: ../../notebooks/pmp.ipynb:850
+msgid "PMSA estimation"
+msgstr "Estimation de l'ANMP"
+
+#: ../../notebooks/pmp.ipynb:852
+msgid "The PMSA is the highest total among all winters defined."
+msgstr "L'ANM est le total le plus élevé parmi tous les hivers définis."

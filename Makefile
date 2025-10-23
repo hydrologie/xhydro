@@ -1,4 +1,4 @@
-.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8 lint/black
+.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -61,12 +61,7 @@ lint/flake8: ## check style with flake8
 	python -m flake8 --config=.flake8 src/xhydro tests
 	python -m numpydoc lint src/xhydro/**.py
 
-lint/black: ## check style with black
-	python -m black --check src/xhydro tests
-	python -m blackdoc --check src/xhydro docs
-	python -m isort --check src/xhydro tests
-
-lint: lint/flake8 lint/black ## check style
+lint: lint/flake8 ## check style
 
 test: ## run tests quickly with the default Python
 	python -m pytest
@@ -99,7 +94,7 @@ autodoc: clean-docs ## create sphinx-apidoc files:
 	sphinx-apidoc -o docs/apidoc --private --module-first src/xhydro
 
 initialize-translations: clean-docs autodoc ## initialize translations, including autodoc-generated files (but not the API docs)
-	${MAKE} -C docs gettext
+	env SKIP_NOTEBOOKS=1 ${MAKE} -C docs gettext
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
 	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 

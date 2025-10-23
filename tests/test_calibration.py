@@ -8,8 +8,10 @@ import pooch
 import pytest
 import xarray as xr
 
+import xhydro as xh
 from xhydro.modelling.calibration import perform_calibration
 from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
+
 
 try:
     import ravenpy
@@ -18,7 +20,8 @@ except ImportError:
 
 
 def test_calibration_failure_mode_unknown_optimizer():
-    """Test for maximize-minimize failure mode:
+    """
+    Test for maximize-minimize failure mode:
     use "OTHER" optimizer, i.e. an unknown optimizer. Should fail.
     """
     bounds_low = np.array([0, 0, 0])
@@ -116,6 +119,21 @@ class TestRavenpyModelCalibration:
     }
 
     model_config.update({"meteo_station_properties": meteo_station_properties})
+
+    # Temporary test until this is properly implemented in xhydro
+    def test_ravenpy_qobs(self):
+        model_config = deepcopy(self.model_config)
+        model_config.update({"model_name": "GR4JCN"})
+        model_config["parameters"] = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+        model_config["qobs_file"] = self.qobs_path
+        model_config["alt_name_flow"] = self.alt_names_flow
+
+        hm = xh.modelling.RavenpyModel(**model_config)
+        rvt = hm.workdir / f"{hm.run_name}.rvt"
+        with rvt.open("r") as f:
+            lines = f.readlines()
+        assert len([line for line in lines if "HYDROGRAPH" in line]) == 1
+        assert len([line for line in lines if ":VarNameNC            qobs" in line]) == 1
 
     def test_ravenpy_gr4jcn_calibration(self):
         """Test for GR4JCN ravenpy model"""
@@ -239,9 +257,7 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-    @pytest.mark.skip(
-        reason="Weird error with negative simulated PET in ravenpy for HBVEC."
-    )
+    @pytest.mark.skip(reason="Weird error with negative simulated PET in ravenpy for HBVEC.")
     def test_ravenpy_hbvec_calibration(self):
         """Test for HBV-EC ravenpy model"""
         bounds_low = [
@@ -308,9 +324,7 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-    @pytest.mark.skip(
-        reason="Weird error with negative simulated PET in ravenpy for HYPR."
-    )
+    @pytest.mark.skip(reason="Weird error with negative simulated PET in ravenpy for HYPR.")
     def test_ravenpy_hypr_calibration(self):
         """Test for HYPR ravenpy model"""
         bounds_low = [
@@ -443,9 +457,7 @@ class TestRavenpyModelCalibration:
         # Test that the results have the same size as expected (number of parameters)
         assert len(best_parameters) == len(bounds_high)
 
-    @pytest.mark.skip(
-        reason="Calibration executes, but creates a RavenError for negative tension storage in the soil. Bounds need to be adjusted."
-    )
+    @pytest.mark.skip(reason="Calibration executes, but creates a RavenError for negative tension storage in the soil. Bounds need to be adjusted.")
     def test_ravenpy_blended_calibration(self):
         """Test for Blended ravenpy model"""
         bounds_low = [
