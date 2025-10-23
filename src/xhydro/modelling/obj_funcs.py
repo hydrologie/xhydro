@@ -887,17 +887,19 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) 
 
 
     """
+    qobs = xr.DataArray(qobs, dims="time")
+    qsim = xr.DataArray(qsim, dims="time")
 
-    threshold = np.nanpercentile(qobs, 100 - percentile)
+    thresh = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
-    mask1 = qobs >= threshold
-    qobs_high = qobs.where(mask1, drop=True)
+    mask = qobs >= thresh
 
-    mask2 = qobs >= threshold
-    qsim_high = qsim.where(mask2, drop=True)
+    qobs_high = qobs.where(mask, drop=True)
+    qsim_high = qsim.where(mask, drop=True)
 
-    return (np.sum(qsim_high - qobs_high) / np.sum(qobs_high))
+    return ((qsim_high - qobs_high).sum() / qobs_high.sum()).item()
+
 
 
 def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
@@ -1003,17 +1005,18 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025). A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France. EGUsphere, 2025, 1-41.
 
     """
+    qobs = xr.DataArray(qobs, dims="time")
+    qsim = xr.DataArray(qsim, dims="time")
 
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
-    # Select only high flow time steps
+    # Select only low flow time steps
     mask = qobs >= threshold
 
     qsim_low = qsim.where(mask, drop=True)
     qobs_low = qobs.where(mask, drop=True)
 
-    return (np.sum(qsim_low - qobs_low) / np.sum(qobs_low))
-
+    return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
@@ -1056,7 +1059,7 @@ def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return 1 - np.sum((qsim - qobs_now) ** 2) / np.sum((qobs_prev - qobs_now) ** 2)
 
 
-def persistence_index_weekly(qsim, qobs):
+def _persistence_index_weekly(qsim, qobs):
     """
     Persistence index or persistence model efficiency based on weekly averages;
     Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
