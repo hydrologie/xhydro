@@ -1,4 +1,4 @@
-    #Test suite for the objective functions in obj_funcs.py.
+# Test suite for the objective functions in obj_funcs.py.
 import numpy as np
 import pytest
 
@@ -85,8 +85,6 @@ def test_obj_funcs():
 
     objfun = get_objective_function(qobs, qsim, obj_func="persistence_index")
     np.testing.assert_array_almost_equal(objfun, -0.3, 8)
-
-
 
     objfun = get_objective_function(qobs, qsim, obj_func="volumetric_efficiency")
     np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
@@ -179,4 +177,3 @@ def test_maximizer_objfun_failure_modes_unknown_metric():
     """
     with pytest.raises(NotImplementedError):
         _get_objfun_minimize_or_maximize(obj_func="unknown_of")
-

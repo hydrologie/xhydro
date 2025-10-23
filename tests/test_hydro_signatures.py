@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
-import xarray as xr
 import pytest
+import xarray as xr
 
 from xhydro.modelling import hydro_signatures as xh
+
 
 @pytest.fixture
 def q_series():
@@ -22,9 +23,11 @@ def q_series():
 
     return _q_series
 
+
 @pytest.fixture
 def pr_series():
     """Return precipitation time series."""
+
     def _pr_series(values, start="1/1/2000", units="mm/hr"):
         coords = pd.date_range(start, periods=len(values), freq="D")
         return xr.DataArray(
@@ -39,6 +42,8 @@ def pr_series():
         )
 
     return _pr_series
+
+
 @pytest.fixture
 def area_series():
     def _area_series(values, units="km2"):
@@ -50,7 +55,9 @@ def area_series():
                 "units": units,
             },
         )
+
     return _area_series
+
 
 class TestFDCSlope:
     def test_simple(self, q_series):
@@ -62,7 +69,10 @@ class TestFDCSlope:
 
         out = xh.flow_duration_curve_slope(q)
         np.testing.assert_allclose(out, 2.097932, atol=1e-15)
+
+
 # Expected: ( np.log(1825 / 3) - np.log(1825 * 2 / 3) ) / .33
+
 
 class TestTotRR:
     def test_simple(self, q_series, area_series, pr_series):
@@ -76,24 +86,23 @@ class TestTotRR:
         a = 1000
         a = area_series(a)
 
-
         # Create a daily time index
         q = q_series(q)
-        pr = pr_series(pr, units = "mm/hr")
+        pr = pr_series(pr, units="mm/hr")
 
         out = xh.total_runoff_ratio(q, a, pr)
         np.testing.assert_allclose(out, 0.0018, atol=1e-15)
 
+
 class TestElastIndex:
     def test_simple(self, q_series, pr_series):
-        #5 years of increasing data with slope of 1
+        # 5 years of increasing data with slope of 1
         q = np.arange(1, 1826)
         pr = np.arange(1, 1826)
 
-         # Create a daily time index
+        # Create a daily time index
         q = q_series(q)
         pr = pr_series(pr, units="mm/hr")
 
         out = xh.elasticity_index(q, pr)
-        np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0) #not exactly 1 due to epsilon
-
+        np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0)  # not exactly 1 due to epsilon

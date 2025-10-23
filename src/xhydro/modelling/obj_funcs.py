@@ -129,12 +129,12 @@ def get_objective_function(
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
         "high_flow_rel_error": _high_flow_rel_error,
-        "high_flow_timing_error" : _high_flow_timing_error,
+        "high_flow_timing_error": _high_flow_timing_error,
         "kge": _kge,
         "kge_mod": _kge_mod,
-        "kge_2021" : _kge_2021,
-        "lce" : _lce,
-        "low_flow_rel_error" : _low_flow_rel_error,
+        "kge_2021": _kge_2021,
+        "lce": _lce,
+        "low_flow_rel_error": _low_flow_rel_error,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
@@ -147,7 +147,7 @@ def get_objective_function(
         "rrmse": _rrmse,
         "rsr": _rsr,
         "volume_error": _volume_error,
-        "volumetric_efficiency" : _volumetric_efficiency
+        "volumetric_efficiency": _volumetric_efficiency,
     }
 
     # If we got a dataset, change to np.array
@@ -247,15 +247,14 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "agreement_index",
         "correlation_coeff",
         "kge",
-        "kge_inv"
-        "kge_mod",
+        "kge_invkge_mod",
         "kge_2021",
         "lce",
         "nse",
         "persistence_index",
         "persistence_index_weekly",
         "r2",
-        "volumetric_efficiency"
+        "volumetric_efficiency",
     ]:
         maximize = True
 
@@ -861,7 +860,7 @@ ADD OBJECTIVE FUNCTIONS HERE
 """
 
 
-def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) -> float:
+def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -> float:
     """
     High Flow Relative Error.
     Relative error for observed flows that are exceeded 10 % of the time.
@@ -901,9 +900,10 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) 
     return ((qsim_high - qobs_high).sum() / qobs_high.sum()).item()
 
 
-
 def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """Kling-Gupta efficiency metric version of Tang et al. (2021)
+    """
+    Kling-Gupta efficiency metric version of Tang et al. (2021)
+
     Parameters
     ----------
     qsim : array_like
@@ -922,7 +922,6 @@ def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
     ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
 
     """
-
     # These pop up a lot, precalculate
     qsim_mean = np.mean(qsim)
     qobs_mean = np.mean(qobs)
@@ -1018,6 +1017,7 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
 
     return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
 
+
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     Persistence index or persistence model efficiency;
@@ -1085,7 +1085,6 @@ def _persistence_index_weekly(qsim, qobs):
     The weekly persistence index should be MAXIMIZED.
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
-
     # Resample to weekly means (weeks starting on Monday)
     qsim_weekly = qsim.resample(time="W-MON").mean()
     qobs_weekly = qobs.resample(time="W-MON").mean()
@@ -1144,8 +1143,7 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 import xarray
-from datetime import datetime
-from scipy.stats import norm, circmean
+from scipy.stats import circmean
 
 
 def _high_flow_timing_error(
@@ -1179,7 +1177,6 @@ def _high_flow_timing_error(
 
 
     """
-
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
@@ -1196,4 +1193,4 @@ def _high_flow_timing_error(
     doy_sim = date_sim.dayofyear
     mean_doy_sim = circmean(doy_sim, high=365, low=1)
 
-    return (mean_doy_sim - mean_doy_obs)
+    return mean_doy_sim - mean_doy_obs
