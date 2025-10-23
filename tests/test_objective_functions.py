@@ -1,5 +1,4 @@
-"""Test suite for the objective functions in obj_funcs.py."""
-
+# Test suite for the objective functions in obj_funcs.py.
 import numpy as np
 import pytest
 
@@ -68,6 +67,34 @@ def test_obj_funcs():
 
     objfun = get_objective_function(qobs, qsim, obj_func="volume_error")
     np.testing.assert_array_almost_equal(objfun, -0.022988505747126436, 8)
+
+    """
+    NEW TESTS HERE
+    """
+    objfun = get_objective_function(qobs, qsim, obj_func="high_flow_rel_error")
+    np.testing.assert_array_almost_equal(objfun, -0.05555556, 8)
+
+    objfun = get_objective_function(qobs, qsim, obj_func="kge_2021")
+    np.testing.assert_array_almost_equal(objfun, 0.72698198, 8)
+
+    objfun = get_objective_function(qobs, qsim, obj_func="lce")
+    np.testing.assert_array_almost_equal(objfun, 0.75839477, 8)
+
+    objfun = get_objective_function(qobs, qsim, obj_func="low_flow_rel_error")
+    np.testing.assert_array_almost_equal(objfun, 0.02739726, 8)
+
+    objfun = get_objective_function(qobs, qsim, obj_func="persistence_index")
+    np.testing.assert_array_almost_equal(objfun, -0.3, 8)
+
+    objfun = get_objective_function(qobs, qsim, obj_func="volumetric_efficiency")
+    np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
+
+    # these two obj functions need xarray inputs, they fail with numpy.ndarray
+    # objfun = get_objective_function(qobs, qsim, obj_func="persistence_index_weekly")
+    # np.testing.assert_array_almost_equal(objfun, -0.3, 8)
+
+    # objfun = get_objective_function(qobs, qsim, obj_func="high_flow_timing_error")
+    # np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
 
 
 def test_objective_function_failure_data_length():
