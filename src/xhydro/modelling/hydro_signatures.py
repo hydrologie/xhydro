@@ -79,7 +79,6 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     return elasticity_index
 
 
-# @declare_units(q="[discharge]")
 def flow_duration_curve_slope(q: xarray.DataArray) -> xarray.DataArray:
     """
     Calculate the slope of the flow duration curve mid-section between the 33% and 66% exceedance probabilities.
