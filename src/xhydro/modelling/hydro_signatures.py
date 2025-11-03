@@ -1,45 +1,48 @@
 # Created on Mon Sep 22 2025
 # @author: Ève Larose (user e-larose)
-"""Aggregated hydrological signature package for xhydro, for model evaluation.
+"""
+Aggregated hydrological signature package for xhydro, for model evaluation.
 
 This signature package is useful for watershed comparisons.
-For temporal analysis see xclim.indices._hydrology librairy
+For temporal analysis see xclim.indices._hydrology library
 """
 # Import packages
-import warnings
 
 import numpy as np
 import xarray
-from numpy import ndarray, dtype, float64
-from xclim.core.units import convert_units_to, declare_units, rate2amount, to_agg_units
+from numpy import dtype, float64, ndarray
+from xclim.core.units import convert_units_to
 
 
 __all__ = [
-        "elasticity_index",
-        "flow_duration_curve_slope",
-        "total_runoff_ratio",
-       ]
+    "elasticity_index",
+    "flow_duration_curve_slope",
+    "total_runoff_ratio",
+]
+
 
 def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS") -> xarray.DataArray:
     """
-    Elasticity index
+    Elasticity index.
+
     Compute the median of yearly streamflow elasticity index for given catchments,
     where elasticity (εₚ) is defined as the relative change in streamflow (ΔQ/Q)
-    divided by the relative change in precipitation (ΔP/P)
+    divided by the relative change in precipitation (ΔP/P).
 
     Parameters
     ----------
     q : xarray.DataArray
-        Daily discharge data
+        Daily discharge data.
     pr : xarray.DataArray
-        Daily precipitation data
-    freq: str
-        Resampling frequency (e.g., 'YS' for year starting in Jan)
+        Daily precipitation data.
+    freq : str
+        Resampling frequency (e.g., 'YS' for year starting in Jan).
 
     Returns
     -------
     xarray.DataArray
-        Nonparametric estimator for streamflow elasticity index (dimensionless)
+        Nonparametric estimator for streamflow elasticity index (dimensionless).
+
     Notes
     -----
     A value of εp greater than 1 indicates that streamflow is highly sensitive to precipitation changes,
@@ -51,7 +54,6 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     Sankarasubramanian, A., Vogel, R. M., & Limbrunner, J. F. (2001). Climate elasticity of streamflow
     in the United States. Water Resources Research, 37(6), 1771–1781. https://doi.org/10.1029/2000WR900330
     """
-
     p_annual = pr.resample(time=freq).mean()
     q_annual = q.resample(time=freq).mean()
 
@@ -77,11 +79,13 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     elasticity_index.attrs["units"] = ""
     return elasticity_index
 
+
 # @declare_units(q="[discharge]")
 def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], dtype[float64]]:
     """
     Calculate the slope of the flow duration curve mid-section between the 33% and 66% exceedance probabilities.
-    Aggregated analysis : Single value as a long-term benchmark
+
+    Aggregated analysis : Single value as a long-term benchmark.
 
     Parameters
     ----------
@@ -99,7 +103,7 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], d
 
     High slope value :
     Steep slopes of the midsegment FDC are typically a characteristic behavior for watersheds having ‘flashy’ responses
-    (for exemple due to small soil storage capacity and hence larger percentage of overland flow).
+    (for example due to small soil storage capacity and hence larger percentage of overland flow).
 
     Lower slope value :
     Flatter slopes of the midsegment FDC are associated with watersheds having slower and
@@ -114,7 +118,6 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], d
     Yilmaz, K. K., Gupta, H. V., & Wagener, T. (2008). A process‐based diagnostic approach to model evaluation:
     Application to the NWS distributed hydrologic model. Water resources research, 44(9).
     DOI:10.1029/2007WR006716
-
     """
     # Calculate the 33rd and 66th percentiles directly across the 'time' dimension
     q33 = q.quantile(0.33, dim="time", skipna=True)
@@ -130,9 +133,10 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], d
     slope.attrs["long_name"] = "Slope of FDC between 33% and 66% exceedance probabilities"
     return slope
 
+
 def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.DataArray) -> xarray.DataArray:
     """
-    Total runoff ratio
+    Total runoff ratio.
 
     Compute the ratio of streamflow measured at a stream gauge station to the total precipitation over the watershed.
     Also known as the runoff coefficient, it is higher in watersheds with steep slopes,
@@ -145,7 +149,7 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
     a : xarray.DataArray
         Watershed area [area] units, will be converted to in [km²].
     pr : xarray.DataArray
-        mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
+        Mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
 
     Returns
     -------
@@ -158,10 +162,10 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
     - Values near 0 mean most precipitation infiltrates watershed soil or is lost to evapotranspiration.
     - Values near 1 mean most precipitation leaves the watershed as runoff;
       possible causes are impervious surfaces from urban sprawl, thin soils, steep slopes, etc.
-    - Long-term averages are typically ≤ 1
+    - Long-term averages are typically ≤ 1.
 
-    Reference
-    ---------
+    References
+    ----------
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
     q = convert_units_to(q, "m3/s")
