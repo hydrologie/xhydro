@@ -904,7 +904,7 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
     Returns
     -------
     float:
-        Relative error in flow that is exceeded 10 % of the time.
+        Relative error in flow that is exceeded a given percentage of the time.
 
     Notes
     -----
