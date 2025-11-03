@@ -890,7 +890,7 @@ ADD OBJECTIVE FUNCTIONS HERE
 def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -> float:
     """
     High Flow Relative Error.
-    Relative error for observed flows that are exceeded 10 % of the time.
+    Relative error for observed flows that are exceeded a given percentage of the time.
 
     Parameters
     ----------
