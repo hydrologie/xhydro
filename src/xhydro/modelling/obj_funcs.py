@@ -909,6 +909,7 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
     Notes
     -----
     High Flow Relative Error should AIM TO BE ZERO, therefore it cannot be used for optimization
+
     References
     ----------
     Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025).
