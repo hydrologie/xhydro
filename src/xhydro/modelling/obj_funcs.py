@@ -988,7 +988,6 @@ def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
     float
         The least-squares combined efficiency.
 
-
     Notes
     -----
     The LCE should be MAXIMIZED; values from -inf to 1 (best case).
