@@ -1,7 +1,6 @@
 # Created on Tue Dec 12 21:55:25 2023
 # @author: Richard Arsenault
-"""
-Objective function package for xhydro, for calibration and model evaluation.
+"""Objective function package for xhydro, for calibration and model evaluation.
 
 This package provides a flexible suite of popular objective function metrics in
 hydrological modelling and hydrological model calibration. The main function
@@ -21,13 +20,11 @@ toolbox, such as the ability to take the negative of the objective function to
 maximize instead of minimize a metric according to the needs of the optimizing
 algorithm.
 """
-
 # Import packages
 import warnings
 
 import numpy as np
 import xarray as xr
-
 
 __all__ = ["get_objective_function", "transform_flows"]
 
@@ -41,11 +38,17 @@ def get_objective_function(
     transform: str | None = None,
     epsilon: float | None = None,
 ):
-    """
-    Entrypoint function for the objective function calculation.
+    """Entrypoint function for the objective function calculation.
 
     More can be added by adding the function to this file and adding the option
     in this function.
+
+    Notes
+    -----
+    All data corresponding to NaN values in the observation set are removed from the calculation.
+    If a mask is passed, it must be the same size as the qsim and qobs vectors.
+    If any NaNs are present in the qobs dataset, all corresponding data in the qobs, qsim and mask
+    will be removed prior to passing to the processing function.
 
     Parameters
     ----------
@@ -116,13 +119,6 @@ def get_objective_function(
     -------
     float
         Value of the selected objective function (obj_fun).
-
-    Notes
-    -----
-    All data corresponding to NaN values in the observation set are removed from the calculation.
-    If a mask is passed, it must be the same size as the qsim and qobs vectors.
-    If any NaNs are present in the qobs dataset, all corresponding data in the qobs, qsim and mask
-    will be removed prior to passing to the processing function.
     """
     # List of available objective functions
     obj_func_dict = {
@@ -133,12 +129,12 @@ def get_objective_function(
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
         "high_flow_rel_error": _high_flow_rel_error,
-        "high_flow_timing_error": _high_flow_timing_error,
+        "high_flow_timing_error" : _high_flow_timing_error,
         "kge": _kge,
         "kge_mod": _kge_mod,
-        "kge_2021": _kge_2021,
-        "lce": _lce,
-        "low_flow_rel_error": _low_flow_rel_error,
+        "kge_2021" : _kge_2021,
+        "lce" : _lce,
+        "low_flow_rel_error" : _low_flow_rel_error,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
@@ -151,7 +147,7 @@ def get_objective_function(
         "rrmse": _rrmse,
         "rsr": _rsr,
         "volume_error": _volume_error,
-        "volumetric_efficiency": _volumetric_efficiency,
+        "volumetric_efficiency" : _volumetric_efficiency
     }
 
     # If we got a dataset, change to np.array
@@ -160,9 +156,8 @@ def get_objective_function(
         if "streamflow" in qsim and "q" not in qsim:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
+                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
                 FutureWarning,
-                stacklevel=2,
             )
             qsim = qsim.streamflow
         else:
@@ -172,9 +167,8 @@ def get_objective_function(
         if "streamflow" in qobs and "q" not in qobs:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
+                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
                 FutureWarning,
-                stacklevel=2,
             )
             qobs = qobs.streamflow
         else:
@@ -197,7 +191,9 @@ def get_objective_function(
     # Check that the objective function is in the list of available methods
     if obj_func not in obj_func_dict:
         raise ValueError(
-            "Selected objective function is currently unavailable. " + "Consider contributing to our project at: " + "github.com/hydrologie/xhydro"
+            "Selected objective function is currently unavailable. "
+            + "Consider contributing to our project at: "
+            + "github.com/hydrologie/xhydro"
         )
 
     # Ensure there are no NaNs in the dataset
@@ -251,14 +247,15 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "agreement_index",
         "correlation_coeff",
         "kge",
-        "kge_invkge_mod",
+        "kge_inv"
+        "kge_mod",
         "kge_2021",
         "lce",
         "nse",
         "persistence_index",
         "persistence_index_weekly",
         "r2",
-        "volumetric_efficiency",
+        "volumetric_efficiency"
     ]:
         maximize = True
 
@@ -290,8 +287,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
 
 
 def _get_optimizer_minimize_or_maximize(algorithm: str) -> bool:
-    """
-    Find the direction in which the optimizer searches.
+    """Find the direction in which the optimizer searches.
 
     Some optimizers try to maximize the objective function value, and others
     try to minimize it. Since our objective functions include some that need to
@@ -333,8 +329,7 @@ def transform_flows(
     transform: str | None = None,
     epsilon: float = 0.01,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Transform flows before computing the objective function.
+    """Transform flows before computing the objective function.
 
     It is used to transform flows such that the objective function is computed
     on a transformed flow metric rather than on the original units of flow
@@ -393,8 +388,7 @@ BEGIN OBJECTIVE FUNCTIONS DEFINITIONS
 
 
 def _abs_bias(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Absolute bias metric.
+    """Absolute bias metric.
 
     Parameters
     ----------
@@ -419,8 +413,7 @@ def _abs_bias(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _abs_pbias(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Absolute pbias metric.
+    """Absolute pbias metric.
 
     Parameters
     ----------
@@ -445,8 +438,7 @@ def _abs_pbias(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _abs_volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Absolute value of the volume error metric.
+    """Absolute value of the volume error metric.
 
     Parameters
     ----------
@@ -472,8 +464,7 @@ def _abs_volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _agreement_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Index of agreement metric.
+    """Index of agreement metric.
 
     Parameters
     ----------
@@ -500,8 +491,7 @@ def _agreement_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _bias(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    The bias metric.
+    """The bias metric.
 
     Parameters
     ----------
@@ -528,8 +518,7 @@ def _bias(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _correlation_coeff(qsim: np.ndarray, qobs: np.ndarray) -> np.ndarray:
-    """
-    Correlation coefficient metric.
+    """Correlation coefficient metric.
 
     Parameters
     ----------
@@ -551,8 +540,7 @@ def _correlation_coeff(qsim: np.ndarray, qobs: np.ndarray) -> np.ndarray:
 
 
 def _kge(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Kling-Gupta efficiency metric (2009 version).
+    """Kling-Gupta efficiency metric (2009 version).
 
     Parameters
     ----------
@@ -589,8 +577,7 @@ def _kge(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _kge_mod(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Kling-Gupta efficiency metric (2012 version).
+    """Kling-Gupta efficiency metric (2012 version).
 
     Parameters
     ----------
@@ -627,8 +614,7 @@ def _kge_mod(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _mae(qsim: np.ndarray, qobs: np.ndarray):
-    """
-    Mean absolute error metric.
+    """Mean absolute error metric.
 
     Parameters
     ----------
@@ -651,8 +637,7 @@ def _mae(qsim: np.ndarray, qobs: np.ndarray):
 
 
 def _mare(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Mean absolute relative error metric.
+    """Mean absolute relative error metric.
 
     Parameters
     ----------
@@ -675,8 +660,7 @@ def _mare(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _mse(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Mean square error metric.
+    """Mean square error metric.
 
     Parameters
     ----------
@@ -700,8 +684,7 @@ def _mse(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _nse(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Nash-Sutcliffe efficiency metric.
+    """Nash-Sutcliffe efficiency metric.
 
     Parameters
     ----------
@@ -727,8 +710,7 @@ def _nse(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _pbias(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Percent bias metric.
+    """Percent bias metric.
 
     Parameters
     ----------
@@ -755,8 +737,7 @@ def _pbias(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _r2(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    The r-squred metric.
+    """The r-squred metric.
 
     Parameters
     ----------
@@ -779,8 +760,7 @@ def _r2(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _rmse(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Root-mean-square error metric.
+    """Root-mean-square error metric.
 
     Parameters
     ----------
@@ -803,8 +783,7 @@ def _rmse(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _rrmse(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Relative root-mean-square error (ratio of rmse to mean) metric.
+    """Relative root-mean-square error (ratio of rmse to mean) metric.
 
     Parameters
     ----------
@@ -829,8 +808,7 @@ def _rrmse(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _rsr(qsim: np.ndarray, qobs: np.ndarray):
-    """
-    Ratio of root mean square error to standard deviation metric.
+    """Ratio of root mean square error to standard deviation metric.
 
     Parameters
     ----------
@@ -854,8 +832,7 @@ def _rsr(qsim: np.ndarray, qobs: np.ndarray):
 
 
 def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Volume error metric.
+    """Volume error metric.
 
     Parameters
     ----------
@@ -884,7 +861,7 @@ ADD OBJECTIVE FUNCTIONS HERE
 """
 
 
-def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -> float:
+def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile : int = 10) -> float:
     """
     High Flow Relative Error.
     Relative error for observed flows that are exceeded 10 % of the time.
@@ -924,10 +901,9 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
     return ((qsim_high - qobs_high).sum() / qobs_high.sum()).item()
 
 
-def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
-    """
-    Kling-Gupta efficiency metric version of Tang et al. (2021)
 
+def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """Kling-Gupta efficiency metric version of Tang et al. (2021)
     Parameters
     ----------
     qsim : array_like
@@ -946,6 +922,7 @@ def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
     ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
 
     """
+
     # These pop up a lot, precalculate
     qsim_mean = np.mean(qsim)
     qobs_mean = np.mean(qobs)
@@ -1041,7 +1018,6 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
 
     return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
 
-
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     Persistence index or persistence model efficiency;
@@ -1109,6 +1085,7 @@ def _persistence_index_weekly(qsim, qobs):
     The weekly persistence index should be MAXIMIZED.
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
+
     # Resample to weekly means (weeks starting on Monday)
     qsim_weekly = qsim.resample(time="W-MON").mean()
     qobs_weekly = qobs.resample(time="W-MON").mean()
@@ -1167,7 +1144,8 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 import xarray
-from scipy.stats import circmean
+from datetime import datetime
+from scipy.stats import norm, circmean
 
 
 def _high_flow_timing_error(
@@ -1201,6 +1179,7 @@ def _high_flow_timing_error(
 
 
     """
+
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     # Select only high flow time steps
@@ -1217,4 +1196,4 @@ def _high_flow_timing_error(
     doy_sim = date_sim.dayofyear
     mean_doy_sim = circmean(doy_sim, high=365, low=1)
 
-    return mean_doy_sim - mean_doy_obs
+    return (mean_doy_sim - mean_doy_obs)

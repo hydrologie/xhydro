@@ -1,25 +1,24 @@
 # Created on Mon Sep 22 2025
 # @author: Ève Larose (user e-larose)
-"""
-Aggregated hydrological signature package for xhydro, for model evaluation.
+"""Aggregated hydrological signature package for xhydro, for model evaluation.
 
 This signature package is useful for watershed comparisons.
 For temporal analysis see xclim.indices._hydrology librairy
 """
 # Import packages
+import warnings
 
 import numpy as np
 import xarray
-from numpy import dtype, float64, ndarray
-from xclim.core.units import convert_units_to
+from numpy import ndarray, dtype, float64
+from xclim.core.units import convert_units_to, declare_units, rate2amount, to_agg_units
 
 
 __all__ = [
-    "elasticity_index",
-    "flow_duration_curve_slope",
-    "total_runoff_ratio",
-]
-
+        "elasticity_index",
+        "flow_duration_curve_slope",
+        "total_runoff_ratio",
+       ]
 
 def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS") -> xarray.DataArray:
     """
@@ -41,7 +40,6 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     -------
     xarray.DataArray
         Nonparametric estimator for streamflow elasticity index (dimensionless)
-
     Notes
     -----
     A value of εp greater than 1 indicates that streamflow is highly sensitive to precipitation changes,
@@ -53,6 +51,7 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     Sankarasubramanian, A., Vogel, R. M., & Limbrunner, J. F. (2001). Climate elasticity of streamflow
     in the United States. Water Resources Research, 37(6), 1771–1781. https://doi.org/10.1029/2000WR900330
     """
+
     p_annual = pr.resample(time=freq).mean()
     q_annual = q.resample(time=freq).mean()
 
@@ -77,7 +76,6 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     elasticity_index = yearly_elasticity.median(dim="time")
     elasticity_index.attrs["units"] = ""
     return elasticity_index
-
 
 # @declare_units(q="[discharge]")
 def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], dtype[float64]]:
@@ -131,7 +129,6 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> ndarray[tuple[int, ...], d
     slope.attrs["units"] = " "
     slope.attrs["long_name"] = "Slope of FDC between 33% and 66% exceedance probabilities"
     return slope
-
 
 def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.DataArray) -> xarray.DataArray:
     """
