@@ -10,7 +10,6 @@ For temporal analysis see xclim.indices._hydrology library
 
 import numpy as np
 import xarray
-from numpy import dtype, float64, ndarray
 from xclim.core.units import convert_units_to
 
 
