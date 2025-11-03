@@ -909,7 +909,9 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
     Notes
     -----
     High Flow Relative Error should AIM TO BE ZERO, therefore it cannot be used for optimization
-    ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025).
+    References
+    ----------
+    Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025).
     A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France.
     EGUsphere, 2025, 1-41.
 
