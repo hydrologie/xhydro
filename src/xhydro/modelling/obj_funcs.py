@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.stats import circmean
-
+from xscen import climatological_op
 
 __all__ = ["get_objective_function", "transform_flows"]
 
@@ -898,8 +898,8 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
         Daily Simulated streamflow data.
     qobs : np.array
         Daily Observed streamflow data.
-    percentile : int
-        frequency percentile for high flows, default is 10%.
+    exceedance_probability : int
+        exceedance_probability for high flows, default is 10%.
 
     Returns
     -------
@@ -1023,8 +1023,8 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
         Daily Simulated streamflow data.
     qobs : np.array
         Daily Observed streamflow data.
-    percentile : int
-        frequency percentile for low flows, default is 90%.
+    exceedance_probability : int
+        exceedance_probability for low flows, default is 90%.
 
     Returns
     -------
@@ -1039,18 +1039,25 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     EGUsphere, 2025, 1-41.
 
     """
-    qobs = xr.DataArray(qobs, dims="time")
-    qsim = xr.DataArray(qsim, dims="time")
-
+    # qobs = xr.DataArray(qobs, dims="time")
+    # qsim = xr.DataArray(qsim, dims="time")
+    #
+    # threshold = np.nanpercentile(qobs, 100 - percentile)
+    #
+    # # Select only low flow time steps
+    # mask = qobs >= threshold
+    #
+    # qsim_low = qsim.where(mask, drop=True)
+    # qobs_low = qobs.where(mask, drop=True)
+    #
+    # return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
     threshold = np.nanpercentile(qobs, 100 - percentile)
-
-    # Select only low flow time steps
     mask = qobs >= threshold
 
-    qsim_low = qsim.where(mask, drop=True)
-    qobs_low = qobs.where(mask, drop=True)
+    qsim_low = qsim[mask]
+    qobs_low = qobs[mask]
 
-    return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
+    return float(np.nansum(qsim_low - qobs_low) / np.nansum(qobs_low))
 
 
 def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
@@ -1112,7 +1119,7 @@ def _persistence_index_weekly(qsim, qobs):
     Returns
     -------
     float
-        Persistence index based on weekly averages
+        Persistence index single value based on weekly averages
         the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
 
         Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models:
@@ -1125,8 +1132,8 @@ def _persistence_index_weekly(qsim, qobs):
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
     # Resample to weekly means (weeks starting on Monday)
-    qsim_weekly = qsim.resample(time="W-MON").mean()
-    qobs_weekly = qobs.resample(time="W-MON").mean()
+    qqsim_weekly = xscen.climatological_op(qsim.to_dataset(name="qsim"), op="mean", window=7)
+    qobs_weekly = xscen.climatological_op(qobs.to_dataset(name="qobs"), op="mean", window=7)
 
     # Remove NaNs from both series simultaneously
     valid = qsim_weekly.notnull() & qobs_weekly.notnull()

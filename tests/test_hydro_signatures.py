@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from xhydro.modelling import hydro_signatures as xh
+from xhydro.indicators import hydro_signatures as xh
 
 
 @pytest.fixture
@@ -63,10 +63,11 @@ class TestFDCSlope:
     def test_simple(self, q_series):
         # 5 years of increasing data with slope of 1
         q = np.arange(1, 1826)
+        # q = np.full(999, np.nan, dtype=float)
 
         # Create a daily time index
         q = q_series(q)
-
+        print(q)
         out = xh.flow_duration_curve_slope(q)
         np.testing.assert_allclose(out, 2.097932, atol=1e-15)
 
@@ -106,3 +107,6 @@ class TestElastIndex:
 
         out = xh.elasticity_index(q, pr)
         np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0)  # not exactly 1 due to epsilon
+        # out = xh.elasticity_index(q, pr)
+        print(type(out))
+

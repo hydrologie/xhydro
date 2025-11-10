@@ -7,4 +7,3 @@ from .calibration import *
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
 
-from . import hydro_signatures

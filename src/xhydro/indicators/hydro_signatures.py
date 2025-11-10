@@ -10,8 +10,14 @@ For temporal analysis see xclim.indices._hydrology library
 
 import numpy as np
 import xarray
-from xclim.core.units import convert_units_to
+import xclim
+import xscen
+from numpy import dtype, float64, ndarray
+from xscen.utils import standardize_periods
 
+from xhydro.indicators import generic
+from xclim.core.units import convert_units_to
+from xscen import climatological_op
 
 __all__ = [
     "elasticity_index",
@@ -20,7 +26,11 @@ __all__ = [
 ]
 
 
-def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS") -> xarray.DataArray:
+def elasticity_index(q: xarray.DataArray,
+                     pr: xarray.DataArray,
+                     periods: list[str] | list[list[str]] | None = None,
+                     missing: str = "skip",
+                     missing_options: dict | None = None) -> xarray.DataArray:
     """
     Elasticity index.
 
@@ -34,9 +44,11 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
         Daily discharge data.
     pr : xarray.DataArray
         Daily precipitation data.
-    freq : str
-        Resampling frequency (e.g., 'YS' for year starting in Jan).
 
+    periods : list of str or list of list of str, optional
+        Either [start, end] or list of [start, end] of periods to be considered.
+        If multiple periods are given, the output will have a `horizon` dimension.
+        If None, all data is used.
     Returns
     -------
     xarray.DataArray
@@ -47,39 +59,63 @@ def elasticity_index(q: xarray.DataArray, pr: xarray.DataArray, freq: str = "YS"
     A value of εp greater than 1 indicates that streamflow is highly sensitive to precipitation changes,
     meaning a 1% change in precipitation will lead to a greater than 1% change in streamflow.
     A value less than 1 suggests a less sensitive relationship.
+    It is recommended to use yearly frequency in order to have more rebust elasticity_index
 
     References
     ----------
     Sankarasubramanian, A., Vogel, R. M., & Limbrunner, J. F. (2001). Climate elasticity of streamflow
     in the United States. Water Resources Research, 37(6), 1771–1781. https://doi.org/10.1029/2000WR900330
     """
-    p_annual = pr.resample(time=freq).mean()
-    q_annual = q.resample(time=freq).mean()
+    # if not freq.startswith("YS"):
+    #     raise ValueError("Frequency must be annual.")
+    ds_q = q.to_dataset(name="q")
+    ds_pr = pr.to_dataset(name="pr")
+    ds_pr["pr"].attrs["units"] = "mm/day"
+    periods = (
+        standardize_periods(periods, multiple=True) if periods is not None else [
+            [str(int(ds_q.time.dt.year.min())), str(int(ds_q.time.dt.year.max()))]]
+    )
+    out = []
+    for period in periods:
+        ds_subset_q = ds_q.sel(time=slice(period[0], period[1]))
+        ds_subset_p = ds_pr.sel(time=slice(period[0], period[1]))
+        ds_subset_p["pr"].attrs["units"] = "mm/day"
 
-    p_mean = p_annual.mean(dim="time")
-    q_mean = q_annual.mean(dim="time")
+        q_annual = generic.get_yearly_op(ds_subset_q, op="mean", timeargs={"annual": {}}, missing=missing,
+                                         missing_options=missing_options)
+        p_annual = generic.get_yearly_op(ds_subset_p, op="mean", timeargs={"annual": {}}, missing=missing,
+                                         missing_options=missing_options, input_var="pr")
 
-    # Year-to-year changes
-    delta_p = p_annual.diff(dim="time")
-    delta_q = q_annual.diff(dim="time")
+        # Year-to-year changes
+        delta_p = p_annual.diff(dim="time")
+        delta_q = q_annual.diff(dim="time")
 
-    # Avoid division by zero
-    epsilon = 1e-6
+        # Avoid division by zero
+        epsilon = 1e-6
 
-    # Relative changes
-    rel_delta_p = delta_p / (p_mean + epsilon)
-    rel_delta_q = delta_q / (q_mean + epsilon)
+        # Relative changes
+        rel_delta_p = delta_p / (p_annual + epsilon)
+        rel_delta_q = delta_q / (q_annual + epsilon)
 
-    # Compute yearly streamflow elasticity (not mathematically robust values)
-    yearly_elasticity = rel_delta_q / (rel_delta_p + epsilon)
+        # Compute yearly streamflow elasticity (not mathematically robust values)
+        yearly_elasticity = rel_delta_q["q_mean_annual"] / (rel_delta_p["pr_mean_annual"] + epsilon)
 
-    # Compute single value using median (more robust value)
-    elasticity_index = yearly_elasticity.median(dim="time")
-    elasticity_index.attrs["units"] = ""
-    return elasticity_index
+        out.append(yearly_elasticity)
 
+    out_combined = xarray.concat(out, dim="time")
 
-def flow_duration_curve_slope(q: xarray.DataArray) -> xarray.DataArray:
+    # Median over selected periods
+    ei = out_combined.median(dim="time")
+
+    return xarray.DataArray(
+    ei.values,
+    attrs={"units": "", "long_name": "Elasticity index"}
+    )
+
+def flow_duration_curve_slope(q: xarray.DataArray,
+                              freq : str = "D",
+                              missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}},
+                              ) -> ndarray[tuple[int, ...], dtype[float64]]:
     """
     Calculate the slope of the flow duration curve mid-section between the 33% and 66% exceedance probabilities.
 
@@ -89,6 +125,10 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> xarray.DataArray:
     ----------
     q : xarray.DataArray
         Daily streamflow data, expected to have a discharge unit.
+    freq: str
+        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
+    missing: String, list of strings, or dictionary
+        Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
     Returns
     -------
@@ -117,11 +157,17 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> xarray.DataArray:
     Application to the NWS distributed hydrologic model. Water resources research, 44(9).
     DOI:10.1029/2007WR006716
     """
+    ds_q = q.to_dataset(name="q")
+    xscen.diagnostics.health_checks(ds_q,
+                                    freq=freq,
+                                    missing=missing
+                                    )
+
     # Calculate the 33rd and 66th percentiles directly across the 'time' dimension
     q33 = q.quantile(0.33, dim="time", skipna=True)
     q66 = q.quantile(0.66, dim="time", skipna=True)
 
-    # Calculate the natural logarithm of the quantiles
+        # Calculate the natural logarithm of the quantiles
     ln_q33 = np.log(q33)
     ln_q66 = np.log(q66)
 
@@ -132,7 +178,10 @@ def flow_duration_curve_slope(q: xarray.DataArray) -> xarray.DataArray:
     return slope
 
 
-def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.DataArray) -> xarray.DataArray:
+def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.DataArray, freq : str = "D",
+                       missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}},
+                       # flags=  {"q et a": {"specific_discharge_extremely_high": {}}} once added to xclim dataflags
+                       ) -> xarray.DataArray:
     """
     Total runoff ratio.
 
@@ -148,6 +197,11 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
         Watershed area [area] units, will be converted to in [km²].
     pr : xarray.DataArray
         Mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
+    freq: str
+        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
+    missing: String, list of strings, or dictionary of
+        Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
+    # flags: Dictionary of xclim.core.dataflags.data_flags to perform, per variable.
 
     Returns
     -------
@@ -166,11 +220,18 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
     ----------
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
-    q = convert_units_to(q, "m3/s")
-    a = convert_units_to(a, "km2")
+    ds_q = q.to_dataset(name="q")
+    xscen.diagnostics.health_checks(ds_q,
+        freq=freq,
+        missing=missing,
+        # flags=flags,
+        raise_on=["missing_pct"]
+    )
+    q = convert_units_to(q, "mm3/hr")
+    a = convert_units_to(a, "mm2")
     pr = convert_units_to(pr, "mm/hr")
 
-    runoff = q * 3.6 / a  # unit conversion for runoff in mm/h : 3.6 [s/h * km2/m2]
+    runoff = q / a  # unit conversion for runoff in mm/h : 3.6 [s/h * km2/m2]
     total_rr = runoff.sum() / pr.sum()
     total_rr.attrs["units"] = ""
     total_rr.attrs["long_name"] = "Total Rainfall-Runoff Ratio"
