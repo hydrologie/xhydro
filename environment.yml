@@ -34,3 +34,5 @@ dependencies:
   - xvec
 
   - xhydro
+
+  - scipy

@@ -63,7 +63,6 @@ class TestFDCSlope:
     def test_simple(self, q_series):
         # 5 years of increasing data with slope of 1
         q = np.arange(1, 1826)
-        # q = np.full(999, np.nan, dtype=float)
 
         # Create a daily time index
         q = q_series(q)
@@ -107,5 +106,15 @@ class TestElastIndex:
 
         out = xh.elasticity_index(q, pr)
         np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0)  # not exactly 1 due to epsilon
-        # out = xh.elasticity_index(q, pr)
-        print(type(out))
+        # print(type(out))
+
+
+class TestHurstExp:
+    def test_simple(self, q_series, pr_series):
+        # daily time index
+        q = np.arange(1, 1826)
+        q = q_series(q)
+
+        out = xh.hurst_exp(q)  # returns very high value due to artificial input
+        np.testing.assert_allclose(out, 1.496021, rtol=1e-6, atol=0)
+        # print(type(out))

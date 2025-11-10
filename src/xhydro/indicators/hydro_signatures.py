@@ -12,6 +12,8 @@ import numpy as np
 import xarray
 import xscen
 from numpy import dtype, float64, ndarray
+from scipy import signal, stats
+from scipy.interpolate import interpolate
 from xclim.core.units import convert_units_to
 from xscen.utils import standardize_periods
 
@@ -251,3 +253,70 @@ def total_runoff_ratio(
     total_rr.attrs["long_name"] = "Total Rainfall-Runoff Ratio"
 
     return total_rr
+
+
+def hurst_exp(
+    q: xarray.DataArray,
+    freq: str = "D",
+    missing=None,
+) -> xarray.DataArray:
+    """
+    Hurst Exponent.
+
+    Compute the Hurst Exponent (H) of time-series obtained from the slope of
+    the power spectral density (estimated by periodogram) of the streamflow time series at near-zero frequency.
+
+    Parameters
+    ----------
+    q : xarray.DataArray
+        Streamflow in [discharge] units.
+    freq : str
+        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
+    missing : str
+        Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
+
+    Returns
+    -------
+    xarray.DataArray
+        Single value Hurst Exponent (H).
+
+    Notes
+    -----
+    - Hurst Exponent serves as a statistical health check for observed and simulated streamflows;
+    - H>0.5: persistence (long-term memory, common in hydrology) acceptable range: 0,5 to 1.
+    - H<0.5: noise and anti-persistence.
+
+    References
+    ----------
+    Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models
+    at gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures.
+    Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774.
+    """
+    if missing is None:
+        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+
+    ds_q = q.to_dataset(name="q")
+    xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
+
+    arr = np.array(q)
+    # indices of non-NaN values
+    valid_indices = np.where(np.isfinite(arr))[0]
+    valid_values = arr[valid_indices]
+
+    # Create an interpolation function
+    f = interpolate.interp1d(valid_indices, valid_values, bounds_error=False, fill_value="extrapolate")
+
+    # interpolation to fill NaNs
+    arr_interpolated = np.where(np.isfinite(arr), arr, f(np.arange(len(arr))))
+
+    f, pxx_den = signal.periodogram(arr_interpolated)  # freq default fs = 1day
+
+    # select near zero freq
+    mask = (f > 0) & (f < f.max() * 0.2)
+    freqs_low = f[mask]
+    pxx_low = pxx_den[mask]  # for near zero freq
+
+    slope, intercept, r_value, p_value, std_err = stats.linregress(np.log10(freqs_low), np.log10(pxx_low))
+    beta = -slope  # slope is negative, so Beta = -slope
+    h = (beta + 1) / 2
+    return h
