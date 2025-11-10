@@ -10,14 +10,13 @@ For temporal analysis see xclim.indices._hydrology library
 
 import numpy as np
 import xarray
-import xclim
 import xscen
 from numpy import dtype, float64, ndarray
+from xclim.core.units import convert_units_to
 from xscen.utils import standardize_periods
 
 from xhydro.indicators import generic
-from xclim.core.units import convert_units_to
-from xscen import climatological_op
+
 
 __all__ = [
     "elasticity_index",
@@ -26,11 +25,13 @@ __all__ = [
 ]
 
 
-def elasticity_index(q: xarray.DataArray,
-                     pr: xarray.DataArray,
-                     periods: list[str] | list[list[str]] | None = None,
-                     missing: str = "skip",
-                     missing_options: dict | None = None) -> xarray.DataArray:
+def elasticity_index(
+    q: xarray.DataArray,
+    pr: xarray.DataArray,
+    periods: list[str] | list[list[str]] | None = None,
+    missing: str = "skip",
+    missing_options: dict | None = None,
+) -> xarray.DataArray:
     """
     Elasticity index.
 
@@ -44,11 +45,16 @@ def elasticity_index(q: xarray.DataArray,
         Daily discharge data.
     pr : xarray.DataArray
         Daily precipitation data.
-
     periods : list of str or list of list of str, optional
         Either [start, end] or list of [start, end] of periods to be considered.
         If multiple periods are given, the output will have a `horizon` dimension.
         If None, all data is used.
+    missing : str
+        How to handle missing values. One of "skip", "any", "at_least_n", "pct", "wmo".
+        See :py:func:`xclim.core.missing` for more information.
+    missing_options : dict, optional
+        Dictionary of options for the missing values' method. See :py:func:`xclim.core.missing` for more information.
+
     Returns
     -------
     xarray.DataArray
@@ -72,8 +78,9 @@ def elasticity_index(q: xarray.DataArray,
     ds_pr = pr.to_dataset(name="pr")
     ds_pr["pr"].attrs["units"] = "mm/day"
     periods = (
-        standardize_periods(periods, multiple=True) if periods is not None else [
-            [str(int(ds_q.time.dt.year.min())), str(int(ds_q.time.dt.year.max()))]]
+        standardize_periods(periods, multiple=True)
+        if periods is not None
+        else [[str(int(ds_q.time.dt.year.min())), str(int(ds_q.time.dt.year.max()))]]
     )
     out = []
     for period in periods:
@@ -81,10 +88,10 @@ def elasticity_index(q: xarray.DataArray,
         ds_subset_p = ds_pr.sel(time=slice(period[0], period[1]))
         ds_subset_p["pr"].attrs["units"] = "mm/day"
 
-        q_annual = generic.get_yearly_op(ds_subset_q, op="mean", timeargs={"annual": {}}, missing=missing,
-                                         missing_options=missing_options)
-        p_annual = generic.get_yearly_op(ds_subset_p, op="mean", timeargs={"annual": {}}, missing=missing,
-                                         missing_options=missing_options, input_var="pr")
+        q_annual = generic.get_yearly_op(ds_subset_q, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options)
+        p_annual = generic.get_yearly_op(
+            ds_subset_p, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options, input_var="pr"
+        )
 
         # Year-to-year changes
         delta_p = p_annual.diff(dim="time")
@@ -107,15 +114,14 @@ def elasticity_index(q: xarray.DataArray,
     # Median over selected periods
     ei = out_combined.median(dim="time")
 
-    return xarray.DataArray(
-    ei.values,
-    attrs={"units": "", "long_name": "Elasticity index"}
-    )
+    return xarray.DataArray(ei.values, attrs={"units": "", "long_name": "Elasticity index"})
 
-def flow_duration_curve_slope(q: xarray.DataArray,
-                              freq : str = "D",
-                              missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}},
-                              ) -> ndarray[tuple[int, ...], dtype[float64]]:
+
+def flow_duration_curve_slope(
+    q: xarray.DataArray,
+    freq: str = "D",
+    missing=None,
+) -> ndarray[tuple[int, ...], dtype[float64]]:
     """
     Calculate the slope of the flow duration curve mid-section between the 33% and 66% exceedance probabilities.
 
@@ -125,9 +131,9 @@ def flow_duration_curve_slope(q: xarray.DataArray,
     ----------
     q : xarray.DataArray
         Daily streamflow data, expected to have a discharge unit.
-    freq: str
+    freq : str
         Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
-    missing: String, list of strings, or dictionary
+    missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
     Returns
@@ -157,17 +163,17 @@ def flow_duration_curve_slope(q: xarray.DataArray,
     Application to the NWS distributed hydrologic model. Water resources research, 44(9).
     DOI:10.1029/2007WR006716
     """
+    if missing is None:
+        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(ds_q,
-                                    freq=freq,
-                                    missing=missing
-                                    )
+    xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
 
     # Calculate the 33rd and 66th percentiles directly across the 'time' dimension
     q33 = q.quantile(0.33, dim="time", skipna=True)
     q66 = q.quantile(0.66, dim="time", skipna=True)
 
-        # Calculate the natural logarithm of the quantiles
+    # Calculate the natural logarithm of the quantiles
     ln_q33 = np.log(q33)
     ln_q66 = np.log(q66)
 
@@ -178,10 +184,15 @@ def flow_duration_curve_slope(q: xarray.DataArray,
     return slope
 
 
-def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.DataArray, freq : str = "D",
-                       missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}},
-                       # flags=  {"q et a": {"specific_discharge_extremely_high": {}}} once added to xclim dataflags
-                       ) -> xarray.DataArray:
+def total_runoff_ratio(
+    q: xarray.DataArray,
+    a: xarray.DataArray,
+    pr: xarray.DataArray,
+    freq: str = "D",
+    missing=None,
+    # flags=  {"q et a": {"specific_discharge_extremely_high": {}}} once added to xclim dataflags
+    # flags : Dictionary of xclim.core.dataflags.data_flags to perform per variable.
+) -> xarray.DataArray:
     """
     Total runoff ratio.
 
@@ -197,11 +208,10 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
         Watershed area [area] units, will be converted to in [km²].
     pr : xarray.DataArray
         Mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
-    freq: str
+    freq : str
         Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
-    missing: String, list of strings, or dictionary of
+    missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
-    # flags: Dictionary of xclim.core.dataflags.data_flags to perform, per variable.
 
     Returns
     -------
@@ -220,12 +230,16 @@ def total_runoff_ratio(q: xarray.DataArray, a: xarray.DataArray, pr: xarray.Data
     ----------
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
+    if missing is None:
+        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(ds_q,
+    xscen.diagnostics.health_checks(
+        ds_q,
         freq=freq,
         missing=missing,
         # flags=flags,
-        raise_on=["missing_pct"]
+        raise_on=["missing_pct"],
     )
     q = convert_units_to(q, "mm3/hr")
     a = convert_units_to(a, "mm2")

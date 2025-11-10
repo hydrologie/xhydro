@@ -109,4 +109,3 @@ class TestElastIndex:
         np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0)  # not exactly 1 due to epsilon
         # out = xh.elasticity_index(q, pr)
         print(type(out))
-

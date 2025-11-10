@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from scipy.stats import circmean
-from xscen import climatological_op
+
 
 __all__ = ["get_objective_function", "transform_flows"]
 
@@ -269,7 +269,6 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "abs_bias",
         "abs_pbias",
         "abs_volume_error",
-        "high_flow_timing_error",
         "mae",
         "mare",
         "mse",
@@ -280,7 +279,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         maximize = False
 
     # Check for the metrics that exist but cannot be used for optimization
-    elif obj_func in ["bias", "pbias", "volume_error"]:
+    elif obj_func in ["bias", "pbias", "volume_error", "high_flow_timing_error", "high_flow_rel_error", "low_flow_rel_error"]:
         raise ValueError(
             "The bias, pbias, volume_error, high_flow_rel_error, low_flow_rel_error metrics cannot be \
             minimized or maximized. Please use the abs_bias, abs_pbias and abs_volume_error instead or \
@@ -1132,8 +1131,10 @@ def _persistence_index_weekly(qsim, qobs):
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
     # Resample to weekly means (weeks starting on Monday)
-    qqsim_weekly = xscen.climatological_op(qsim.to_dataset(name="qsim"), op="mean", window=7)
-    qobs_weekly = xscen.climatological_op(qobs.to_dataset(name="qobs"), op="mean", window=7)
+    qsim_weekly = qsim.resample(time="W-MON").mean()
+    qobs_weekly = qobs.resample(time="W-MON").mean()
+
+    # qobs_weekly = xscen.climatological_op(qobs.to_dataset(name="qobs"), op="mean", window=7)
 
     # Remove NaNs from both series simultaneously
     valid = qsim_weekly.notnull() & qobs_weekly.notnull()
