@@ -32,5 +32,3 @@ dependencies:
   - xclim
   - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
   - xvec
-
-  - xhydro
