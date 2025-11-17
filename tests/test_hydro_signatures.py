@@ -109,6 +109,19 @@ class TestElastIndex:
         # print(type(out))
 
 
+class TestHurstExpNoise:
+    def test_simple(self, q_series, pr_series):
+        # daily time index
+        np.random.seed(0)
+        q = np.random.randn(365 * 10)  # 10 years of random daily flows
+        q = q_series(q)
+
+        out = xh.hurst_exp(q)  # returns a value close to 0.5 representing noise.
+        print(out)
+
+        assert 0.3 <= out <= 0.6, f"H={out:.3f} out of expected range"
+
+
 class TestHurstExp:
     def test_simple(self, q_series, pr_series):
         # daily time index
@@ -116,5 +129,5 @@ class TestHurstExp:
         q = q_series(q)
 
         out = xh.hurst_exp(q)  # returns very high value due to artificial input
-        np.testing.assert_allclose(out, 1.496021, rtol=1e-6, atol=0)
-        # print(type(out))
+        print(out)
+        np.testing.assert_allclose(out, 1.499721, rtol=1e-6, atol=0)

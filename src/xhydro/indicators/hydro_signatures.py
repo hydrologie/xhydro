@@ -13,7 +13,6 @@ import xarray
 import xscen
 from numpy import dtype, float64, ndarray
 from scipy import signal, stats
-from scipy.interpolate import interpolate
 from xclim.core.units import convert_units_to
 from xscen.utils import standardize_periods
 
@@ -74,11 +73,15 @@ def elasticity_index(
     Sankarasubramanian, A., Vogel, R. M., & Limbrunner, J. F. (2001). Climate elasticity of streamflow
     in the United States. Water Resources Research, 37(6), 1771–1781. https://doi.org/10.1029/2000WR900330
     """
-    # if not freq.startswith("YS"):
-    #     raise ValueError("Frequency must be annual.")
+    # if missing is None:
+    #     missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}} #checks for missing values on a yearly basis
+
     ds_q = q.to_dataset(name="q")
+    xscen.diagnostics.health_checks(ds_q, freq="D")  # all other health checks on a daily basis
+
     ds_pr = pr.to_dataset(name="pr")
     ds_pr["pr"].attrs["units"] = "mm/day"
+
     periods = (
         standardize_periods(periods, multiple=True)
         if periods is not None
@@ -166,7 +169,7 @@ def flow_duration_curve_slope(
     DOI:10.1029/2007WR006716
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
 
     ds_q = q.to_dataset(name="q")
     xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
@@ -233,7 +236,7 @@ def total_runoff_ratio(
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
 
     ds_q = q.to_dataset(name="q")
     xscen.diagnostics.health_checks(
@@ -293,28 +296,23 @@ def hurst_exp(
     Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774.
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "D", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
 
     ds_q = q.to_dataset(name="q")
     xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
 
     arr = np.array(q)
-    # indices of non-NaN values
     valid_indices = np.where(np.isfinite(arr))[0]
     valid_values = arr[valid_indices]
+    f, pxx_den = signal.periodogram(valid_values)  # freq default fs = 1day
 
-    # Create an interpolation function
-    f = interpolate.interp1d(valid_indices, valid_values, bounds_error=False, fill_value="extrapolate")
+    mask = (f > 0) & (f < f.max() * 0.05)  # select near zero freq
 
-    # interpolation to fill NaNs
-    arr_interpolated = np.where(np.isfinite(arr), arr, f(np.arange(len(arr))))
+    if mask.sum() < 20:
+        mask = (f > 0) & (f < f.max() * 0.1)  # check for at least 20 frequency bins
 
-    f, pxx_den = signal.periodogram(arr_interpolated)  # freq default fs = 1day
-
-    # select near zero freq
-    mask = (f > 0) & (f < f.max() * 0.2)
     freqs_low = f[mask]
-    pxx_low = pxx_den[mask]  # for near zero freq
+    pxx_low = pxx_den[mask]
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(np.log10(freqs_low), np.log10(pxx_low))
     beta = -slope  # slope is negative, so Beta = -slope
