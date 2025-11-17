@@ -66,7 +66,7 @@ def elasticity_index(
     A value of εp greater than 1 indicates that streamflow is highly sensitive to precipitation changes,
     meaning a 1% change in precipitation will lead to a greater than 1% change in streamflow.
     A value less than 1 suggests a less sensitive relationship.
-    It is recommended to use yearly frequency in order to have more rebust elasticity_index
+    It is recommended to use yearly frequency in order to have more robust elasticity_index
 
     References
     ----------
@@ -93,14 +93,30 @@ def elasticity_index(
         ds_subset_p = ds_pr.sel(time=slice(period[0], period[1]))
         ds_subset_p["pr"].attrs["units"] = "mm/day"
 
+        # Annual mean from raw data
         q_annual = generic.get_yearly_op(ds_subset_q, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options)
         p_annual = generic.get_yearly_op(
             ds_subset_p, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options, input_var="pr"
         )
+        # q_period= aggregate.climatological_op(
+        #     q_annual,
+        #     op="skip" or "first" not applicable,# picks first value in period
+        #     (acts like a no-op for already-aggregated data), since "mean" does work on daily data...
+        #     periods=periods,  # your periods
+        #     window=None,  # no rolling window, just period aggregation
+        #     rename_variables=True,  # keep variable names clean
+        # )
+        # p_period = aggregate.climatological_op(
+        #     p_annual,
+        #     op="first",# picks first value in period (acts like a no-op for already-aggregated data)
+        #     periods=periods,
+        #     window=None,
+        #     rename_variables=True,
+        # )
 
         # Year-to-year changes
-        delta_p = p_annual.diff(dim="time")
         delta_q = q_annual.diff(dim="time")
+        delta_p = p_annual.diff(dim="time")
 
         # Avoid division by zero
         epsilon = 1e-6
@@ -125,6 +141,7 @@ def elasticity_index(
 def flow_duration_curve_slope(
     q: xarray.DataArray,
     freq: str = "D",
+    periods: list[str] | list[list[str]] | None = None,
     missing=None,
 ) -> ndarray[tuple[int, ...], dtype[float64]]:
     """
@@ -138,6 +155,10 @@ def flow_duration_curve_slope(
         Daily streamflow data, expected to have a discharge unit.
     freq : str
         Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
+    periods : list of str or list of list of str, optional
+        Either [start, end] or list of [start, end] of periods to be considered.
+        If multiple periods are given, the output will have a `horizon` dimension.
+        If None, all data is used.
     missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
@@ -173,20 +194,30 @@ def flow_duration_curve_slope(
 
     ds_q = q.to_dataset(name="q")
     xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
+    periods = (
+        standardize_periods(periods, multiple=True)
+        if periods is not None
+        else [[str(int(ds_q.time.dt.year.min())), str(int(ds_q.time.dt.year.max()))]]
+    )
+    out = []
+    for period in periods:
+        subset_q = q.sel(time=slice(period[0], period[1]))
+        # Calculate the 33rd and 66th percentiles directly across the 'time' dimension
+        q33 = subset_q.quantile(0.33, dim="time", skipna=True)
+        q66 = subset_q.quantile(0.66, dim="time", skipna=True)
 
-    # Calculate the 33rd and 66th percentiles directly across the 'time' dimension
-    q33 = q.quantile(0.33, dim="time", skipna=True)
-    q66 = q.quantile(0.66, dim="time", skipna=True)
+        # Calculate the natural logarithm of the quantiles
+        ln_q33 = np.log(q33)
+        ln_q66 = np.log(q66)
 
-    # Calculate the natural logarithm of the quantiles
-    ln_q33 = np.log(q33)
-    ln_q66 = np.log(q66)
+        # Calculate the slope (unitless)
+        slope = (ln_q33 - ln_q66) / (0.33 - 0.66)
+        slope.attrs["units"] = " "
+        slope.attrs["long_name"] = "Slope of FDC between 33% and 66% exceedance probabilities"
+        out.append(slope)
 
-    # Calculate the slope (unitless)
-    slope = (ln_q33 - ln_q66) / (0.33 - 0.66)
-    slope.attrs["units"] = " "
-    slope.attrs["long_name"] = "Slope of FDC between 33% and 66% exceedance probabilities"
-    return slope
+    out_combined = xarray.concat(out, dim="time")
+    return out_combined
 
 
 def total_runoff_ratio(
@@ -294,6 +325,9 @@ def hurst_exp(
     Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models
     at gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures.
     Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774.
+
+    Koutsoyiannis, D., and A. Montanari (2007), Statistical analysis of hydroclimatic time series:
+    Uncertainty and insights, Water Resour. Res., 43, W05429, doi:10.1029/2006WR005592.
     """
     if missing is None:
         missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
@@ -306,10 +340,10 @@ def hurst_exp(
     valid_values = arr[valid_indices]
     f, pxx_den = signal.periodogram(valid_values)  # freq default fs = 1day
 
-    mask = (f > 0) & (f < f.max() * 0.05)  # select near zero freq
+    mask = (f > 0) & (f < f.max() * 0.01)  # select near zero freq
 
     if mask.sum() < 20:
-        mask = (f > 0) & (f < f.max() * 0.1)  # check for at least 20 frequency bins
+        mask = (f > 0) & (f < f.max() * 0.05)  # check for at least 20 frequency bins
 
     freqs_low = f[mask]
     pxx_low = pxx_den[mask]
