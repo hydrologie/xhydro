@@ -162,7 +162,7 @@ def get_objective_function(
         if "streamflow" in qsim and "q" not in qsim:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                 FutureWarning,
                 stacklevel=2,
             )
@@ -174,7 +174,7 @@ def get_objective_function(
         if "streamflow" in qobs and "q" not in qobs:
             warnings.warn(
                 "Default variable name has changed from 'streamflow' to 'q'. "
-                "Supporting 'streamflow' is deprecated and will be removed in future versions.",
+                "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
                 FutureWarning,
                 stacklevel=2,
             )
@@ -253,7 +253,7 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "agreement_index",
         "correlation_coeff",
         "kge",
-        "kge_invkge_mod",
+        "kge_mod",
         "kge_2021",
         "lce",
         "nse",
@@ -886,7 +886,7 @@ ADD OBJECTIVE FUNCTIONS HERE
 """
 
 
-def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -> float:
+def _high_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probability: int = 10) -> float:
     """
     High Flow Relative Error.
     Relative error for observed flows that are exceeded a given percentage of the time.
@@ -920,7 +920,7 @@ def _high_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 10) -
     qobs = xr.DataArray(qobs, dims="time")
     qsim = xr.DataArray(qsim, dims="time")
 
-    thresh = np.nanpercentile(qobs, 100 - percentile)
+    thresh = np.nanpercentile(qobs, 100 - exceedance_probability)
 
     # Select only high flow time steps
     mask = qobs >= thresh
@@ -1011,7 +1011,7 @@ def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
 
 
-def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) -> float:
+def _low_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probability: int = 90) -> float:
     """
     Low Flow Relative Error.
     Relative error for observed flows that are exceeded 90 % of the time.
@@ -1050,7 +1050,7 @@ def _low_flow_rel_error(qobs: np.array, qsim: np.array, percentile: int = 90) ->
     # qobs_low = qobs.where(mask, drop=True)
     #
     # return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
-    threshold = np.nanpercentile(qobs, 100 - percentile)
+    threshold = np.nanpercentile(qobs, 100 - exceedance_probability)
     mask = qobs >= threshold
 
     qsim_low = qsim[mask]
@@ -1194,7 +1194,7 @@ def _high_flow_timing_error(
     qobs: xr.DataArray,
     qsim: xr.DataArray,
     freq: str = "YS-OCT",
-    percentile: int = 10,
+    exceedance_probability: int = 10,
 ) -> xr.DataArray:
     """
     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
@@ -1206,8 +1206,8 @@ def _high_flow_timing_error(
         Daily Simulated streamflow data.
     qobs : array_like
         Daily Observed streamflow data.
-    percentile : int
-        frequency percentile for high flows, default is 10%.
+    exceedance_probability : int
+        exceedance_probability for high flows, default is 10%.
 
     Returns
     -------
