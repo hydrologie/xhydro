@@ -1,13 +1,11 @@
 # Test suite for the objective functions in obj_funcs.py.
 import numpy as np
 import pandas as pd
-import xarray as xr
 import pytest
+import xarray as xr
 
-from xhydro.modelling.obj_funcs import (
-    _get_objfun_minimize_or_maximize,
-    get_objective_function
-)
+from xhydro.modelling.obj_funcs import _get_objfun_minimize_or_maximize, get_objective_function
+
 
 # @pytest.fixture
 def _q_series(values, start="1/1/2000", units="m3 s-1"):
@@ -22,6 +20,7 @@ def _q_series(values, start="1/1/2000", units="m3 s-1"):
             "units": units,
         },
     )
+
 
 def test_obj_funcs():
     """Series of tests to test all objective functions with fast test data"""
@@ -104,7 +103,7 @@ def test_obj_funcs():
     objfun = get_objective_function(qobs, qsim, obj_func="volumetric_efficiency")
     np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
 
-    # these next two obj functions need xarray inputs, they fail with numpy.ndarray
+    # these next two obj functions need timestamps
 
     qobs_t = _q_series(qobs)
     qsim_t = _q_series(qsim)
