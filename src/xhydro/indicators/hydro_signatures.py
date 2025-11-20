@@ -343,7 +343,7 @@ def hurst_exp(
     mask = (f > 0) & (f < f.max() * 0.01)  # select near zero freq
 
     if mask.sum() < 20:
-        mask = (f > 0) & (f < f.max() * 0.05)  # check for at least 20 frequency bins
+        mask = (f > 0) & (f < f.max() * 0.02)  # check for at least 20 frequency bins
 
     freqs_low = f[mask]
     pxx_low = pxx_den[mask]

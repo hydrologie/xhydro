@@ -1102,7 +1102,7 @@ def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return 1 - np.sum((qsim - qobs_now) ** 2) / np.sum((qobs_prev - qobs_now) ** 2)
 
 
-def _persistence_index_weekly(qsim, qobs):
+def _persistence_index_weekly(qsim: np.ndarray, qobs: np.ndarray):
     """
     Persistence index or persistence model efficiency based on weekly averages;
     Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
@@ -1190,12 +1190,61 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
 
 
+# def _high_flow_timing_error(qobs: np.ndarray,  # pour xhydro
+#                                    qsim: np.ndarray,
+#                                    freq: str = "YS-OCT",
+#                                    exceedance_probability: int = 10,
+#                                    ):
+#     """
+#     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
+#
+#
+#     Parameters
+#     ----------
+#     qsim : array_like
+#         Simulated streamflow vector.
+#     qobs : array_like
+#         Observed streamflow vector.
+#     exceedance_probability : int
+#         exceedance_probability for high flows, default is 10%.
+#
+#     Returns
+#     -------
+#     float
+#         Difference in Julian day occurrence of high flows, e.g. flows that are exceeded 10 % of the time.
+#
+#     Notes
+#     -----
+#     High Flow timing Error should AIM TO BE ZERO
+#     ref : Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models at
+#     gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures.
+#     Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
+#
+#
+#     """
+#     threshold = np.nanpercentile(qobs, 100 - exceedance_probability)
+#
+#     # Select only high flow time steps
+#     mask1 = qobs >= threshold
+#     qobs_high_time = time[mask1]
+#     date_obs = pd.DatetimeIndex(qobs_high_time)
+#
+#     doy_obs = date_obs.dayofyear
+#     mean_doy_obs = circmean(doy_obs, high=365, low=1)
+#
+#     mask2 = qsim >= threshold
+#     qsim_high_time = time[mask2]
+#     date_sim = pd.DatetimeIndex(qsim_high)
+#     doy_sim = date_sim.dayofyear
+#     mean_doy_sim = circmean(doy_sim, high=365, low=1)
+#
+#     return mean_doy_sim - mean_doy_obs
+
 def _high_flow_timing_error(
     qobs: xr.DataArray,
     qsim: xr.DataArray,
-    freq: str = "YS-OCT",
-    exceedance_probability: int = 10,
-) -> xr.DataArray:
+    percentile: int = 10,
+) -> float:
     """
     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
 
@@ -1206,8 +1255,8 @@ def _high_flow_timing_error(
         Daily Simulated streamflow data.
     qobs : array_like
         Daily Observed streamflow data.
-    exceedance_probability : int
-        exceedance_probability for high flows, default is 10%.
+    percentile : int
+        frequency percentile for high flows, default is 10%.
 
     Returns
     -------
@@ -1225,18 +1274,23 @@ def _high_flow_timing_error(
     """
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
-    # Select only high flow time steps
+     # Select only high flow time steps for obs flows
     mask1 = qobs >= threshold
 
     qobs_high = qobs.where(mask1, drop=True)
     date_obs = pd.DatetimeIndex(qobs_high.time.values)
     doy_obs = date_obs.dayofyear
+    #circmean for signe DOY
     mean_doy_obs = circmean(doy_obs, high=365, low=1)
 
+    # Select only high flow time steps for sim flows
     mask2 = qsim >= threshold
     qsim_high = qsim.where(mask2, drop=True)
     date_sim = pd.DatetimeIndex(qsim_high.time.values)
     doy_sim = date_sim.dayofyear
-    mean_doy_sim = circmean(doy_sim, high=365, low=1)
 
-    return mean_doy_sim - mean_doy_obs
+    #circmean for signe DOY
+    mean_doy_sim = circmean(doy_sim , high=365, low=1)
+
+
+    return (mean_doy_sim - mean_doy_obs)

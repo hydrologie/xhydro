@@ -119,7 +119,7 @@ class TestHurstExpNoise:
         out = xh.hurst_exp(q)  # returns a value close to 0.5 representing noise.
         print(out)
 
-        assert 0.3 <= out <= 0.6, f"H={out:.3f} out of expected range"
+        assert 0.3 <= out <= 0.5, f"H={out:.3f} out of expected range"
 
 
 class TestHurstExp:
@@ -130,4 +130,4 @@ class TestHurstExp:
 
         out = xh.hurst_exp(q)  # returns very high value due to artificial input
         print(out)
-        np.testing.assert_allclose(out, 1.499721, rtol=1e-6, atol=0)
+        np.testing.assert_allclose(out, 1.499946, rtol=1e-6, atol=0)

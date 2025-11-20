@@ -1,12 +1,27 @@
 # Test suite for the objective functions in obj_funcs.py.
 import numpy as np
+import pandas as pd
+import xarray as xr
 import pytest
 
 from xhydro.modelling.obj_funcs import (
     _get_objfun_minimize_or_maximize,
-    get_objective_function,
+    get_objective_function
 )
 
+# @pytest.fixture
+def _q_series(values, start="1/1/2000", units="m3 s-1"):
+    coords = pd.date_range(start, periods=len(values), freq="D")
+    return xr.DataArray(
+        values,
+        coords=[coords],
+        dims="time",
+        name="q",
+        attrs={
+            "standard_name": "water_volume_transport_in_river_channel",
+            "units": units,
+        },
+    )
 
 def test_obj_funcs():
     """Series of tests to test all objective functions with fast test data"""
@@ -89,12 +104,19 @@ def test_obj_funcs():
     objfun = get_objective_function(qobs, qsim, obj_func="volumetric_efficiency")
     np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
 
-    # these two obj functions need xarray inputs, they fail with numpy.ndarray
-    # objfun = get_objective_function(qobs, qsim, obj_func="persistence_index_weekly")
-    # np.testing.assert_array_almost_equal(objfun, -0.3, 8)
+    # these next two obj functions need xarray inputs, they fail with numpy.ndarray
 
-    # objfun = get_objective_function(qobs, qsim, obj_func="high_flow_timing_error")
-    # np.testing.assert_array_almost_equal(objfun, 0.94252874, 8)
+    qobs_t = _q_series(qobs)
+    qsim_t = _q_series(qsim)
+    objfun = get_objective_function(qobs_t, qsim_t, obj_func="persistence_index_weekly")
+    np.testing.assert_array_almost_equal(objfun, 0.95061728, 8)
+
+    qobs_duplicated = np.repeat(qobs, 2)
+    qsim_duplicated = np.tile(qsim, 2)
+    qobs_t2 = _q_series(qobs_duplicated)
+    qsim_t2 = _q_series(qsim_duplicated)
+    objfun = get_objective_function(qsim_t2, qobs_t2, obj_func="high_flow_timing_error")
+    np.testing.assert_array_almost_equal(objfun, -2.5, 8)
 
 
 def test_objective_function_failure_data_length():
