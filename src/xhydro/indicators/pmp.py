@@ -19,7 +19,7 @@ def major_precipitation_events(
     *,
     windows: list[int],
     quantile: float | None = None,
-    min_prec: float = 0,
+    min_prec: str = "0 mm",
 ):
     """
     Get precipitation events that exceed a given quantile for a given time step accumulation. Based on Clavet-Gaumont et al. (2017).
@@ -33,9 +33,9 @@ def major_precipitation_events(
     quantile : float, optional
         Threshold that limits the events to those that exceed this quantile.
         If `quantile` is None, the function returns all the accumulated values.
-    min_prec : float, optional
+    min_prec : Quantified
         Minimum precipitation value to consider an event.
-        Values equal to `min_prec` are excluded. Defaults to 0.
+        Values equal to `min_prec` are excluded. Defaults to 0 mm.
 
     Returns
     -------
@@ -52,7 +52,8 @@ def major_precipitation_events(
     )
 
     if quantile is not None:
-        events = events.where(events > min_prec)
+        min_prec_converted = units.convert_units_to(min_prec, events)
+        events = events.where(events > min_prec_converted)
         events = events.chunk(dict(time=-1)).groupby("time.year").map(_keep_highest_values, quantile=quantile)
         events.attrs["long_name"] = "Major precipitation events"
         events.attrs["description"] = f"Top {quantile * 100}% of the accumulated precipitation over the specified number of time steps."
