@@ -588,7 +588,7 @@ def spatial_average_storm_configurations(da, *, radius):
     npy_da = len(da[y])
     npx_da = len(da[x])
 
-    da_stacked = da.stack(stacked_coords=("y", "x"))
+    da_stacked = da.stack(stacked_coords=(y, x))
     confi_lst = []
     for name, confi in dict_config.items():
         conf_y = confi[0]
@@ -642,7 +642,7 @@ def spatial_average_storm_configurations(da, *, radius):
                         "x": [da[x][cen_shift_x].values],
                     }
                 )
-                .stack(stacked_coords=("y", "x"))
+                .stack(stacked_coords=(y, x))
             )
 
             list_mean.append(da_mean)
