@@ -1,0 +1,86 @@
+envlist = [
+  "lint",
+  "py3.{10,11,12,13,14}",
+  "docs",
+  "notebooks.lax"
+]
+skip_missing_interpreters = true
+
+[env.docs]
+description = "Run Build of xhydro Documentation"
+passenv = [
+  "{[testenv]passenv}",
+  "SKIP_NOTEBOOKS"
+]
+setenv = [{replace = "ref", of = ["tool", "tox", "env_run_base", "setenv"]}, {"READTHEDOCS" = 1}]
+extras = ["docs"]
+commands = [
+  ["make", "autodoc"],
+  ["make", "--directory=docs", "clean", "html"]
+]
+commands_post = []
+allowlist_externals = ["make"]
+
+[env.lint]
+skip_install = true
+deps = [
+  "flake8 >= 7.3.0",
+  "flake8-rst-docstrings >= 0.4.0",
+  "ruff >= 0.14.3",
+  "numpydoc >= 1.9.0"
+]
+commands = [["make", "lint"]]
+commands_post = []
+allowlist_externals = ["make"]
+
+[env.notebooks]
+description = "Run tests on xhydro Notebooks"
+extras = [
+  "dev",
+  "docs"
+]
+commands = [
+  ["make", "test-notebooks"]
+]
+commands_post = []
+allowlist_externals = [
+  "make"
+]
+
+[env.notebooks-lax]
+description = "Run tests on xhydro Notebooks (lax)"
+extras = [
+  "dev",
+  "docs"
+]
+commands = [
+  ["make", "test-notebooks-lax"]
+]
+commands_post = []
+allowlist_externals = [
+  "make"
+]
+
+[env_run_base]
+description = "Run tests with pytest under {basepython}"
+setenv = {PYTEST_ADDOPTS = "--color=yes --cov=xhydro --cov-report=lcov", PYTHONPATH = "{toxinidir}"}
+passenv = ["CI", "COVERALLS_*", "GITHUB_*"]
+extras = ["dev"]
+download = true
+install_command = ["python", "-m", "pip", "install", "--no-user", "{opts}", "{packages}"]
+commands_pre = [["pip", "list"], ["pip", "check"]]
+commands = [
+  # Recompile h5py to avoid issues with different numpy versions on non-windows systems
+  ["python", "-m", "pip", "install", "--no-user", "--no-deps", "--force-reinstall", "--no-binary", "h5py", "h5py>=3.12.1"],
+  ["pytest", "{posargs}"]
+]
+commands_post = [
+  ["coverage", "report"]
+]
+
+[gh.python]
+"3.10" = ["py3.10"]
+"3.11" = ["py3.11"]
+"3.12" = ["py3.12"]
+"3.13" = ["py3.13"]
+"3.14" = ["py3.14"]

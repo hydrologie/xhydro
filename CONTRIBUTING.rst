@@ -204,7 +204,7 @@ Before you submit a Pull Request, check that it meets these guidelines:
 
 #. The ChangeLog should be updated with a brief description of the changes made in the Pull Request. If this is your first contribution to the project, please add your name and information to the `AUTHORS.rst` and `.zenodo.json` files.
 
-#. The Pull Request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.ini` files for the supported versions. We aim to follow the support and drop schedule of Python versions as recommended by the NumPy NEP calendar: https://numpy.org/neps/nep-0029-deprecation_policy.html
+#. The Pull Request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.toml` files for the supported versions. We aim to follow the support and drop schedule of Python versions as recommended by the NumPy NEP calendar: https://numpy.org/neps/nep-0029-deprecation_policy.html
 
 Tips
 ----
