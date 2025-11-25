@@ -4,13 +4,15 @@ Changelog
 
 v0.6.1 (2025-10-22)
 -------------------
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`).
 
 Bug fixes
 ^^^^^^^^^
 * Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
 * Fixed a bug where the process would hang indefinitely on Windows systems when calling hydrological models through command line arguments. (:pull:`358`, :pull:`363`).
 * The long_name and description attributes of the `q` variable in Hydrotel outputs have been slightly modified to match `RavenPy` outputs. (:pull:`358`).
+* Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
+* Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -22,6 +24,10 @@ Internal changes
     * Added a CITATION.cff file to the repository.
     * License metadata now follows `PEP 639 <https://peps.python.org/pep-0639/>`_ conventions.
     * Linting hooks are slightly more strict.
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.
 
 v0.6.0 (2025-09-22)
 -------------------
