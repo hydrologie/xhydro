@@ -2,7 +2,7 @@ envlist = [
   "lint",
   "py3.{10,11,12,13,14}",
   "docs",
-  "notebooks.lax"
+  "notebooks-lax"
 ]
 skip_missing_interpreters = true
 
