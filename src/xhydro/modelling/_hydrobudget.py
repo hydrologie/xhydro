@@ -53,6 +53,8 @@ class Hydrobudget(HydrologicalModel):
         Calibration end date.
     frequency : str, optional
         frequency of output data : month, season, year, all. If None, default is season.
+        graph_outputs : int, optional
+            level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
     """
 
     def __init__(
@@ -68,6 +70,7 @@ class Hydrobudget(HydrologicalModel):
         start_date: str | None = None,
         end_date: str | None = None,
         frequency: str | None = None,
+        graph_outputs: int | None = 0,
     ):
         """
         Initialize the Hydrobudget simulation.
@@ -95,6 +98,8 @@ class Hydrobudget(HydrologicalModel):
             Calibration end date.
         frequency : str, optional
             frequency of output data : month, season, year, all. If None, default is season.
+        graph_outputs : int, optional
+            level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
         output_config = output_config or dict()
         qobs = qobs or None
@@ -114,6 +119,7 @@ class Hydrobudget(HydrologicalModel):
         self.cal_start_date = start_date
         self.cal_end_date = end_date
         self.frequency = frequency
+        self.graph_outputs = graph_outputs
 
     def run(
         # numpydoc ignore=EX01,SA01,ES01
@@ -290,8 +296,7 @@ class Hydrobudget(HydrologicalModel):
         qbasesim_totalite=[]
         qtotobs_totalite=[]
         qbaseobs_totalite=[]
-        
-        yeartrim_list=[]
+    
         year_list=[]
         #trim_list=[]
         stat_list=[]
@@ -456,13 +461,19 @@ class Hydrobudget(HydrologicalModel):
         
         self.timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         
-        self.plot_streamflow_scatter_color(self.frequency,sim_qflow=qflow_sim_an, 
-                                           obs_qflow=qflow_obs_an,output_dir=self.output_dir, 
-                                           timestamp=self.timestamp)
+        if self.graph_outputs>0:        
+            self.plot_streamflow_scatter_color(self.frequency,sim_qflow=qflow_sim_an, 
+                                               obs_qflow=qflow_obs_an,output_dir=self.output_dir, 
+                                               timestamp=self.timestamp)
         
-        self.plot_sim_vs_obs_yearly_streamflow(self.frequency,sim_qflow=qflow_sim_an, 
-                                           obs_qflow=qflow_obs_an, 
-                                           output_dir=self.output_dir, timestamp=self.timestamp)
+            if self.graph_outputs>1: 
+                self.plot_streamflow_scatter_color_bystation(self.frequency,sim_qflow=qflow_sim_an, 
+                                                   obs_qflow=qflow_obs_an,output_dir=self.output_dir, 
+                                                   timestamp=self.timestamp)
+                
+                self.plot_sim_vs_obs_yearly_streamflow(self.frequency,sim_qflow=qflow_sim_an, 
+                                                   obs_qflow=qflow_obs_an, 
+                                                   output_dir=self.output_dir, timestamp=self.timestamp)
                 
         # Build Netcdf file with the two variables qobs ad qsim
         # Write out data to a new netCDF file with some attributes
@@ -845,7 +856,214 @@ class Hydrobudget(HydrologicalModel):
             decompte=decompte+1
     
         return
-          
+    
+    def plot_streamflow_scatter_color_bystation(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+        frequency: str(),
+        sim_qflow: pd.DataFrame,
+        obs_qflow: pd.DataFrame,
+        output_dir: Path,
+        timestamp: str()
+    ) :
+        
+        """
+        Create a scatter plot comparing simulated total and base
+        streamflow yearly values with observed values.
+    
+        """   
+        self.frequency = frequency  
+        self.output_dir = output_dir 
+
+        # déterminantion des conditions pour réaliser les figures dans tous les cas de fréquence 
+        if frequency=="all":
+            fin_decompte=3
+            freq=['year','season','month']
+        if frequency=="year":
+            fin_decompte=1
+            freq=['year']
+        if frequency=="season":
+            fin_decompte=1
+            freq=['season']
+        if frequency=="month":
+            fin_decompte=1
+            freq=['month']
+
+        decompte=0
+        while decompte<fin_decompte:
+            
+            subset_obs_qflow=obs_qflow[obs_qflow['frequence']==freq[decompte]]
+            subset_sim_qflow=sim_qflow[sim_qflow['frequence']==freq[decompte]]
+                      
+            # Join both dataframe in a single dataframe.
+            yearly_qflow = subset_sim_qflow.copy()
+            yearly_qflow = yearly_qflow.reindex(index=subset_obs_qflow.index)
+            yearly_qflow.loc[subset_obs_qflow.index, 'qtot_obs'] = subset_obs_qflow['qtot_obs']
+            yearly_qflow.loc[subset_obs_qflow.index, 'qbase_obs'] = subset_obs_qflow['qbase_obs']
+            yearly_qflow.loc[subset_obs_qflow.index, 'temps_list'] = subset_obs_qflow['temps_list']
+            
+            if freq[decompte]=="year":
+                yearly_qflow['temps_list1']=[yearly_qflow['temps_list'][a] for a in yearly_qflow.index]
+               
+            else : 
+                yearly_qflow['temps_list1']=[yearly_qflow['temps_list'][a].split('_')[0] for a in yearly_qflow.index]
+            
+            def generate_colors(x, colormap='Set1'):
+                cmap = plt.get_cmap(colormap)
+                colors = [cmap(i / (x - 1)) for i in range(x)]
+                return colors
+        
+            station_=list(set(yearly_qflow.station))
+            colorslist=generate_colors(len(station_))
+
+            if freq[decompte]=="year" : 
+                years_nb=len(list(dict.fromkeys(yearly_qflow.temps_list1)))
+                colorslist=generate_colors(years_nb)
+                qmin=200
+                qmax=1400
+                qbasemax=800
+                frequence="année"
+                anchor_y=1.3
+            if freq[decompte]=="season" : 
+                qmin=0
+                qmax=700
+                qbasemax=250
+                frequence="saison"
+                anchor_y=1.35
+            if freq[decompte]=="month" : 
+                #colorslist=generate_colors(12)
+                qmin=0
+                qmax=600
+                qbasemax=150
+                anchor_y=1.35
+                frequence="mois"
+    
+            # Figure Qtot
+            fwidth, fheight = 6, 5
+            fig, ax = plt.subplots()
+            fig.set_size_inches(fwidth, fheight)
+        
+            left_margin = 1/fwidth
+            right_margin = 1.3/fwidth
+            top_margin = 0.5/fheight
+            bot_margin = 1/fheight
+            ax.set_position([left_margin, bot_margin,
+                             1 - left_margin - right_margin,
+                             1 - top_margin - bot_margin])
+        
+            xymin, xymax = qmin, qmax
+            ax.axis([xymin, xymax, xymin, xymax])
+            ax.set_ylabel('Débits Simulés (mm/an)', fontsize=16, labelpad=15)
+            ax.set_xlabel('Débits Observés (mm/an)', fontsize=16, labelpad=15)
+        
+            ax.tick_params(axis='both', direction='out', labelsize=12)
+        
+            l1, = ax.plot([xymin, xymax], [xymin, xymax], '--', color='black', lw=1)
+            
+            
+            for tr in range(len(station_)):
+                subset=yearly_qflow[yearly_qflow["station"]==station_[tr]]
+                l2, = ax.plot(subset['qtot_obs'],
+                              subset['qtot_sim'],
+                              '.',
+                              color=colorslist[tr])
+                    
+            # Plot the model fit stats.
+            rmse_qtot = np.nanmean(
+                (yearly_qflow['qtot_sim'] - yearly_qflow['qtot_obs'])**2)**0.5
+            me_qtot = np.nanmean(
+                yearly_qflow['qtot_sim'] - yearly_qflow['qtot_obs'])
+        
+            dx, dy = 3, -3
+            offset = transforms.ScaledTranslation(dx/72, dy/72, fig.dpi_scale_trans)
+            ax.text(0, 1, "RMSE débit total = %0.1f mm/an" % rmse_qtot,
+                    transform=ax.transAxes+offset, ha='left', va='top')
+            dy += -12
+            offset = transforms.ScaledTranslation(dx/72, dy/72, fig.dpi_scale_trans)
+            ax.text(0, 1, "ME débit total = %0.1f mm/an" % me_qtot,
+                    transform=ax.transAxes+offset, ha='left', va='top')
+        
+            # Add a graph title.
+            fig_title1=f"Débits total par {frequence}"
+            offset = transforms.ScaledTranslation(0/72, 12/72, fig.dpi_scale_trans)
+            ax.text(0.5, 1, fig_title1, fontsize=16, ha='center', va='bottom',
+                    transform=ax.transAxes+offset)
+            # Add a legend.
+            color = ["1:1"]
+            colors=color + station_
+            
+            legend = ax.legend(colors, numpoints=1, fontsize=10,
+                               borderaxespad=0, loc='lower right', borderpad=0.5,
+                               bbox_to_anchor=(anchor_y, 0), ncol=1)
+            legend.draw_frame(False)
+            fig_path1=Path(self.output_dir,f"SP_{freq[decompte]}_tot_allstations_bystation_{self.timestamp}.png")
+            fig.savefig(fig_path1,dpi=200)
+            
+            # Figure Qbase
+            fwidth, fheight = 6, 5
+            fig, ax = plt.subplots()
+            fig.set_size_inches(fwidth, fheight)
+        
+            left_margin = 1/fwidth
+            right_margin = 1.3/fwidth
+            top_margin = 0.5/fheight
+            bot_margin = 1/fheight
+            ax.set_position([left_margin, bot_margin,
+                             1 - left_margin - right_margin,
+                             1 - top_margin - bot_margin])
+        
+            xymin, xymax = 0, qbasemax
+            ax.axis([xymin, xymax, xymin, xymax])
+            ax.set_ylabel('Débits Simulés (mm/an)', fontsize=16, labelpad=15)
+            ax.set_xlabel('Débits Observés (mm/an)', fontsize=16, labelpad=15)
+        
+            ax.tick_params(axis='both', direction='out', labelsize=12)
+        
+            l1, = ax.plot([xymin, xymax], [xymin, xymax], '--', color='black', lw=1)
+                
+            for tr in range(len(station_)):
+                subset=yearly_qflow[yearly_qflow["station"]==station_[tr]]
+                l2, = ax.plot(subset['qbase_obs'],
+                              subset['qbase_sim'],
+                              '.',
+                              color=colorslist[tr])
+                    
+            # Plot the model fit stats.
+            rmse_qtot = np.nanmean(
+                (yearly_qflow['qbase_sim'] - yearly_qflow['qbase_obs'])**2)**0.5
+            me_qtot = np.nanmean(
+                yearly_qflow['qbase_sim'] - yearly_qflow['qbase_obs'])
+        
+            dx, dy = 3, -3
+            offset = transforms.ScaledTranslation(dx/72, dy/72, fig.dpi_scale_trans)
+            ax.text(0, 1, "RMSE débit total = %0.1f mm/an" % rmse_qtot,
+                    transform=ax.transAxes+offset, ha='left', va='top')
+            dy += -12
+            offset = transforms.ScaledTranslation(dx/72, dy/72, fig.dpi_scale_trans)
+            ax.text(0, 1, "ME débit total = %0.1f mm/an" % me_qtot,
+                    transform=ax.transAxes+offset, ha='left', va='top')
+        
+            # Add a graph title.
+            fig_title2=f"Débits de base par {frequence}"
+            offset = transforms.ScaledTranslation(0/72, 12/72, fig.dpi_scale_trans)
+            ax.text(0.5, 1, fig_title2, fontsize=16, ha='center', va='bottom',
+                    transform=ax.transAxes+offset)
+            
+            # Add a legend.
+            color = ["1:1"]
+            colors=color + station_
+                
+            legend = ax.legend(colors, numpoints=1, fontsize=10,
+                               borderaxespad=0, loc='lower right', borderpad=0.5,
+                               bbox_to_anchor=(anchor_y, 0), ncol=1)
+            legend.draw_frame(False)
+            fig_path2=Path(self.output_dir,f"SP_{freq[decompte]}_base_allstations_bystation_{self.timestamp}.png")
+            fig.savefig(fig_path2,dpi=200)
+            
+            decompte=decompte+1
+    
+        return
+           
     def plot_sim_vs_obs_yearly_streamflow(
             # numpydoc ignore=EX01,SA01,ES01
             self,
