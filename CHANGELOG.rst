@@ -9,7 +9,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel R
 Bug fixes
 ^^^^^^^^^
 
-* The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` combined to `xarray >=2025.11.0`. (:pull:`373`).
+* The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
