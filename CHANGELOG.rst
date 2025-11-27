@@ -2,6 +2,22 @@
 Changelog
 =========
 
+v0.7.0 (unreleased)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+Bug fixes
+^^^^^^^^^
+* The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter template to the latest commit. (:pull:`371`):
+    * Migrated from `tox.ini` to `tox.toml`
+    * `pre-commit` hooks have been updated
+    * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
+    * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+
 v0.6.1 (2025-10-22)
 -------------------
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`).
