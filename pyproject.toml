@@ -121,7 +121,7 @@ all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
 [tool]
 
 [tool.bumpversion]
-current_version = "0.6.2-dev.0"
+current_version = "0.6.2-dev.1"
 commit = true
 commit_args = "--no-verify"
 tag = false
