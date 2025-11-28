@@ -10,7 +10,7 @@ Bug fixes
 ^^^^^^^^^
 * The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
 * Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
-* Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF).
+* Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF). (:pull:`370`)
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -22,7 +22,7 @@ Internal changes
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
 
 v0.6.1 (2025-10-22)
 -------------------
