@@ -3,13 +3,13 @@ xHydro |logo| |logo-light| |logo-dark|
 ======================================
 
 +----------------------------+-----------------------------------------------------+
-| Versions                   | |pypi| |versions|                                   |
+| Versions                   | |pypi| |conda|                                      |
 +----------------------------+-----------------------------------------------------+
-| Documentation and Support  | |docs|                                              |
+| Documentation and Support  | |docs| |versions|                                   |
 +----------------------------+-----------------------------------------------------+
 | Open Source                | |license| |ossf-score|                              |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |black| |isort| |ruff| |pre-commit|                 |
+| Coding Standards           | |ruff| |pre-commit|                                 |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
 +----------------------------+-----------------------------------------------------+
@@ -40,30 +40,21 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
 .. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`Ouranosinc/cookiecutter-pypackage`: https://github.com/Ouranosinc/cookiecutter-pypackage
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-        :target: https://github.com/psf/black
-        :alt: Python Black
-
 .. |build| image:: https://github.com/hydrologie/xhydro/actions/workflows/main.yml/badge.svg
         :target: https://github.com/hydrologie/xhydro/actions
         :alt: Build Status
+
+.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/xhydro.svg
+        :target: https://anaconda.org/conda-forge/xhydro
+        :alt: Conda-forge Build Version
 
 .. |coveralls| image:: https://coveralls.io/repos/github/hydrologie/xhydro/badge.svg
         :target: https://coveralls.io/github/hydrologie/xhydro
         :alt: Coveralls
 
-..
-    .. |docs| image:: https://img.shields.io/badge/Docs-GitHub.io-blue
-            :target: https://hydrologie.github.io/xhydro/
-            :alt: Documentation Status
-
 .. |docs| image:: https://readthedocs.org/projects/xhydro/badge/?version=latest
         :target: https://xhydro.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
-
-.. |isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
-        :target: https://pycqa.github.io/isort/
-        :alt: Isort
 
 .. |license| image:: https://img.shields.io/pypi/l/xhydro
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE

@@ -1,6 +1,7 @@
 # Created on Fri Dec 8 16:48:34 2023
 # @author: Richard Arsenault
-"""Calibration package for hydrological models.
+"""
+Calibration package for hydrological models.
 
 This package contains the main framework for hydrological model calibration. It
 uses the spotpy calibration package applied on a "model_config" object. This
@@ -58,6 +59,7 @@ Any comments are welcome!
 """
 
 import os
+import warnings
 from copy import deepcopy
 
 # Import packages
@@ -74,11 +76,13 @@ from xhydro.modelling.obj_funcs import (
     get_objective_function,
 )
 
+
 __all__ = ["perform_calibration"]
 
 
 class SpotSetup:
-    """Create the spotpy calibration system that is used for hydrological model calibration.
+    """
+    Create the spotpy calibration system that is used for hydrological model calibration.
 
     Parameters
     ----------
@@ -218,43 +222,50 @@ class SpotSetup:
         self.take_negative = take_negative
 
         # Create the sampler for each parameter based on the bounds
-        self.parameters = [
-            Uniform("param" + str(i), bounds_low[i], bounds_high[i])
-            for i in range(0, len(bounds_high))
-        ]
+        self.parameters = [Uniform("param" + str(i), bounds_low[i], bounds_high[i]) for i in range(0, len(bounds_high))]
 
         # Load the observations
         if isinstance(qobs, np.ndarray):
             self.qobs = qobs
         else:
+            # FIXME: This should be more robust, and should be able to handle other names
             if isinstance(qobs, xr.Dataset):
-                da = qobs.streamflow
+                if "streamflow" in qobs and "q" not in qobs:
+                    warnings.warn(
+                        "Default variable name has changed from 'streamflow' to 'q'. "
+                        "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
+                        FutureWarning,
+                        stacklevel=2,
+                    )
+                    da = qobs.streamflow
+                else:
+                    da = qobs.q
             elif isinstance(qobs, xr.DataArray):
                 da = qobs
             elif isinstance(qobs, os.PathLike):
                 with xr.open_dataset(qobs) as ds:
-                    da = ds.streamflow
+                    if "streamflow" in ds and "q" not in ds:
+                        warnings.warn(
+                            "Default variable name has changed from 'streamflow' to 'q'. "
+                            "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
+                            FutureWarning,
+                            stacklevel=2,
+                        )
+                        da = ds.streamflow
+                    else:
+                        da = ds.q
             else:
-                raise ValueError(
-                    "qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file."
-                )
+                raise ValueError("qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file.")
             da = da.squeeze()
 
-            # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)        
+            # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)
             # Subset the observed streamflow to the calibration period
-            da = da.where(da.time.values<= np.datetime64(self.model_config["end_date"]))
-            da = da.where(da.time.values>= np.datetime64(self.model_config["start_date"]))
-
-            # # Subset the observed streamflow to the calibration period
-            # da = da.sel(
-            #     time=slice(
-            #         self.model_config["start_date"], self.model_config["end_date"]
-            #     )
-            # )
+            da = da.sel(time=slice(self.model_config["start_date"], self.model_config["end_date"]))
             self.qobs = da.values
 
     def simulation(self, x):
-        """Simulation function for spotpy.
+        """
+        Simulation function for spotpy.
 
         This is where the optimizer generates a parameter set from within the
         given bounds and generates the simulation results. We add the parameter
@@ -278,10 +289,11 @@ class SpotSetup:
         qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["streamflow"].values
+        return qsim["q"].values
 
     def evaluation(self):
-        """Evaluation function for spotpy.
+        """
+        Evaluation function for spotpy.
 
         Here is where we get the observed streamflow and make it available to
         compare the simulation and compute an objective function. It has to be
@@ -348,7 +360,8 @@ def perform_calibration(
     epsilon: float = 0.01,
     sampler_kwargs: dict | None = None,
 ):
-    """Perform calibration using SPOTPY.
+    """
+    Perform calibration using SPOTPY.
 
     This is the entrypoint for the model calibration. After setting-up the
     model_config object and other arguments, calling "perform_calibration" will
@@ -451,9 +464,7 @@ def perform_calibration(
         sampler_kwargs = {}
 
     if algorithm == "DDS":
-        sampler = spotpy.algorithms.dds(
-            spotpy_setup, dbname="DDS_optim", dbformat="ram", save_sim=False
-        )
+        sampler = spotpy.algorithms.dds(spotpy_setup, dbname="DDS_optim", dbformat="ram", save_sim=False)
 
         # Get the sampler hyperparameters, either default or user-provided.
         defaults = {"trials": 1}
@@ -464,14 +475,10 @@ def perform_calibration(
         if len(sampler_kwargs) == 1:
             sampler.sample(evaluations, **sampler_kwargs)
         else:
-            raise ValueError(
-                "sampler_kwargs should only contain the keyword 'trials' when using DDS."
-            )
+            raise ValueError("sampler_kwargs should only contain the keyword 'trials' when using DDS.")
 
     elif algorithm == "SCEUA":
-        sampler = spotpy.algorithms.sceua(
-            spotpy_setup, dbname="SCEUA_optim", dbformat="ram", save_sim=False
-        )
+        sampler = spotpy.algorithms.sceua(spotpy_setup, dbname="SCEUA_optim", dbformat="ram", save_sim=False)
         # Get the sampler hyperparameters, either default or user-provided.
         defaults = {"ngs": 7, "kstop": 3, "peps": 0.1, "pcento": 0.1}
         sampler_kwargs = defaults | sampler_kwargs
@@ -480,9 +487,7 @@ def perform_calibration(
         if len(sampler_kwargs) == 4:
             sampler.sample(evaluations, **sampler_kwargs)
         else:
-            raise ValueError(
-                "sampler_kwargs should only contain the keywords [ngs, kstop, peps, pcento] when using SCEUA."
-            )
+            raise ValueError("sampler_kwargs should only contain the keywords [ngs, kstop, peps, pcento] when using SCEUA.")
     else:
         raise ValueError(f"Algorithm {algorithm} is not supported.")
 
@@ -490,9 +495,7 @@ def perform_calibration(
     results = sampler.getdata()
 
     # Get the best parameter set
-    best_parameters = analyser.get_best_parameterset(
-        results, like_index=1, maximize=of_maximize
-    )
+    best_parameters = analyser.get_best_parameterset(results, like_index=1, maximize=of_maximize)
     best_parameters = [best_parameters[0][i] for i in range(0, len(best_parameters[0]))]
 
     # Get the best objective function as well, dependent on if maximized or minimized

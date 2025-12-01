@@ -3,29 +3,35 @@ default_language_version:
 
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: [ '--py310-plus' ]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: debug-statements
       - id: check-json
       - id: check-toml
       - id: pretty-format-json
         args: [ '--autofix', '--no-ensure-ascii', '--no-sort-keys' ]
         exclude: .ipynb
+      - id: check-merge-conflict
       - id: check-yaml
         args: [ '--allow-multiple-documents' ]
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: name-tests-test
+        args: [ '--pytest-test-first' ]
+      - id: no-commit-to-branch
+        args: [ '--branch', 'main' ]
+      - id: trailing-whitespace
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.2
+    rev: v0.24.3
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.0
+    rev: v1.37.1
     hooks:
       - id: yamllint
         args: [ '--config-file=.yamllint.yaml' ]
@@ -40,46 +46,31 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
-    hooks:
-      - id: black
-  - repo: https://github.com/PyCQA/isort
-    rev: 6.0.1
-    hooks:
-      - id: isort
-        exclude: ^docs/
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.14.6
     hooks:
-      - id: ruff
-        args: [ '--fix' ]
-      # - id: format
+      - id: ruff-check
+        args: [ '--fix', '--show-fixes' ]
+      - id: ruff-format
   - repo: https://github.com/pycqa/flake8
-    rev: 7.2.0
+    rev: 7.3.0
     hooks:
       - id: flake8
-        additional_dependencies: [ 'flake8-rst-docstrings' ]
+        additional_dependencies: [ 'flake8-rst-docstrings==0.4.0' ]
         args: [ '--config=.flake8' ]
   - repo: https://github.com/jendrikseipp/vulture
     rev: v2.14
     hooks:
       - id: vulture
 #  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v1.14.1
+#    rev: v1.18.2
 #    hooks:
 #      - id: mypy
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: numpydoc-validation
         exclude: 'tests|docs/conf.py'
-  - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.9
-    hooks:
-      - id: blackdoc
-        additional_dependencies: [ 'black==25.1.0' ]
-      - id: blackdoc-autoupdate-black
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -87,34 +78,24 @@ repos:
         additional_dependencies: [ 'tomli' ]
         args: [ '--toml=pyproject.toml' ]
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.1
+    rev: 0.8.2
     hooks:
       - id: nbstripout
         files: '.ipynb'
         exclude: "docs/notebooks/extreme_value_analysis.ipynb"
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.9.1
-    hooks:
-      - id: nbqa-pyupgrade
-        args: [ '--py310-plus' ]
-        additional_dependencies: [ 'pyupgrade==3.19.1' ]
-      - id: nbqa-black
-        additional_dependencies: [ 'black==25.1.0' ]
-      - id: nbqa-isort
-        additional_dependencies: [ 'isort==5.13.2' ]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.32.1
+    rev: 0.35.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.5.2
+    rev: v1.16.3  # FIXME: Rust is missing on our systems to support 1.5.2+
     hooks:
       - id: zizmor
         args: [ '--config=.zizmor.yml' ]
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.2
+    rev: v8.29.1
     hooks:
       - id: gitleaks
   - repo: meta

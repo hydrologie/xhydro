@@ -2,9 +2,102 @@
 Changelog
 =========
 
-v0.5.0 (unreleased)
+v0.7.0 (unreleased)
 -------------------
-Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`) Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
+
+Bug fixes
+^^^^^^^^^
+* The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
+* Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
+* Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF). (:pull:`370`)
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter template to the latest commit. (:pull:`371`):
+    * Migrated from `tox.ini` to `tox.toml`
+    * `pre-commit` hooks have been updated
+    * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
+    * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+
+v0.6.1 (2025-10-22)
+-------------------
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
+* Fixed a bug where the process would hang indefinitely on Windows systems when calling hydrological models through command line arguments. (:pull:`358`, :pull:`363`).
+* The long_name and description attributes of the `q` variable in Hydrotel outputs have been slightly modified to match `RavenPy` outputs. (:pull:`358`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated minimum `numpy` to v1.25+ and adjusted `tox` configuration to recompile the `h5py` library in order to deal with compatibility problems from pre-compiled wheels. (:pull:`357`).
+* Updated the cookiecutter template to the latest commit. (:pull:`358`):
+    * `black`, `blackdoc` and `isort` have been dropped for modern `ruff`.
+    * Some development dependencies have been updated to their latest versions.
+    * Contributor Covenant Agreement has been updated to v3.0.
+    * Added a CITATION.cff file to the repository.
+    * License metadata now follows `PEP 639 <https://peps.python.org/pep-0639/>`_ conventions.
+    * Linting hooks are slightly more strict.
+
+v0.6.0 (2025-09-22)
+-------------------
+Contributors to this version: Louise Arnal (:user:`lou-a`), Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added a configuration for the Raven model in `xhydro.modelling.format_input`. (:pull:`257`).
+* Generalization of `xhydro.frequency_analysis.uncertainties.calc_q_iter`. (:pull:`282`).
+* New function `xh.gis.watershed_to_raven_hru` to extract HRU information from a watershed. (:pull:`303`).
+* The `RavenpyModel` class now has a `hru` argument, to either provide the old HRU arguments (but now under a dictionary) or a GeoDataFrame with the HRU information. (:issue:`266`, :pull:`303`, :pull:`339`).
+* The `RavenpyModel` class no longer writes new `*.rv*` files if they already exist. Additionally, a `.create_rv()` method has been added to the class to write the files. (:pull:`303`).
+* The `RavenpyModel` class now accepts meteorological data in the form of a single station, multiple stations, or a 2D grid. (:pull:`303`).
+* The `RavenpyModel` class now supports distributed HBVEC models. (:pull:`339`).
+* Two new functions, `update_data` and `update_config`, have been added to the `RavenpyModel` class to facilitate updating the model with new data and configuration options. (:pull:`341`, :pull:`345`).
+* A `executable` argument has been added to the `RavenpyModel` class to specify a custom path to the Raven executable. (:pull:`341`).
+* A `gridweights` argument has been added to the `RavenpyModel` class to specify a custom path to a grid weights file when using gridded meteorological data. (:pull:`344`).
+* The `qobs` and `alt_name_flow` arguments in the `RavenpyModel` class have been re-added, but are currently only used to control the `output_subbasins` argument. (:pull:`339`).
+* The `xhydro.extreme_value_analysis` module now uses `Extremes.jl = "1.0.5"` and  `Optim = "1.13.2"`. (:issue:`292`, :pull:`315`).
+* Additional options can now be passed to the Hydrotel executable via the `run_options` argument in the `run` method. (:pull:`331`).
+* A new function `xhydro.indicators.pmp.pw_snowfall` has been added to compute the Probable Maximum Snowfall Accumulation (PMSA).  Additionally, the existing functions  `xhydro.indicators.pmp.precipitable_water_100y` and `xhydro.indicators.pmp.major_precipitation_events` have been adapted accordingly. (:pull:`328`).
+
+Bug fixes
+^^^^^^^^^
+* A warning will now appear if the calculated area in `xh.gis.watershed_properties` differs from the theoretical area from HydroBASINS. (:pull:`303`).
+* If returning a GeoDataFrame in `xh.gis.watershed_properties`, column names have been changed to include the units. (:issue:`266`, :pull:`303`).
+* Multiple corrections to the `xh.modelling.format_input` function to ensure that the results are correctly formatted for Raven. (:pull:`303`).
+* Importation will no longer fail if the `ravenpy` package is installed, but cannot find the Raven executable. (:issue:`305`, :pull:`306`).
+* Fixed a bug in Hydrotel modelling where the simulation file's name was not correctly set to the 'SIMULATION_COURANTE'. (:pull:`331`).
+* Multiple changes to regional frequency analysis to have functions and variable names more explicit. (:pull:`332`).
+* Fixed a bug in distributed Raven models where the order of the dimensions in the input data was not consistent with the expected order. (:pull:`344`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The `map` argument in `xh.gis.watershed_delineation` has been renamed to `m` to avoid confusion with the built-in function. (:pull:`303`).
+* The default CRS in `xh.gis.watershed_properties` and `surface_properties` has been changed to a call to `geopandas.estimate_utm_crs` instead of an hardcoded value. (:pull:`303`).
+* The `RavenpyModel` class has abandoned the `longitude`, `latitude`, `drainage_area` and `elevation` arguments in favor of a `hru` argument. (:pull:`303`).
+* The `RavenpyModel` class has abandoned the explicit `evaporation` and `rain_snow_fraction`, but they can still be passed as kwargs. (:pull:`303`).
+* The `basin_name` coordinate produced by Raven is now renamed to `subbasin_id`. (:pull:`339`).
+* The variables `t` from `xhfa.local.parametric_quantiles`, `rp` from `xhfa.regional.calculate_rp_from_afr` and `return_periods` from `xhfa.uncertainties.calc_q_iter` all renamed `return_period`. (:issue:`269`, :pull:`317`).
+* The function `xhfa.regional.calculate_rp_from_afr` was renamed `xhfa.regional.calculate_return_period_from_afr`. (:pull:`317`).
+* The `use_defaults` argument in the `Hydrotel` class has been removed. (:pull:`331`).
+* The internal `xh.modelling._hydrotel._basic_checks` function has been removed, as Hydrotel itself performs most of these checks. Checks that are still relevant have been moved to the `run` function. (:pull:`331`).
+* The `station_id` dimension in the output of Hydrotel has been renamed to `subbasin_id`. (:pull:`331`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Running the docs translation steps from Makefile or Batchfile no longer executes the notebooks. (:pull:`330`).
+* Added a security policy (``SECURITY.md``) to the repository. (:pull:`340`).
+* The `RavenpyModel` class has been heavily refactored to improve code readability and maintainability. (:pull:`339`, :pull:`341`).
+
+v0.5.0 (2025-04-24)
+-------------------
+Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`), Julián Ospina (:user:`ospinajulian`), Essi Parent (:user:`essicolo`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -12,7 +105,7 @@ New features and enhancements
   * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
   * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
   * You can use `pip install xhydro[julia]` to install the required dependencies.
-* Multiple improvements to the documentation. (:pull:`274`, :pull:`279`).
+* Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, :pull:`293`).
 
 Bug fixes
 ^^^^^^^^^
@@ -43,6 +136,9 @@ Internal changes
 * The internal ``xh.cc._weighted_sampling`` function has been almost entirely rewritten to hopefully be more efficient. Results should be the same as before. (:pull:`240`).
 * Reduced the number of tests performed on Notebooks. (:pull:`267`).
 * Removed ``_fix_dates`` from `_hydrotel` module since it's not relevant and likely to generate errors. (:pull:`233`).
+* Updated and fixed many dependencies. (:pull:`295`).
+* Added a workflow to test `pip` installations of `xhydro`. (:pull:`295`).
+* Removed steps involving ESMF installation from the `Makefile` and the `tox` configuration. (:pull:`295`).
 
 v0.4.1 (2024-11-07)
 -------------------

@@ -15,6 +15,7 @@ import pooch
 
 from xhydro import __version__ as __xhydro_version__
 
+
 __all__ = [
     "TESTDATA_BRANCH",
     "TESTDATA_CACHE_DIR",
@@ -28,12 +29,10 @@ __all__ = [
     "populate_testing_data",
 ]
 
-default_testdata_version = "v2025.3.31"
+default_testdata_version = "v2025.8.14"
 """Default version of the testing data to use when fetching datasets."""
 
-default_testdata_repo_url = (
-    "https://raw.githubusercontent.com/hydrologie/xhydro-testdata/"
-)
+default_testdata_repo_url = "https://raw.githubusercontent.com/hydrologie/xhydro-testdata/"
 """Default URL of the testing data repository to use when fetching datasets."""
 
 try:
@@ -100,9 +99,7 @@ or setting the variable at runtime:
 """
 
 
-def load_registry(
-    branch: str = TESTDATA_BRANCH, repo: str = TESTDATA_REPO_URL
-) -> dict[str, str]:
+def load_registry(branch: str = TESTDATA_BRANCH, repo: str = TESTDATA_REPO_URL) -> dict[str, str]:
     """
     Load the registry file for the test data.
 
@@ -130,19 +127,11 @@ def load_registry(
     if repo != default_testdata_repo_url:
         external_repo_name = urlparse(repo).path.split("/")[-2]
         external_branch_name = branch.split("/")[-1]
-        registry_file = Path(
-            str(
-                ilr.files("xhydro").joinpath(
-                    f"testing/registry.{external_repo_name}.{external_branch_name}.txt"
-                )
-            )
-        )
+        registry_file = Path(str(ilr.files("xhydro").joinpath(f"testing/registry.{external_repo_name}.{external_branch_name}.txt")))
         urlretrieve(remote_registry, registry_file)  # noqa: S310
 
     elif branch != default_testdata_version:
-        custom_registry_folder = Path(
-            str(ilr.files("xhydro").joinpath(f"testing/{branch}"))
-        )
+        custom_registry_folder = Path(str(ilr.files("xhydro").joinpath(f"testing/{branch}")))
         custom_registry_folder.mkdir(parents=True, exist_ok=True)
         registry_file = custom_registry_folder.joinpath("registry.txt")
         urlretrieve(remote_registry, registry_file)  # noqa: S310
@@ -165,7 +154,8 @@ def deveraux(  # noqa: PR01
     cache_dir: str | Path = TESTDATA_CACHE_DIR,
     data_updates: bool = True,
 ):
-    """Pooch registry instance for xhydro test data.
+    """
+    Pooch registry instance for xhydro test data.
 
     Parameters
     ----------
@@ -213,9 +203,7 @@ def deveraux(  # noqa: PR01
         )
     if not repo.endswith("/"):
         repo = f"{repo}/"
-    remote = audit_url(
-        urljoin(urljoin(repo, branch if branch.endswith("/") else f"{branch}/"), "data")
-    )
+    remote = audit_url(urljoin(urljoin(repo, branch if branch.endswith("/") else f"{branch}/"), "data"))
 
     _devereaux = pooch.create(
         path=cache_dir,
@@ -233,7 +221,6 @@ def deveraux(  # noqa: PR01
     # Overload the fetch method to add user-agent headers
     @wraps(_devereaux.fetch_diversion)
     def _fetch(*args: str, **kwargs: bool | Callable) -> str:  # numpydoc ignore=GL08
-
         def _downloader(
             url: str,
             output_file: str | IO,
@@ -261,7 +248,8 @@ def populate_testing_data(
     branch: str = TESTDATA_BRANCH,
     local_cache: Path = TESTDATA_CACHE_DIR,
 ) -> None:
-    """Populate the local cache with the testing data.
+    """
+    Populate the local cache with the testing data.
 
     Parameters
     ----------
@@ -299,7 +287,8 @@ def populate_testing_data(
 
 # Testing Utilities
 def audit_url(url: str, context: str | None = None) -> str:
-    """Check if the URL is well-formed.
+    """
+    Check if the URL is well-formed.
 
     Parameters
     ----------

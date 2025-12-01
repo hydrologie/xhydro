@@ -14,6 +14,7 @@ from scipy.stats import norm
 import xhydro.optimal_interpolation.ECF_climate_correction as ecf_cc
 import xhydro.optimal_interpolation.utilities as util
 
+
 __all__ = [
     "execute_interpolation",
     "optimal_interpolation",
@@ -33,7 +34,8 @@ def optimal_interpolation(
     bg_est: np.ndarray,
     precalcs: dict,
 ) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Perform optimal interpolation to estimate values at specified locations.
+    """
+    Perform optimal interpolation to estimate values at specified locations.
 
     Parameters
     ----------
@@ -98,16 +100,12 @@ def optimal_interpolation(
         distance_obs_vs_est = precalcs["distance_obs_vs_est"]
     else:
         # Not computed, so calculate and update the precalcs dict for later usage.
-        observation_latlong = list(zip(lat_obs, lon_obs))
-        distance_obs_vs_obs = haversine.haversine_vector(
-            observation_latlong, observation_latlong, comb=True
-        )
+        observation_latlong = list(zip(lat_obs, lon_obs, strict=False))
+        distance_obs_vs_obs = haversine.haversine_vector(observation_latlong, observation_latlong, comb=True)
 
         # Also recompute the distance matrix between observation and estimation sites.
-        simulation_latlong = list(zip(lat_est, lon_est))
-        distance_obs_vs_est = haversine.haversine_vector(
-            observation_latlong, simulation_latlong, comb=True
-        )
+        simulation_latlong = list(zip(lat_est, lon_est, strict=False))
+        distance_obs_vs_est = haversine.haversine_vector(observation_latlong, simulation_latlong, comb=True)
 
         # And store for later
         precalcs["distance_obs_obs"] = distance_obs_vs_obs
@@ -163,7 +161,8 @@ def optimal_interpolation(
 def loop_optimal_interpolation_stations_cross_validation(
     args: tuple[int, dict],
 ) -> ndarray[Any, dtype[floating[Any]]]:
-    """Apply optimal interpolation to a single validation site (station) for the selected time range.
+    """
+    Apply optimal interpolation to a single validation site (station) for the selected time range.
 
     Parameters
     ----------
@@ -230,10 +229,7 @@ def loop_optimal_interpolation_stations_cross_validation(
 
     # Compute difference between the obs and sim log-transformed flows for the
     # calibration basins
-    difference = (
-        selected_flow_obs[:, index_calibration]
-        - selected_flow_sim[:, index_calibration]
-    )
+    difference = selected_flow_obs[:, index_calibration] - selected_flow_sim[:, index_calibration]
 
     vsim_at_est = selected_flow_sim[:, index_validation]
 
@@ -243,7 +239,6 @@ def loop_optimal_interpolation_stations_cross_validation(
 
     # For each timestep, build the interpolator and apply to the validation catchments.
     for j in range(time_range):
-
         val = difference[j, :]
         idx = ~np.isnan(val)
 
@@ -267,9 +262,7 @@ def loop_optimal_interpolation_stations_cross_validation(
         var_est = var_est * var_bg
 
         # Get the percentile values for each desired percentile.
-        vals = norm.ppf(
-            np.array(percentiles) / 100.0, loc=v_est, scale=np.sqrt(var_est)
-        )
+        vals = norm.ppf(np.array(percentiles) / 100.0, loc=v_est, scale=np.sqrt(var_est))
 
         # Get the values in real units and scale according to drainage area
         vals = np.exp(vals) * drainage_area[station_index]
@@ -288,7 +281,8 @@ def optimal_interpolation_operational_control(
     ecf_fun: partial,
     par_opt: list,
 ) -> ndarray[Any, dtype[floating[Any]]]:
-    """Apply optimal interpolation to a single validation site (station) for the selected time range.
+    """
+    Apply optimal interpolation to a single validation site (station) for the selected time range.
 
     Parameters
     ----------
@@ -327,9 +321,7 @@ def optimal_interpolation_operational_control(
     centroid_lon_sim = full_background_dataset["centroid_lon"]
 
     # Define the vector of flow quantiles. We compute one value per time step and per percentile as requested by user.
-    flow_quantiles = np.array(
-        [np.empty((time_range, station_count)) * np.nan] * len(percentiles)
-    )
+    flow_quantiles = np.array([np.empty((time_range, station_count)) * np.nan] * len(percentiles))
 
     # Compute difference between the obs and sim log-transformed flows for the calibration basins
     difference = selected_flow_obs - selected_flow_sim
@@ -343,7 +335,6 @@ def optimal_interpolation_operational_control(
 
     # For each timestep, build the interpolator and apply to the validation catchments.
     for j in range(time_range):
-
         val = difference[j, :]
         idx = ~np.isnan(val)
 
@@ -587,24 +578,18 @@ def retrieve_data(
         cv_station_id = observation_stations[i]
 
         # Get the station number from the obs database which has the same codification for station ids.
-        index_correspondence = np.where(
-            station_correspondence["station_id"] == cv_station_id
-        )[0][0]
+        index_correspondence = np.where(station_correspondence["station_id"] == cv_station_id)[0][0]
         station_code = station_correspondence["reach_id"][index_correspondence]
 
         # Search for data in the Qsim file
         index_in_sim = np.where(qsim["station_id"].values == station_code.data)[0]
         sup_sim = qsim["drainage_area"].values[index_in_sim]
-        selected_flow_sim[:, i] = (
-            qsim["streamflow"].isel(station=index_in_sim) / sup_sim
-        )
+        selected_flow_sim[:, i] = qsim["q"].isel(station=index_in_sim) / sup_sim
 
         # Get the flows from the Qsim file
         index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
         sup_obs = qobs["drainage_area"].values[index_in_obs]
-        selected_flow_obs[:, i] = (
-            qobs["streamflow"].isel(station=index_in_obs) / sup_obs
-        )
+        selected_flow_obs[:, i] = qobs["q"].isel(station=index_in_obs) / sup_obs
         drainage_area[i] = sup_obs
         centroid_lon[i] = qobs["centroid_lon"][index_in_obs].values
         centroid_lat[i] = qobs["centroid_lat"][index_in_obs].values
@@ -635,15 +620,13 @@ def retrieve_data(
 
     # Now we also need to make a new dataset that contains all the simulation stations.
     all_drainage_area = qsim["drainage_area"].values
-    all_flow_sim = np.empty(qsim["streamflow"].shape)
+    all_flow_sim = np.empty(qsim["q"].shape)
 
     if len(all_flow_sim.shape) == 1:
         all_flow_sim = all_flow_sim[:, np.newaxis]
 
     for j in range(0, len(all_drainage_area)):
-        all_flow_sim[j, :] = np.log(
-            qsim["streamflow"].isel(station=j).values / all_drainage_area[j]
-        )
+        all_flow_sim[j, :] = np.log(qsim["q"].isel(station=j).values / all_drainage_area[j])
     centroid_lat = qsim["lat"].values
     centroid_lon = qsim["lon"].values
 
@@ -672,7 +655,8 @@ def run_leave_one_out_cross_validation(
     parallelize: bool = False,
     max_cores: int = 1,
 ) -> np.ndarray:
-    """Run the interpolator on the cross-validation and manage parallelization.
+    """
+    Run the interpolator on the cross-validation and manage parallelization.
 
     Parameters
     ----------
@@ -716,9 +700,7 @@ def run_leave_one_out_cross_validation(
     station_count = len(filtered_dataset["centroid_lat"].values)
     time_range = len(filtered_dataset["time"].values)
 
-    flow_quantiles = np.array(
-        [np.empty((time_range, station_count)) * np.nan] * len(percentiles)
-    )
+    flow_quantiles = np.array([np.empty((time_range, station_count)) * np.nan] * len(percentiles))
 
     # TODO : Try and find a way to make this more explicit instead of passing a dictionary. Currently need to create
     #  this to pass to the looping function due to the *p.map() for parallelism.
@@ -740,9 +722,7 @@ def run_leave_one_out_cross_validation(
 
         p = Pool(int(processes_count))
         args_i = [(i, args) for i in range(0, station_count)]
-        flow_quantiles_station = zip(
-            *p.map(loop_optimal_interpolation_stations_cross_validation, args_i)
-        )
+        flow_quantiles_station = zip(*p.map(loop_optimal_interpolation_stations_cross_validation, args_i), strict=False)
         p.close()
         p.join()
         flow_quantiles_station = tuple(flow_quantiles_station)
@@ -752,9 +732,7 @@ def run_leave_one_out_cross_validation(
     # Serial
     else:
         for i in range(0, station_count):
-            flow_quantiles_station = (
-                loop_optimal_interpolation_stations_cross_validation((i, args))
-            )
+            flow_quantiles_station = loop_optimal_interpolation_stations_cross_validation((i, args))
             for k in range(0, len(percentiles)):
                 flow_quantiles[k][:, i] = flow_quantiles_station[k][:]
 

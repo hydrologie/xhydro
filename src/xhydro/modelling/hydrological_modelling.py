@@ -11,13 +11,16 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 import xclim as xc
-import xscen as xs
-from packaging.version import Version
+from clisops.utils.dataset_utils import cf_convert_between_lon_frames
+from xclim.core.utils import uses_dask
+from xscen.spatial import get_grid_mapping
+from xscen.utils import change_units, clean_up, stack_drop_nans
 
 from ._help import HELP
 from ._hydrobudget import Hydrobudget
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
+
 
 __all__ = ["format_input", "get_hydrological_model_inputs", "hydrological_model"]
 
@@ -73,11 +76,7 @@ def hydrological_model(model_config):
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
 
-def get_hydrological_model_inputs(
-    # numpydoc ignore=EX01,SA01,ES01
-    model_name,
-    required_only: bool = False,
-) -> tuple[dict, str]:
+def get_hydrological_model_inputs(model_name, required_only: bool = False) -> tuple[dict, str]:
     """
     Get the required inputs for a given hydrological model.
 
@@ -117,11 +116,7 @@ def get_hydrological_model_inputs(
 
     all_config = inspect.getfullargspec(model.__init__).annotations
     if required_only:
-        all_config = {
-            k: v
-            for k, v in all_config.items()
-            if k in inspect.getfullargspec(model.__init__).args
-        }
+        all_config = {k: v for k, v in all_config.items() if k in inspect.getfullargspec(model.__init__).args}
 
     # Add the model name to the configuration
     all_config = {"model_name": model_name, **all_config}
@@ -129,16 +124,15 @@ def get_hydrological_model_inputs(
     return all_config, model.__doc__
 
 
-def format_input(
-    # numpydoc ignore=EX01,SA01,ES01
+def format_input(  # noqa: C901
     ds: xr.Dataset,
     model: str,
-    convert_calendar_missing: float | str | dict = np.nan,
+    convert_calendar_missing: float | str | dict | bool = np.nan,
     save_as: str | PathLike | None = None,
     **kwargs,
 ) -> tuple[xr.Dataset, dict]:
     r"""
-    Reformat CF-compliant meteorological data for use in hydrological models.
+    Reformat CF-compliant meteorological data for use in hydrological models. See the "Notes" section for important details.
 
     Parameters
     ----------
@@ -146,12 +140,16 @@ def format_input(
         A dataset containing the meteorological data. See the "Notes" section for more information on the expected format.
     model : str
         The name of the hydrological model to use.
-        Currently supported models are: "Hydrotel".
-    convert_calendar_missing : float, str, dict, optional
-        Upon conversion of the calendar, missing values will be filled with this value. Default is np.nan.
-        If the value is 'interpolate', the new dates will be linearly interpolated over time.
+        Currently supported models are:
+        - "Hydrotel", "Raven" (which is an alias for all RavenPy models), "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA".
+    convert_calendar_missing : float | str | dict | bool, optional
+        The value to use for missing values when converting the calendar to "standard".
+        If the value is a float, it will be used as the fill value for all variables.
+        If the value is a string "interpolate", the new dates will be linearly interpolated over time.
         A dictionary can be used to specify a different fill value for each variable.
-        Keys should be the standard names of the variables (first entry in the list of names in the "Notes" section).
+        Keys should be the names of the variables as they appear in the first entry in the "variable_name" lists of the "Notes" section.
+        If True, temperatures will be interpolated and precipitation will be filled with 0.
+        If False, the calendar will not be converted. Only possible for "Raven" models.
     save_as : str, optional
         Where to save the reformatted data. If None, the data will not be saved.
         This can be useful when multiple files are needed for a single model run (e.g. Hydrotel needs a configuration file).
@@ -160,151 +158,344 @@ def format_input(
 
     Returns
     -------
-    tuple[xr.Dataset, dict]
-        The reformatted dataset and, if applicable, the configuration for the model.
+    xr.Dataset
+        The reformatted dataset.
+    dict
+        For Hydrotel, a dictionary containing the configuration for the meteorological data.
+        If `save_as` is provided, the configuration will have been saved to a file with the same name as `save_as`, but with a ".nc.config" extension.
+        For Raven, a dictionary containing the 'data_type' and 'alt_names_meteo' keys required for the 'model_config' argument.
 
     Notes
     -----
-    The input dataset should be CF-compliant.
-    This function will attempt to detect the variables based on the standard_name attribute, the cell_methods attribute, or the variable name
-    (AMIP column) taken from https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html.
+    The input dataset should ideally be CF-compliant and follow CMIP6's Controlled Vocabulary, but this function will attempt to detect the
+    variables based on the standard_name attribute, the cell_methods attribute, or the variable name.
+    More information on those attributes can be found here: https://wcrp-cmip.org/cmip-model-and-experiment-documentation/, and specifically
+    the 'CMIP6 MIP table' link provided in the 'Search for variables' section.
 
     Specifically:
 
     - If using 1D time series, the station dimension should have an attribute `cf_role` set to "timeseries_id".
     - Units don't need to be canonical, but they should be convertible to the expected units and be understood by `xclim`.
-    - The following attempts will be made to detect the variables:
+    - Elevation represents the altitude of the meteorological data / model grid cell, not the altitude of the ground.
+    - Snowfall units should be in water equivalent of precipitation (e.g. mm/day or kg/m²/s), NOT height (e.g. cm of fresh snow on the ground).
+    - The function will try to detect the variables based on the attributes and the variable name. The following attempts will be made:
         - Longitude:
             - standard_name: "longitude"
-            - variable name: "lon", "longitude"
+            - variable name: "longitude", "lon"
         - Latitude:
             - standard_name: "latitude"
-            - variable name: "lat", "latitude"
+            - variable name: "latitude", "lat"
         - Elevation:
             - standard_name: "surface_altitude"
-            - variable name: "orog", "z", "altitude", "elevation", "height"
+            - variable name: "elevation", "orog", "z", "altitude", "height"
         - Precipitation:
             - standard_name: "*precipitation*" (e.g. "lwe_thickness_of_precipitation_amount")
             - variable name: "pr", "precip", "precipitation"
+        - Rainfall:
+            - standard_name: "*rainfall*" (e.g. "rainfall_flux", "rainfall_amount")
+            - variable name: "prra", "prlp", "rainfall", "rain", "precipitation_rain"
+        - Snowfall:
+            - standard_name: "*snowfall*" (e.g. "snowfall_flux", "snowfall_amount")
+            - variable name: "prsn", "snowfall", "precipitation_snow"
         - Maximum temperature:
             - standard_name: "air_temperature"
             - cell_methods: "time: maximum"
-            - variable name: "tasmax", "tmax", "temperature_max"
+            - variable name: "tasmax", "tmax", "t2m_max", "temperature_max"
         - Minimum temperature:
             - standard_name: "air_temperature"
             - cell_methods: "time: minimum"
-            - variable name: "tasmin", "tmin", "temperature_min"
+            - variable name: "tasmin", "tmin", "t2m_min", "temperature_min"
+        - Mean temperature:
+            - standard_name: "air_temperature"
+            - cell_methods: "time: mean"
+            - variable name: "tas", "tmean", "t2m", "temperature_mean"
 
-    Hydrotel requires the following variables: ["longitude", "latitude", "altitude", "time", "tasmax", "tasmin", "pr"].
+    Hydrotel requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax", "tasmin", "pr"].
+    Raven requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax/tasmin" or "tas", "pr" or "prlp/prsn"].
     """
     ds = ds.copy()
+    if model in ["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"]:
+        model = "Raven"
+    if model not in ["Hydrotel", "Raven"]:
+        raise NotImplementedError(f"The model '{model}' is not recognized.")
 
     # Detect and rename variables if necessary
     variables = {
-        "longitude": {"standard_name": "longitude", "names": ["lon", "longitude"]},
-        "latitude": {"standard_name": "latitude", "names": ["lat", "latitude"]},
+        "longitude": {"standard_name": "longitude", "names": ["longitude", "lon"]},
+        "latitude": {"standard_name": "latitude", "names": ["latitude", "lat"]},
         "elevation": {
-            "standard_name": "surface_altitude",
-            "names": ["orog", "z", "altitude", "elevation", "height"],
+            "standard_name": "height",
+            "names": [
+                "elevation",
+                "orog",
+                "z",
+                "altitude",
+                "height",
+                "surface_altitude",
+            ],
         },
         "pr": {
             "standard_name": ".*precipitation.*",
             "names": ["pr", "precip", "precipitation"],
         },
+        "prra": {
+            "standard_name": ".*rainfall.*",
+            "names": ["prra", "prlp", "rainfall", "rain", "precipitation_rain"],
+        },
+        "prsn": {
+            "standard_name": ".*snowfall.*",
+            "names": ["prsn", "snowfall", "precipitation_snow"],
+        },
         "tasmax": {
             "standard_name": "air_temperature",
             "cell_methods": "time: max.*",
-            "names": ["tasmax", "tmax", "temperature_max"],
+            "names": ["tasmax", "tmax", "t2m_max", "temperature_max"],
         },
         "tasmin": {
             "standard_name": "air_temperature",
             "cell_methods": "time: min.*",
-            "names": ["tasmin", "tmin", "temperature_min"],
+            "names": ["tasmin", "tmin", "t2m_min", "temperature_min"],
+        },
+        "tas": {
+            "standard_name": "air_temperature",
+            "cell_methods": "time: mean.*",
+            "names": ["tas", "tmean", "t2m", "temperature_mean"],
         },
     }
     for attributes in variables.values():
         names = attributes.pop("names")
         ds = _detect_variable(ds, attributes, names, return_ds=True)
 
+    other_vars = [v for v in ds.data_vars if v not in variables]
+    if len(other_vars) > 0:
+        warnings.warn(
+            f"The dataset contains the following variables that are not recognized: {other_vars}. These variables will be ignored.", stacklevel=2
+        )
+
+    # Check if the dataset contains the required variables
+    required_vars = ["time"]
+    if model in ["Raven"]:
+        # Spatial coordinates can only be missing if the dataset is a single time series
+        if any(v not in ds for v in ["longitude", "latitude", "elevation"]) and len(ds.squeeze().dims) == 1:
+            warnings.warn(
+                "The dataset is missing one or many of: 'longitude', 'latitude', or 'elevation'. They will need to be added "
+                "manually using the 'meteo_station_properties' argument in the model configuration.",
+                stacklevel=2,
+            )
+        else:
+            required_vars.extend(["longitude", "latitude", "elevation"])
+
+        # Temperature could be either max/min or mean
+        if all(v in ds for v in ["tasmax", "tasmin"]):
+            required_vars.extend(["tasmax", "tasmin"])
+        if "tas" in ds:
+            required_vars.extend(["tas"])
+        if not all(v in ds for v in ["tasmax", "tasmin"]) and "tas" not in ds:
+            raise ValueError("The dataset is missing the required variables for Raven: 'tasmax/tasmin' or 'tas'.")
+        # Precipitation could be either pr or rainfall/snowfall
+        if "pr" in ds:
+            required_vars.extend(["pr"])
+        if all(v in ds for v in ["prra", "prsn"]):
+            required_vars.extend(["prra", "prsn"])
+        if not all(v in ds for v in ["prra", "prsn"]) and "pr" not in ds:
+            raise ValueError("The dataset is missing the required variables for Raven: 'pr' or 'prra/prsn'.")
+
+        if all(v in ds for v in ["prra", "prsn", "pr"]) or all(v in ds for v in ["tasmax", "tasmin", "tas"]):
+            warnings.warn(
+                "The dataset contains multiple variables for precipitation or temperature. "
+                "Please ensure that only the correct variables are used in 'data_type' and 'alt_names_meteo'.",
+                stacklevel=2,
+            )
+
+    elif model == "Hydrotel":
+        required_vars.extend(["longitude", "latitude", "elevation", "tasmax", "tasmin", "pr"])
+
+    if not all(v in ds for v in required_vars):
+        missing = set(required_vars).difference(set(ds.variables))
+        raise ValueError(f"The dataset is missing the following required variables for '{model}': {missing}.")
+
+    # Convert units
+    # Precipitation first, since it is more complex
     def _is_rate(u):
         # numpydoc ignore=EX01,SA01,ES01,RT01,PR01,GL08
         q = xc.core.units.str2pint(u)
         return q.dimensionality.get("[time]", 0) < 0
 
-    if model == "Hydrotel":
-        if not all(
-            v in ds for v in ["lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"]
-        ):
-            missing = {
-                "lon",
-                "lat",
-                "orog",
-                "time",
-                "tasmax",
-                "tasmin",
-                "pr",
-            }.difference(ds.variables)
-            raise ValueError(
-                f"The dataset is missing the following required variables for Hydrotel: "
-                f"{missing}."
-            )
-
-        # Remove unused variables
-        ds = ds.drop_vars(
-            set(ds.data_vars) - {"lon", "lat", "orog", "time", "tasmax", "tasmin", "pr"}
-        )
-
-        # Convert units
-        if _is_rate(ds["pr"].attrs.get("units", "")):
-            ds["pr"] = xc.units.rate2amount(ds["pr"])
-        ds["pr"] = xc.units.convert_units_to(ds["pr"], "mm", context="hydro")
-        ds["tasmax"] = xc.units.convert_units_to(ds["tasmax"], "degC")
-        ds["tasmin"] = xc.units.convert_units_to(ds["tasmin"], "degC")
-        ds["orog"] = xc.units.convert_units_to(ds["orog"], "m")
-
-        # Ensure that longitude is in the range [-180, 180]
-        # This tries guessing if lons are wrapped around at 180+ but without much information, this might not be true
-        if np.min(ds["lon"]) >= -180 and np.max(ds["lon"]) <= 180:
-            pass
-        elif np.min(ds["lon"]) >= 0 and np.max(ds["lon"]) <= 360:
+    for pr in {"pr", "prra", "prsn"}.intersection(ds.variables):
+        if _is_rate(ds[pr].attrs.get("units", "")):
+            ds[pr] = xc.units.rate2amount(ds[pr])
+        if pr == "prsn" and xc.core.units.str2pint(ds[pr].attrs.get("units", "")).dimensionality.get("[mass]", 0) > 0:
             warnings.warn(
-                "Longitude values appear to be in the range [0, 360]. They will be converted to [-180, 180]."
+                "The snowfall units contain mass. They will be converted to volume using the density of water (1000 kg/m³),"
+                " which is correct if the data is the liquid flux of the solid phase of precipitation (i.e. already in water equivalent). "
+                "If your data is anything else, please convert it to water equivalent before using this function.",
+                stacklevel=2,
             )
-            with xr.set_options(keep_attrs=True):
-                ds["lon"] = ds["lon"] - 180
+        ds[pr] = xc.units.convert_units_to(ds[pr], "mm", context="hydro")
 
-        # Convert calendar
-        # FIXME: xscen 0.9.1 still calls the old xclim function. This will be fixed in the next release.
-        if Version(xs.__version__) > Version("0.9.10"):
-            convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
-        else:
-            convert_calendar_kwargs = {"target": "default"}
+    # Other variables
+    variables_and_units = {}
+    if "elevation" in ds:
+        variables_and_units["elevation"] = "m"
+    for t in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
+        variables_and_units[t] = "degC"
+    ds = change_units(ds, variables_and_units)
+    ds = change_units(ds, variables_and_units)  # FIXME: Until xscen>=0.13, run twice to ensure all variables have the exact units requested
+
+    # Convert calendar
+    if convert_calendar_missing is not False and ds.time.dt.calendar not in [
+        "standard",
+        "gregorian",
+        "proleptic_gregorian",
+    ]:
+        var_no_time = [v for v in ds.data_vars if "time" not in ds[v].dims]
+        convert_calendar_kwargs = {"calendar": "standard", "use_cftime": False}
         if isinstance(convert_calendar_missing, dict):
             missing_by_var = convert_calendar_missing
+        elif convert_calendar_missing is True:
+            missing_by_var = {}
+            # Interpolate missing values for temperature
+            for var in {"tasmax", "tasmin", "tas"}.intersection(ds.variables):
+                missing_by_var[var] = "interpolate"
+            # Fill missing values with 0 for precipitation
+            for var in {"pr", "prra", "prsn"}.intersection(ds.variables):
+                missing_by_var[var] = 0
         else:
             missing_by_var = None
             convert_calendar_kwargs["missing"] = convert_calendar_missing
-            if (
-                ds.time.dt.calendar
-                not in ["standard", "gregorian", "proleptic_gregorian"]
-                and convert_calendar_missing is np.nan
-            ):
+            if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"] and convert_calendar_missing is np.nan:
                 warnings.warn(
                     f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
-                    f"NaNs will need to be filled manually before running Hydrotel."
+                    f"NaNs will need to be filled manually before running Hydrotel or Raven.",
+                    stacklevel=2,
                 )
-        ds = xs.utils.clean_up(
+
+        ds = clean_up(
             ds,
             convert_calendar_kwargs=convert_calendar_kwargs,
             missing_by_var=missing_by_var,
         )
+        # FIXME: Temporary fix until xscen>=0.13 or https://github.com/pydata/xarray/issues/10266
+        for v in var_no_time:
+            if "time" in ds[v].dims:
+                ds[v] = ds[v].isel(time=0).drop_vars("time")
+    elif model == "Hydrotel":
+        # Hydrotel requires the calendar to be "standard"
+        if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"]:
+            raise ValueError(
+                f"The calendar '{ds.time.dt.calendar}' is not supported by Hydrotel. Please convert it to 'standard' before running the model."
+            )
 
-        # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
-        new_time = (
-            (ds["time"].values - np.datetime64("1970-01-01 00:00:00"))
-            .astype("timedelta64[D]")
-            .astype(int)
+    # Ensure that the spatial coordinates are recognized by cf_xarray (primarily for RavenPy, but useful anyway)
+    if ds.cf.coordinates.get("longitude") is None and "longitude" in ds:
+        ds = ds.assign_coords({"longitude": ds.longitude})
+        ds["longitude"].attrs["standard_name"] = "longitude"
+    if ds.cf.coordinates.get("latitude") is None and "latitude" in ds:
+        ds = ds.assign_coords({"latitude": ds.latitude})
+        ds["latitude"].attrs["standard_name"] = "latitude"
+    if ds.cf.coordinates.get("vertical") is None and "elevation" in ds:
+        ds = ds.assign_coords({"elevation": ds.elevation})
+        ds["elevation"].attrs["standard_name"] = "height"
+
+    # Manage the spatial dimensions
+    # Case 1: Time series with no spatial dimension
+    if set(ds.squeeze().dims) == {"time"}:
+        ds = ds.squeeze()
+        # Add a station dimension
+        ds = ds.expand_dims("station_id").assign_coords(
+            station_id=("station_id", ["0"]),
         )
+        ds["station_id"].attrs = {"cf_role": "timeseries_id"}
+        for c in ["longitude", "latitude", "elevation"]:
+            if c in ds:
+                ds[c] = ds[c].expand_dims("station_id")
+
+        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
+        ds = ds.transpose("station_id", "time")
+
+    # Case 2: Time series with a station dimension
+    elif (ds.cf.axes.get("X") is None and ds.cf.cf_roles.get("timeseries_id") is not None) or len(ds.squeeze().dims) == 2:
+        station_d = ds.cf.cf_roles.get("timeseries_id")
+        if station_d is None:
+            station_d = list(set(ds.squeeze().dims).difference({"time"}))
+            warnings.warn(
+                f"The dataset does not contain a dimension with the cf_role 'timeseries_id'. Using '{station_d}' as the station dimension.",
+                UserWarning,
+                stacklevel=2,
+            )
+        station_d = station_d[0]
+
+        # Format the dataset to have an easier matching with Raven
+        ds = ds.rename({station_d: "station_id"})
+        ds["station_id"] = ds["station_id"].astype(str)  # Raven needs the station dimension to be a string
+        ds["station_id"].attrs["cf_role"] = "timeseries_id"
+
+        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
+        ds = ds.transpose("station_id", "time")
+
+    # Case 3: Time series with a gridded dataset
+    elif (ds.cf.axes.get("X") is not None) or len(ds.squeeze().dims) == 3:
+        x_name = ds.cf.axes.get("X")
+        y_name = ds.cf.axes.get("Y")
+
+        # Try to get the x/y dimensions
+        if any(d is None for d in [x_name, y_name]):
+            if any(d in ds.dims for d in ["lon", "longitude", "x", "rlon"]):
+                x_name = [d for d in ds.dims if d in ["lon", "longitude", "x", "rlon"]]
+                ds[x_name[0]].attrs["axis"] = "X"
+            if any(d in ds.dims for d in ["lat", "latitude", "y", "rlat"]):
+                y_name = [d for d in ds.dims if d in ["lat", "latitude", "y", "rlat"]]
+                ds[y_name[0]].attrs["axis"] = "Y"
+            if x_name is None or y_name is None:
+                raise ValueError("The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined.")
+
+        if model == "Hydrotel":
+            # Hydrotel is faster with 1D time series
+            mask = ~ds.pr.isnull().all(dim="time")
+            if xc.core.utils.uses_dask(mask):
+                mask = mask.compute()
+            ds = stack_drop_nans(ds, mask=mask, new_dim="station_id")
+
+            # Add station ID
+            ds = ds.assign_coords(station_id=("station_id", np.arange(len(ds.station_id))))
+            ds["station_id"].attrs = {
+                "cf_role": "timeseries_id",
+            }
+
+            # Remove gridmapping information
+            gridmap = get_grid_mapping(ds)
+            if len(gridmap) > 0:
+                ds = ds.drop_vars(gridmap)
+                for v in ds.data_vars:
+                    if ds[v].attrs.get("grid_mapping") is not None:
+                        ds[v].attrs.pop("grid_mapping")
+            if x_name[0] != "longitude":
+                ds = ds.drop_vars(x_name)
+            if y_name[0] != "latitude":
+                ds = ds.drop_vars(y_name)
+
+        else:
+            # Elevation data in Raven seems to be sensitive to the order of dimensions (T,Y,X)
+            # Until this is resolved, we will enforce this order
+            ds = ds.transpose("time", y_name[0], x_name[0])
+
+    else:
+        raise ValueError(
+            "The dataset does not contain a dimension with the cf_role 'timeseries_id' or the axes 'X' and 'Y'. "
+            "Cannot determine the spatial dimensions."
+        )
+
+    # Ensure that longitude is in the range [-180, 180]
+    if "longitude" in ds:
+        if uses_dask(ds.longitude):
+            ds = ds.load()
+        ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
+
+    # Additional data processing specific to Hydrotel
+    if model == "Hydrotel":
+        # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
+        # We need to convert the time variable to a 1D array of integers to prevent xarray from trying to convert it to a datetime64 array
+        new_time = (ds["time"].values - np.datetime64("1970-01-01 00:00:00")).astype("timedelta64[D]").astype(int)
         ds["time"] = xr.DataArray(
             new_time,
             dims="time",
@@ -312,66 +503,59 @@ def format_input(
             attrs={"units": "days since 1970-01-01 00:00:00"},
         )
 
-        # Hydrotel is faster with 1D time series
-        if (len(ds["lat"].dims) == 2) or ("lat" in ds.dims):
-            mask = ~ds.pr.isnull().all(
-                dim="time"
-            )  # FIXME: The mask can be written as an argument once we drop xscen <=0.9.1.
-            if xc.core.utils.uses_dask(mask):
-                mask = mask.compute()
-            ds = xs.utils.stack_drop_nans(ds, mask=mask, new_dim="station")
-
-            # Add station ID
-            ds = ds.assign_coords(station=("station", np.arange(len(ds.station))))
-            ds["station"].attrs = {
-                "long_name": "Station data",
-                "cf_role": "timeseries_id",
-            }
-
-        station_dim = ds.cf.cf_roles["timeseries_id"][0]
-
+        # Prepare the information for the .nc.config file
         cfg = {
             "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
-            "STATION_DIM_NAME": station_dim,
-            "LATITUDE_NAME": "lat",
-            "LONGITUDE_NAME": "lon",
-            "ELEVATION_NAME": "orog",
+            "STATION_DIM_NAME": "station_id",
+            "LATITUDE_NAME": "latitude",
+            "LONGITUDE_NAME": "longitude",
+            "ELEVATION_NAME": "elevation",
             "TIME_NAME": ds.cf["time"].name,
             "TMIN_NAME": "tasmin",
             "TMAX_NAME": "tasmax",
             "PRECIP_NAME": "pr",
         }
 
-        out = (ds, cfg)
         if save_as:
             Path(save_as).parent.mkdir(parents=True, exist_ok=True)
             with Path(save_as).with_suffix(".nc.config").open("w") as f:
                 for k, v in cfg.items():
                     f.write(f"{k}; {v}\n")
+
+            ds = ds.chunk({"station_id": 1, "time": -1})
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
+    # Additional data processing specific to Raven
     else:
-        raise NotImplementedError(f"The model '{model}' is not recognized.")
+        # Prepare the configuration for Raven
+        # Reference: https://github.com/CSHS-CWRA/RavenPy/blob/master/src/ravenpy/config/conventions.py
+        conv = {
+            "tasmax": "TEMP_MAX",
+            "tasmin": "TEMP_MIN",
+            "tas": "TEMP_AVE",
+            "pr": "PRECIP",
+            "prra": "RAINFALL",
+            "prsn": "SNOWFALL",
+        }
 
-    return out
+        cfg = dict()
+        cfg["data_type"] = [conv[v] for v in required_vars if v in conv]
+        cfg["alt_names_meteo"] = {conv[v]: v for v in required_vars if v in conv}
+
+        if save_as:
+            Path(save_as).parent.mkdir(parents=True, exist_ok=True)
+            ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
+            cfg["meteo_file"] = str(Path(save_as).with_suffix(".nc"))
+
+    return ds, cfg
 
 
-def _detect_variable(
-    # numpydoc ignore=EX01,SA01,ES01,RT01,PR01
-    ds: xr.Dataset,
-    attributes: dict,
-    names: list,
-    return_ds: bool = False,
-) -> xr.Dataset | str:
+def _detect_variable(ds: xr.Dataset, attributes: dict, names: list, return_ds: bool = False) -> xr.Dataset | str:
     """Find a variable in the dataset based on its attributes or name."""
     out = []
     # Search for variables based on attributes
-    [
-        out.append(v)
-        for v in list(ds.variables.keys())
-        if all(re.fullmatch(attributes[a], ds[v].attrs.get(a, "")) for a in attributes)
-    ]
-    # Search for variables based on names
+    [out.append(v) for v in list(ds.variables.keys()) if all(re.fullmatch(attributes[a], ds[v].attrs.get(a, "")) for a in attributes)]
+    # Search for variables based on name
     [out.append(v) for v in names if v in ds.variables]
 
     out = list(set(out))

@@ -1,6 +1,7 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
+import warnings
 
 import numpy as np
 import statsmodels
@@ -9,6 +10,7 @@ import xclim.indices.stats
 from scipy.stats.mstats import plotting_positions
 from statsmodels.tools import eval_measures
 from xscen.utils import standardize_periods
+
 
 __all__ = [
     "criteria",
@@ -25,7 +27,8 @@ def fit(
     method: str = "ML",
     periods: list[str] | list[list[str]] | None = None,
 ) -> xr.Dataset:
-    """Fit multiple distributions to data.
+    """
+    Fit multiple distributions to data.
 
     Parameters
     ----------
@@ -56,9 +59,7 @@ def fit(
     distributions = distributions or ["genextreme", "pearson3", "gumbel_r", "expon"]
 
     periods = (
-        standardize_periods(periods, multiple=True)
-        if periods is not None
-        else [[str(int(ds.time.dt.year.min())), str(int(ds.time.dt.year.max()))]]
+        standardize_periods(periods, multiple=True) if periods is not None else [[str(int(ds.time.dt.year.min())), str(int(ds.time.dt.year.max()))]]
     )
 
     out = []
@@ -69,18 +70,14 @@ def fit(
             p = []
             for d in distributions:
                 p.append(  # noqa: PERF401
-                    xclim.indices.stats.fit(
-                        ds_subset[v].chunk({"time": -1}), dist=d, method=method
-                    )
+                    xclim.indices.stats.fit(ds_subset[v].chunk({"time": -1}), dist=d, method=method)
                     .assign_coords(scipy_dist=d)
                     .expand_dims("scipy_dist")
                 )
             params = xr.concat(p, dim="scipy_dist")
 
             # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
-            p_order = sorted(
-                set(params.dparams.values).difference(["loc", "scale"])
-            ) + [
+            p_order = sorted(set(params.dparams.values).difference(["loc", "scale"])) + [
                 "loc",
                 "scale",
             ]
@@ -108,32 +105,41 @@ def fit(
 
 
 def parametric_quantiles(
-    p: xr.Dataset, t: float | list[float], mode: str = "max"
+    p: xr.Dataset,
+    return_period: float | list[float],
+    mode: str = "max",
+    t: float | list[float] | None = None,
 ) -> xr.Dataset:
-    """Compute quantiles from fitted distributions.
+    """
+    Compute quantiles from fitted distributions.
 
     Parameters
     ----------
     p : xr.Dataset
         Dataset containing the parameters of the fitted distributions.
         Must have a dimension `dparams` containing the parameter names and a dimension `scipy_dist` containing the distribution names.
-    t : float or list of float
+    return_period : float or list of float
         Return period(s) in years.
     mode : {'max', 'min'}
         Whether the return period is the probability of exceedance (max) or non-exceedance (min).
+    t :  float or list of float
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.Dataset
         Dataset containing the quantiles of the distributions.
     """
+    if t is not None:
+        warnings.warn("The 't' parameter has been renamed to 'return_period' and will be removed in xhydro v0.7.0.", FutureWarning, stacklevel=2)
+        return_period = t
     distributions = list(p["scipy_dist"].values)
 
-    t = np.atleast_1d(t)
+    return_period = np.atleast_1d(return_period)
     if mode == "max":
-        q = 1 - 1.0 / t
+        q = 1 - 1.0 / return_period
     elif mode == "min":
-        q = 1.0 / t
+        q = 1.0 / return_period
     else:
         raise ValueError(f"'mode' must be 'max' or 'min', got '{mode}'.")
 
@@ -144,34 +150,26 @@ def parametric_quantiles(
             dist_obj = xclim.indices.stats.get_dist(d)
             shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
             dist_params = shape_params + ["loc", "scale"]
-            da = p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
+            da = p[v].sel(scipy_dist=[d], dparams=dist_params).squeeze("scipy_dist").transpose("dparams", ...)
             da.attrs["scipy_dist"] = d
             qt = (
                 xclim.indices.stats.parametric_quantile(da, q=q)
                 .rename({"quantile": "return_period"})
-                .assign_coords(scipy_dist=d, return_period=t)
+                .assign_coords(scipy_dist=d, return_period=return_period)
                 .expand_dims("scipy_dist")
             )
             quantiles.append(qt)
         quantiles = xr.concat(quantiles, dim="scipy_dist")
 
         # Add the quantile as a new coordinate
-        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": t})
-        da_q.attrs["long_name"] = (
-            "Probability of exceedance"
-            if mode == "max"
-            else "Probability of non-exceedance"
-        )
-        da_q.attrs["description"] = (
-            "Parametric distribution quantiles for the given return period."
-        )
+        da_q = xr.DataArray(q, dims="return_period", coords={"return_period": return_period})
+        da_q.attrs["long_name"] = "Probability of exceedance" if mode == "max" else "Probability of non-exceedance"
+        da_q.attrs["description"] = "Parametric distribution quantiles for the given return period."
         da_q.attrs["mode"] = mode
         quantiles = quantiles.assign_coords(p_quantile=da_q)
 
         quantiles.attrs["scipy_dist"] = distributions
-        quantiles.attrs["description"] = (
-            f"Return period ({mode}) estimated with statistic distributions"
-        )
+        quantiles.attrs["description"] = f"Return period ({mode}) estimated with statistic distributions"
         quantiles.attrs["long_name"] = "Return period"
         quantiles.attrs["mode"] = mode
         out.append(quantiles)
@@ -183,7 +181,8 @@ def parametric_quantiles(
 
 
 def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
-    """Compute information criteria (AIC, BIC, AICC) from fitted distributions, using the log-likelihood.
+    """
+    Compute information criteria (AIC, BIC, AICC) from fitted distributions, using the log-likelihood.
 
     Parameters
     ----------
@@ -205,15 +204,13 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
 
         llf = np.nansum(dist.logpdf(da, *params), axis=0)  # log-likelihood
         nobs = np.sum(np.isfinite(da), axis=0)
-        df_modelwc = len(p)
+        df_modelwc = params.shape[0]
         dof_eff = nobs - df_modelwc - 1.0
 
-        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=len(p))
-        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=len(p))
+        aic = eval_measures.aic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
+        bic = eval_measures.bic(llf=llf, nobs=nobs, df_modelwc=params.shape[0])
         # Custom AICC, because the one in statsmodels does not support multiple dimensions
-        aicc = np.where(
-            dof_eff > 0, -2.0 * llf + 2.0 * df_modelwc * nobs / dof_eff, np.nan
-        )
+        aicc = np.where(dof_eff > 0, -2.0 * llf + 2.0 * df_modelwc * nobs / dof_eff, np.nan)
 
         return np.stack([aic, bic, aicc], axis=1)
 
@@ -228,9 +225,7 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
             shape_params = [] if dist_obj.shapes is None else dist_obj.shapes.split(",")
             dist_params = shape_params + ["loc", "scale"]
             da = ds[v].transpose("time", ...)
-            params = (
-                p[v].sel(scipy_dist=d, dparams=dist_params).transpose("dparams", ...)
-            )
+            params = p[v].sel(scipy_dist=[d], dparams=dist_params).squeeze("scipy_dist").transpose("dparams", ...)
 
             if len(da.dims) == 1:
                 crit = xr.apply_ufunc(
@@ -256,18 +251,13 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
                 )
 
             # Add attributes
-            crit = crit.assign_coords(criterion=["aic", "bic", "aicc"]).expand_dims(
-                "scipy_dist"
-            )
+            crit = crit.assign_coords(criterion=["aic", "bic", "aicc"]).expand_dims("scipy_dist")
             crit.attrs = p[v].attrs
             crit.attrs["history"] = (
-                crit.attrs.get("history", "")
-                + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
+                crit.attrs.get("history", "") + f", [{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] "
                 f"criteria: computed AIC, BIC and AICC. - statsmodels version: {statsmodels.__version__}"
             )
-            crit.attrs["description"] = (
-                "Information criteria for the distribution parameters."
-            )
+            crit.attrs["description"] = "Information criteria for the distribution parameters."
             crit.attrs["long_name"] = "Information criteria"
 
             # Remove a few attributes that are not relevant anymore
@@ -286,7 +276,8 @@ def criteria(ds: xr.Dataset, p: xr.Dataset) -> xr.Dataset:
 
 
 def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True):
-    """Calculate plotting positions for data.
+    """
+    Calculate plotting positions for data.
 
     Parameters
     ----------
@@ -311,7 +302,8 @@ def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True)
     data_copy = data_array.copy(deep=True)
 
     def vec_plotting_positions(vec_data, alpha=0.4, beta=0.4):
-        """Calculate plotting positions for vectorized data.
+        """
+        Calculate plotting positions for vectorized data.
 
         Parameters
         ----------
@@ -360,14 +352,17 @@ def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True)
         pp = -1 / (pp - 1)
 
     for name in pp.data_vars:
-        pp = pp.rename({name: name + "_pp"})
+        pp = pp.rename({name: f"{name}_pp"})
+        pp = pp.assign_coords({f"{name}_pp": pp[f"{name}_pp"]})
+        pp[f"{name}_pp"].attrs = {"long_name": f"Plotting positions for the variable '{name}'"}
         pp[name] = data_copy[name]
 
     return pp
 
 
 def _prepare_plots(params, xmin=1, xmax=10000, npoints=100, log=True):
-    """Prepare x-values for plotting frequency analysis results.
+    """
+    Prepare x-values for plotting frequency analysis results.
 
     Parameters
     ----------

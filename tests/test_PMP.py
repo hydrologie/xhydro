@@ -8,17 +8,17 @@ from xhydro.indicators import pmp
 
 
 class TestPMP:
-
     def test_major_precipitation_events(self, era5_example):
-        da = era5_example.pr.sel(location="Halifax").isel(plev=0)
+        da = era5_example.pr.sel(location="Halifax").isel(plev=0) * 86400
+        da.attrs = {"units": "mm"}
 
         result = pmp.major_precipitation_events(da, windows=[1, 2], quantile=0.9)
 
         assert len(result.time) == len(da.time)
         assert "window" in result.dims
-        np.testing.assert_array_almost_equal(result.sel(window=2).max(), 0.00079964)
-        np.testing.assert_array_almost_equal(result.sel(window=2).min(), 0.00024292)
-        np.testing.assert_array_equal(result.sel(window=2).isnull().sum(), 1313)
+        np.testing.assert_array_almost_equal(result.sel(window=2).max(), 69.08867)
+        np.testing.assert_array_almost_equal(result.sel(window=2).min(), 20.988277)
+        np.testing.assert_array_equal(result.sel(window=2).isnull().sum(), 1315)
 
     def test_major_precipitation_events_agg(self):
         np.random.seed(42)
@@ -33,18 +33,13 @@ class TestPMP:
         )
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
+        precip.attrs = {"units": "mm"}
 
-        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(
-            dict(time=-1)
-        )
-        result = pmp.major_precipitation_events(
-            precip_agg, windows=[1, 2], quantile=0.9
-        )
+        precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(dict(time=-1))
+        result = pmp.major_precipitation_events(precip_agg, windows=[1, 2], quantile=0.9)
 
         assert "window" in result.dims
-        np.testing.assert_array_equal(
-            result.conf, ["2.1", "2.2", "3.1", "3.2", "3.3", "3.4", "4.1"]
-        )
+        np.testing.assert_array_equal(result.conf, ["2.1", "2.2", "3.1", "3.2", "3.3", "3.4", "4.1"])
         np.testing.assert_array_almost_equal(
             result.sel(window=2, conf=["2.2", "3.4"]).values,
             np.array(
@@ -79,12 +74,6 @@ class TestPMP:
         )
 
         if beta_func:
-            # FIXME: There shouldn't be print statements in tests
-            print(
-                result.sel(window=2, location="Halifax")
-                .isel(time=slice(400, 410))
-                .values
-            )
             np.testing.assert_array_almost_equal(
                 result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
                 np.array(
@@ -103,16 +92,9 @@ class TestPMP:
                 ),
             )
             assert isinstance(result, xr.DataArray)
-            # TODO: Verify that this does not test the order of the dimensions, which can change.
-            assert result.dims == ("window", "location", "time")
+            assert set(result.dims) == {"window", "location", "time"}
             assert result.attrs["units"] == "mm"
         else:
-            # FIXME: There shouldn't be print statements in tests
-            print(
-                result.sel(window=2, location="Halifax")
-                .isel(time=slice(400, 410))
-                .values
-            )
             np.testing.assert_array_almost_equal(
                 result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
                 np.array(
@@ -143,12 +125,6 @@ class TestPMP:
         )
 
         if add_pre_lay:
-            # FIXME: There shouldn't be print statements in tests
-            print(
-                result.sel(window=2, location="Halifax")
-                .isel(time=slice(400, 410))
-                .values
-            )
             np.testing.assert_array_almost_equal(
                 result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
                 np.array(
@@ -167,16 +143,9 @@ class TestPMP:
                 ),
             )
             assert isinstance(result, xr.DataArray)
-            # TODO: Verify that this does not test the order of the dimensions, which can change.
-            assert result.dims == ("window", "location", "time")
+            assert set(result.dims) == {"window", "location", "time"}
             assert result.attrs["units"] == "mm"
         else:
-            # FIXME: There shouldn't be print statements in tests
-            print(
-                result.sel(window=2, location="Halifax")
-                .isel(time=slice(400, 410))
-                .values
-            )
             np.testing.assert_array_almost_equal(
                 result.sel(window=2, location="Halifax").isel(time=slice(400, 410)),
                 np.array(
@@ -202,8 +171,12 @@ class TestPMP:
             np.random.rand(2000, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),
@@ -211,8 +184,17 @@ class TestPMP:
         )
         da = da.rename("pw")
 
-        result = pmp.precipitable_water_100y(
-            da, dist="genextreme", method="ML", rebuild_time=rebuild_time
+        result = pmp.precipitable_water_100y(da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=0.2)
+
+        result_no_mf = pmp.precipitable_water_100y(da, dist="genextreme", method="ML", rebuild_time=rebuild_time, mf=None)
+
+        result_no_mf_n = pmp.precipitable_water_100y(
+            da,
+            dist="genextreme",
+            method="ML",
+            rebuild_time=rebuild_time,
+            mf=None,
+            n=999999,
         )
 
         if rebuild_time:
@@ -224,6 +206,16 @@ class TestPMP:
                 ],
                 [np.array([0.99935599]), np.array([0.99393388])],
             )
+            np.testing.assert_array_almost_equal(
+                [
+                    np.unique(result_no_mf.isel(time=slice(0, 31), y=0, x=0)),
+                    np.unique(result_no_mf.isel(time=slice(170, 180), y=0, x=0)),
+                ],
+                [np.array([0.99935599]), np.array([3863494136.2934675])],
+            )
+
+            assert (result_no_mf_n == da.transpose("y", "x", "time")).all
+
         else:
             assert "time" not in result.dims
             assert "month" in result.dims
@@ -247,7 +239,29 @@ class TestPMP:
                 ),
             )
 
-        assert (result.isel(y=0, x=0).max() / da.isel(y=0, x=0).max()).values <= 1.2
+            np.testing.assert_array_almost_equal(
+                result_no_mf.isel(x=0, y=0),
+                np.array(
+                    [
+                        9.99355993e-01,
+                        9.93933878e-01,
+                        9.65702113e-01,
+                        9.96621902e-01,
+                        9.96489205e-01,
+                        3863494136.2934675,
+                        9.76645432e-01,
+                        9.92806391e-01,
+                        9.93783532e-01,
+                        9.94741139e-01,
+                        9.91128941e-01,
+                        9.99337008e-01,
+                    ]
+                ),
+            )
+
+        assert result.isel(y=0, x=0).max().values <= da.isel(y=0, x=0).max().values * 1.2
+        assert result_no_mf.isel(y=0, x=0).max().values > da.isel(y=0, x=0).max().values * 1.2
+        assert result_no_mf_n.isel(y=0, x=0).max().values == da.isel(y=0, x=0).max()
 
     def test_precipitable_water_100_conf(self):
         np.random.seed(42)
@@ -255,14 +269,18 @@ class TestPMP:
             np.random.rand(2000, 2),
             dims=["time", "conf"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=2000, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=2000,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "conf": ["1.1", "4.1"],
             },
         )
         da_pw = da_pw.rename("pw")
-        result = pmp.precipitable_water_100y(da_pw, dist="genextreme", method="ML")
+        result = pmp.precipitable_water_100y(da_pw, dist="genextreme", method="ML", mf=0.2)
         np.testing.assert_array_almost_equal(
             [
                 np.unique(result[0, 1:30]),
@@ -279,8 +297,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "some_y", "some_x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "some_y": np.linspace(0, 5, 2),
                 "some_x": np.linspace(0, 5, 2),
@@ -299,8 +321,12 @@ class TestPMP:
             np.random.rand(10, 2, 4),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 4),
@@ -385,8 +411,12 @@ class TestPMP:
             np.random.rand(10, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=10, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=10,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 100, 2),
                 "x": np.linspace(0, 100, 2),
@@ -427,8 +457,12 @@ class TestPMP:
             ),
             dims=["time"],
             coords={
-                "time": xr.cftime_range(
-                    start="2010-01-01", periods=1460, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2010-01-01",
+                    periods=1460,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
             },
         )
@@ -438,39 +472,23 @@ class TestPMP:
         # Year 3: 365 days of no snow
         # Year 4: 20 days of no snow, 105 days of snow, 240 days of no snow
 
-        results = pmp.compute_spring_and_summer_mask(
-            da, window_wint_start=7, window_wint_end=45, spr_start=30, spr_end=25
-        )
+        results = pmp.compute_spring_and_summer_mask(da, window_wint_start=7, window_wint_end=45, spr_start=30, spr_end=25)
 
         # Checkups for spring
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 29)
-                & (results.time.dt.dayofyear <= 30)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 29) & (results.time.dt.dayofyear <= 30)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 85)
-                & (results.time.dt.dayofyear <= 86)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 85) & (results.time.dt.dayofyear <= 86)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 1)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 1)),
             np.array([1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2011)
-                & (results.time.dt.dayofyear >= 55)
-                & (results.time.dt.dayofyear <= 56)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear >= 55) & (results.time.dt.dayofyear <= 56)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
@@ -478,68 +496,38 @@ class TestPMP:
             365,
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 94)
-                & (results.time.dt.dayofyear <= 95)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 94) & (results.time.dt.dayofyear <= 95)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_spring.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 150)
-                & (results.time.dt.dayofyear <= 151)
-            ),
+            results.mask_spring.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 150) & (results.time.dt.dayofyear <= 151)),
             np.array([1, np.nan]),
         )
 
         # Checkups for summer
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 60)
-                & (results.time.dt.dayofyear <= 61)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 60) & (results.time.dt.dayofyear <= 61)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2010)
-                & (results.time.dt.dayofyear >= 260)
-                & (results.time.dt.dayofyear <= 261)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2010) & (results.time.dt.dayofyear >= 260) & (results.time.dt.dayofyear <= 261)),
             np.array([1, np.nan]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2011)
-                & (results.time.dt.dayofyear >= 30)
-                & (results.time.dt.dayofyear <= 31)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear >= 30) & (results.time.dt.dayofyear <= 31)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 365)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2011) & (results.time.dt.dayofyear == 365)),
             np.array([1]),
         )
+        np.testing.assert_array_equal(results.mask_summer.sel(time=(results.time.dt.year == 2012)).sum(), 365)
         np.testing.assert_array_equal(
-            results.mask_summer.sel(time=(results.time.dt.year == 2012)).sum(), 365
-        )
-        np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2013)
-                & (results.time.dt.dayofyear >= 125)
-                & (results.time.dt.dayofyear <= 126)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear >= 125) & (results.time.dt.dayofyear <= 126)),
             np.array([np.nan, 1]),
         )
         np.testing.assert_array_equal(
-            results.mask_summer.sel(
-                time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear == 365)
-            ),
+            results.mask_summer.sel(time=(results.time.dt.year == 2013) & (results.time.dt.dayofyear == 365)),
             np.array([1]),
         )
 
@@ -548,8 +536,12 @@ class TestPMP:
             np.random.rand(600, 2, 2),
             dims=["time", "y", "x"],
             coords={
-                "time": xr.cftime_range(
-                    start="2000", periods=600, freq="1D", calendar="noleap"
+                "time": xr.date_range(
+                    start="2000",
+                    periods=600,
+                    freq="1D",
+                    calendar="noleap",
+                    use_cftime=True,
                 ),
                 "y": np.linspace(0, 10, 2),
                 "x": np.linspace(0, 10, 2),
@@ -559,3 +551,149 @@ class TestPMP:
 
         with pytest.raises(DimensionalityError):
             pmp.compute_spring_and_summer_mask(da)
+
+
+class TestPMSA:
+    def test_pw_snowfall(self, era5_example):
+        era5_example["pr"] = era5_example["pr"] * 86400
+        era5_example["prsn"] = era5_example["prsn"] * 86400
+        era5_example["rf"] = era5_example["rf"] * 86400
+
+        era5_example.pr.attrs["units"] = "mm"
+        era5_example.prsn.attrs["units"] = "mm"
+        era5_example.rf.attrs["units"] = "mm"
+
+        pw = pmp.precipitable_water(
+            hus=era5_example.hus,
+            zg=era5_example.zg,
+            orog=era5_example.orog,
+            beta_func=True,
+            add_pre_lay=True,
+        )
+
+        prsn_threshold = "1 mm"
+        prra_threshold = "0.4 mm"
+
+        pw_snowfall_m1 = pmp.pw_snowfall(
+            pw,
+            method="m1",
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
+            prra_events=era5_example.rf.isel(plev=0),
+            prra_threshold=prra_threshold,
+        )
+        pw_snowfall_m2 = pmp.pw_snowfall(
+            pw,
+            method="m2",
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
+        )
+        pw_snowfall_m3 = pmp.pw_snowfall(
+            pw,
+            method="m3",
+            prsn_events=era5_example.prsn.isel(plev=0),
+            prsn_threshold=prsn_threshold,
+            prra_events=era5_example.rf.isel(plev=0),
+            prra_threshold=prra_threshold,
+            pr_events=era5_example.pr.isel(plev=0),
+        )
+
+        assert isinstance(pw_snowfall_m3, xr.DataArray)
+        assert isinstance(pw_snowfall_m2, xr.DataArray)
+        assert isinstance(pw_snowfall_m1, xr.DataArray)
+        assert pw_snowfall_m1.name == "precipitable_water_snowfall"
+        assert pw_snowfall_m2.name == "precipitable_water_snowfall"
+        assert pw_snowfall_m3.name == "precipitable_water_snowfall"
+        assert set(pw_snowfall_m3.dims) == {"window", "location", "time"}
+        assert set(pw_snowfall_m2.dims) == {"window", "location", "time"}
+        assert set(pw_snowfall_m1.dims) == {"window", "location", "time"}
+
+        np.testing.assert_array_almost_equal(
+            np.unique(pw_snowfall_m1.isel(location=0, window=0))[:10],
+            np.array(
+                [
+                    0.0,
+                    1280.5694324,
+                    1458.1468244,
+                    1515.3753541,
+                    1547.6927992,
+                    1682.2056972,
+                    1804.2837173,
+                    2005.3933531,
+                    2278.207797,
+                    2322.8644551,
+                ]
+            ),
+        )
+
+        np.testing.assert_array_almost_equal(
+            np.unique(pw_snowfall_m2.isel(location=2, window=0))[:10],
+            np.array(
+                [
+                    0.0,
+                    68.6503152,
+                    91.8312645,
+                    99.2143255,
+                    109.4981523,
+                    119.0172874,
+                    134.6765617,
+                    144.8506865,
+                    195.6950951,
+                    212.9445073,
+                ]
+            ),
+        )
+
+        np.testing.assert_array_almost_equal(
+            np.unique(pw_snowfall_m3.isel(location=3, window=0))[:9],
+            np.array(
+                [
+                    103.0075018,
+                    161.3289203,
+                    164.2186747,
+                    216.8172911,
+                    307.6057366,
+                    329.9686933,
+                    353.9965576,
+                    362.2587313,
+                    371.3136431,
+                ]
+            ),
+        )
+
+        m2, m3 = xr.align(pw_snowfall_m2, pw_snowfall_m3)
+
+        m2_flat = m2.stack(z=("window", "location", "time"))
+        m3_flat = m3.stack(z=("window", "location", "time"))
+
+        valid = m2_flat.notnull() & m3_flat.notnull()
+        m2_valid = m2_flat.where(valid, drop=True)
+        m3_valid = m3_flat.where(valid, drop=True)
+
+        assert (m2_valid >= m3_valid).all()
+
+        m2, m1 = xr.align(pw_snowfall_m2, pw_snowfall_m1)
+
+        m2_flat = m2.stack(z=("window", "location", "time"))
+        m1_flat = m1.stack(z=("window", "location", "time"))
+
+        valid = m2_flat.notnull() & m1_flat.notnull()
+        m2_valid = m2_flat.where(valid, drop=True)
+        m1_valid = m1_flat.where(valid, drop=True)
+
+        assert (m2_valid == m1_valid).all()
+
+        count_m1 = pw_snowfall_m1.count("time")
+        count_m2 = pw_snowfall_m2.count("time")
+        count_m3 = pw_snowfall_m3.count("time")
+
+        assert (count_m1 < count_m2).all()
+        assert (count_m3 == count_m2).all()
+
+        with pytest.raises(ValueError):
+            pmp.pw_snowfall(
+                pw,
+                method="XXXX",
+                prsn_events=era5_example.prsn.isel(plev=0),
+                prsn_threshold=prsn_threshold,
+            )

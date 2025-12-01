@@ -1,10 +1,4 @@
-# numpydoc ignore=EX01,SA01,ES01
-"""
-The Hydrotel Hydrological Model module.
-
-Prevent circular imports by importing in a very specific order.
-isort:skip_file
-"""
+"""The Hydrotel Hydrological Model module."""
 
 from .hydrological_modelling import *
 from .calibration import *

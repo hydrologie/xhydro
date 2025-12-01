@@ -4,6 +4,7 @@
 import pathlib
 from importlib.util import find_spec
 
+
 # import pytest
 
 # @pytest.fixture
@@ -35,4 +36,4 @@ def test_package_metadata():
         contents = f.read()
         assert """Thomas-Charles Fortier Filion""" in contents
         assert '__email__ = "tcff_hydro@outlook.com"' in contents
-        assert '__version__ = "0.4.2-dev.13"' in contents
+        assert '__version__ = "0.6.2-dev.1"' in contents

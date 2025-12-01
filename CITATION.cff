@@ -1,0 +1,50 @@
+# This CITATION.cff file was generated with cffinit and templated with cookiecutter.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: "1.2.0"
+title: "xHydro"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: "software"
+authors:
+  - family-names: 'Fortier Filion'
+    given-names: 'Thomas-Charles'
+    email: 'tcff_hydro@outlook.com'
+  - family-names: 'Rondeau-Genesse'
+    given-names: 'Gabriel'
+    email: 'rondeau-genesse.gabriel@ouranos.ca'
+    orcid: "https://orcid.org/0000-0003-3389-9406"
+  - family-names: 'Smith'
+    given-names: 'Trevor James'
+    email: 'smith.trevorj@ouranos.ca'
+    orcid: "https://orcid.org/0000-0001-5393-8359"
+  - family-name: 'Langlois'
+    given-names: 'Sébastien'
+  - family-names: 'Opina'
+    given-names: 'Julián'
+    orcid: "https://orcid.org/0000-0001-8582-3265"
+  - family-names: 'Maarite'
+    given-names: 'Kamil'
+  - family-names: 'Arsenault'
+    given-names: 'Richard'
+    orcid: "https://orcid.org/0000-0003-2834-2750"
+  - family-names: 'Gravel'
+    given-names: 'Francis'
+  - family-names: "Arnal"
+    given-names: "Louise"
+    orcid: "https://orcid.org/0000-0002-0208-2324"
+  - family-names: 'Parent'
+    given-names: 'Essi'
+contact:
+  - family-names: 'Fortier Filion'
+    given-names: 'Thomas-Charles'
+    email: 'tcff_hydro@outlook.com'
+  - family-names: 'Rondeau-Genesse'
+    given-names: 'Gabriel'
+    email: 'rondeau-genesse.gabriel@ouranos.ca'
+    orcid: "https://orcid.org/0000-0003-3389-9406"
+repository-code: "https://github.com/hydrologie/xHydro"
+abstract: "Hydrological analysis library built with xarray."
+license: "Apache-2.0"
+version: "0.6.1"
