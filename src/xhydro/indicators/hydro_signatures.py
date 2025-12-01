@@ -10,15 +10,11 @@ For temporal analysis see xclim.indices._hydrology library
 
 import numpy as np
 import xarray
-import xscen
-from numpy import dtype, float64, ndarray
 from scipy import signal, stats
 from xclim.core.units import convert_units_to
-from xscen.utils import standardize_periods
-
+from xscen.utils import standardize_period
 from xhydro.indicators import generic
 from xhydro.utils import health_checks
-from xhydro.indicators import generic
 
 
 __all__ = [
@@ -82,7 +78,7 @@ def elasticity_index(
     health_checks(ds_q, freq="D")  # all other health checks on a daily basis
 
     ds_pr = pr.to_dataset(name="pr")
-    ds_pr["pr"].attrs["units"] = "mm/day"
+    ds_pr["pr"].attrs["units"] = ds_pr["pr"].attrs.get("units", "undefined")
 
     periods = (
         standardize_periods(periods, multiple=True)
@@ -93,34 +89,19 @@ def elasticity_index(
     for period in periods:
         ds_subset_q = ds_q.sel(time=slice(period[0], period[1]))
         ds_subset_p = ds_pr.sel(time=slice(period[0], period[1]))
-        ds_subset_p["pr"].attrs["units"] = "mm/day"
 
         # Annual mean from raw data
         q_annual = generic.get_yearly_op(ds_subset_q, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options)
         p_annual = generic.get_yearly_op(
             ds_subset_p, op="mean", timeargs={"annual": {}}, missing=missing, missing_options=missing_options, input_var="pr"
         )
-        # q_period= aggregate.climatological_op(
-        #     q_annual,
-        #     op="skip" or "first" not applicable,# picks first value in period
-        #     (acts like a no-op for already-aggregated data), since "mean" does work on daily data...
-        #     periods=periods,  # your periods
-        #     window=None,  # no rolling window, just period aggregation
-        #     rename_variables=True,  # keep variable names clean
-        # )
-        # p_period = aggregate.climatological_op(
-        #     p_annual,
-        #     op="first",# picks first value in period (acts like a no-op for already-aggregated data)
-        #     periods=periods,
-        #     window=None,
-        #     rename_variables=True,
-        # )
 
         # Year-to-year changes
         delta_q = q_annual.diff(dim="time")
         delta_p = p_annual.diff(dim="time")
 
         # Avoid division by zero
+        # TODO replace with jitter_under_thresh
         epsilon = 1e-10
 
         # Relative changes
@@ -142,7 +123,6 @@ def elasticity_index(
 
 def flow_duration_curve_slope(
     q: xarray.DataArray,
-    freq: str = "D",
     periods: list[str] | list[list[str]] | None = None,
     missing=None,
 ) -> xarray.DataArray:
@@ -155,8 +135,6 @@ def flow_duration_curve_slope(
     ----------
     q : xarray.DataArray
         Daily streamflow data, expected to have a discharge unit.
-    freq : str
-        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
     periods : list of str or list of list of str, optional
         Either [start, end] or list of [start, end] of periods to be considered.
         If multiple periods are given, the output will have a `horizon` dimension.
@@ -195,7 +173,7 @@ def flow_duration_curve_slope(
         missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
+    health_checks(ds_q, missing=missing, raise_on="all")
     periods = (
         standardize_periods(periods, multiple=True)
         if periods is not None
@@ -226,7 +204,6 @@ def total_runoff_ratio(
     q: xarray.DataArray,
     drainage_area: xarray.DataArray,
     pr: xarray.DataArray,
-    freq: str = "D",
     missing=None,
 ) -> xarray.DataArray:
     """
@@ -244,8 +221,6 @@ def total_runoff_ratio(
         Watershed area [area] units, will be converted to in [km²].
     pr : xarray.DataArray
         Mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
-    freq : str
-        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
     missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
@@ -266,11 +241,12 @@ def total_runoff_ratio(
     ----------
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
+    # TODO compute only for valid years
     if missing is None:
         missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
+    health_checks(ds_q, missing=missing, raise_on="all")
 
     q = convert_units_to(q, "mm3/hr")
     drainage_area = convert_units_to(drainage_area, "mm2")
@@ -288,7 +264,7 @@ def total_runoff_ratio(
 
 def hurst_exp(
     q: xarray.DataArray,
-    freq: str = "D",
+    selected_low_frequecy: int = 0.01,
     missing=None,
 ) -> xarray.DataArray:
     """
@@ -301,8 +277,6 @@ def hurst_exp(
     ----------
     q : xarray.DataArray
         Streamflow in [discharge] units.
-    freq : str
-        Expected frequency : Daily, written as the result of xr.infer_freq(ds.time).
     missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
@@ -330,20 +304,34 @@ def hurst_exp(
         missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
+    health_checks(ds_q, missing=missing, raise_on="all")
 
-    arr = np.array(q)
-    valid_indices = np.where(np.isfinite(arr))[0]
-    valid_values = arr[valid_indices]
-    f, pxx_den = signal.periodogram(valid_values)  # freq default fs = 1day
+    q_interp = q.interpolate_na("time")
 
-    mask = (f > 0) & (f < f.max() * 0.01)  # select near zero freq
+    # Fill leading/trailing NaNs using nearest valid neighbor
+    q_filled = q_interp.ffill("time").bfill("time")
+    q_filled = q_filled.where(np.isfinite(q_filled), np.nan)
+
+    # Final fill for remaining single points (if any)
+    q_filled = q_filled.interpolate_na("time")
+    q_filled = q_filled.astype(float)
+
+    # Detrend to remove strong low-freq bias
+    q_detrended = xarray.DataArray(
+        signal_detrended := signal.detrend(q_filled.values),
+        coords=q_filled.coords,
+        dims=q_filled.dims,
+    )
+    # Compute periodogram using correct fs
+    f, pxx = signal.periodogram(signal_detrended, fs=1, scaling="density")  # freq default fs = 1day
+
+    mask = (f > 0) & (f < f.max() * selected_low_frequecy)  # select near zero freq
 
     if mask.sum() < 20:
         mask = (f > 0) & (f < f.max() * 0.02)  # check for at least 20 frequency bins
 
     freqs_low = f[mask]
-    pxx_low = pxx_den[mask]
+    pxx_low = pxx[mask]
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(np.log10(freqs_low), np.log10(pxx_low))
     beta = -slope  # slope is negative, so Beta = -slope

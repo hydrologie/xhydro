@@ -76,7 +76,7 @@ class TestFDCSlope:
 
 class TestTotRR:
     def test_simple(self, q_series, area_series, pr_series):
-        # 1 years of daily data
+        # 1 yearp of daily data
         q = np.ones(365) * 10
         pr = np.ones(365) * 20
 

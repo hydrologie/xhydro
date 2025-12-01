@@ -917,8 +917,6 @@ def _high_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probabil
 
 
     """
-
-
     thresh = np.nanpercentile(qobs, 100 - exceedance_probability)
 
     # Select only high flow time steps
@@ -1117,11 +1115,10 @@ def _persistence_index_weekly(qsim: np.ndarray, qobs: np.ndarray):
     The weekly persistence index should be MAXIMIZED.
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
-    # FIXME: This should be able to maintain timestamps, timing tool developement is required
+    # FIXME: This should be able to maintain timestamps, timing tool development is required
     # Resample to weekly means (weeks starting on Monday)
     qsim_weekly = qsim.resample(time="W-MON").mean()
     qobs_weekly = qobs.resample(time="W-MON").mean()
-
 
     # Remove NaNs from both series simultaneously
     valid = qsim_weekly.notnull() & qobs_weekly.notnull()
@@ -1182,10 +1179,8 @@ def _high_flow_timing_error(
     qsim: xr.DataArray,
     percentile: int = 10,
 ) -> xr.DataArray:
-    # FIXME: This should be able to maintain timestamps, timing tool developement is required
     """
     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
-
 
     Parameters
     ----------
@@ -1208,8 +1203,8 @@ def _high_flow_timing_error(
     gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures.
     Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
 
-
     """
+    # FIXME: This should be able to maintain timestamps, timing tool development is required
     threshold = np.nanpercentile(qobs, 100 - percentile)
 
     mask1 = qobs >= threshold  # Select only high flow time steps for obs flows
