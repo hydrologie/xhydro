@@ -12,7 +12,7 @@ import numpy as np
 import xarray
 from scipy import signal, stats
 from xclim.core.units import convert_units_to
-from xscen.utils import standardize_period
+from xscen.utils import standardize_periods
 from xhydro.indicators import generic
 from xhydro.utils import health_checks
 
@@ -277,6 +277,8 @@ def hurst_exp(
     ----------
     q : xarray.DataArray
         Streamflow in [discharge] units.
+    selected_low_frequecy : int
+        Near-zero frequency, can be adjusted to best represent the persistency of observed streamflow. Default is 0.01.
     missing : str
         Checks for xclim.core.missing to perform. Default is a tolerance of 30% of missing values.
 
