@@ -17,6 +17,8 @@ from xclim.core.units import convert_units_to
 from xscen.utils import standardize_periods
 
 from xhydro.indicators import generic
+from xhydro.utils import health_checks
+from xhydro.indicators import generic
 
 
 __all__ = [
@@ -77,7 +79,7 @@ def elasticity_index(
     #     missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}} #checks for missing values on a yearly basis
 
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(ds_q, freq="D")  # all other health checks on a daily basis
+    health_checks(ds_q, freq="D")  # all other health checks on a daily basis
 
     ds_pr = pr.to_dataset(name="pr")
     ds_pr["pr"].attrs["units"] = "mm/day"
@@ -119,7 +121,7 @@ def elasticity_index(
         delta_p = p_annual.diff(dim="time")
 
         # Avoid division by zero
-        epsilon = 1e-6
+        epsilon = 1e-10
 
         # Relative changes
         rel_delta_p = delta_p / (p_annual + epsilon)
@@ -143,7 +145,7 @@ def flow_duration_curve_slope(
     freq: str = "D",
     periods: list[str] | list[list[str]] | None = None,
     missing=None,
-) -> ndarray[tuple[int, ...], dtype[float64]]:
+) -> xarray.DataArray:
     """
     Calculate the slope of the flow duration curve mid-section between the 33% and 66% exceedance probabilities.
 
@@ -190,10 +192,10 @@ def flow_duration_curve_slope(
     DOI:10.1029/2007WR006716
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
+    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
     periods = (
         standardize_periods(periods, multiple=True)
         if periods is not None
@@ -222,12 +224,10 @@ def flow_duration_curve_slope(
 
 def total_runoff_ratio(
     q: xarray.DataArray,
-    a: xarray.DataArray,
+    drainage_area: xarray.DataArray,
     pr: xarray.DataArray,
     freq: str = "D",
     missing=None,
-    # flags=  {"q et a": {"specific_discharge_extremely_high": {}}} once added to xclim dataflags
-    # flags : Dictionary of xclim.core.dataflags.data_flags to perform per variable.
 ) -> xarray.DataArray:
     """
     Total runoff ratio.
@@ -240,7 +240,7 @@ def total_runoff_ratio(
     ----------
     q : xarray.DataArray
         Streamflow in [discharge] units, will be converted to [m3/s].
-    a : xarray.DataArray
+    drainage_area : xarray.DataArray
         Watershed area [area] units, will be converted to in [km²].
     pr : xarray.DataArray
         Mean daily Precipitation [precipitation] units, will be converted to [mm/hr].
@@ -267,21 +267,18 @@ def total_runoff_ratio(
     HydroBM https://hydrobm.readthedocs.io/en/latest/usage.html#benchmarks
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(
-        ds_q,
-        freq=freq,
-        missing=missing,
-        # flags=flags,
-        raise_on=["missing_pct"],
-    )
-    q = convert_units_to(q, "mm3/hr")
-    a = convert_units_to(a, "mm2")
-    pr = convert_units_to(pr, "mm/hr")
+    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
 
-    runoff = q / a  # unit conversion for runoff in mm/h : 3.6 [s/h * km2/m2]
+    q = convert_units_to(q, "mm3/hr")
+    drainage_area = convert_units_to(drainage_area, "mm2")
+    if xc.units.units2pint(pr).dimensionality.get("[time]") == 0:
+        pr = xc.units.amount2rate(pr)
+    pr = convert_units_to(pr, "mm h-1", context="hydro")
+
+    runoff = q / drainage_area
     total_rr = runoff.sum() / pr.sum()
     total_rr.attrs["units"] = ""
     total_rr.attrs["long_name"] = "Total Rainfall-Runoff Ratio"
@@ -330,10 +327,10 @@ def hurst_exp(
     Uncertainty and insights, Water Resour. Res., 43, W05429, doi:10.1029/2006WR005592.
     """
     if missing is None:
-        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.3}}
+        missing = {"missing_pct": {"freq": "YE", "tolerance": 0.1}}
 
     ds_q = q.to_dataset(name="q")
-    xscen.diagnostics.health_checks(ds_q, freq=freq, missing=missing)
+    health_checks(ds_q, freq=freq, missing=missing, raise_on="all")
 
     arr = np.array(q)
     valid_indices = np.where(np.isfinite(arr))[0]

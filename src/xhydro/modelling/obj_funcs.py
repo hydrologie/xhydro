@@ -917,16 +917,15 @@ def _high_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probabil
 
 
     """
-    qobs = xr.DataArray(qobs, dims="time")
-    qsim = xr.DataArray(qsim, dims="time")
+
 
     thresh = np.nanpercentile(qobs, 100 - exceedance_probability)
 
     # Select only high flow time steps
     mask = qobs >= thresh
 
-    qobs_high = qobs.where(mask, drop=True)
-    qsim_high = qsim.where(mask, drop=True)
+    qobs_high = qobs[mask]
+    qsim_high = qsim[mask]
 
     return ((qsim_high - qobs_high).sum() / qobs_high.sum()).item()
 
@@ -1038,18 +1037,6 @@ def _low_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probabili
     EGUsphere, 2025, 1-41.
 
     """
-    # qobs = xr.DataArray(qobs, dims="time")
-    # qsim = xr.DataArray(qsim, dims="time")
-    #
-    # threshold = np.nanpercentile(qobs, 100 - percentile)
-    #
-    # # Select only low flow time steps
-    # mask = qobs >= threshold
-    #
-    # qsim_low = qsim.where(mask, drop=True)
-    # qobs_low = qobs.where(mask, drop=True)
-    #
-    # return ((qsim_low - qobs_low).sum() / qobs_low.sum()).item()
     threshold = np.nanpercentile(qobs, 100 - exceedance_probability)
     mask = qobs >= threshold
 
@@ -1130,11 +1117,11 @@ def _persistence_index_weekly(qsim: np.ndarray, qobs: np.ndarray):
     The weekly persistence index should be MAXIMIZED.
     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
     """
+    # FIXME: This should be able to maintain timestamps, timing tool developement is required
     # Resample to weekly means (weeks starting on Monday)
     qsim_weekly = qsim.resample(time="W-MON").mean()
     qobs_weekly = qobs.resample(time="W-MON").mean()
 
-    # qobs_weekly = xscen.climatological_op(qobs.to_dataset(name="qobs"), op="mean", window=7)
 
     # Remove NaNs from both series simultaneously
     valid = qsim_weekly.notnull() & qobs_weekly.notnull()
@@ -1191,10 +1178,11 @@ def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
 
 
 def _high_flow_timing_error(
-    qobs: np.ndarray,
-    qsim: np.ndarray,
+    qobs: xr.DataArray,
+    qsim: xr.DataArray,
     percentile: int = 10,
-) -> float:
+) -> xr.DataArray:
+    # FIXME: This should be able to maintain timestamps, timing tool developement is required
     """
     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
 
