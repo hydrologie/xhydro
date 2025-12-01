@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from matplotlib.dates import DateFormatter
+from pyhelp.managers import HelpManager
 from scipy.io import netcdf_file
 
 from ._hm import HydrologicalModel
@@ -25,98 +26,32 @@ __all__ = ["HELP"]
 class HELP(HydrologicalModel):
     # numpydoc ignore=EX01,SA01,ES01
     """
-    Class to handle Hydrobudget simulations.
+    Class to handle HELP simulations.
 
     Parameters
     ----------
     project_dir : str or os.PathLike
         Path to the project folder (including inputs file, shell script and R script).
-    executable : str or os.PathLike
-        Command to execute Hydrobudget.
-        This should be the path to the shell script launching the R script.
-    output_config : dict, optional
-        Dictionary of configuration options to overwrite in the output file (output.csv).
-    simulation_config : dict, optional
-        Begin and end dates of the simulation, format "%Y-%m-%d".
-    parameters : np.array or list, optional
-        Parameters values for calibration.
-    parameters_names : np.array or list, optional
-        Parameters names for calibration.
-    qobs : np.array, optional
-        Observed streamflows.
-    start_date : str, optional
-        Calibration start date.
-    end_date : str, optional
-        Calibration end date.
-    frequency : str, optional
-        Frequency of output data : month, season, year, all. If None, default is season.
-    graph_outputs : int, optional
-        Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
     """
 
     def __init__(
         # numpydoc ignore=EX01,SA01,ES01
         self,
         project_dir: str | os.PathLike,
-        executable: str | os.PathLike,
-        output_config: dict | None = None,
-        simulation_config: dict | None = None,
-        parameters: np.ndarray | list[float] | None = None,
-        parameters_names: np.ndarray | list[float] | None = None,
-        qobs: np.ndarray | xr.Dataset | None = None,
-        start_date: str | None = None,
-        end_date: str | None = None,
-        frequency: str | None = None,
-        graph_outputs: int | None = 0,
     ):
         """
-        Initialize the Hydrobudget simulation.
+        Initialize the HELP simulation.
 
         Parameters
         ----------
         project_dir : str or os.PathLike
             Path to the project folder (including inputs file, shell script and R script).
-        executable : str or os.PathLike
-            Command to execute Hydrobudget.
-            This should be the path to the shell script launching the R script.
-        output_config : dict, optional
-            Dictionary of configuration options to overwrite in the output file (output.csv).
-        simulation_config : dict, optional
-            Begin and end dates of the simulation, format "%Y-%m-%d".
-        parameters : np.array or list, optional
-            Parameters values for calibration.
-        parameters_names : np.array or list, optional
-            Parameters names for calibration.
-        qobs : np.array, optional
-            Observed streamflows.
-        start_date : str, optional
-            Calibration start date.
-        end_date : str, optional
-            Calibration end date.
-        frequency : str, optional
-            frequency of output data : month, season, year, all. If None, default is season.
-        graph_outputs : int, optional
-            level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
         output_config = output_config or dict()
-        qobs = qobs or None
-        start_date = start_date or None
-        end_date = end_date or None
 
         self.project_dir = Path(project_dir)
         if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
-
-        self.executable = str(Path(executable))
-        self.qobs = qobs
-        self.parameters = parameters
-        self.parameters_names = parameters_names
-        self.simu_begin = simulation_config["DATE DEBUT"]
-        self.simu_end = simulation_config["DATE FIN"]
-        self.cal_start_date = start_date
-        self.cal_end_date = end_date
-        self.frequency = frequency
-        self.graph_outputs = graph_outputs
 
     def run(
         # numpydoc ignore=EX01,SA01,ES01
@@ -138,75 +73,24 @@ class HELP(HydrologicalModel):
         """
         """Preprocessing path in the bash executable."""
 
-        new_line = 'cd "' + str(self.project_dir) + '\\"'
-        new_line = new_line.replace("\\", "/")
+        helpm = HelpManager(
+            self.project_dir,
+            path_to_grid=workdir + "input_grid_ex.csv",
+            path_to_precip=workdir + "precip_input_data.csv",
+            path_to_airtemp=workdir + "airtemp_input_data.csv",
+            path_to_solrad=workdir + "solrad_input_data.csv",
+        )
 
-        with Path.open(self.executable) as file:
-            lines = file.readlines()
+        cellnames = helpm.grid.index[helpm.grid["Bassin"] == 1]
 
-        with Path.open(self.executable, "w") as file:
-            for line in lines:
-                if line.startswith("cd"):
-                    file.write(new_line + "\n")
-                else:
-                    file.write(line)
-
-        # If parameters are given in model_config (for calibration), write .txt file that will be take int account by the model
-        param_file = Path(self.project_dir, "param.txt")
-        with Path.open(param_file) as file:
-            lines = file.readlines()
-
-        with Path.open(param_file, "w") as file:
-            for line in lines:
-                if line.startswith("Debut"):
-                    file.write(
-                        "Debut"
-                        + " "
-                        + str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year)
-                        + "\n"
-                    )
-                elif line.startswith("Fin"):
-                    file.write(
-                        "Fin"
-                        + " "
-                        + str(datetime.strptime(self.simu_end, "%Y-%m-%d").year)
-                        + "\n"
-                    )
-                else:
-                    file.write(line)
-
-        if self.parameters is not None:
-
-            with Path.open(param_file, "w") as file:
-                for line in lines:
-                    if line.startswith(tuple(self.parameters_names)):
-                        place_param = [
-                            i
-                            for i, x in enumerate(self.parameters_names)
-                            if x == line.split(" ")[0]
-                        ][0]
-                        file.write(
-                            self.parameters_names[place_param]
-                            + " "
-                            + str(self.parameters[place_param])
-                            + "\n"
-                        )
-                    else:
-                        file.write(line)
-        # Copy param file with data
-        source_path = param_file
-        self.timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        destination_path = Path(self.project_dir, f"param_{self.timestamp}.txt")
-        shutil.copy(source_path, destination_path)
-
-        """Run simulation."""
-        # subprocess.call(self.executable, shell=True)
-
-        """Standardize the outputs"""
-        self._standardise_outputs(**(xr_open_kwargs_out or {}))
-
-        """Get streamflow """
-        return self.get_streamflow()
+        output_help = helpm.calc_help_cells(
+            path_to_hdf5=workdir + "help_example.out",
+            cellnames=cellnames,
+            tfsoil=-3,
+            sf_edepth=0.15,
+            sf_ulai=1,
+            sf_cn=1.15,
+        )
 
     def _standardise_outputs(self, **kwargs):  # noqa: C901
         # numpydoc ignore=EX01,SA01,ES01

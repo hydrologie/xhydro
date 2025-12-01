@@ -14,6 +14,7 @@ import xclim as xc
 import xscen as xs
 from packaging.version import Version
 
+from ._help import HELP
 from ._hydrobudget import Hydrobudget
 from ._hydrotel import Hydrotel
 from ._ravenpy_models import RavenpyModel
@@ -44,6 +45,7 @@ def hydrological_model(model_config):
 
     model_config = deepcopy(model_config)
     model_name = model_config["model_name"]
+    print(model_name)
 
     if model_name == "Hydrotel":
         model_config.pop("model_name")
@@ -98,6 +100,8 @@ def get_hydrological_model_inputs(
         model = Hydrotel
     if model_name == "Hydrobudget":
         model = Hydrobudget
+    if model_name == "HELP":
+        model = HELP
     elif model_name in [
         "Blended",
         "GR4JCN",
