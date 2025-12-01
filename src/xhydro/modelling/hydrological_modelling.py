@@ -53,6 +53,10 @@ def hydrological_model(model_config):
         model_config.pop("model_name")
         return Hydrobudget(**model_config)
 
+    if model_name == "HELP":
+        model_config.pop("model_name")
+        return HELP(**model_config)
+
     elif model_name in [
         "Blended",
         "GR4JCN",

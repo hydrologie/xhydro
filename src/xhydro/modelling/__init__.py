@@ -13,4 +13,5 @@ from .calibration import *
 # Comment addition
 from ._hydrotel import Hydrotel
 from ._hydrobudget import Hydrobudget
+from ._help import HELP
 from ._ravenpy_models import RavenpyModel
