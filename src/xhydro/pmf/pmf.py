@@ -1,13 +1,5 @@
 """
-Provides functions for hydrological modeling and data manipulation, specifically focusing on Probable Maximum Flood (PMF) analysis.
-The functions include:
-- `remove_precip`: Removes precipitation data for specified dates.
-- `swap_meteo`: Swaps meteorological data for a given event.
-- `separate_pr`: Separates precipitation into rain and snow based on temperature thresholds.
-- `two_year_pmp`: Retrieves two years of meteorological data and integrates a PMP event.
-- `fix_pmp_year`: Adjusts the year of a PMP event in the data array.
-- `place_pmp`: Integrates PMP data into the meteorological dataset.
-This module is intended for use in hydrological studies and flood risk assessments.
+Provides functions for Probable Maximum Flood (PMF) analysis.
 """
 
 import copy
@@ -31,6 +23,8 @@ def remove_precip(da_full, dates, each_year=False):
         Full precipitation data array.
     dates : list
         List of dates to remove precipitation.
+    each_year : bool, optional
+        Bool to remove precipitation for a specific year or for each year.
 
     Returns
     -------
@@ -254,7 +248,8 @@ def maximize_snow(
 
     Returns
     -------
-        float: The final factor that achieves the target snow accumulation.
+    float
+        The final factor that achieves the target snow accumulation.
     """
     if factor is None:
         factor = np.arange(0.6, 3.2, 0.2)
