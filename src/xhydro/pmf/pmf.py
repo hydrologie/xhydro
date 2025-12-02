@@ -10,8 +10,12 @@ The functions include:
 This module is intended for use in hydrological studies and flood risk assessments.
 """
 
+import copy
+import datetime
 import numpy as np
 import pandas as pd
+import shutil
+import xhydro.modelling as xhm
 import xarray as xr
 
 from xhydro.utils import update_history
@@ -167,8 +171,11 @@ def separate_pr(ds, pr, tmin, tmax, t_trans=0, delta_t=4, algo="DINGMAN"):
 
     ds[rain].attrs = attrs
     ds[snow].attrs = attrs
-    ds[rain].attrs["long_name"] = "Rainfall"
-    ds[snow].attrs["long_name"] = "Snowfall"
+    ds[rain].attrs["long_name"] = "rainfall"
+    ds[snow].attrs["long_name"] = "snowfall"
+    ds[rain].attrs["standard_name"] = "rainfall_amount"
+    ds[snow].attrs["standard_name"] = "lwe_thickness_of_snowfall_amount"
+
     return ds
 
 
@@ -217,3 +224,63 @@ def place_pmf_inputs(ds_pmp: xr.Dataset, ds_meteo: xr.Dataset) -> xr.Dataset:
         fill_values[mask.values] = ds_pmp[v].values.squeeze()
         ds_meteo[v] = ds_meteo[v].where(~mask, other=fill_values)
     return ds_meteo
+
+
+def maximize_snow(
+    ds_met: xr.Dataset,
+    model_config: object,
+    year: int,
+    snow_tardet: float,
+    factor: np.ndarray = None,
+    starting_month: int = 9,
+):
+    """
+    Find a factor that maximize snow accumulation.
+
+    Parameters
+    ----------
+    ds_met : xr.Dataset
+        The input dataset containing meteorological data.
+    model_config : dict
+        Configuration settings for the model, including the path to the meteorological file.
+    year : int
+        The year for which the snow maximization is performed.
+    snow_tardet : float
+        The target snow accumulation to achieve.
+    factor : np.ndarray, optional
+        An array of factors to scale precipitation. If None, defaults to a range from 0.6 to 3.2 with a step of 0.2.
+    starting_month : int, optional
+        The month to start the simulation, default is September (9).
+
+    Returns
+    -------
+        float: The final factor that achieves the target snow accumulation.
+    """
+    if factor is None:
+        factor = np.arange(0.6, 3.2, 0.2)
+    f = model_config["meteo_file"].split(".nc")
+    temp_nc = f[0] + "_tmp.nc"
+    model_config["meteo_file"] = temp_nc
+    ds_met.to_netcdf(temp_nc)
+
+    start_idx = datetime.date(year - 1, starting_month, 1).strftime("%Y-%m-%d")
+    end_idx = datetime.date(year, starting_month, 1).strftime("%Y-%m-%d")
+    ms = []
+    for f in factor:
+        ds_mod = copy.deepcopy(ds_met)
+        ds_mod["prsn"].loc[{"time": slice(start_idx, end_idx)}] *= f
+        ds_mod.to_netcdf(temp_nc)
+        ht = xhm.hydrological_model(model_config)
+        ht.run(output_flow=False)
+        storage_path = ht.get_storage("path")
+        with xr.open_dataset(storage_path) as ds_output:
+            snow_max = ds_output.Snow.sel(time=ds_output.time.dt.year.isin(year)).max()
+            ms.append(snow_max)
+            ds_output.close()
+        shutil.rmtree(ht.workdir)
+        if snow_max > snow_tardet:
+            break
+    facteur_f = factor[: len(ms)]
+    final_factor = np.interp(snow_tardet, ms, facteur_f)
+
+    return final_factor
