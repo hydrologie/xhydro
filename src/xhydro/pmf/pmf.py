@@ -4,12 +4,13 @@ Provides functions for Probable Maximum Flood (PMF) analysis.
 
 import copy
 import datetime
+import shutil
+
 import numpy as np
 import pandas as pd
-import shutil
-import xhydro.modelling as xhm
 import xarray as xr
 
+import xhydro.modelling as xhm
 from xhydro.utils import update_history
 
 
@@ -104,9 +105,7 @@ def _replace_one_year(full_da, sample_da):
             sample_doy = sample_doy[sample_doy != 366]
             mask = xr.where(full_doy.isin(sample_doy), True, False)
             fill_values = np.empty(mask.shape)
-            fill_values[mask.values] = sample_da.where(
-                sample_da.time.dt.dayofyear != 366, drop=True
-            ).values
+            fill_values[mask.values] = sample_da.where(sample_da.time.dt.dayofyear != 366, drop=True).values
             return full_da.where(~mask, other=fill_values)
     else:
         if sum(mask.values) < len(sample_doy):
