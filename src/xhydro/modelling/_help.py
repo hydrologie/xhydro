@@ -41,6 +41,33 @@ class HELP(HydrologicalModel):
         if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
 
+        return
+
+    def get_inputs(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+        xr_open_kwargs_out: dict | None = None,
+    ) -> str | xr.Dataset:
+        """
+        Run the simulation.
+
+        Parameters
+        ----------
+        xr_open_kwargs_out : dict, optional
+            Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading the raw output files.
+
+        Returns
+        -------
+        xr.Dataset
+            The streamflow file, if 'dry_run' is False.
+        """
+        p_to_grid = self.project_dir / "input_grid_ex.csv"
+        p_to_precip = self.project_dir / "precip_input_data.csv"
+        p_to_airtemp = self.project_dir / "airtemp_input_data.csv"
+        p_to_solrad = self.project_dir / "solrad_input_data.csv"
+
+        return p_to_grid, p_to_precip, p_to_airtemp, p_to_solrad
+
     def run(
         # numpydoc ignore=EX01,SA01,ES01
         self,
@@ -59,19 +86,19 @@ class HELP(HydrologicalModel):
         xr.Dataset
             The streamflow file, if 'dry_run' is False.
         """
-        """Preprocessing path in the bash executable."""
+        p_to_grid, p_to_precip, p_to_airtemp, p_to_solrad = self.get_inputs(**(xr_open_kwargs_out or {}))
 
         helpm = HelpManager(
             self.project_dir,
-            path_to_grid=str(self.project_dir) + "/input_grid_ex.csv",
-            path_to_precip=str(self.project_dir) + "/precip_input_data.csv",
-            path_to_airtemp=str(self.project_dir) + "/airtemp_input_data.csv",
-            path_to_solrad=str(self.project_dir) + "/solrad_input_data.csv",
+            path_to_grid=p_to_grid,
+            path_to_precip=p_to_precip,
+            path_to_airtemp=p_to_airtemp,
+            path_to_solrad=p_to_solrad,
         )
 
         cellnames = helpm.grid.index[helpm.grid["Bassin"] == 1]
 
-        helpm.calc_help_cells(
+        output_help = helpm.calc_help_cells(
             path_to_hdf5=str(self.project_dir) + "/help_example.out",
             cellnames=cellnames,
             tfsoil=-3,
@@ -79,5 +106,53 @@ class HELP(HydrologicalModel):
             sf_ulai=1,
             sf_cn=1.15,
         )
+        self.output_help = output_help
 
+        # """Standardize the outputs"""
+        # self._standardise_outputs(**(xr_open_kwargs_out or {}))
+
+        """Get streamflow """
+        return self.get_streamflow()
+
+    def get_streamflow(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+        xr_open_kwargs_out: dict | None = None,
+    ) -> str | xr.Dataset:
+        """
+        Run the simulation.
+
+        Parameters
+        ----------
+        xr_open_kwargs_out : dict, optional
+            Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading the raw output files.
+
+        Returns
+        -------
+        xr.Dataset
+            The streamflow file, if 'dry_run' is False.
+        """
+        self.output_help.save_to_csv(str(self.project_dir) + "/help_example_yearly.csv")
+
+        return
+
+    def _standardise_outputs(self, **kwargs):  # noqa: C901
+        # numpydoc ignore=EX01,SA01,ES01
+        r"""
+        Standardise the outputs of the simulation to be more consistent with CF conventions.
+
+        Parameters
+        ----------
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Notes
+        -----
+        Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
+        a temporary file will be created and then renamed to overwrite the original file.
+        """
+        # Plot some results.
+        self.output_help.plot_area_monthly_avg(fig_title="PyHELP Example")
+        self.output_help.plot_area_yearly_avg(fig_title="PyHELP Example")
+        self.output_help.plot_area_yearly_series(fig_title="PyHELP Example")
         return
