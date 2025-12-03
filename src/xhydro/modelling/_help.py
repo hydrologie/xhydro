@@ -61,7 +61,7 @@ class HELP(HydrologicalModel):
         xr.Dataset
             The streamflow file, if 'dry_run' is False.
         """
-        p_to_grid = self.project_dir / "input_grid_ex.csv"
+        p_to_grid = self.project_dir / "input_grid.csv"
         p_to_precip = self.project_dir / "precip_input_data.csv"
         p_to_airtemp = self.project_dir / "airtemp_input_data.csv"
         p_to_solrad = self.project_dir / "solrad_input_data.csv"
@@ -96,10 +96,10 @@ class HELP(HydrologicalModel):
             path_to_solrad=p_to_solrad,
         )
 
-        cellnames = helpm.grid.index[helpm.grid["Bassin"] == 1]
+        cellnames = helpm.grid.index[helpm.grid["run"] == 1]
 
         output_help = helpm.calc_help_cells(
-            path_to_hdf5=str(self.project_dir) + "/help_example.out",
+            path_to_hdf5=self.project_dir / "help_example.out",
             cellnames=cellnames,
             tfsoil=-3,
             sf_edepth=0.15,
@@ -112,7 +112,9 @@ class HELP(HydrologicalModel):
         # self._standardise_outputs(**(xr_open_kwargs_out or {}))
 
         """Get streamflow """
-        return self.get_streamflow()
+        self.get_streamflow()
+
+        return
 
     def get_streamflow(
         # numpydoc ignore=EX01,SA01,ES01
