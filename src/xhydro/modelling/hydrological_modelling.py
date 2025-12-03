@@ -48,7 +48,6 @@ def hydrological_model(model_config):
 
     model_config = deepcopy(model_config)
     model_name = model_config["model_name"]
-    print(model_name)
 
     if model_name == "Hydrotel":
         model_config.pop("model_name")

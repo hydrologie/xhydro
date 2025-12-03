@@ -3,8 +3,6 @@
 
 import os
 import shutil
-import subprocess  # noqa: S404
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -19,7 +17,8 @@ from scipy.io import netcdf_file
 
 from ._hm import HydrologicalModel
 
-__all__ = ["Hydrobuget"]
+
+__all__ = ["Hydrobudget"]
 
 
 class Hydrobudget(HydrologicalModel):
@@ -159,38 +158,18 @@ class Hydrobudget(HydrologicalModel):
         with Path.open(param_file, "w") as file:
             for line in lines:
                 if line.startswith("Debut"):
-                    file.write(
-                        "Debut"
-                        + " "
-                        + str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year)
-                        + "\n"
-                    )
+                    file.write("Debut" + " " + str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year) + "\n")
                 elif line.startswith("Fin"):
-                    file.write(
-                        "Fin"
-                        + " "
-                        + str(datetime.strptime(self.simu_end, "%Y-%m-%d").year)
-                        + "\n"
-                    )
+                    file.write("Fin" + " " + str(datetime.strptime(self.simu_end, "%Y-%m-%d").year) + "\n")
                 else:
                     file.write(line)
 
         if self.parameters is not None:
-
             with Path.open(param_file, "w") as file:
                 for line in lines:
                     if line.startswith(tuple(self.parameters_names)):
-                        place_param = [
-                            i
-                            for i, x in enumerate(self.parameters_names)
-                            if x == line.split(" ")[0]
-                        ][0]
-                        file.write(
-                            self.parameters_names[place_param]
-                            + " "
-                            + str(self.parameters[place_param])
-                            + "\n"
-                        )
+                        place_param = [i for i, x in enumerate(self.parameters_names) if x == line.split(" ")[0]][0]
+                        file.write(self.parameters_names[place_param] + " " + str(self.parameters[place_param]) + "\n")
                     else:
                         file.write(line)
         # Copy param file with data
@@ -231,24 +210,12 @@ class Hydrobudget(HydrologicalModel):
         if not self.output_dir.is_dir():
             raise ValueError("The project output folder does not exist.")
 
-        list_output_files_stations_tot = [
-            str(f) for f in self.output_dir.iterdir() if f.is_file()
-        ]
+        list_output_files_stations_tot = [str(f) for f in self.output_dir.iterdir() if f.is_file()]
 
-        list_output_files_stations = [
-            file
-            for file in list_output_files_stations_tot
-            if file.endswith("monthly.csv")
-        ]
+        list_output_files_stations = [file for file in list_output_files_stations_tot if file.endswith("monthly.csv")]
 
-        list_stations_interm = [
-            list_output_files_stations[i].split("\\")[-1]
-            for i in range(len(list_output_files_stations))
-        ]
-        list_stations = [
-            list_stations_interm[i].split("_")[0]
-            for i in range(len(list_stations_interm))
-        ]
+        # list_stations_interm = [list_output_files_stations[i].split("\\")[-1] for i in range(len(list_output_files_stations))]
+        # list_stations = [list_stations_interm[i].split("_")[0] for i in range(len(list_stations_interm))]
 
         # Create variables that will be in the netcdf file
         # Times
@@ -258,10 +225,7 @@ class Hydrobudget(HydrologicalModel):
             delimiter=",",
             usecols=columns_to_read,
         )
-        times = [
-            datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m-%d")
-            for d in range(len(dates.index))
-        ]
+        times = [datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m-%d") for d in range(len(dates.index))]
         # Qobs et Qsim
         # Get scatter figures
 
@@ -280,26 +244,14 @@ class Hydrobudget(HydrologicalModel):
         obs_qbase.loc[obs_qbase.months.isin([9, 10, 11]), "trim"] = "4"
 
         obs_qtot["trim_year"] = " "
-        obs_qtot["trim_year"] = [
-            obs_qtot["trim"][i] + "_" + str(obs_qtot["year"][i])
-            for i in range(len(obs_qtot["trim_year"]))
-        ]
+        obs_qtot["trim_year"] = [obs_qtot["trim"][i] + "_" + str(obs_qtot["year"][i]) for i in range(len(obs_qtot["trim_year"]))]
         obs_qbase["trim_year"] = " "
-        obs_qbase["trim_year"] = [
-            obs_qbase["trim"][i] + "_" + str(obs_qbase["year"][i])
-            for i in range(len(obs_qbase["trim_year"]))
-        ]
+        obs_qbase["trim_year"] = [obs_qbase["trim"][i] + "_" + str(obs_qbase["year"][i]) for i in range(len(obs_qbase["trim_year"]))]
 
         obs_qtot["month_year"] = " "
-        obs_qtot["month_year"] = [
-            str(obs_qtot["months"][i]) + "_" + str(obs_qtot["year"][i])
-            for i in range(len(obs_qtot["trim_year"]))
-        ]
+        obs_qtot["month_year"] = [str(obs_qtot["months"][i]) + "_" + str(obs_qtot["year"][i]) for i in range(len(obs_qtot["trim_year"]))]
         obs_qbase["month_year"] = " "
-        obs_qbase["month_year"] = [
-            str(obs_qbase["months"][i]) + "_" + str(obs_qbase["year"][i])
-            for i in range(len(obs_qbase["trim_year"]))
-        ]
+        obs_qbase["month_year"] = [str(obs_qbase["months"][i]) + "_" + str(obs_qbase["year"][i]) for i in range(len(obs_qbase["trim_year"]))]
 
         qtotsim_totalite = []
         qbasesim_totalite = []
@@ -314,13 +266,9 @@ class Hydrobudget(HydrologicalModel):
         frequen_list = []
 
         for stat in stations:
-
             # reperer les dates de NaN dans les obs pour les appliquer aux sim
             a = np.where(np.isnan(obs_qbase[stat]))[0]
-            liste_dates_nan = [
-                [obs_qbase["year"][b], obs_qbase["months"][b], obs_qbase["day"][b]]
-                for b in a
-            ]
+            # liste_dates_nan = [[obs_qbase["year"][b], obs_qbase["months"][b], obs_qbase["day"][b]] for b in a]
 
             resul_sim0 = pd.read_csv(Path(self.output_dir, stat + "_monthly.csv"))
 
@@ -333,15 +281,9 @@ class Hydrobudget(HydrologicalModel):
             resul_sim = resul_sim.astype(convert_dict)
             resul_sim["trim_year"] = " "
 
-            resul_sim["trim_year"] = [
-                resul_sim["trim"][i] + "_" + str(resul_sim["year"][i])
-                for i in range(len(resul_sim["trim_year"]))
-            ]
+            resul_sim["trim_year"] = [resul_sim["trim"][i] + "_" + str(resul_sim["year"][i]) for i in range(len(resul_sim["trim_year"]))]
             resul_sim["month_year"] = " "
-            resul_sim["month_year"] = [
-                str(resul_sim["month"][i]) + "_" + str(resul_sim["year"][i])
-                for i in range(len(resul_sim["month_year"]))
-            ]
+            resul_sim["month_year"] = [str(resul_sim["month"][i]) + "_" + str(resul_sim["year"][i]) for i in range(len(resul_sim["month_year"]))]
 
             trimestres_an = list(dict.fromkeys(resul_sim.trim_year))
             mois_an = list(dict.fromkeys(resul_sim.month_year))
@@ -354,23 +296,15 @@ class Hydrobudget(HydrologicalModel):
 
                 for y in years_an:
                     subset_sim = resul_sim[resul_sim["year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"])
-                        + np.sum(subset_sim["runoff_2"])
-                        + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["runoff_2"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
                     qtotsim_totalite.append(somme_qtot)
                     qbasesim_totalite.append(somme_qbase)
 
-                    qtotobs_totalite.append(
-                        np.sum(obs_qtot[obs_qtot["year"] == y][stat])
-                    )
-                    qbaseobs_totalite.append(
-                        np.sum(obs_qbase[obs_qbase["year"] == y][stat])
-                    )
+                    qtotobs_totalite.append(np.sum(obs_qtot[obs_qtot["year"] == y][stat]))
+                    qbaseobs_totalite.append(np.sum(obs_qbase[obs_qbase["year"] == y][stat]))
                     year_list.append(y)
                     stat_list.append(stat)
                     temps_list.append(y)
@@ -382,23 +316,15 @@ class Hydrobudget(HydrologicalModel):
 
                 for y in trimestres_an:
                     subset_sim = resul_sim[resul_sim["trim_year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"])
-                        + np.sum(subset_sim["runoff_2"])
-                        + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["runoff_2"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
                     qtotsim_totalite.append(somme_qtot)
                     qbasesim_totalite.append(somme_qbase)
 
-                    qtotobs_totalite.append(
-                        np.sum(obs_qtot[obs_qtot["trim_year"] == y][stat])
-                    )
-                    qbaseobs_totalite.append(
-                        np.sum(obs_qbase[obs_qbase["trim_year"] == y][stat])
-                    )
+                    qtotobs_totalite.append(np.sum(obs_qtot[obs_qtot["trim_year"] == y][stat]))
+                    qbaseobs_totalite.append(np.sum(obs_qbase[obs_qbase["trim_year"] == y][stat]))
                     temps_list.append(y)
                     stat_list.append(stat)
                     temps1_list.append(y.split("_")[0])
@@ -411,23 +337,15 @@ class Hydrobudget(HydrologicalModel):
 
                 for y in mois_an:
                     subset_sim = resul_sim[resul_sim["month_year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"])
-                        + np.sum(subset_sim["runoff_2"])
-                        + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["runoff_2"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
                     qtotsim_totalite.append(somme_qtot)
                     qbasesim_totalite.append(somme_qbase)
 
-                    qtotobs_totalite.append(
-                        np.sum(obs_qtot[obs_qtot["month_year"] == y][stat])
-                    )
-                    qbaseobs_totalite.append(
-                        np.sum(obs_qbase[obs_qbase["month_year"] == y][stat])
-                    )
+                    qtotobs_totalite.append(np.sum(obs_qtot[obs_qtot["month_year"] == y][stat]))
+                    qbaseobs_totalite.append(np.sum(obs_qbase[obs_qbase["month_year"] == y][stat]))
                     temps_list.append(y)
                     stat_list.append(stat)
                     temps1_list.append(y.split("_")[0])
@@ -442,23 +360,13 @@ class Hydrobudget(HydrologicalModel):
         qflow_sim_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbasesim_totalite_double = [
-            qbasesim_totalite[a] * 2 for a in range(len(qbasesim_totalite))
-        ]
+        qbasesim_totalite_double = [qbasesim_totalite[a] * 2 for a in range(len(qbasesim_totalite))]
 
         qflow_sim_unique = pd.DataFrame()
-        qflow_sim_unique["q"] = np.concatenate(
-            (qtotsim_totalite, qbasesim_totalite_double), axis=None
-        )
-        qflow_sim_unique["temps_list"] = np.concatenate(
-            (temps_list, temps_list), axis=None
-        )
-        qflow_sim_unique["station"] = np.concatenate(
-            (stat_list, [stat + "000" for stat in stat_list]), axis=None
-        )
-        qflow_sim_unique["frequen"] = np.concatenate(
-            (frequen_list, frequen_list), axis=None
-        )
+        qflow_sim_unique["q"] = np.concatenate((qtotsim_totalite, qbasesim_totalite_double), axis=None)
+        qflow_sim_unique["temps_list"] = np.concatenate((temps_list, temps_list), axis=None)
+        qflow_sim_unique["station"] = np.concatenate((stat_list, [stat + "000" for stat in stat_list]), axis=None)
+        qflow_sim_unique["frequen"] = np.concatenate((frequen_list, frequen_list), axis=None)
 
         qflow_obs_an = pd.DataFrame()
         qflow_obs_an["qtot_obs"] = qtotobs_totalite
@@ -468,44 +376,22 @@ class Hydrobudget(HydrologicalModel):
         qflow_obs_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbaseobs_totalite_double = [
-            qbaseobs_totalite[a] * 2 for a in range(len(qbaseobs_totalite))
-        ]
+        qbaseobs_totalite_double = [qbaseobs_totalite[a] * 2 for a in range(len(qbaseobs_totalite))]
 
         qflow_obs_unique = pd.DataFrame()
-        qflow_obs_unique["q"] = np.concatenate(
-            (qtotobs_totalite, qbaseobs_totalite_double), axis=None
-        )
-        qflow_obs_unique["temps_list"] = np.concatenate(
-            (temps_list, temps_list), axis=None
-        )
-        qflow_obs_unique["station"] = np.concatenate(
-            (stat_list, [stat + "000" for stat in stat_list]), axis=None
-        )
-        qflow_obs_unique["frequen"] = np.concatenate(
-            (frequen_list, frequen_list), axis=None
-        )
+        qflow_obs_unique["q"] = np.concatenate((qtotobs_totalite, qbaseobs_totalite_double), axis=None)
+        qflow_obs_unique["temps_list"] = np.concatenate((temps_list, temps_list), axis=None)
+        qflow_obs_unique["station"] = np.concatenate((stat_list, [stat + "000" for stat in stat_list]), axis=None)
+        qflow_obs_unique["frequen"] = np.concatenate((frequen_list, frequen_list), axis=None)
 
         # Application of weights to measurements to prioritize annual, then seasonal, then monthly reports.
         if frequency == "all":
-            qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
-            )
-            qflow_sim_unique[qflow_sim_unique["frequen"] == "season"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
-            )
-            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
-            )
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "year"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
-            )
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "season"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
-            )
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "month"]["q"] = (
-                qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
-            )
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "season"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
+            qflow_obs_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
+            qflow_obs_unique[qflow_sim_unique["frequen"] == "season"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
+            qflow_obs_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
 
         # Afficher les kge et rmse avec les poids
         qsim = qflow_sim_unique["q"]
@@ -514,9 +400,7 @@ class Hydrobudget(HydrologicalModel):
         qobs_mean = np.mean(qobs)
         # Calculate the components of KGE
         r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
-        r_den = np.sqrt(
-            np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2)
-        )
+        r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
         r = r_num / r_den
         a = np.std(qsim) / np.std(qobs)
         b = np.sum(qsim) / np.sum(qobs)
@@ -584,77 +468,33 @@ class Hydrobudget(HydrologicalModel):
             times = []
 
             year_unique = list(set(subsety_year["temps_list"]))
-            times.append(
-                [
-                    datetime.strptime(str(year_unique[a]), "%Y")
-                    for a in range(len(year_unique))
-                ]
-            )
+            times.append([datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))])
 
             yeartrim_unique = list(set(subsety_season["temps_list"]))
-            year_unique = [
-                yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))
-            ]
-            trim_unique = [
-                yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))
-            ]
-            times.append(
-                [
-                    datetime.strptime(year_unique[a], "%Y")
-                    + timedelta(days=int(trim_unique[a]) * 91.25)
-                    for a in range(len(yeartrim_unique))
-                ]
-            )
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 91.25) for a in range(len(yeartrim_unique))])
 
             yeartrim_unique = list(set(subsety_month["temps_list"]))
-            year_unique = [
-                yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))
-            ]
-            trim_unique = [
-                yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))
-            ]
-            times.append(
-                [
-                    datetime.strptime(year_unique[a], "%Y")
-                    + timedelta(days=int(trim_unique[a]) * 30.42)
-                    for a in range(len(yeartrim_unique))
-                ]
-            )
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))])
 
             times = np.concatenate(times)
 
         if frequency == "year":
             year_unique = list(set(qflow_obs_unique["temps_list"]))
-            times = [
-                datetime.strptime(str(year_unique[a]), "%Y")
-                for a in range(len(year_unique))
-            ]
+            times = [datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))]
         if frequency == "season":
             yeartrim_unique = list(set(qflow_obs_unique["temps_list"]))
-            year_unique = [
-                yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))
-            ]
-            trim_unique = [
-                yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))
-            ]
-            times = [
-                datetime.strptime(year_unique[a], "%Y")
-                + timedelta(days=int(trim_unique[a]) * 91.25)
-                for a in range(len(yeartrim_unique))
-            ]
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times = [datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 91.25) for a in range(len(yeartrim_unique))]
         if frequency == "month":
             yeartrim_unique = list(set(qflow_obs_unique["temps_list"]))
-            year_unique = [
-                yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))
-            ]
-            trim_unique = [
-                yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))
-            ]
-            times = [
-                datetime.strptime(year_unique[a], "%Y")
-                + timedelta(days=int(trim_unique[a]) * 30.42)
-                for a in range(len(yeartrim_unique))
-            ]
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times = [datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))]
 
         stations_unique = list(set(qflow_obs_unique["station"]))
 
@@ -673,10 +513,7 @@ class Hydrobudget(HydrologicalModel):
         streamflow.units = "mm/year"
 
         # Populate the variables with data
-        time_day = [
-            (times[d] - datetime.strptime("1970-01-01", "%Y-%m-%d")).days
-            for d in range(len(times))
-        ]
+        time_day = [(times[d] - datetime.strptime("1970-01-01", "%Y-%m-%d")).days for d in range(len(times))]
         time[:] = time_day
         station[:] = stations_unique
         for stat in range(len(stations_unique)):
@@ -759,11 +596,11 @@ class Hydrobudget(HydrologicalModel):
     def plot_streamflow_scatter_color(  # noqa: C901
         # numpydoc ignore=EX01,SA01,ES01,C901
         self,
-        frequency: "",
+        frequency: str,
         sim_qflow: pd.DataFrame,
         obs_qflow: pd.DataFrame,
         output_dir: Path,
-        timestamp: "",
+        timestamp: str,
     ):
         """
         Create a scatter plot comparing simulated total and base streamflow yearly values with observed values.
@@ -800,33 +637,21 @@ class Hydrobudget(HydrologicalModel):
 
         decompte = 0
         while decompte < fin_decompte:
-
             subset_obs_qflow = obs_qflow[obs_qflow["frequen"] == freq[decompte]]
             subset_sim_qflow = sim_qflow[sim_qflow["frequen"] == freq[decompte]]
 
             # Join both dataframe in a single dataframe.
             yearly_qflow = subset_sim_qflow.copy()
             yearly_qflow = yearly_qflow.reindex(index=subset_obs_qflow.index)
-            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow[
-                "qtot_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow[
-                "qbase_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow[
-                "temps_list"
-            ]
+            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow["qtot_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow["qbase_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow["temps_list"]
 
             if freq[decompte] == "year":
-                yearly_qflow["temps_list1"] = [
-                    yearly_qflow["temps_list"][a] for a in yearly_qflow.index
-                ]
+                yearly_qflow["temps_list1"] = [yearly_qflow["temps_list"][a] for a in yearly_qflow.index]
 
             else:
-                yearly_qflow["temps_list1"] = [
-                    yearly_qflow["temps_list"][a].split("_")[0]
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["temps_list1"] = [yearly_qflow["temps_list"][a].split("_")[0] for a in yearly_qflow.index]
 
             septemporelle = list(dict.fromkeys(yearly_qflow.temps_list1))
 
@@ -887,15 +712,10 @@ class Hydrobudget(HydrologicalModel):
 
             for tr in range(len(septemporelle)):
                 subset = yearly_qflow[yearly_qflow["temps_list1"] == septemporelle[tr]]
-                (l2,) = ax.plot(
-                    subset["qtot_obs"], subset["qtot_sim"], ".", color=colorslist[tr]
-                )
+                (l2,) = ax.plot(subset["qtot_obs"], subset["qtot_sim"], ".", color=colorslist[tr])
 
             # Plot the model fit stats.
-            rmse_qtot = (
-                np.nanmean((yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"]) ** 2)
-                ** 0.5
-            )
+            rmse_qtot = np.nanmean((yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"]) ** 2) ** 0.5
             me_qtot = np.nanmean(yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"])
 
             dx, dy = 3, -3
@@ -933,9 +753,7 @@ class Hydrobudget(HydrologicalModel):
             )
             # Add a legend.
             if freq[decompte] == "year":
-                septemporelle_str = [
-                    str(septemporelle[tr]) for tr in range(len(septemporelle))
-                ]
+                septemporelle_str = [str(septemporelle[tr]) for tr in range(len(septemporelle))]
                 color = ["1:1"]
                 colors = color + septemporelle_str
             if freq[decompte] == "season":
@@ -1002,15 +820,10 @@ class Hydrobudget(HydrologicalModel):
 
             for tr in range(len(septemporelle)):
                 subset = yearly_qflow[yearly_qflow["temps_list1"] == septemporelle[tr]]
-                (l2,) = ax.plot(
-                    subset["qbase_obs"], subset["qbase_sim"], ".", color=colorslist[tr]
-                )
+                (l2,) = ax.plot(subset["qbase_obs"], subset["qbase_sim"], ".", color=colorslist[tr])
 
             # Plot the model fit stats.
-            rmse_qtot = (
-                np.nanmean((yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"]) ** 2)
-                ** 0.5
-            )
+            rmse_qtot = np.nanmean((yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"]) ** 2) ** 0.5
             me_qtot = np.nanmean(yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"])
 
             dx, dy = 3, -3
@@ -1049,9 +862,7 @@ class Hydrobudget(HydrologicalModel):
 
             # Add a legend.
             if freq[decompte] == "year":
-                septemporelle_str = [
-                    str(septemporelle[tr]) for tr in range(len(septemporelle))
-                ]
+                septemporelle_str = [str(septemporelle[tr]) for tr in range(len(septemporelle))]
                 color = ["1:1"]
                 colors = color + septemporelle_str
             if freq[decompte] == "season":
@@ -1097,11 +908,11 @@ class Hydrobudget(HydrologicalModel):
     def plot_streamflow_scatter_color_bystation(
         # numpydoc ignore=EX01,SA01,ES01,C901
         self,
-        frequency: "",
+        frequency: str,
         sim_qflow: pd.DataFrame,
         obs_qflow: pd.DataFrame,
         output_dir: Path,
-        timestamp: "",
+        timestamp: str,
     ):
         """
         Create a scatter plot comparing simulated total and base streamflow yearly values with observed values.
@@ -1138,33 +949,21 @@ class Hydrobudget(HydrologicalModel):
 
         decompte = 0
         while decompte < fin_decompte:
-
             subset_obs_qflow = obs_qflow[obs_qflow["frequen"] == freq[decompte]]
             subset_sim_qflow = sim_qflow[sim_qflow["frequen"] == freq[decompte]]
 
             # Join both dataframe in a single dataframe.
             yearly_qflow = subset_sim_qflow.copy()
             yearly_qflow = yearly_qflow.reindex(index=subset_obs_qflow.index)
-            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow[
-                "qtot_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow[
-                "qbase_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow[
-                "temps_list"
-            ]
+            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow["qtot_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow["qbase_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow["temps_list"]
 
             if freq[decompte] == "year":
-                yearly_qflow["temps_list1"] = [
-                    yearly_qflow["temps_list"][a] for a in yearly_qflow.index
-                ]
+                yearly_qflow["temps_list1"] = [yearly_qflow["temps_list"][a] for a in yearly_qflow.index]
 
             else:
-                yearly_qflow["temps_list1"] = [
-                    yearly_qflow["temps_list"][a].split("_")[0]
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["temps_list1"] = [yearly_qflow["temps_list"][a].split("_")[0] for a in yearly_qflow.index]
 
             def generate_colors(x, colormap="Set1"):
                 cmap = plt.get_cmap(colormap)
@@ -1225,15 +1024,10 @@ class Hydrobudget(HydrologicalModel):
 
             for tr in range(len(station_)):
                 subset = yearly_qflow[yearly_qflow["station"] == station_[tr]]
-                (l2,) = ax.plot(
-                    subset["qtot_obs"], subset["qtot_sim"], ".", color=colorslist[tr]
-                )
+                (l2,) = ax.plot(subset["qtot_obs"], subset["qtot_sim"], ".", color=colorslist[tr])
 
             # Plot the model fit stats.
-            rmse_qtot = (
-                np.nanmean((yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"]) ** 2)
-                ** 0.5
-            )
+            rmse_qtot = np.nanmean((yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"]) ** 2) ** 0.5
             me_qtot = np.nanmean(yearly_qflow["qtot_sim"] - yearly_qflow["qtot_obs"])
 
             dx, dy = 3, -3
@@ -1319,15 +1113,10 @@ class Hydrobudget(HydrologicalModel):
 
             for tr in range(len(station_)):
                 subset = yearly_qflow[yearly_qflow["station"] == station_[tr]]
-                (l2,) = ax.plot(
-                    subset["qbase_obs"], subset["qbase_sim"], ".", color=colorslist[tr]
-                )
+                (l2,) = ax.plot(subset["qbase_obs"], subset["qbase_sim"], ".", color=colorslist[tr])
 
             # Plot the model fit stats.
-            rmse_qtot = (
-                np.nanmean((yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"]) ** 2)
-                ** 0.5
-            )
+            rmse_qtot = np.nanmean((yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"]) ** 2) ** 0.5
             me_qtot = np.nanmean(yearly_qflow["qbase_sim"] - yearly_qflow["qbase_obs"])
 
             dx, dy = 3, -3
@@ -1392,11 +1181,11 @@ class Hydrobudget(HydrologicalModel):
     def plot_sim_vs_obs_yearly_streamflow(
         # numpydoc ignore=EX01,SA01,ES01
         self,
-        frequency: "",
+        frequency: str,
         sim_qflow: pd.DataFrame,
         obs_qflow: pd.DataFrame,
         output_dir: Path,
-        timestamp: "",
+        timestamp: str,
     ):
         """
         Plot simulated vs observed yearly total and base streamflow.
@@ -1434,56 +1223,30 @@ class Hydrobudget(HydrologicalModel):
 
         decompte = 0
         while decompte < fin_decompte:
-
             subset_obs_qflow = obs_qflow[obs_qflow["frequen"] == freq[decompte]]
             subset_sim_qflow = sim_qflow[sim_qflow["frequen"] == freq[decompte]]
 
             # Join both dataframe in a single dataframe.
             yearly_qflow = subset_sim_qflow.copy()
             yearly_qflow = yearly_qflow.reindex(index=subset_obs_qflow.index)
-            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow[
-                "qtot_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow[
-                "qbase_obs"
-            ]
-            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow[
-                "temps_list"
-            ]
+            yearly_qflow.loc[subset_obs_qflow.index, "qtot_obs"] = subset_obs_qflow["qtot_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "qbase_obs"] = subset_obs_qflow["qbase_obs"]
+            yearly_qflow.loc[subset_obs_qflow.index, "temps_list"] = subset_obs_qflow["temps_list"]
 
             if freq[decompte] == "year":
-                yearly_qflow["year"] = [
-                    yearly_qflow["temps_list"][a] for a in yearly_qflow.index
-                ]
-                yearly_qflow["date"] = [
-                    datetime.strptime(
-                        str(yearly_qflow.loc[a, "year"]) + "/01/01", "%Y/%m/%d"
-                    )
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["year"] = [yearly_qflow["temps_list"][a] for a in yearly_qflow.index]
+                yearly_qflow["date"] = [datetime.strptime(str(yearly_qflow.loc[a, "year"]) + "/01/01", "%Y/%m/%d") for a in yearly_qflow.index]
                 yearly_qflow["temps_list1"] = yearly_qflow["date"]
 
             if freq[decompte] == "season":
                 mois_deb_saison = [1, 4, 7, 10]
                 nom_saison = ["Hiver", "Printemps", "Été", "Automne"]
-                yearly_qflow["year"] = [
-                    int(yearly_qflow["temps_list"][a].split("_")[1])
-                    for a in yearly_qflow.index
-                ]
-                yearly_qflow["month"] = [
-                    int(yearly_qflow["temps_list"][a].split("_")[0])
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["year"] = [int(yearly_qflow["temps_list"][a].split("_")[1]) for a in yearly_qflow.index]
+                yearly_qflow["month"] = [int(yearly_qflow["temps_list"][a].split("_")[0]) for a in yearly_qflow.index]
                 yearly_qflow["temps_list_ecrite"] = [
-                    nom_saison[yearly_qflow.loc[a, "month"] - 1]
-                    + " "
-                    + str(yearly_qflow.loc[a, "year"])
-                    for a in yearly_qflow.index
+                    nom_saison[yearly_qflow.loc[a, "month"] - 1] + " " + str(yearly_qflow.loc[a, "year"]) for a in yearly_qflow.index
                 ]
-                yearly_qflow["month"] = [
-                    mois_deb_saison[yearly_qflow.loc[a, "month"] - 1]
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["month"] = [mois_deb_saison[yearly_qflow.loc[a, "month"] - 1] for a in yearly_qflow.index]
 
                 # # repérage des mois de décembre pour enlever 1 an à l'année correspondante
                 # rep_dec=np.where(yearly_qflow['month']==12)
@@ -1491,10 +1254,7 @@ class Hydrobudget(HydrologicalModel):
 
                 yearly_qflow["date"] = [
                     datetime.strptime(
-                        str(yearly_qflow.loc[a, "year"])
-                        + "/"
-                        + str(yearly_qflow.loc[a, "month"])
-                        + "/01",
+                        str(yearly_qflow.loc[a, "year"]) + "/" + str(yearly_qflow.loc[a, "month"]) + "/01",
                         "%Y/%m/%d",
                     )
                     for a in yearly_qflow.index
@@ -1502,39 +1262,23 @@ class Hydrobudget(HydrologicalModel):
                 yearly_qflow["temps_list1"] = yearly_qflow["date"]
 
             if freq[decompte] == "month":
-                yearly_qflow["year"] = [
-                    yearly_qflow["temps_list"][a].split("_")[1]
-                    for a in yearly_qflow.index
-                ]
-                yearly_qflow["month"] = [
-                    yearly_qflow["temps_list"][a].split("_")[0]
-                    for a in yearly_qflow.index
-                ]
+                yearly_qflow["year"] = [yearly_qflow["temps_list"][a].split("_")[1] for a in yearly_qflow.index]
+                yearly_qflow["month"] = [yearly_qflow["temps_list"][a].split("_")[0] for a in yearly_qflow.index]
                 yearly_qflow["date"] = [
                     datetime.strptime(
-                        yearly_qflow.loc[a, "year"]
-                        + "/"
-                        + yearly_qflow.loc[a, "month"]
-                        + "/01",
+                        yearly_qflow.loc[a, "year"] + "/" + yearly_qflow.loc[a, "month"] + "/01",
                         "%Y/%m/%d",
                     )
                     for a in yearly_qflow.index
                 ]
                 yearly_qflow["temps_list1"] = yearly_qflow["date"]
 
-            septemporelle = list(dict.fromkeys(yearly_qflow.temps_list1))
             stations = list(set(obs_qflow["station"]))
 
             for stat in range(len(stations)):
-
-                subset_yearly_qflow = yearly_qflow[
-                    yearly_qflow.station == stations[stat]
-                ]
+                subset_yearly_qflow = yearly_qflow[yearly_qflow.station == stations[stat]]
 
                 if freq[decompte] == "year":
-                    septemporelle_str = [
-                        septemporelle[tr] for tr in range(len(septemporelle))
-                    ]
                     qmin = 0
                     qmax = 1400
                     frequen_tit = "annuels"
@@ -1605,9 +1349,7 @@ class Hydrobudget(HydrologicalModel):
                 )
 
                 ax.tick_params(axis="both", direction="out", labelsize=12)
-                ax.set_ylabel(
-                    "Débit par unité de surface\n(mm/an)", fontsize=16, labelpad=10
-                )
+                ax.set_ylabel("Débit par unité de surface\n(mm/an)", fontsize=16, labelpad=10)
                 ax.set_xlabel("Date", fontsize=16, labelpad=10)
                 ax.axis(ymin=qmin, ymax=qmax)
                 ax.grid(axis="y", color=[0.35, 0.35, 0.35], ls="-", lw=0.5)
@@ -1641,9 +1383,7 @@ class Hydrobudget(HydrologicalModel):
 
                 # Add a graph title.
                 fig_title = f"Débits {frequen_tit} à la station {stations[stat]}"
-                offset = transforms.ScaledTranslation(
-                    0 / 72, 12 / 72, fig.dpi_scale_trans
-                )
+                offset = transforms.ScaledTranslation(0 / 72, 12 / 72, fig.dpi_scale_trans)
                 ax.text(
                     0.5,
                     1,
@@ -1666,4 +1406,4 @@ class Hydrobudget(HydrologicalModel):
 
             decompte = decompte + 1
 
-    return fig
+        return
