@@ -10,18 +10,16 @@ For temporal analysis see xclim.indices._hydrology library
 
 import numpy as np
 import xarray
+import xscen as xc
 from scipy import signal, stats
 from xclim.core.units import convert_units_to
 from xscen.utils import standardize_periods
+
 from xhydro.indicators import generic
 from xhydro.utils import health_checks
 
 
-__all__ = [
-    "elasticity_index",
-    "flow_duration_curve_slope",
-    "total_runoff_ratio",
-]
+__all__ = ["elasticity_index", "flow_duration_curve_slope", "hurst_exp", "total_runoff_ratio"]
 
 
 def elasticity_index(
