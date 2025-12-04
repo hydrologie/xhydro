@@ -117,6 +117,7 @@ class SpotSetup:
             - "rmse" : Root Mean Square Error
             - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
             - "rsr" : Ratio of RMSE to standard deviation.
+            - "" :
 
     take_negative : bool
         Inidactor to take the negative of the objective function value in optimization to ensure convergence
@@ -183,6 +184,7 @@ class SpotSetup:
                 - "correlation_coeff": Correlation coefficient
                 - "kge" : Kling Gupta Efficiency metric (2009 version)
                 - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+                - "lce" : Least-squares combined efficiency
                 - "mae": Mean Absolute Error metric
                 - "mare": Mean Absolute Relative Error metric
                 - "mse" : Mean Square Error metric
@@ -383,14 +385,19 @@ def perform_calibration(
             - "correlation_coeff": Correlation coefficient
             - "kge" : Kling Gupta Efficiency metric (2009 version)
             - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "kge_2021" : Kling Gupta Efficiency metric (2021 version)
+            - "lce" : Least-squares combined efficiency
             - "mae": Mean Absolute Error metric
             - "mare": Mean Absolute Relative Error metric
             - "mse" : Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "r2" : r-squared, i.e. square of correlation_coeff.
+            - "persistence_index": Persistence index on a daily basis
+            - "persistence_index_weekly": Persistence Index on a weekly basis
+            - "r2" : r-squared, i.e. square of correlation_coeff
             - "rmse" : Root Mean Square Error
             - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-            - "rsr" : Ratio of RMSE to standard deviation.
+            - "rsr" : Ratio of RMSE to standard deviation
+            - "volumetric_efficiency": Volumetric efficiency
 
     bounds_high : np.array
         High bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
