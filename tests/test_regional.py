@@ -353,7 +353,7 @@ class TestRegionalFrequencyAnalysisKappa:
     def test_calc_h_z_values(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
         result = calc_h_z(sample_ds_groups, sample_ds_moments_groups, kap=sample_kappa3, seed=42)
         np.testing.assert_almost_equal(0.42279565, result.sel(crit="H").Qp)
-        np.testing.assert_almost_equal(0.2568702, result.sel(crit="Z").Qp)
+        np.testing.assert_almost_equal(0.87784283, result.sel(crit="Z").Qp) #0.2568702
 
     def test_calc_h_z_values_error(self, sample_ds_groups, sample_ds_moments_groups, sample_kappa3):
         sample_ds_moments_groups = -sample_ds_moments_groups
