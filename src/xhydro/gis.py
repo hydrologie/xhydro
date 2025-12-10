@@ -14,6 +14,7 @@ import cartopy.crs as ccrs
 try:  # In the case where exactextract is available, it needs to be imported here. If it's not installed, xvec will use another method
     import exactextract  # noqa: F401
 except ImportError:
+    logging.exception('exactextract not present in the environment, will not bu used')
     pass
 import geopandas as gpd
 import leafmap
