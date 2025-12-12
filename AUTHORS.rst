@@ -23,3 +23,4 @@ Contributors
 * Francis Gravel `@mayetea <https://github.com/mayetea>`_
 * Louise Arnal `@lou-a <https://github.com/lou-a>`_
 * Essi Parent `@essicolo <https://github.com/essicolo>`_
+* Eve Larose <eve.larose.r@gmail.com> `@e-larose <https://github.com/e-larose>`_
