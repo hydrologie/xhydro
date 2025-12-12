@@ -4,7 +4,7 @@ Changelog
 
 v0.7.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Vincent Fortin (:user:`vinfort`).
 
 Bug fixes
 ^^^^^^^^^
@@ -23,6 +23,7 @@ Internal changes
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+* Coded added to read instantaneous flow data from ECCC and CEHQ websites
 
 v0.6.1 (2025-10-22)
 -------------------
