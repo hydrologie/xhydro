@@ -1141,12 +1141,17 @@ class RavenpyModel(HydrologicalModel):
             ds = ds.squeeze()
             if "subbasin_id" in ds.dims:
                 ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
-                chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=5)
 
-                # FIXME: This should be fixed upstream. This is raising a 'OverflowError: can't convert negative value to hsize_t'
-                for k, v in chunks.items():
-                    if v == -1:
-                        chunks[k] = len(ds[k])
+                # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
+                ds_size_mb = ds["q"].size * 4 / 1024 / 1024
+                if ds_size_mb > 100:
+                    chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
+                    # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
+                    for k, v in chunks.items():
+                        if v == -1:
+                            chunks[k] = len(ds[k])
+                else:
+                    chunks = {k: len(ds[k]) for k in ds["q"].dims}
 
             else:
                 # Since we squeezed the dataset and renamed basin_name, it is preferable to call xs.io.rechunk_for_saving
