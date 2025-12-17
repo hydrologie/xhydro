@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import re
 import subprocess  # noqa: S404
 import warnings
 from copy import deepcopy
@@ -11,6 +12,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim as xc
+import xscen as xs
+from packaging import version
 from xscen.io import estimate_chunks, save_to_netcdf
 
 from ._hm import HydrologicalModel
@@ -409,11 +412,26 @@ class Hydrotel(HydrologicalModel):
                 stdout = subprocess.check_output(  # noqa: S603
                     [self.executable], stdin=subprocess.DEVNULL, text=True
                 )
-            ds.attrs["Hydrotel_version"] = str(stdout).split("HYDROTEL ")[1].split("\\n")[0]
+            hydrotel_version = re.search(r"HYDROTEL \d\.\d\.\d.\d{4}", stdout)
+            if hydrotel_version is not None:
+                ds.attrs["Hydrotel_version"] = hydrotel_version.group(0).split(" ")[1]
+            else:
+                ds.attrs["Hydrotel_version"] = "unspecified"
             ds.attrs["Hydrotel_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
 
             # Overwrite the file
-            chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=5)
+            # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
+            ds_size_mb = ds["q"].size * 4 / 1024 / 1024
+            if ds_size_mb > 100:
+                chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
+                # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
+                if version.parse(xs.__version__) <= version.parse("0.13.1"):
+                    for k, v in chunks.items():
+                        if v == -1:
+                            chunks[k] = len(ds[k])
+            else:
+                chunks = {k: len(ds[k]) for k in ds["q"].dims}
+
             save_to_netcdf(
                 ds,
                 self.simulation_dir / "resultat" / "debit_aval_tmp.nc",
