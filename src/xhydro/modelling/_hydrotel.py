@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 import xclim as xc
+import xscen as xs
+from packaging import version
 from xscen.io import estimate_chunks, save_to_netcdf
 
 from ._hm import HydrologicalModel
@@ -423,9 +425,10 @@ class Hydrotel(HydrologicalModel):
             if ds_size_mb > 100:
                 chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
                 # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
-                for k, v in chunks.items():
-                    if v == -1:
-                        chunks[k] = len(ds[k])
+                if version.parse(xs.__version__) <= version.parse("0.13.1"):
+                    for k, v in chunks.items():
+                        if v == -1:
+                            chunks[k] = len(ds[k])
             else:
                 chunks = {k: len(ds[k]) for k in ds["q"].dims}
 
