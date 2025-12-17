@@ -6,12 +6,19 @@ v0.7.0 (unreleased)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+
 Bug fixes
 ^^^^^^^^^
 * The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
 * Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
 * Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF). (:pull:`370`)
 * Added specific import for exactextract to prevent issues in the GIS modules if exactextract is prensent in the environment. (:pull:`381`)
+* The version detection logic in `xhydro.modelling._hydrotel` should now be more robust. (:pull:`388`).
+* Added a temporary workaround in `xhydro.modelling._hydrotel` to avoid `OverflowError` when chunks are automatically estimated as `-1` by `xscen.estimate_chunks`. (:pull:`388`).
+    * Automated chunk estimation is also now skipped if the dataset is smaller than 100 MB.
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -20,10 +27,6 @@ Internal changes
     * `pre-commit` hooks have been updated
     * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
     * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
-
-New features and enhancements
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
 
 v0.6.1 (2025-10-22)
 -------------------
