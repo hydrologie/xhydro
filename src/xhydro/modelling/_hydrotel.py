@@ -118,8 +118,6 @@ class Hydrotel(HydrologicalModel):
             output_config=self.output_config,
         )
 
-        # TODO: Clean up and prepare the 'etat' folder (missing the files)
-
         self.executable = str(Path(executable))
 
     def update_config(
@@ -353,6 +351,402 @@ class Hydrotel(HydrologicalModel):
             self.simulation_dir / "resultat" / "debit_aval.nc",
             **kwargs,
         )
+
+    def get_available_states(self) -> dict[str, list[Path]]:
+        """
+        List all available state files in the etat/ folder.
+
+        Returns
+        -------
+        dict[str, list[Path]]
+            Dictionary with state types as keys and lists of file paths as values.
+            Example: {
+                'fonte_neige': [Path('etat/fonte_neige_2023080100.csv')],
+                'bilan_vertical': [Path('etat/bilan_vertical_2023080100.csv')],
+                'temperature_sol': [],
+                'ruisselement_surface': [Path('etat/ruisselement_surface_2023080100.csv')],
+                'acheminement_riviere': [Path('etat/acheminement_riviere_2023080100.csv')]
+            }
+
+        Notes
+        -----
+        Returns an empty list for state types that have no files available.
+        The state files follow the naming convention: {type}_{YYYYMMDDHH}.csv
+        """
+        etat_dir = self.project_dir / "etat"
+
+        state_types = [
+            "fonte_neige",
+            "temperature_sol",
+            "bilan_vertical",
+            "ruisselement_surface",
+            "acheminement_riviere"
+        ]
+
+        result = {state_type: [] for state_type in state_types}
+
+        if not etat_dir.exists():
+            warnings.warn(f"The 'etat' folder does not exist at {etat_dir}. No state files available.", stacklevel=2)
+            return result
+
+        for state_type in state_types:
+            pattern = f"{state_type}_*.csv"
+            files = sorted(etat_dir.glob(pattern))
+            result[state_type] = files
+
+        return result
+
+    def set_initial_states(
+        self,
+        date: str | pd.Timestamp | None = None,
+        states_dict: dict[str, str | Path] | None = None,
+        auto_detect: bool = True
+    ) -> None:
+        """
+        Configure initial states for the simulation.
+
+        Parameters
+        ----------
+        date : str or pd.Timestamp, optional
+            Reference date to automatically detect state files.
+            If provided, searches for state files matching this date (format: YYYYMMDDHH).
+        states_dict : dict, optional
+            Dictionary manually specifying state files to use.
+            Keys: 'fonte_neige', 'temperature_sol', 'bilan_vertical',
+                  'ruisselement_surface', 'acheminement_riviere'
+            Values: file paths (relative to project_dir or absolute)
+        auto_detect : bool, default=True
+            If True and no date is provided, automatically uses the most recent
+            available states before DATE DEBUT.
+
+        Examples
+        --------
+        >>> # Use states at a specific date
+        >>> ht.set_initial_states(date="2023-08-01")
+
+        >>> # Manually specify state files
+        >>> ht.set_initial_states(states_dict={
+        ...     'bilan_vertical': 'etat/bilan_vertical_2023080100.csv',
+        ...     'fonte_neige': 'etat/fonte_neige_2023080100.csv'
+        ... })
+
+        >>> # Auto-detect most recent states
+        >>> ht.set_initial_states(auto_detect=True)
+
+        Notes
+        -----
+        This method updates the simulation_config with the appropriate
+        'LECTURE ETAT *' parameters. Call update_config() or run() afterwards
+        to write these changes to disk.
+        """
+        state_config = {}
+
+        if states_dict is not None:
+            # Manual specification
+            state_mapping = {
+                'fonte_neige': 'LECTURE ETAT FONTE NEIGE',
+                'temperature_sol': 'LECTURE ETAT TEMPERATURE DU SOL',
+                'bilan_vertical': 'LECTURE ETAT BILAN VERTICAL',
+                'ruisselement_surface': 'LECTURE ETAT RUISSELEMENT SURFACE',
+                'acheminement_riviere': 'LECTURE ETAT ACHEMINEMENT RIVIERE'
+            }
+
+            for state_type, file_path in states_dict.items():
+                if state_type not in state_mapping:
+                    raise ValueError(f"Unknown state type: {state_type}. Valid types are: {list(state_mapping.keys())}")
+
+                # Convert to Path and make relative to project_dir if absolute
+                file_path = Path(file_path)
+                if file_path.is_absolute():
+                    try:
+                        file_path = file_path.relative_to(self.project_dir)
+                    except ValueError:
+                        # Path is not relative to project_dir, keep as is
+                        pass
+
+                state_config[state_mapping[state_type]] = str(file_path)
+
+        elif date is not None:
+            # Date-based detection
+            date_parsed = pd.to_datetime(date)
+            date_str = date_parsed.strftime("%Y%m%d%H")
+
+            available_states = self.get_available_states()
+            state_mapping = {
+                'fonte_neige': 'LECTURE ETAT FONTE NEIGE',
+                'temperature_sol': 'LECTURE ETAT TEMPERATURE DU SOL',
+                'bilan_vertical': 'LECTURE ETAT BILAN VERTICAL',
+                'ruisselement_surface': 'LECTURE ETAT RUISSELEMENT SURFACE',
+                'acheminement_riviere': 'LECTURE ETAT ACHEMINEMENT RIVIERE'
+            }
+
+            for state_type, config_key in state_mapping.items():
+                matching_files = [f for f in available_states[state_type] if date_str in f.name]
+                if matching_files:
+                    # Use relative path from project_dir
+                    rel_path = matching_files[0].relative_to(self.project_dir)
+                    state_config[config_key] = str(rel_path)
+                elif available_states[state_type]:
+                    warnings.warn(
+                        f"No {state_type} state file found for date {date_str}. "
+                        f"Available dates: {[f.stem.split('_')[-1] for f in available_states[state_type]]}",
+                        stacklevel=2
+                    )
+
+        elif auto_detect:
+            # Auto-detect most recent states before DATE DEBUT
+            if "DATE DEBUT" not in self.simulation_config or not self.simulation_config["DATE DEBUT"]:
+                raise ValueError("Cannot auto-detect states: DATE DEBUT is not set in simulation_config")
+
+            start_date = pd.to_datetime(self.simulation_config["DATE DEBUT"])
+            available_states = self.get_available_states()
+
+            state_mapping = {
+                'fonte_neige': 'LECTURE ETAT FONTE NEIGE',
+                'temperature_sol': 'LECTURE ETAT TEMPERATURE DU SOL',
+                'bilan_vertical': 'LECTURE ETAT BILAN VERTICAL',
+                'ruisselement_surface': 'LECTURE ETAT RUISSELEMENT SURFACE',
+                'acheminement_riviere': 'LECTURE ETAT ACHEMINEMENT RIVIERE'
+            }
+
+            for state_type, config_key in state_mapping.items():
+                if not available_states[state_type]:
+                    continue
+
+                # Extract dates from filenames and filter those before start_date
+                valid_files = []
+                for f in available_states[state_type]:
+                    try:
+                        date_str = f.stem.split('_')[-1]
+                        file_date = pd.to_datetime(date_str, format="%Y%m%d%H")
+                        if file_date <= start_date:
+                            valid_files.append((file_date, f))
+                    except (ValueError, IndexError):
+                        warnings.warn(f"Could not parse date from filename: {f.name}", stacklevel=2)
+
+                if valid_files:
+                    # Use the most recent valid file
+                    most_recent = max(valid_files, key=lambda x: x[0])
+                    rel_path = most_recent[1].relative_to(self.project_dir)
+                    state_config[config_key] = str(rel_path)
+
+        else:
+            raise ValueError("Must provide either 'date', 'states_dict', or set 'auto_detect=True'")
+
+        # Update the simulation config
+        if state_config:
+            self.update_config(simulation_config=state_config)
+
+    def enable_state_output(
+        self,
+        output_dir: str | Path = "etat",
+        states: list[str] | None = None
+    ) -> None:
+        """
+        Enable writing of state variables at the end of the simulation.
+
+        Parameters
+        ----------
+        output_dir : str or Path, default="etat"
+            Directory where state files will be saved (relative to project_dir)
+        states : list[str], optional
+            List of state types to save. If None, all states are saved.
+            Valid values: ['fonte_neige', 'temperature_sol', 'bilan_vertical',
+                          'ruisselement_surface', 'acheminement_riviere']
+
+        Examples
+        --------
+        >>> # Save all states
+        >>> ht.enable_state_output()
+
+        >>> # Save only specific states
+        >>> ht.enable_state_output(states=['bilan_vertical', 'fonte_neige'])
+
+        Notes
+        -----
+        This method updates the simulation_config with the appropriate
+        'ECRITURE ETAT *' and 'REPERTOIRE ECRITURE ETAT *' parameters.
+        The actual state files will be written when run() is called.
+        """
+        all_states = [
+            'fonte_neige',
+            'temperature_sol',
+            'bilan_vertical',
+            'ruisselement_surface',
+            'acheminement_riviere'
+        ]
+
+        if states is None:
+            states_to_enable = all_states
+        else:
+            # Validate state names
+            invalid = set(states) - set(all_states)
+            if invalid:
+                raise ValueError(f"Invalid state types: {invalid}. Valid types are: {all_states}")
+            states_to_enable = states
+
+        # Mapping from state type to config keys
+        state_mapping = {
+            'fonte_neige': ('ECRITURE ETAT FONTE NEIGE', 'REPERTOIRE ECRITURE ETAT FONTE NEIGE'),
+            'temperature_sol': ('ECRITURE ETAT TEMPERATURE DU SOL', 'REPERTOIRE ECRITURE ETAT TEMPERATURE DU SOL'),
+            'bilan_vertical': ('ECRITURE ETAT BILAN VERTICAL', 'REPERTOIRE ECRITURE ETAT BILAN VERTICAL'),
+            'ruisselement_surface': ('ECRITURE ETAT RUISSELEMENT SURFACE', 'REPERTOIRE ECRITURE ETAT RUISSELEMENT SURFACE'),
+            'acheminement_riviere': ('ECRITURE ETAT ACHEMINEMENT RIVIERE', 'REPERTOIRE ECRITURE ETAT ACHEMINEMENT RIVIERE')
+        }
+
+        state_config = {}
+
+        for state_type in all_states:
+            write_key, dir_key = state_mapping[state_type]
+            if state_type in states_to_enable:
+                state_config[write_key] = "1"
+                state_config[dir_key] = str(output_dir)
+            else:
+                state_config[write_key] = ""
+
+        # Update the simulation config
+        self.update_config(simulation_config=state_config)
+
+    def get_output_states(self) -> dict[str, Path]:
+        """
+        Retrieve paths to state files generated by the last simulation.
+
+        Returns
+        -------
+        dict[str, Path]
+            Dictionary with state types as keys and file paths as values.
+            Only includes states that were actually generated.
+
+        Raises
+        ------
+        FileNotFoundError
+            If expected state files do not exist (simulation not yet run
+            or state output not enabled).
+
+        Examples
+        --------
+        >>> ht.enable_state_output()
+        >>> ht.run()
+        >>> states = ht.get_output_states()
+        >>> print(states['bilan_vertical'])
+        Path('etat/bilan_vertical_2023123100.csv')
+        """
+        if "DATE FIN" not in self.simulation_config or not self.simulation_config["DATE FIN"]:
+            raise ValueError("DATE FIN is not set in simulation_config")
+
+        end_date = pd.to_datetime(self.simulation_config["DATE FIN"])
+        date_str = end_date.strftime("%Y%m%d%H")
+
+        state_types = {
+            'ECRITURE ETAT FONTE NEIGE': 'fonte_neige',
+            'ECRITURE ETAT TEMPERATURE DU SOL': 'temperature_sol',
+            'ECRITURE ETAT BILAN VERTICAL': 'bilan_vertical',
+            'ECRITURE ETAT RUISSELEMENT SURFACE': 'ruisselement_surface',
+            'ECRITURE ETAT ACHEMINEMENT RIVIERE': 'acheminement_riviere'
+        }
+
+        result = {}
+
+        for config_key, state_type in state_types.items():
+            if self.simulation_config.get(config_key) == "1":
+                # Determine the output directory
+                dir_key = config_key.replace("ECRITURE", "REPERTOIRE ECRITURE")
+                output_dir = self.simulation_config.get(dir_key, "etat")
+
+                # Construct expected filename
+                filename = f"{state_type}_{date_str}.csv"
+                file_path = self.project_dir / output_dir / filename
+
+                if file_path.exists():
+                    result[state_type] = file_path
+                else:
+                    warnings.warn(
+                        f"Expected state file not found: {file_path}. "
+                        "The simulation may not have completed successfully.",
+                        stacklevel=2
+                    )
+
+        return result
+
+    def continue_from_previous(
+        self,
+        previous_simulation: 'Hydrotel',
+        new_start_date: str | pd.Timestamp,
+        new_end_date: str | pd.Timestamp
+    ) -> None:
+        """
+        Configure simulation to continue from a previous simulation.
+
+        Parameters
+        ----------
+        previous_simulation : Hydrotel
+            Instance of the previous simulation to get final states from
+        new_start_date : str or pd.Timestamp
+            Start date for the new simulation (should match or be slightly after
+            the end date of the previous simulation)
+        new_end_date : str or pd.Timestamp
+            End date for the new simulation
+
+        Examples
+        --------
+        >>> # First simulation
+        >>> ht1 = xhydro.modelling.hydrological_model({
+        ...     "model_name": "Hydrotel",
+        ...     "simulation_config": {
+        ...         "DATE DEBUT": "2020-01-01",
+        ...         "DATE FIN": "2022-12-31"
+        ...     }
+        ... })
+        >>> ht1.enable_state_output()
+        >>> ht1.run()
+
+        >>> # Second simulation continuing from the first
+        >>> ht2 = xhydro.modelling.hydrological_model({...})
+        >>> ht2.continue_from_previous(ht1, "2023-01-01", "2025-12-31")
+        >>> ht2.run()
+
+        Notes
+        -----
+        This is a convenience method that combines:
+        1. Getting output states from the previous simulation
+        2. Setting them as initial states for this simulation
+        3. Updating the date range
+        """
+        # Get states from previous simulation
+        try:
+            prev_states = previous_simulation.get_output_states()
+        except Exception as e:
+            raise ValueError(f"Could not retrieve states from previous simulation: {e}") from e
+
+        if not prev_states:
+            raise ValueError(
+                "Previous simulation has no output states. "
+                "Make sure enable_state_output() was called before running it."
+            )
+
+        # Update date range
+        new_start = pd.to_datetime(new_start_date)
+        new_end = pd.to_datetime(new_end_date)
+        prev_end = pd.to_datetime(previous_simulation.simulation_config["DATE FIN"])
+
+        # Warn if dates don't align well
+        time_gap = (new_start - prev_end).total_seconds() / 3600  # hours
+        if abs(time_gap) > 24:
+            warnings.warn(
+                f"Gap between simulations: {time_gap:.1f} hours. "
+                "Consider using states closer to the new start date.",
+                stacklevel=2
+            )
+
+        # Set initial states
+        states_dict = {k: str(v) for k, v in prev_states.items()}
+        self.set_initial_states(states_dict=states_dict)
+
+        # Update dates
+        self.update_config(simulation_config={
+            "DATE DEBUT": new_start.strftime("%Y-%m-%d %H:%M"),
+            "DATE FIN": new_end.strftime("%Y-%m-%d %H:%M")
+        })
 
     def _standardise_outputs(self, **kwargs):
         r"""
