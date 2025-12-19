@@ -258,9 +258,14 @@ class SpotSetup:
                 raise ValueError("qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file.")
             da = da.squeeze()
 
-            # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)
-            # Subset the observed streamflow to the calibration period
-            da = da.sel(time=slice(self.model_config["start_date"], self.model_config["end_date"]))
+            if self.model_config["model_name"] == "HELP" or self.model_config["model_name"] == "HELP":
+                # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)
+                da = da.where(da.time.values <= np.datetime64(self.model_config["end_date"]))
+                da = da.where(da.time.values >= np.datetime64(self.model_config["start_date"]))
+            else:
+                # Subset the observed streamflow to the calibration period
+                da = da.sel(time=slice(self.model_config["start_date"], self.model_config["end_date"]))
+
             self.qobs = da.values
 
     def simulation(self, x):
@@ -289,7 +294,7 @@ class SpotSetup:
         qsim = hydrological_model(self.model_config).run()
 
         # Return the array of values from qsim for the objective function eval.
-        return qsim["q"].values
+        return qsim["streamflow"].values
 
     def evaluation(self):
         """
