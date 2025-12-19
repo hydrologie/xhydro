@@ -33,8 +33,18 @@ class HELP(HydrologicalModel):
         Path to the project folder (including inputs file, shell script and R script).
     gauging_cells : str
         Name of the file (in project_dir) describing which cells are contained in which gauging stations.
-    start_year : int
-        Simulation start year.
+    simulation_config : dict, optional
+        Begin and end dates of the simulation, format "%Y-%m-%d".
+    parameters : np.array or list, optional
+        Parameters values for calibration.
+    parameters_names : np.array or list, optional
+        Parameters names for calibration.
+    qobs : np.array, optional
+        Observed streamflows.
+    start_date : str, optional
+        Calibration start date.
+    end_date : str, optional
+        Calibration end date.
     frequency : str, optional
         Frequency of output data : month, season, year, all. If None, default is season.
     graph_outputs : int, optional
@@ -46,7 +56,12 @@ class HELP(HydrologicalModel):
         self,
         project_dir: str | os.PathLike,
         gauging_cells: str,
-        start_year: int,
+        simulation_config: dict | None = None,
+        parameters: np.ndarray | list[float] | None = None,
+        parameters_names: np.ndarray | list[float] | None = None,
+        qobs: np.ndarray | xr.Dataset | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
         frequency: str | None = None,
         graph_outputs: int | None = 0,
     ):
@@ -56,24 +71,51 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         project_dir : str or os.PathLike
-            Path to the project folder (including inputs file, shell script and R script).
+        Path to the project folder (including inputs file, shell script and R script).
         gauging_cells : str
-            Name of the file (in project_dir) describing which cells are contained in which gauging stations.
-        start_year: int
-            Simulation start year.
+        Name of the file (in project_dir) describing which cells are contained in which gauging stations.
+        simulation_config : dict, optional
+        Begin and end dates of the simulation, format "%Y-%m-%d".
+        parameters : np.array or list, optional
+        Parameters values for calibration.
+        parameters_names : np.array or list, optional
+        Parameters names for calibration.
+        qobs : np.array, optional
+        Observed streamflows.
+        start_date : str, optional
+        Calibration start date.
+        end_date : str, optional
+        Calibration end date.
         frequency : str, optional
-            Frequency of output data : month, season, year, all. If None, default is season.
+        Frequency of output data : month, season, year, all. If None, default is season.
         graph_outputs : int, optional
-            Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
+        Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
         self.project_dir = Path(project_dir)
         if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
 
         self.path_gauging_cells = self.project_dir / gauging_cells
-        self.start_year = start_year
+        self.qobs = qobs
+        self.simu_begin = simulation_config["DATE DEBUT"]
+        self.simu_end = simulation_config["DATE FIN"]
+        self.cal_start_date = start_date
+        self.cal_end_date = end_date
         self.frequency = frequency
         self.graph_outputs = graph_outputs
+
+        if parameters is None:
+            parameters = [1, 1, 1, 0]
+            parameters_names = ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]
+        param_dict = dict(zip(parameters_names, parameters, strict=True))
+
+        self.param_dict = param_dict
+
+        self.param_grid = [elem for elem in parameters_names if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]]
+        if len(self.param_grid) > 0:
+            self.modify_input_file()
+
+        self.start_year = str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year)
 
         return
 
@@ -101,6 +143,44 @@ class HELP(HydrologicalModel):
         p_to_solrad = self.project_dir / "solrad_input_data.csv"
 
         return p_to_grid, p_to_precip, p_to_airtemp, p_to_solrad
+
+    def modify_input_file(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+    ):
+        """Modify grid input file if parameters are given."""
+        grid_data = pd.read_csv(self.project_dir / "input_grid.csv", delimiter=",", dtype={"cell_ID": int, "gauging_stat": str})
+
+        self.param_grid = [elem for elem in list(self.param_dict.keys()) if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]]
+
+        param_ksat = [m for m in self.param_grid if m.startswith("ksat")]
+        param_poro = [m for m in self.param_grid if m.startswith("poro")]
+        param_fc = [m for m in self.param_grid if m.startswith("fc")]
+        param_difffcwp = [m for m in self.param_grid if m.startswith("diff")]
+
+        if len(param_ksat) > 0:
+            g = [m[-1] for m in param_ksat]
+            for ge in range(len(g)):
+                grid_data["ksat1"][grid_data["geol"] == ge] = self.param_dict[param_ksat[ge]]
+
+        if len(param_poro) > 0:
+            g = [m[-1] for m in param_poro]
+            for ge in range(len(g)):
+                grid_data["poro1"][grid_data["geol"] == ge] = self.param_dict[param_poro[ge]]
+
+        if len(param_fc) > 0:
+            g = [m[-1] for m in param_fc]
+            for ge in range(len(g)):
+                grid_data["fc1"][grid_data["geol"] == ge] = self.param_dict[param_fc[ge]]
+
+        if len(param_difffcwp) > 0:
+            g = [m[-1] for m in param_difffcwp]
+            for ge in range(len(g)):
+                grid_data["wp1"][grid_data["geol"] == ge] = self.param_dict[param_fc[ge]] - self.param_dict[param_difffcwp[ge]]
+
+        grid_data.to_csv("input_grid.csv", index=False, header=True, sep=",")
+
+        return
 
     def run(
         # numpydoc ignore=EX01,SA01,ES01
@@ -135,10 +215,10 @@ class HELP(HydrologicalModel):
         output_help = helpm.calc_help_cells(
             path_to_hdf5=self.project_dir / "help_outputhdf5.out",
             cellnames=cellnames,
-            tfsoil=-3,
-            sf_edepth=0.15,
-            sf_ulai=1,
-            sf_cn=1.15,
+            tfsoil=self.param_dict["tfsoil"],
+            sf_edepth=self.param_dict["sf_edepth"],
+            sf_ulai=self.param_dict["sf_ulai"],
+            sf_cn=self.param_dict["sf_cn"],
         )
         self.output_help = output_help
 
@@ -172,13 +252,14 @@ class HELP(HydrologicalModel):
             data_month = pd.DataFrame(
                 columns=["year", "month", "trim", "station", "precip", "runoff", "evapo", "rechg", "subrun1", "subrun2", "perco"]
             )
-            years_abs = [self.start_year + a for a in range(self.data["evapo"].shape[1])]
+
+            years_abs = [int(self.start_year) + a for a in range(self.data["evapo"].shape[1])]
 
             data_month["year"] = [i for i in years_abs for _ in range(12)]
             data_month["month"] = [m + 1 for m in range(12)] * len(years_abs)
             data_month["trim"][np.isin(data_month["month"], [12, 1, 2])] = 1
             data_month["trim"][np.isin(data_month["month"], [3, 4, 5])] = 2
-            data_month["trim"][np.isin(data_month["month"], [16, 7, 8])] = 3
+            data_month["trim"][np.isin(data_month["month"], [6, 7, 8])] = 3
             data_month["trim"][np.isin(data_month["month"], [9, 10, 11])] = 4
             data_month["station"] = stat
 
@@ -204,9 +285,7 @@ class HELP(HydrologicalModel):
         self._standardise_outputs(**(xr_open_kwargs_out or {}))
 
         """Get streamflow """
-        self.get_streamflow()
-
-        return
+        return self.get_streamflow()
 
     def get_streamflow(
         # numpydoc ignore=EX01,SA01,ES01
