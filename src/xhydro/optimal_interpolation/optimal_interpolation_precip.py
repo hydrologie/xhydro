@@ -610,8 +610,8 @@ def prepare_initial_data(
     np.savetxt("./training_stations.txt", train_idx)
 
     # Extract the training stations and valid stations in the 2 different datasets
-    ds_stations_train = ds_stations_full.isel(watershed=train_idx)
-    ds_stations_valid = ds_stations_full.isel(watershed=valid_idx)
+    ds_stations_train = ds_stations_full.isel(indexers={dims_stations: train_idx})
+    ds_stations_valid = ds_stations_full.isel(indexers={dims_stations: valid_idx})
 
     # prepare lat and long values for observations
     lat_obs_train = ds_stations_train.latitude.values
@@ -620,8 +620,8 @@ def prepare_initial_data(
     lon_obs_valid = ds_stations_valid.longitude.values
 
     # Get the precipitation values from the station data
-    observed_precip_train = ds_stations_train.precip.values
-    observed_precip_valid = ds_stations_valid.precip.values
+    observed_precip_train = ds_stations_train[var_name_stations].values
+    observed_precip_valid = ds_stations_valid[var_name_stations].values
 
     # Process the gridded data in this section.
     # Read the background field data and ensure the format is correct and contains the desired variables.

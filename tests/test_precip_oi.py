@@ -5,7 +5,7 @@ import xhydro.optimal_interpolation.optimal_interpolation_precip as oi
 
 start_time = dt.datetime(1970, 1, 1)
 end_time = dt.datetime(1970, 12, 31)
-filename_stations = "./stations_precip_DQAQ_ECCC_US_subset.nc"
+filename_stations = "./stations_flags_clean_subset.nc"
 filename_gridded = "./ERA5_land_3_variables_raw_subset.nc"
 filename_output = "./ERA5Land_with_OI_flags_validation_subset.nc"
 
@@ -19,7 +19,7 @@ oi.main(
     var_name_gridded="tp",
     var_name_stations="precip",
     dims_gridded=("longitude", "latitude", "time"),
-    dims_stations="watershed",
+    dims_stations="station",
     coords_gridded=("time", "latitude", "longitude"),
     station_req_vars=("latitude", "longitude", "altitude"),
     percentiles=[50],
