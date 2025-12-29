@@ -145,8 +145,10 @@ def make_target_pygmet_grid(
     lon2d, lat2d = np.meshgrid(lon_grid, lat_grid)
 
     # Dimensions (lat, lon)
-    elev = np.zeros((ny, nx)) + 1.0  # altitude (m), pygmet can use it as an extra covariate, but we don't.
-    mask = np.ones((ny, nx), dtype=np.int32)  # mask of 0/1, but we will force it later.
+    elev = np.ones((ny, nx))  # altitude (m), pygmet can use it as an extra covariate, but we don't.
+
+    # Make a mask based on the position of NaNs in the original gridded dataset.
+    mask = ds_in.tasmax.isel(time=1).transpose("latitude", "longitude")[:, :].notnull().astype(int).values
 
     # Build the xarray Dataset
     ds = xr.Dataset(
