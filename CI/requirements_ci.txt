@@ -23,7 +23,7 @@ bracex==2.4 \
 bump-my-version==1.2.4 \
     --hash=sha256:998abb4f3774cf96137a77034a5a12a722b109b26a3afa044ec14622a0180fa3 \
     --hash=sha256:b60ac52c8972c5a7e1e478d0334015a993ba5c27fad1b04bde558d25c667b0f5
-    # via -r requirements_ci.in
+    # via -r CI/requirements_ci.in
 cachetools==6.2.1 \
     --hash=sha256:09868944b6dde876dfd44e1d47e18484541eaf12f26f29b7af91b26cc892d701 \
     --hash=sha256:3f391e4bd8f8bf0931169baf7456cc822705f4e2a31f840d218f445b9a854201
@@ -159,7 +159,7 @@ deptry==0.24.0 \
     --hash=sha256:a575880146bab671a62babb9825b85b4f1bda8aeaade4fcb59f9262caf91d6c7 \
     --hash=sha256:dd22fa2dbbdf4b38061ca9504f2a6ce41ec14fa5c9fe9b0b763ccc1275efebd5 \
     --hash=sha256:ea58709e5f3aa77c0737d8fb76166b7703201cf368fbbb14072ccda968b6703a
-    # via -r requirements_ci.in
+    # via -r CI/requirements_ci.in
 dill==0.3.9 \
     --hash=sha256:468dff3b89520b474c0397703366b7b95eebe6303f108adf9b19da1f702be87a \
     --hash=sha256:81aa267dddf68cbfe8029c42ca9ec6a4ab3b22371d1c450abc54422577b4512c
@@ -185,7 +185,7 @@ filelock==3.20.1 \
 flit==3.12.0 \
     --hash=sha256:1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740 \
     --hash=sha256:2b4e7171dc22881fa6adc2dbf083e5ecc72520be3cd7587d2a803da94d6ef431
-    # via -r requirements_ci.in
+    # via -r CI/requirements_ci.in
 flit-core==3.12.0 \
     --hash=sha256:18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2 \
     --hash=sha256:e7a0304069ea895172e3c7bb703292e992c5d1555dd1233ab7b5621b5b69e62c
@@ -356,7 +356,7 @@ pygments==2.18.0 \
 pylint==4.0.3 \
     --hash=sha256:896d09afb0e78bbf2e030cd1f3d8dc92771a51f7e46828cbc3948a89cd03433a \
     --hash=sha256:a427fe76e0e5355e9fb9b604fd106c419cafb395886ba7f3cebebb03f30e081d
-    # via -r requirements_ci.in
+    # via -r CI/requirements_ci.in
 pyproject-api==1.9.1 \
     --hash=sha256:43c9918f49daab37e302038fc1aed54a8c7a91a9fa935d00b9a485f37e0f5335 \
     --hash=sha256:7d6238d92f8962773dd75b5f0c4a6a27cce092a14b623b811dba656f3b628948
@@ -453,12 +453,12 @@ tox==4.32.0 \
     --hash=sha256:1ad476b5f4d3679455b89a992849ffc3367560bbc7e9495ee8a3963542e7c8ff \
     --hash=sha256:451e81dc02ba8d1ed20efd52ee409641ae4b5d5830e008af10fe8823ef1bd551
     # via
-    #   -r requirements_ci.in
+    #   -r CI/requirements_ci.in
     #   tox-gh
-tox-gh==1.6.0 \
-    --hash=sha256:871a82fb23a6013db51e8f0a95254bf3270973906d582f6216b3c26546f764d2 \
-    --hash=sha256:b575563926604d85c4fba150a7573f33924e3c37f3496a7563f0d9d7a9db7767
-    # via -r requirements_ci.in
+tox-gh==1.6.1 \
+    --hash=sha256:070b69bf50821393e1ff0237006bb61b33347e2060eaec415fbfdefa48131aa7 \
+    --hash=sha256:b43240f689430b33a1877ab8794afe922e3b57a61b56c1f47daf1925367ea289
+    # via -r CI/requirements_ci.in
 types-setuptools==75.8.0.20250210 \
     --hash=sha256:a217d7b4d59be04c29e23d142c959a0f85e71292fd3fc4313f016ca11f0b56dc \
     --hash=sha256:c1547361b2441f07c94e25dce8a068e18c611593ad4b6fdd727b1a8f5d1fda33
