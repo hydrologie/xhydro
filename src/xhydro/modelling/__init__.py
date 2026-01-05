@@ -2,6 +2,7 @@
 
 from .hydrological_modelling import *
 from .calibration import *
+from .sensitivity import *
 
 # Supported models are returned as 1st level classes
 # Comment addition
