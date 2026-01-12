@@ -179,7 +179,7 @@ class TestHydrotel:
         for k, v in correct_attrs.items():
             assert ds.q.attrs[k] == v
 
-        assert ds.attrs["Hydrotel_version"] == "version unspecified"
+        assert ds.attrs["Hydrotel_version"] == "unspecified"
         assert ds.attrs["Hydrotel_config_version"] == ""
 
         assert "initial_simulation_path" not in ds.attrs
