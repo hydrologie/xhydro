@@ -8,6 +8,7 @@ import shutil
 
 import numpy as np
 import pandas as pd
+import pathlib
 import xarray as xr
 
 import xhydro.modelling as xhm
@@ -276,5 +277,5 @@ def maximize_snow(
             break
     facteur_f = factor[: len(ms)]
     final_factor = np.interp(snow_tardet, ms, facteur_f)
-
+    pathlib.Path(temp_nc).unlink()
     return final_factor

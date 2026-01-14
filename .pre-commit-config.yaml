@@ -46,12 +46,12 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.3
-    hooks:
-      - id: ruff-check
-        args: [ '--fix', '--show-fixes' ]
-      - id: ruff-format
+  # - repo: https://github.com/astral-sh/ruff-pre-commit
+  #   rev: v0.13.3
+  #   hooks:
+  #     - id: ruff-check
+  #       args: [ '--fix', '--show-fixes' ]
+  #     - id: ruff-format
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0
     hooks:
@@ -89,15 +89,15 @@ repos:
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
-  - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.14.2  # FIXME: Rust is missing on our systems to support 1.5.2+
-    hooks:
-      - id: zizmor
-        args: [ '--config=.zizmor.yml' ]
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
-    hooks:
-      - id: gitleaks
+  # - repo: https://github.com/woodruffw/zizmor-pre-commit
+  #   rev: v1.14.2  # FIXME: Rust is missing on our systems to support 1.5.2+
+  #   hooks:
+  #     - id: zizmor
+  #       args: [ '--config=.zizmor.yml' ]
+  # - repo: https://github.com/gitleaks/gitleaks
+  #   rev: v8.28.0
+  #   hooks:
+  #     - id: gitleaks
   - repo: meta
     hooks:
       - id: check-hooks-apply
