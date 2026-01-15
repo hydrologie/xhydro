@@ -46,12 +46,12 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
-  # - repo: https://github.com/astral-sh/ruff-pre-commit
-  #   rev: v0.13.3
-  #   hooks:
-  #     - id: ruff-check
-  #       args: [ '--fix', '--show-fixes' ]
-  #     - id: ruff-format
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.3
+    hooks:
+      - id: ruff-check
+        args: [ '--fix', '--show-fixes' ]
+      - id: ruff-format
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0
     hooks:

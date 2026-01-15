@@ -1,14 +1,12 @@
-"""
-Provides functions for Probable Maximum Flood (PMF) analysis.
-"""
+"""Provides functions for Probable Maximum Flood (PMF) analysis."""
 
 import copy
 import datetime
+import pathlib
 import shutil
 
 import numpy as np
 import pandas as pd
-import pathlib
 import xarray as xr
 
 import xhydro.modelling as xhm
