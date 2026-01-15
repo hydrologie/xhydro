@@ -9,7 +9,7 @@ dependencies:
   - cartopy >=0.23.0
   - dask
   - dask-geopandas
-  - fastprogress <=1.0.3  # FIXME: Temporary fix for fastprogress v1.1 / apsw.
+  - fastprogress <1.1, # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   - geopandas >=1.0
   - haversine >=2.8.1
   - leafmap
