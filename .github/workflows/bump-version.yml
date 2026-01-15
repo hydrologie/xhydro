@@ -30,7 +30,7 @@ on:
       - environment.yml
       - pyproject.toml
       - tests/**.py
-      - tox.ini
+      - tox.toml
       - src/xhydro/__init__.py
   workflow_dispatch:
 
@@ -43,9 +43,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: read
+    strategy:
+      matrix:
+        python-version: [ "3.13" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           disable-sudo: true
           egress-policy: block
@@ -63,15 +66,15 @@ jobs:
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
 
       - name: Checkout Repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
           token: ${{ steps.token_generator.outputs.token }}
 
-      - name: Set up Python3
+      - name: Set up Python${{ matrix.python-version }}
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python-version }}
 
       - name: Import GPG Key
         uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0

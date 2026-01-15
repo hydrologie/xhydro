@@ -352,7 +352,9 @@ def _get_plotting_positions(data_array, alpha=0.4, beta=0.4, return_period=True)
         pp = -1 / (pp - 1)
 
     for name in pp.data_vars:
-        pp = pp.rename({name: name + "_pp"})
+        pp = pp.rename({name: f"{name}_pp"})
+        pp = pp.assign_coords({f"{name}_pp": pp[f"{name}_pp"]})
+        pp[f"{name}_pp"].attrs = {"long_name": f"Plotting positions for the variable '{name}'"}
         pp[name] = data_copy[name]
 
     return pp
