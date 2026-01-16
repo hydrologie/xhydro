@@ -29,6 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  # "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology",
@@ -40,6 +41,7 @@ dependencies = [
   "cartopy >=0.23.0",
   "dask",
   "dask-geopandas",
+  "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
   "leafmap",
@@ -71,7 +73,7 @@ dev = [
   "coverage >=7.5.0",
   "deptry >=0.23.1",
   "flake8 >=7.3.0",
-  "flake8-rst-docstrings >=0.3.1",
+  "flake8-rst-docstrings >=0.4.0",
   "flit >=3.11.0,<4.0",
   "mypy >=1.18.2",
   "numpydoc >=1.9.0",
@@ -81,7 +83,7 @@ dev = [
   "pytest >=8.3.2",
   "pytest-cov >=5.0.0",
   "pytest-xdist[psutil] >=3.2",
-  "ruff >=0.13.3",
+  "ruff >=0.14.3",
   "tox >=4.30.3",
   "watchdog >=4.0.0",
   "vulture >=2.14",
@@ -120,7 +122,7 @@ all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
 [tool]
 
 [tool.bumpversion]
-current_version = "0.6.1"
+current_version = "0.6.2-dev.4"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -200,7 +202,7 @@ include = [
   "src/xhydro",
   "src/xhydro/testing/registry.txt",
   "tests/*.py",
-  "tox.ini"
+  "tox.toml"
 ]
 exclude = [
   "*.py[co]",

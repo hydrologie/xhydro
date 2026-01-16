@@ -9,15 +9,16 @@ from xhydro.indicators import pmp
 
 class TestPMP:
     def test_major_precipitation_events(self, era5_example):
-        da = era5_example.pr.sel(location="Halifax").isel(plev=0)
+        da = era5_example.pr.sel(location="Halifax").isel(plev=0) * 86400
+        da.attrs = {"units": "mm"}
 
         result = pmp.major_precipitation_events(da, windows=[1, 2], quantile=0.9)
 
         assert len(result.time) == len(da.time)
         assert "window" in result.dims
-        np.testing.assert_array_almost_equal(result.sel(window=2).max(), 0.00079964)
-        np.testing.assert_array_almost_equal(result.sel(window=2).min(), 0.00024292)
-        np.testing.assert_array_equal(result.sel(window=2).isnull().sum(), 1313)
+        np.testing.assert_array_almost_equal(result.sel(window=2).max(), 69.08867)
+        np.testing.assert_array_almost_equal(result.sel(window=2).min(), 20.988277)
+        np.testing.assert_array_equal(result.sel(window=2).isnull().sum(), 1315)
 
     def test_major_precipitation_events_agg(self):
         np.random.seed(42)
@@ -32,6 +33,7 @@ class TestPMP:
         )
         precip["x"].attrs = {"axis": "X"}
         precip["y"].attrs = {"axis": "Y"}
+        precip.attrs = {"units": "mm"}
 
         precip_agg = pmp.spatial_average_storm_configurations(precip, radius=3).chunk(dict(time=-1))
         result = pmp.major_precipitation_events(precip_agg, windows=[1, 2], quantile=0.9)
