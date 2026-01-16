@@ -64,18 +64,24 @@ def get_objective_function(
         - "agreement_index": Index of agreement
         - "bias" : Bias metric
         - "correlation_coeff": Correlation coefficient
+        - "high_flow_rel_error" : High flow relative error
         - "kge" : Kling Gupta Efficiency metric (2009 version)
         - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+        - "kge_2021" : Kling-Gupta Efficiency (2021 version)
+        - "lce" : Least-squares combined efficiency
+        - "low_flow_rel_error" : Low flow relative error
         - "mae": Mean Absolute Error metric
         - "mare": Mean Absolute Relative Error metric
         - "mse" : Mean Square Error metric
         - "nse": Nash-Sutcliffe Efficiency metric
         - "pbias" : Percent bias (relative bias)
+        - "persistence_index" : Measure of the relative magnitude of the residual variance to the variance of the errors
         - "r2" : r-squared, i.e. square of correlation_coeff.
         - "rmse" : Root Mean Square Error
         - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
         - "rsr" : Ratio of RMSE to standard deviation.
         - "volume_error": Total volume error over the period.
+        - "volumetric_efficiency" : Fraction of volume delivered at the proper time
         The default is 'rmse'.
     take_negative : bool
         Used to force the objective function to be multiplied by minus one (-1)
@@ -124,18 +130,26 @@ def get_objective_function(
         "agreement_index": _agreement_index,
         "bias": _bias,
         "correlation_coeff": _correlation_coeff,
+        "high_flow_rel_error": _high_flow_rel_error,
+        # "high_flow_timing_error": _high_flow_timing_error,  # FIXME: Requires xarray to work
         "kge": _kge,
         "kge_mod": _kge_mod,
+        "kge_2021": _kge_2021,
+        "lce": _lce,
+        "low_flow_rel_error": _low_flow_rel_error,
         "mae": _mae,
         "mare": _mare,
         "mse": _mse,
         "nse": _nse,
         "pbias": _pbias,
+        "persistence_index": _persistence_index,
+        # "persistence_index_weekly": _persistence_index_weekly,  # FIXME: Requires xarray to work
         "r2": _r2,
         "rmse": _rmse,
         "rrmse": _rrmse,
         "rsr": _rsr,
         "volume_error": _volume_error,
+        "volumetric_efficiency": _volumetric_efficiency,
     }
 
     # If we got a dataset, change to np.array
@@ -236,8 +250,13 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
         "correlation_coeff",
         "kge",
         "kge_mod",
+        "kge_2021",
+        "lce",
         "nse",
+        "persistence_index",
+        "persistence_index_weekly",
         "r2",
+        "volumetric_efficiency",
     ]:
         maximize = True
 
@@ -257,10 +276,9 @@ def _get_objfun_minimize_or_maximize(obj_func: str) -> bool:
 
     # Check for the metrics that exist but cannot be used for optimization
     elif obj_func in ["bias", "pbias", "volume_error"]:
-        raise ValueError(
-            "The bias, pbias and volume_error metrics cannot be minimized or maximized. \
-                 Please use the abs_bias, abs_pbias and abs_volume_error instead."
-        )
+        raise ValueError(f"The '{obj_func}' metric cannot be minimized or maximized. Please use 'abs_{obj_func}' instead.")
+    elif obj_func in ["high_flow_timing_error", "high_flow_rel_error", "low_flow_rel_error"]:
+        raise ValueError(f"The {obj_func} metric cannot be used for optimization.")
     else:
         raise NotImplementedError("The objective function is unknown.")
 
@@ -528,6 +546,48 @@ def _correlation_coeff(qsim: np.ndarray, qobs: np.ndarray) -> np.ndarray:
     return np.corrcoef(qobs, qsim)[0, 1]
 
 
+def _high_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probability: int = 10) -> float:
+    """
+    High Flow Relative Error.
+    Relative error for observed flows that are exceeded a given percentage of the time.
+
+    Parameters
+    ----------
+    qsim : np.array
+        Daily Simulated streamflow data.
+    qobs : np.array
+        Daily Observed streamflow data.
+    exceedance_probability : int
+        exceedance_probability for high flows, default is 10%.
+
+    Returns
+    -------
+    float:
+        Relative error in flow that is exceeded a given percentage of the time.
+
+    Notes
+    -----
+    High Flow Relative Error should AIM TO BE ZERO, therefore it cannot be used for optimization
+
+    References
+    ----------
+    Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025).
+    A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France.
+    EGUsphere, 2025, 1-41.
+
+
+    """
+    thresh = np.nanpercentile(qobs, 100 - exceedance_probability)
+
+    # Select only high flow time steps
+    mask = qobs >= thresh
+
+    qobs_high = qobs[mask]
+    qsim_high = qsim[mask]
+
+    return ((qsim_high - qobs_high).sum() / qobs_high.sum()).item()
+
+
 def _kge(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     Kling-Gupta efficiency metric (2009 version).
@@ -602,6 +662,122 @@ def _kge_mod(qsim: np.ndarray, qobs: np.ndarray) -> float:
     kge_mod = 1 - np.sqrt((r - 1) ** 2 + (g - 1) ** 2 + (b - 1) ** 2)
 
     return kge_mod
+
+
+def _kge_2021(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """
+    Kling-Gupta efficiency metric version of Tang et al. (2021)
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The modified Kling-Gupta Efficiency (KGE) modified metric of 2021: KGE".
+
+    Notes
+    -----
+    The kge_2021 should be MAXIMIZED: values from -inf to 1 (best case).
+    ref : Tang, G., Clark, M. P., & Papalexiou, S. M. (2021). SC-Earth: A station-based serially complete Earth
+    dataset from 1950 to 2019. Journal of Climate, 34(16), 6493-6511.
+
+    """
+    # These pop up a lot, precalculate
+    qsim_mean = np.mean(qsim)
+    qobs_mean = np.mean(qobs)
+
+    # Calc KGE" components
+    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
+    r = r_num / r_den
+    a = np.std(qsim) / np.std(qobs)
+    b_n = (np.mean(qsim) - np.mean(qobs)) / np.std(qobs)
+
+    # Calc the KGE" metric
+    kge_2021 = 1 - np.sqrt((a - 1) ** 2 + (b_n) ** 2 + (r - 1) ** 2)
+
+    return kge_2021
+
+
+def _lce(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """
+    Least-squares combined efficiency:
+    Performance criterion combining the least-squares regression coefficients from the two regression lines
+    in both-way regression analysis between simulations and observations
+    Performance criterion that avoids tendency towards underestimation of flow variability
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        The least-squares combined efficiency.
+
+    Notes
+    -----
+    The LCE should be MAXIMIZED; values from -inf to 1 (best case).
+    ref : Lee, J. S., & Choi, H. I. (2022). A rebalanced performance criterion for hydrological model calibration.
+    Journal of Hydrology, 606, 127372. https://doi.org/10.1016/j.jhydrol.2021.127372
+
+    """
+    # These pop up a lot, precalculate
+    qsim_mean = np.mean(qsim)
+    qobs_mean = np.mean(qobs)
+
+    # Calc LCE components
+    r_num = np.sum((qsim - qsim_mean) * (qobs - qobs_mean))
+    r_den = np.sqrt(np.sum((qsim - qsim_mean) ** 2) * np.sum((qobs - qobs_mean) ** 2))
+    r = r_num / r_den
+    b = np.mean(qsim) / np.mean(qobs)
+    a = np.std(qsim) / np.std(qobs)
+
+    return 1 - np.sqrt((r * a - 1) ** 2 + (r / a - 1) ** 2 + (b - 1) ** 2)
+
+
+def _low_flow_rel_error(qobs: np.ndarray, qsim: np.ndarray, exceedance_probability: int = 90) -> float:
+    """
+    Low Flow Relative Error.
+    Relative error for observed flows that are exceeded 90 % of the time.
+
+    Parameters
+    ----------
+    qsim : np.array
+        Daily Simulated streamflow data.
+    qobs : np.array
+        Daily Observed streamflow data.
+    exceedance_probability : int
+        exceedance_probability for low flows, default is 90%.
+
+    Returns
+    -------
+    float:
+        Relative error in flow that is exceeded 90 % of the time.
+
+    Notes
+    -----
+    Low Flow Relative Error should AIM TO BE ZERO, therefore it cannot be used for optimization
+    ref : Sauquet, E., Evin, G., Siauve, S., Aissat, R., Arnaud, P., Bérel, M., ... & Vidal, J. P. (2025).
+    A large transient multi-scenario multi-model ensemble of future streamflow and groundwater projections in France.
+    EGUsphere, 2025, 1-41.
+
+    """
+    threshold = np.nanpercentile(qobs, 100 - exceedance_probability)
+    mask = qobs >= threshold
+
+    qsim_low = qsim[mask]
+    qobs_low = qobs[mask]
+
+    return float(np.nansum(qsim_low - qobs_low) / np.nansum(qobs_low))
 
 
 def _mae(qsim: np.ndarray, qobs: np.ndarray):
@@ -732,6 +908,49 @@ def _pbias(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return (np.sum(qsim - qobs) / np.sum(qobs)) * 100
 
 
+def _persistence_index(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """
+    Persistence index or persistence model efficiency;
+    Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+    obtained by the use of a simple persistence model that assumes “tomorrow's flow will be the same as today's”.
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+       Persistence index single value obtained by given time step
+
+    Notes
+    -----
+    The Persistence index should be MAXIMIZED.
+    The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+    Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models:
+    comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143.
+    http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+
+    """
+    if len(qobs) < 2:
+        raise ValueError("At least 2 timesteps are needed to compute persistence index.")
+
+    # Remove any rows with NaNs
+    valid = ~np.isnan(qsim) & ~np.isnan(qobs)
+    qsim = qsim[valid]
+    qobs = qobs[valid]
+
+    # Align arrays: ignore the first time step
+    qsim = qsim[1:]
+    qobs_now = qobs[1:]
+    qobs_prev = qobs[:-1]
+
+    return 1 - np.sum((qsim - qobs_now) ** 2) / np.sum((qobs_prev - qobs_now) ** 2)
+
+
 def _r2(qsim: np.ndarray, qobs: np.ndarray) -> float:
     """
     The r-squred metric.
@@ -857,6 +1076,143 @@ def _volume_error(qsim: np.ndarray, qobs: np.ndarray) -> float:
     return np.sum(qsim - qobs) / np.sum(qobs)
 
 
-"""
-ADD OBJECTIVE FUNCTIONS HERE
-"""
+def _volumetric_efficiency(qsim: np.ndarray, qobs: np.ndarray) -> float:
+    """
+    Volumetric efficiency;
+    Represents the fraction of water delivered at the proper time.
+
+    Parameters
+    ----------
+    qsim : array_like
+        Simulated streamflow vector.
+    qobs : array_like
+        Observed streamflow vector.
+
+    Returns
+    -------
+    float
+        Volumetric efficiency (VE)
+
+
+    Notes
+    -----
+    The Volumetric efficiency should be MAXIMIZED ; ranges from -inf to 1
+    For values= 0 : Simulation error equals total observed flow
+    For negative values : Simulation error exceeds observed volume.
+    Multiplying by the duration of the time-step computes actual volumes and not values in flow units.
+
+    Ref: Criss, R. E., & Winston, W. E. (2008). Do Nash values have value? Discussion and alternate proposals.
+    Hydrological Processes, 22(14), 2723-2725. http://dx.doi.org/10.1002/hyp.7072.
+
+
+    """
+    return 1 - (np.sum(abs(qsim - qobs)) / np.sum(qobs))
+
+
+# FIXME: Enable when time handling tools are available for the calibration module
+
+# def _persistence_index_weekly(qsim: np.ndarray, qobs: np.ndarray):
+#     """
+#     Persistence index or persistence model efficiency based on weekly averages;
+#     Measure of the relative magnitude of the residual variance (noise) to the variance of the errors
+#     obtained by the use of a simple persistence model that assumes “Netx weeks flow will be the same as this week's”.
+
+#     Parameters
+#     ----------
+#     qsim : array_like
+#         Simulated streamflow vector.
+#     qobs : array_like
+#         Observed streamflow vector.
+
+#     Returns
+#     -------
+#     float
+#         Persistence index single value based on weekly averages
+#         the optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+
+#         Ref: Gupta, H. V., Sorooshian, S., & Yapo, P. O. (1999). Status of automatic calibration for hydrologic models:
+#         comparison with multilevel expert calibration. Journal of Hydrologic Engineering, 4(2), 135-143.
+#         http://dx.doi.org/10.1061/(ASCE)1084-0699(1999)4:2(135).
+
+#     Notes
+#     -----
+#     The weekly persistence index should be MAXIMIZED.
+#     The optimal value is 1.0, and values should be larger than 0.0 to indicate minimally acceptable performance.
+#     """
+#     # FIXME: This should be able to maintain timestamps, timing tool development is required
+#     # Resample to weekly means (weeks starting on Monday)
+#     qsim_weekly = qsim.resample(time="W-MON").mean()
+#     qobs_weekly = qobs.resample(time="W-MON").mean()
+
+#     # Remove NaNs from both series simultaneously
+#     valid = qsim_weekly.notnull() & qobs_weekly.notnull()
+#     qsim_weekly = qsim_weekly[valid]
+#     qobs_weekly = qobs_weekly[valid]
+
+#     # Need at least two weekly values
+#     if len(qobs_weekly) < 2:
+#         raise ValueError("At least 2 weekly averages are needed to compute persistence index.")
+
+#     # Compute differences
+#     qsim = qsim_weekly[1:].values
+#     qobs_now = qobs_weekly[1:].values
+#     qobs_prev = qobs_weekly[:-1].values
+
+#     # Compute Persistence Index
+#     denom = np.sum((qobs_prev - qobs_now) ** 2)
+#     if denom == 0:
+#         return np.nan  # avoid division by zero
+#     return 1 - np.sum((qsim - qobs_now) ** 2) / denom
+
+
+# def _high_flow_timing_error(
+#     qobs: xr.DataArray,
+#     qsim: xr.DataArray,
+#     percentile: int = 10,
+# ) -> xr.DataArray:
+#     """
+#     Timing error between the circular mean of observed high flows DOY and simulated high flows DOY.
+
+#     Parameters
+#     ----------
+#     qobs : array_like
+#         Daily Observed streamflow data.
+#     qsim : array_like
+#         Daily Simulated streamflow data.
+#     percentile : int
+#         frequency percentile for high flows, default is 10%.
+
+#     Returns
+#     -------
+#     float
+#         Difference in Julian day occurrence of high flows, e.g. flows that are exceeded 10 % of the time.
+
+#     Notes
+#     -----
+#     High Flow timing Error should AIM TO BE ZERO
+#     ref : Gupta, A., Hantush, M. M., Govindaraju, R. S., & Beven, K. (2024). Evaluation of hydrological models at
+#     gauged and ungauged basins using machine learning-based limits-of-acceptability and hydrological signatures.
+#     Journal of Hydrology, 641, 131774. https://doi.org/10.1016/j.jhydrol.2024.131774
+
+#     """
+#     # FIXME: This should be able to maintain timestamps, timing tool development is required
+#     threshold = np.nanpercentile(qobs, 100 - percentile)
+
+#     mask1 = qobs >= threshold  # Select only high flow time steps for obs flows
+
+#     qobs_high = qobs.where(mask1, drop=True)
+#     date_obs = pd.DatetimeIndex(qobs_high.time.values)
+#     doy_obs = date_obs.dayofyear
+#     # circmean for signe DOY
+#     mean_doy_obs = circmean(doy_obs, high=365, low=1)
+
+#     # Select only high flow time steps for sim flows
+#     mask2 = qsim >= threshold
+#     qsim_high = qsim.where(mask2, drop=True)
+#     date_sim = pd.DatetimeIndex(qsim_high.time.values)
+#     doy_sim = date_sim.dayofyear
+
+#     # circmean for signe DOY
+#     mean_doy_sim = circmean(doy_sim, high=365, low=1)
+
+#     return mean_doy_sim - mean_doy_obs
