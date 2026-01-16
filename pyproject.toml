@@ -41,6 +41,7 @@ dependencies = [
   "cartopy >=0.23.0",
   "dask",
   "dask-geopandas",
+  "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
   "leafmap",
@@ -121,7 +122,7 @@ all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
 [tool]
 
 [tool.bumpversion]
-current_version = "0.6.2-dev.2"
+current_version = "0.6.2-dev.4"
 commit = true
 commit_args = "--no-verify"
 tag = false
