@@ -9,6 +9,13 @@ from pathlib import Path
 from typing import Literal
 
 import cartopy.crs as ccrs
+
+
+try:  # In the case where exactextract is available, it needs to be imported here. If it's not installed, xvec will use another method
+    import exactextract  # noqa: F401
+except ImportError:
+    warnings.warn("The `exactextract` library is not present in the environment and will not be used.", stacklevel=2)
+
 import geopandas as gpd
 import leafmap
 import matplotlib.pyplot as plt
