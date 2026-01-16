@@ -4,6 +4,7 @@ import copy
 import datetime
 import pathlib
 import shutil
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -31,6 +32,8 @@ def remove_precip(da_full, dates, each_year=False):
     xarray.DataArray
         Data array with precipitation removed for given dates.
     """
+    if isinstance(da_full, xr.Dataset):
+        warnings.warn("Input is a dataset, all variables will be set to zero, make sure they are all precips", stacklevel=2)
     if each_year:
         da = xr.DataArray(data=np.zeros(len(dates)), coords={"time": dates})
         return _swap_meteo(da_full, da)
@@ -210,12 +213,22 @@ def place_pmf_inputs(ds_pmp: xr.Dataset, ds_meteo: xr.Dataset) -> xr.Dataset:
     xr.Dataset
         The updated meteorological dataset.
     """
-    for v in ds_meteo.data_vars:
-        mask = xr.where(ds_meteo[v].time.isin(ds_pmp.time), True, False)
-        fill_values = np.empty(mask.shape)
-        fill_values[mask.values] = ds_pmp[v].values.squeeze()
-        ds_meteo[v] = ds_meteo[v].where(~mask, other=fill_values)
-    return ds_meteo
+    new_ds = copy.deepcopy(ds_meteo)
+    if _coords_allclose(ds_pmp, ds_meteo, exclude="time"):  # Multidimensions, matching between both datasets
+        for var in ds_pmp.data_vars:
+            # Align on 'time'
+            aligned, _ = xr.align(ds_pmp[var], new_ds, join="inner")
+            # Place in new_ds (will broadcast along lat/lon if coordinated)
+            # If var already exists, it will be overwritten
+            new_ds[var].loc[dict(time=aligned["time"])] = aligned
+        return new_ds
+    else:  # We assume only one dim
+        for v in ds_pmp.data_vars:
+            mask = xr.where(new_ds[v].time.isin(ds_pmp.time), True, False)
+            fill_values = np.empty(mask.shape)
+            fill_values[mask.values] = ds_pmp[v].values.squeeze()
+            new_ds[v] = new_ds[v].where(~mask, other=fill_values)
+    return new_ds
 
 
 def maximize_snow(
@@ -277,3 +290,22 @@ def maximize_snow(
     final_factor = np.interp(snow_tardet, ms, facteur_f)
     pathlib.Path(temp_nc).unlink()
     return final_factor
+
+
+def _coords_allclose(ds1, ds2, exclude=()):
+    """
+    Compare all coordinates in ds1 and ds2 (excluding any in `exclude`).
+    Returns True if both have the same named coordinates and all coordinate values are close.
+    """
+    coords1 = {k: v for k, v in ds1.coords.items() if k not in exclude}
+    coords2 = {k: v for k, v in ds2.coords.items() if k not in exclude}
+    if set(coords1) != set(coords2):
+        return False
+
+    # Check that values are numerically close for each coord
+    for name in coords1:
+        if coords1[name].values.size != coords2[name].values.size:
+            return False
+        if not np.allclose(coords1[name].values, coords2[name].values):
+            return False
+    return True
