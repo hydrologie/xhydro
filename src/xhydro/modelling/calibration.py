@@ -102,22 +102,27 @@ class SpotSetup:
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
-            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_bias": Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
-            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "abs_volume_error": Absolute value of the volume_error metric
             - "agreement_index": Index of agreement
             - "correlation_coeff": Correlation coefficient
-            - "kge" : Kling Gupta Efficiency metric (2009 version)
-            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "high_flow_rel_error": High flow relative error
+            - "kge": Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+            - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+            - "lce": Least-squares combined efficiency
+            - "low_flow_rel_error": Low flow relative error
             - "mae": Mean Absolute Error metric
             - "mare": Mean Absolute Relative Error metric
-            - "mse" : Mean Square Error metric
+            - "mse": Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "r2" : r-squared, i.e. square of correlation_coeff.
-            - "rmse" : Root Mean Square Error
-            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-            - "rsr" : Ratio of RMSE to standard deviation.
-            - "" :
+            - "persistence_index": Persistence index
+            - "r2": r-squared, i.e. square of correlation_coeff.
+            - "rmse": Root Mean Square Error
+            - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr": Ratio of RMSE to standard deviation.
+            - "volumetric_efficiency": Volumetric efficiency
 
     take_negative : bool
         Inidactor to take the negative of the objective function value in optimization to ensure convergence
@@ -177,22 +182,28 @@ class SpotSetup:
         obj_func : str
             The objective function used for calibrating. Can be any one of these:
 
-                - "abs_bias" : Absolute value of the "bias" metric
+                - "abs_bias": Absolute value of the "bias" metric
                 - "abs_pbias": Absolute value of the "pbias" metric
-                - "abs_volume_error" : Absolute value of the volume_error metric
+                - "abs_volume_error": Absolute value of the volume_error metric
                 - "agreement_index": Index of agreement
                 - "correlation_coeff": Correlation coefficient
-                - "kge" : Kling Gupta Efficiency metric (2009 version)
-                - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
-                - "lce" : Least-squares combined efficiency
+                - "high_flow_rel_error": High flow relative error
+                - "kge": Kling Gupta Efficiency metric (2009 version)
+                - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+                - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+                - "lce": Least-squares combined efficiency
+                - "low_flow_rel_error": Low flow relative error
                 - "mae": Mean Absolute Error metric
                 - "mare": Mean Absolute Relative Error metric
-                - "mse" : Mean Square Error metric
+                - "mse": Mean Square Error metric
                 - "nse": Nash-Sutcliffe Efficiency metric
-                - "r2" : r-squared, i.e. square of correlation_coeff.
-                - "rmse" : Root Mean Square Error
-                - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-                - "rsr" : Ratio of RMSE to standard deviation.
+                - "persistence_index": Persistence index
+                - "r2": r-squared, i.e. square of correlation_coeff.
+                - "rmse": Root Mean Square Error
+                - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+                - "rsr": Ratio of RMSE to standard deviation.
+                - "volumetric_efficiency": Volumetric efficiency
+
         evaluations : int
             Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
         algorithm : str
@@ -378,25 +389,26 @@ def perform_calibration(
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
-            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_bias": Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
-            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "abs_volume_error": Absolute value of the volume_error metric
             - "agreement_index": Index of agreement
             - "correlation_coeff": Correlation coefficient
-            - "kge" : Kling Gupta Efficiency metric (2009 version)
-            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
-            - "kge_2021" : Kling Gupta Efficiency metric (2021 version)
-            - "lce" : Least-squares combined efficiency
+            - "high_flow_rel_error": High flow relative error
+            - "kge": Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+            - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+            - "lce": Least-squares combined efficiency
+            - "low_flow_rel_error": Low flow relative error
             - "mae": Mean Absolute Error metric
             - "mare": Mean Absolute Relative Error metric
-            - "mse" : Mean Square Error metric
+            - "mse": Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "persistence_index": Persistence index on a daily basis
-            - "persistence_index_weekly": Persistence Index on a weekly basis
-            - "r2" : r-squared, i.e. square of correlation_coeff
-            - "rmse" : Root Mean Square Error
-            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-            - "rsr" : Ratio of RMSE to standard deviation
+            - "persistence_index": Persistence index
+            - "r2": r-squared, i.e. square of correlation_coeff.
+            - "rmse": Root Mean Square Error
+            - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr": Ratio of RMSE to standard deviation.
             - "volumetric_efficiency": Volumetric efficiency
 
     bounds_high : np.array
