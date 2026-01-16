@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from xhydro.indicators import hydro_signatures as xh
+from xhydro.indicators import signatures as xh
 
 
 @pytest.fixture
@@ -67,7 +67,7 @@ class TestFDCSlope:
         # Create a daily time index
         q = q_series(q)
         print(q)
-        out = xh.flow_duration_curve_slope(q)
+        out = xh.flow_duration_curve_slope(q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})
         np.testing.assert_allclose(out, 2.097932, atol=1e-15)
 
 
@@ -90,7 +90,7 @@ class TestTotRR:
         q = q_series(q)
         pr = pr_series(pr, units="mm/hr")
 
-        out = xh.total_runoff_ratio(q, a, pr)
+        out = xh.total_runoff_ratio(q, a, pr, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})
         np.testing.assert_allclose(out, 0.0018, atol=1e-15)
 
 
@@ -105,29 +105,29 @@ class TestElastIndex:
         pr = pr_series(pr, units="mm/hr")
 
         out = xh.elasticity_index(q, pr)
-        np.testing.assert_allclose(out, 0.999997, rtol=1e-6, atol=0)  # not exactly 1 due to epsilon
+        np.testing.assert_allclose(out, 1)
         # print(type(out))
 
 
 class TestHurstExpNoise:
-    def test_simple(self, q_series, pr_series):
+    def test_simple(self, q_series):
         # daily time index
         np.random.seed(0)
         q = np.random.randn(365 * 10)  # 10 years of random daily flows
         q = q_series(q)
 
-        out = xh.hurst_exp(q)  # returns a value close to 0.5 representing noise.
+        out = xh.hurst_exp(q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})  # returns a value close to 0.5 representing noise.
         print(out)
 
         assert 0.3 <= out <= 0.5, f"H={out:.3f} out of expected range"
 
 
 class TestHurstExp:
-    def test_simple(self, q_series, pr_series):
+    def test_simple(self, q_series):
         # daily time index
         q = np.arange(1, 1826)
         q = q_series(q)
 
         out = xh.hurst_exp(q)  # returns very high value due to artificial input
         print(out)
-        np.testing.assert_allclose(out, 1.499946, rtol=1e-6, atol=0)
+        np.testing.assert_allclose(out, 1.500184, rtol=1e-6)

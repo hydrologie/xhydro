@@ -24,6 +24,7 @@ dependencies:
   - rasterio
   - ravenpy >=0.18.1
   - rioxarray >=0.15.0
+  - scipy
   - spotpy >=1.6.2
   - stackstac >=0.5.1
   - statsmodels >=0.14.0
@@ -33,7 +34,3 @@ dependencies:
   - xclim
   - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
   - xvec
-
-  - xhydro
-
-  - scipy

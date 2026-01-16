@@ -1,7 +1,7 @@
 """Indicators submodule."""
 
 # Import the submodules
-from . import generic, hydro_signatures, pmp
+from . import generic, pmp, signatures
 
 # Specific top-level functions
 from .generic import *
