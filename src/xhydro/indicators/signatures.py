@@ -387,6 +387,9 @@ def hurst_exp(
             coords=subset_q.coords,
             dims=subset_q.dims,
         )
+
+        # TODO: Wrap this in a apply_ufunc for performance
+
         # Compute periodogram using correct fs
         f, pxx = signal.periodogram(q_detrended, fs=1, scaling="density")  # freq default fs = 1day
 
