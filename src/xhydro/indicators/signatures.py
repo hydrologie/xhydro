@@ -405,7 +405,7 @@ def hurst_exp(
         beta = -slope  # slope is negative, so Beta = -slope
         h = (beta + 1) / 2
 
-        h = xr.DataArray(h, coords=subset_q.coords.drop_vars("time"), dims=tuple(set(subset_q.dims) - {"time"}))
+        h = xr.DataArray(h, coords=subset_q.drop_vars("time").coords, dims=tuple(set(subset_q.dims) - {"time"}))
         h = h.expand_dims({"horizon": ["-".join(period)]})
         out.append(h)
     h_out = xr.concat(out, dim="horizon")
