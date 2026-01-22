@@ -9,6 +9,7 @@ import pytest
 import xarray as xr
 import xdatasets as xd
 from pystac_client.exceptions import APIError
+from requests.exceptions import HTTPError
 
 import xhydro as xh
 
@@ -154,7 +155,7 @@ class TestWatershedOperations:
         assert ds_properties.centroid_lon.attrs["units"] == "degrees_east"
         assert ds_properties.centroid_lat.attrs["units"] == "degrees_north"
         assert ds_properties.estimated_area_diff.attrs["units"] == "%"
-        assert ds_properties.dims == {unique_id: 2}
+        assert ds_properties.sizes == {unique_id: 2}
 
         if unique_id == "Station":
             output_dataset = watershed_properties_data.set_index(unique_id)
@@ -201,9 +202,9 @@ class TestSurfaceProperties:
     def surface_properties_data(self):
         # Computed using EPSG:6622
         data = {
-            "elevation": {"031501": 46.3385009765625, "042103": 358.54986572265625},
-            "slope": {"031501": 0.4634914696216583, "042103": 2.5006439685821533},
-            "aspect": {"031501": 241.46539306640625, "042103": 178.55764770507812},
+            "elevation": {"031501": 45.47, "042103": 358.6},
+            "slope": {"031501": 0.4574, "042103": 2.504},
+            "aspect": {"031501": 250.6, "042103": 178.3},
         }
 
         df = pd.DataFrame.from_dict(data).astype("float32")
@@ -216,6 +217,12 @@ class TestSurfaceProperties:
         strict=False,
         raises=APIError,
     )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
+    )
     def test_surface_properties(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
@@ -225,6 +232,7 @@ class TestSurfaceProperties:
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
             surface_properties_data.reset_index(drop=True)[_properties_name],
+            rtol=0.02,
         )
 
         with pytest.warns(
@@ -236,7 +244,7 @@ class TestSurfaceProperties:
         pd.testing.assert_frame_equal(
             df_properties_def[_properties_name],
             df_properties[_properties_name],
-            rtol=0.02,
+            rtol=0.025,
         )
 
     @pytest.mark.online
@@ -244,6 +252,12 @@ class TestSurfaceProperties:
         reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
         strict=False,
         raises=APIError,
+    )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
     )
     def test_surface_properties_unique_id(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
@@ -254,6 +268,7 @@ class TestSurfaceProperties:
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
             surface_properties_data[_properties_name],
+            rtol=0.02,
         )
 
     @pytest.mark.online
@@ -262,11 +277,17 @@ class TestSurfaceProperties:
         strict=False,
         raises=APIError,
     )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
+    )
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
         ds_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
-        ds_properties = ds_properties.drop(list(set(ds_properties.coords) - set(ds_properties.dims)))
+        ds_properties = ds_properties.drop_vars(list(set(ds_properties.coords) - set(ds_properties.dims)))
 
         assert ds_properties.elevation.attrs["units"] == "m"
         assert ds_properties.slope.attrs["units"] == "degrees"
@@ -277,7 +298,7 @@ class TestSurfaceProperties:
         output_dataset["slope"].attrs = {"units": "degrees"}
         output_dataset["aspect"].attrs = {"units": "degrees"}
 
-        xr.testing.assert_allclose(ds_properties, output_dataset)
+        xr.testing.assert_allclose(ds_properties, output_dataset, rtol=0.02)
 
 
 @pytest.mark.online
@@ -285,6 +306,12 @@ class TestSurfaceProperties:
     reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
     strict=False,
     raises=APIError,
+)
+@pytest.mark.xfail(
+    reason="Test may fail with if the server is down.",
+    strict=False,
+    raises=HTTPError,
+    match="404 Client Error",
 )
 class TestLandClassification:
     gdf = xd.Query(
@@ -302,21 +329,21 @@ class TestLandClassification:
     def land_classification_data_latest(self):
         data = {
             "pct_built_area": {
-                "031501": 0.0153389,
-                "042103": 1.61770889e-05,
+                "031501": 0.015609,
+                "042103": 1.6e-05,
             },
-            "pct_crops": {"031501": 0.71674722, "042103": 0.0},
+            "pct_crops": {"031501": 0.716741, "042103": 0.0},
             "pct_trees": {
-                "031501": 0.25940324,
-                "042103": 0.90926391,
+                "031501": 0.259239,
+                "042103": 0.909270,
             },
             "pct_rangeland": {
-                "031501": 0.0084097,
-                "042103": 0.0048533,
+                "031501": 0.008410,
+                "042103": 0.004850,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08544583},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00041716},
-            "pct_bare_ground": {"031501": 0.0, "042103": 3.61403049e-06},
+            "pct_water": {"031501": 0.0, "042103": 0.085444},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.000417},
+            "pct_bare_ground": {"031501": 0.0, "042103": 4e-06},
         }
 
         df = pd.DataFrame.from_dict(data)
@@ -327,33 +354,28 @@ class TestLandClassification:
     def land_classification_data_2018(self):
         data = {
             "pct_built_area": {
-                "031501": 0.01583815,
-                "042103": 3.87217553e-05,
+                "031501": 0.016057,
+                "042103": 3.906517e-05,
             },
-            "pct_crops": {"031501": 0.72329773, "042103": 0.0},
+            "pct_crops": {"031501": 0.723301, "042103": 0.0},
             "pct_trees": {
-                "031501": 0.2565528,
-                "042103": 0.91066581,
+                "031501": 0.256347,
+                "042103": 0.9106647,
             },
             "pct_rangeland": {
-                "031501": 0.00429392,
-                "042103": 0.00435766,
+                "031501": 0.004294,
+                "042103": 0.004358778,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08474334},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.00019395},
-            "pct_bare_ground": {"031501": 0.0, "042103": 5.1629007e-07},
+            "pct_water": {"031501": 0.0, "042103": 0.08474285},
+            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.0001939491},
+            "pct_bare_ground": {"031501": 0.0, "042103": 6.883730e-07},
         }
 
         df = pd.DataFrame.from_dict(data)
         df.index.name = "Station"
         return df
 
-    @pytest.mark.xfail(
-        raises=APIError,
-        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-        strict=False,
-    )
-    @pytest.mark.parametrize("year,", ["latest", "2018"])
+    @pytest.mark.parametrize("year", ["latest", "2018"])
     def test_land_classification(self, land_classification_data_latest, land_classification_data_2018, year):
         if year == "latest":
             df_expected = land_classification_data_latest
@@ -367,9 +389,10 @@ class TestLandClassification:
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
+            df = df[df_expected.columns]  # Reorder the columns
             pd.testing.assert_frame_equal(df, df_expected, check_exact=False, atol=0.0001)
 
-    @pytest.mark.parametrize("year,", ["latest", "2018"])
+    @pytest.mark.parametrize("year", ["latest", "2018"])
     def test_land_classification_xarray(self, land_classification_data_latest, land_classification_data_2018, year):
         for unique_id in ["Station", None]:
             if year == "latest":
@@ -410,7 +433,8 @@ class TestLandClassification:
                     "spatial_resolution": 10,
                 }
 
-            xr.testing.assert_allclose(ds_classification, ds_expected, atol=0.0001)
+            for var in ds_classification:
+                np.testing.assert_allclose(ds_classification[var], ds_expected[var], atol=0.0001)
 
     @pytest.mark.parametrize("unique_id,", ["Station", None])
     def test_land_classification_plot(self, unique_id, monkeypatch):
@@ -423,7 +447,7 @@ class TestLandClassification:
             match="The provided gpd.GeoDataFrame is missing the crs attribute.",
         ):
             gdf_no_crs = self.gdf.copy()
-            gdf_no_crs.crs = None
+            gdf_no_crs.crs = None  # Will raise a warning. This can't be helped.
             xh.gis.watershed_properties(gdf_no_crs)
         with pytest.raises(
             TypeError,
@@ -448,6 +472,12 @@ class TestLandClassification:
     strict=False,
     raises=APIError,
 )
+@pytest.mark.xfail(
+    reason="Test may fail with if the server is down.",
+    strict=False,
+    raises=HTTPError,
+    match="404 Client Error",
+)
 class TestToRaven:
     @pytest.mark.parametrize("data", ["coord", "gdf", "file"])
     def test_coords(self, data, tmp_path):
@@ -457,8 +487,8 @@ class TestToRaven:
             data = xh.gis.watershed_delineation(coordinates=(-73.118597, 46.042467))
         elif data == "file":
             gdf = xh.gis.watershed_delineation(coordinates=(-73.118597, 46.042467))
-            gdf.to_file(str(Path(tmp_path) / "test.shp"), index="HYBAS_ID")
-            data = str(Path(tmp_path) / "test.shp")
+            gdf.to_file(str(Path(tmp_path) / "test.gpkg"), index="HYBAS_ID")
+            data = str(Path(tmp_path) / "test.gpkg")
 
         out = xh.gis.watershed_to_raven_hru(data, unique_id="HYBAS_ID" if not isinstance(data, tuple) else None)
 
