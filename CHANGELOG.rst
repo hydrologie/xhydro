@@ -37,6 +37,7 @@ Internal changes
 * Addressed multiple FutureWarnings coming from `xarray` and `pandas`. (:pull:`403`).
 * The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
     * This change addresses compatibility issues with new versions of `rasterio`.
+* Added an additional xfail condition to the tests calling `planetary_computer` to account for occasional server issues. (:pull:`403`).
 
 v0.6.1 (2025-10-22)
 -------------------
