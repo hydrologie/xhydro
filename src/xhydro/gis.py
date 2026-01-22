@@ -423,12 +423,12 @@ def surface_properties(
         bbox=gdf.total_bounds,
     )
     # The X/Y dimensions might have different names depending on the dataset
-    y_name = [dim for dim in da.dims if dim in ["y", "latitude", "lat", "rlat"] or da[dim].attrs.get("axis") == "Y"]
+    y_name = [dim for dim in da.dims if dim in ["y", "latitude", "lat", "lats", "rlat"] or da[dim].attrs.get("axis") == "Y"]
     if len(y_name) != 1:
         raise ValueError("Could not identify 'y' dimension in the loaded dataset.")
     y_name = y_name[0]
     da[y_name].attrs["axis"] = "Y"
-    x_name = [dim for dim in da.dims if dim in ["x", "longitude", "lon", "rlon"] or da[dim].attrs.get("axis") == "X"]
+    x_name = [dim for dim in da.dims if dim in ["x", "longitude", "lon", "lons", "rlon"] or da[dim].attrs.get("axis") == "X"]
     if len(x_name) != 1:
         raise ValueError("Could not identify 'x' dimension in the loaded dataset.")
     x_name = x_name[0]
