@@ -12,6 +12,12 @@ New features and enhancements
 * New objective functions have been added to the calibration module. (:issue:`365`, :pull:`366`).
 * Added a new submodule `xhydro.indicators.signatures` to compute hydrological signatures. (:issue:`365`, :pull:`366`).
 
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The migration from `stackstac` to `odc-stac` in `xhydro.gis` has led to changes in the results of `xhydro.gis.land_use_classification` and `xhydro.gis.surface_properties` due to differences in projection handling between the two libraries. (:pull:`403`).
+    * Our tests show that the differences are generally minor, but users should verify that their results remain consistent after the update.
+* The `Upstream Area (sq. km).` column in the output of `xh.gis.watershed_properties` has been renamed to `Upstream Area (sq. km)`. (:pull:`403`).
+
 Bug fixes
 ^^^^^^^^^
 * The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
@@ -28,6 +34,9 @@ Internal changes
     * `pre-commit` hooks have been updated
     * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
     * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+* Addressed multiple FutureWarnings coming from `xarray` and `pandas`. (:pull:`403`).
+* The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
+    * This change addresses compatibility issues with new versions of `rasterio`.
 
 v0.6.1 (2025-10-22)
 -------------------
