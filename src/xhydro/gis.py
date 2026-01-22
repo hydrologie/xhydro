@@ -419,7 +419,7 @@ def surface_properties(
         items,
         bands=["data"],
         crs=epsg,
-        chunks={},
+        chunks={},  # FIXME: # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
         bbox=gdf.total_bounds,
     )
     if "latitude" in da.dims:
@@ -486,7 +486,7 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
         crs=ProjectionExtension.ext(item).epsg,
         dtype="uint8",
         fill_value=255,
-        chunks={},
+        chunks={},  # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
     ).squeeze()
 
     if year == "latest":
