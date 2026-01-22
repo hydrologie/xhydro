@@ -419,7 +419,7 @@ def surface_properties(
         items,
         bands=["data"],
         crs=epsg,
-        chunks={},  # FIXME: # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
+        chunks={},  # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
         bbox=gdf.total_bounds,
     )
     if "latitude" in da.dims:
