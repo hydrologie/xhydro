@@ -422,15 +422,22 @@ def surface_properties(
         chunks={},  # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
         bbox=gdf.total_bounds,
     )
-    if "latitude" in da.dims:
-        da = da.rename({"latitude": "y"})
-    if "longitude" in da.dims:
-        da = da.rename({"longitude": "x"})
+    # The X/Y dimensions might have different names depending on the dataset
+    y_name = [dim for dim in da.dims if dim in ["y", "latitude", "lat", "rlat"] or da[dim].attrs.get("axis") == "Y"]
+    if len(y_name) != 1:
+        raise ValueError("Could not identify 'y' dimension in the loaded dataset.")
+    y_name = y_name[0]
+    da[y_name].attrs["axis"] = "Y"
+    x_name = [dim for dim in da.dims if dim in ["x", "longitude", "lon", "rlon"] or da[dim].attrs.get("axis") == "X"]
+    if len(x_name) != 1:
+        raise ValueError("Could not identify 'x' dimension in the loaded dataset.")
+    x_name = x_name[0]
+    da[x_name].attrs["axis"] = "X"
 
     ds = (
         da["data"]
         .sel(time=dataset_date)
-        .coarsen({"y": 5, "x": 5}, boundary="trim")
+        .coarsen({f"{y_name}": 5, f"{x_name}": 5}, boundary="trim")
         .mean()
         .to_dataset(name="elevation")
         .rio.write_crs(f"epsg:{epsg}", inplace=True)
@@ -440,7 +447,7 @@ def surface_properties(
     ds["aspect"] = aspect(ds.elevation)
 
     # Use Xvec to extract the properties for each geometry in the projected gdf
-    output_dataset = ds.xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation).astype("float32")
+    output_dataset = ds.xvec.zonal_stats(projected_gdf.geometry, x_coords=x_name, y_coords=y_name, stats=operation).astype("float32")
 
     # Add attributes for each variable
     output_dataset["slope"].attrs = {"units": "degrees", "long_name": "Slope"}
