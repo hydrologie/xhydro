@@ -9,6 +9,7 @@ import pooch
 import pytest
 import xarray as xr
 from pystac_client.exceptions import APIError
+from requests.exceptions import HTTPError
 from shapely import Polygon
 
 import xhydro.gis as xhg
@@ -168,6 +169,12 @@ class TestRavenpyModels:
         strict=False,
         raises=APIError,
     )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
+    )
     def test_ravenpy_from_funcs(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
@@ -302,7 +309,7 @@ class TestRavenpyModels:
             }
         )
         meteo["elevation"].attrs["units"] = "m"
-        meteo = xr.concat([meteo, meteo2], dim="station")
+        meteo = xr.concat([meteo, meteo2], dim="station", data_vars="all")
 
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
 

@@ -149,7 +149,7 @@ def fit_boot_dist(ds: xr.Dataset) -> xr.Dataset:
     for dist in ds.scipy_dist.values:
         ds.sel(scipy_dist=dist)
         params_ince.append(xhfa.local.fit(ds.sel(scipy_dist=dist), distributions=[dist]))
-    return xr.concat(params_ince, dim="scipy_dist")
+    return xr.concat(params_ince, dim="scipy_dist", join="outer")
 
 
 def calc_moments_iter(ds_samples: xr.Dataset) -> xr.Dataset:
