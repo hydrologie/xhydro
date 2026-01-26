@@ -9,6 +9,7 @@ import pooch
 import pytest
 import xarray as xr
 from pystac_client.exceptions import APIError
+from requests.exceptions import HTTPError
 from shapely import Polygon
 
 import xhydro.gis as xhg
@@ -168,6 +169,12 @@ class TestRavenpyModels:
         strict=False,
         raises=APIError,
     )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
+    )
     def test_ravenpy_from_funcs(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
@@ -302,7 +309,7 @@ class TestRavenpyModels:
             }
         )
         meteo["elevation"].attrs["units"] = "m"
-        meteo = xr.concat([meteo, meteo2], dim="station")
+        meteo = xr.concat([meteo, meteo2], dim="station", data_vars="all")
 
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
 
@@ -681,6 +688,7 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
                 ).run()
         else:
@@ -697,6 +705,7 @@ class TestDistributedRavenpy:
                 workdir=tmp_path,
                 overwrite=True,
                 output_subbasins=output_sub,
+                Evaporation="PET_HARGREAVES",
                 **cfg | kwargs,
             ).run()
 
@@ -755,6 +764,7 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
                 ).run()
 
@@ -773,6 +783,7 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
                 ).run()
         # Bad initialisation order
@@ -787,6 +798,7 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins="qobs",
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
                 )
 
@@ -816,6 +828,7 @@ class TestDistributedRavenpy:
                 workdir=tmp_path,
                 overwrite=True,
                 output_subbasins=output_sub,
+                Evaporation="PET_HARGREAVES",
                 **cfg | kwargs,
             ).run()
 
@@ -824,7 +837,8 @@ class TestDistributedRavenpy:
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
-                np.testing.assert_array_equal(qsim["subbasin_id"].values, ["sub_13", "sub_17"])
+                prefix = "sub_" if "sub_" in qsim["subbasin_id"].values[0] else ""  # Raven 4.1+ has removed the prefix
+                np.testing.assert_array_equal(qsim["subbasin_id"].values, [f"{prefix}13", f"{prefix}17"])
 
     def test_hbvec_reservoirs(self, tmp_path, df, gridded_meteo):
         meteo, cfg = gridded_meteo
@@ -852,6 +866,7 @@ class TestDistributedRavenpy:
             workdir=tmp_path,
             overwrite=True,
             output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -867,6 +882,7 @@ class TestDistributedRavenpy:
             overwrite=True,
             output_subbasins="all",
             minimum_reservoir_area="20 m2",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -882,6 +898,7 @@ class TestDistributedRavenpy:
             overwrite=True,
             output_subbasins="all",
             minimum_reservoir_area="20 km2",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -920,6 +937,7 @@ class TestDistributedRavenpy:
             workdir=tmp_path,
             overwrite=True,
             output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
         ds = rpm.run()
@@ -948,6 +966,7 @@ class TestDistributedRavenpy:
         )
 
         ds2 = rpm.run(overwrite=True)
-        np.testing.assert_array_equal(ds2["subbasin_id"].values, ["sub_13", "sub_17"])
+        prefix = "sub_" if "sub_" in ds2["subbasin_id"].values[0] else ""  # Raven 4.1+ has removed the prefix
+        np.testing.assert_array_equal(ds2["subbasin_id"].values, [f"{prefix}13", f"{prefix}17"])
 
         assert Path(rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc").exists()

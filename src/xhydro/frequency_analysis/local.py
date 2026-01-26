@@ -74,7 +74,7 @@ def fit(
                     .assign_coords(scipy_dist=d)
                     .expand_dims("scipy_dist")
                 )
-            params = xr.concat(p, dim="scipy_dist")
+            params = xr.concat(p, dim="scipy_dist", join="outer")
 
             # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
             p_order = sorted(set(params.dparams.values).difference(["loc", "scale"])) + [

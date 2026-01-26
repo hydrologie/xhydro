@@ -224,7 +224,7 @@ class RavenpyModel(HydrologicalModel):
         alt_names_meteo=None,
         meteo_station_properties=None,
         qobs_file=None,
-        alt_name_flow="q",
+        alt_name_flow=None,
         minimum_reservoir_area=None,
         output_subbasins=None,
         **kwargs,
@@ -802,7 +802,7 @@ class RavenpyModel(HydrologicalModel):
             station_id = "station_id" if "station_id" in ds_qobs else None
 
             # If the dataset is a single time series, we can manage a missing basin_id
-            if basin_id is None and ds_qobs.dims.keys() == {"time"}:
+            if basin_id is None and ds_qobs.sizes.keys() == {"time"}:
                 self.qobs["basin_id"] = [1]
                 self.qobs["station_id"] = ["0"] if station_id is None else ds_qobs[station_id].astype(str).values.tolist()
             elif basin_id is None:
@@ -1013,7 +1013,7 @@ class RavenpyModel(HydrologicalModel):
         # Get some properties from the meteorological file
         with xr.open_dataset(self.meteo["file"]) as ds:
             # Station-based meteorological data (Hard-coding is fine here, since RavenPy only supports station data with a 'station_id' dimension)
-            if "station_id" in ds.dims or ds.dims.keys() == {"time"}:
+            if "station_id" in ds.dims or ds.sizes.keys() == {"time"}:
                 self.meteo["type"] = "station"
                 self.meteo["station_len"] = len(ds.station_id) if "station_id" in ds.dims else 1
 
