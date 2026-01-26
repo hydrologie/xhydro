@@ -4,17 +4,26 @@ Changelog
 
 v0.7.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event. (:pull:`370`).
+* New objective functions have been added to the calibration module. (:issue:`365`, :pull:`366`).
+* Added a new submodule `xhydro.indicators.signatures` to compute hydrological signatures. (:issue:`365`, :pull:`366`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The migration from `stackstac` to `odc-stac` in `xhydro.gis` has led to changes in the results of `xhydro.gis.land_use_classification` and `xhydro.gis.surface_properties` due to differences in projection handling between the two libraries. (:pull:`403`).
+    * Our tests show that the differences are generally minor, but users should verify that their results remain consistent after the update.
+* The `Upstream Area (sq. km).` column in the output of `xh.gis.watershed_properties` has been renamed to `Upstream Area (sq. km)`. (:pull:`403`).
 
 Bug fixes
 ^^^^^^^^^
 * The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
 * Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
 * Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF). (:pull:`370`)
+* Added specific import for exactextract to prevent issues in the GIS modules if exactextract is prensent in the environment. (:pull:`381`)
 * The version detection logic in `xhydro.modelling._hydrotel` should now be more robust. (:pull:`388`).
 * Added a temporary workaround in `xhydro.modelling._hydrotel` to avoid `OverflowError` when chunks are automatically estimated as `-1` by `xscen.estimate_chunks`. (:pull:`388`).
     * Automated chunk estimation is also now skipped if the dataset is smaller than 100 MB.
@@ -26,6 +35,10 @@ Internal changes
     * `pre-commit` hooks have been updated
     * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
     * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+* Addressed multiple FutureWarnings coming from `xarray` and `pandas`. (:pull:`403`).
+* The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
+    * This change addresses compatibility issues with new versions of `rasterio`.
+* Added an additional xfail condition to the tests calling `planetary_computer` to account for occasional server issues. (:pull:`403`).
 
 v0.6.1 (2025-10-22)
 -------------------
@@ -36,6 +49,7 @@ Bug fixes
 * Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
 * Fixed a bug where the process would hang indefinitely on Windows systems when calling hydrological models through command line arguments. (:pull:`358`, :pull:`363`).
 * The long_name and description attributes of the `q` variable in Hydrotel outputs have been slightly modified to match `RavenPy` outputs. (:pull:`358`).
+* Fixed a problem to get a regional tau4 instead of being local in order to compute sigma4 used in the computation of the Z score (:pull:`372`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^

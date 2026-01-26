@@ -94,10 +94,11 @@ def compare(
     nse_l1o = np.empty(station_count) * np.nan
 
     for n in range(0, station_count):
-        kge[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "kge")
-        nse[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "nse")
-        kge_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "kge")
-        nse_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "nse")
+        if not np.isnan(selected_flow_obs[:, n]).all():
+            kge[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "kge")
+            nse[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_sim[:, n], "nse")
+            kge_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "kge")
+            nse_l1o[n] = get_objective_function(selected_flow_obs[:, n], selected_flow_l1o[:, n], "nse")
 
     if show_comparison:
         util.plot_results(kge, kge_l1o, nse, nse_l1o)
