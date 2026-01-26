@@ -403,9 +403,11 @@ def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: n
     t_sim = np.array([tt[3] for tt in t_sim_tau4m])  # Tau corresponds to the 3rd moment.
     tau4m = np.array([tt[5] for tt in t_sim_tau4m])  # Tau4 corresponds to the 5th term.
 
-    b4 = np.mean(tau4m - tau4_r)
+    tau4m_r = np.dot(n, tau4m) / np.sum(n)
 
-    sigma4 = np.sqrt((1 / (n_sim - 1)) * (np.sum((tau4m - tau4_r) ** 2) - (n_sim * b4 * b4)))
+    b4 = np.mean(tau4m_r - tau4_r)
+
+    sigma4 = np.sqrt((1 / (n_sim - 1)) * (np.sum((tau4m_r - tau4_r) ** 2) - (n_sim * b4 * b4)))
 
     # Calculating V
     tau_r_sim = np.dot(n, t_sim) / np.sum(n)
