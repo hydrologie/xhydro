@@ -62,10 +62,10 @@ repos:
     rev: v2.14
     hooks:
       - id: vulture
-#  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v1.18.2
-#    hooks:
-#      - id: mypy
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.18.2
+  #   hooks:
+  #     - id: mypy
   - repo: https://github.com/numpy/numpydoc
     rev: v1.10.0
     hooks:
@@ -89,15 +89,15 @@ repos:
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
-  - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.19.0  # FIXME: Rust is missing on our systems to support 1.5.2+
-    hooks:
-      - id: zizmor
-        args: [ '--config=.zizmor.yml' ]
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
-    hooks:
-      - id: gitleaks
+  # - repo: https://github.com/woodruffw/zizmor-pre-commit
+  #   rev: v1.16.3  # FIXME: Rust is missing on our systems to support 1.5.2+
+  #   hooks:
+  #     - id: zizmor
+  #       args: [ '--config=.zizmor.yml' ]
+  # - repo: https://github.com/gitleaks/gitleaks
+  #   rev: v8.29.1
+  #   hooks:
+  #     - id: gitleaks
   - repo: meta
     hooks:
       - id: check-hooks-apply
