@@ -20,16 +20,15 @@ import geopandas as gpd
 import leafmap
 import matplotlib.pyplot as plt
 import numpy as np
+import odc.stac
 import pandas as pd
 import planetary_computer
 import pystac_client
 import rasterio
-import rioxarray  # noqa: F401
-import stackstac
+import rioxarray  # Silent import to enable rioxarray methods on xarray objects  # noqa: F401
 import xarray as xr
-import xvec  # noqa: F401
+import xvec  # Silent import to enable xvec methods on xarray objects  # noqa: F401
 from matplotlib.colors import ListedColormap
-from pystac.extensions.item_assets import ItemAssetsExtension
 from pystac.extensions.projection import ProjectionExtension
 from shapely import Point
 from tqdm.auto import tqdm
@@ -125,7 +124,7 @@ def watershed_delineation(
         raise ValueError("Either coordinates or a map with markers must be provided to delineate watersheds.")
     gdf = (
         pd.concat([_compute_watershed_boundaries(tuple(coords), gdf_hydrobasins) for coords in coordinates])[["HYBAS_ID", "UP_AREA", "geometry"]]
-        .rename(columns={"UP_AREA": "Upstream Area (sq. km)."})
+        .rename(columns={"UP_AREA": "Upstream Area (sq. km)"})
         .reset_index(drop=True)
     )
 
@@ -135,12 +134,12 @@ def watershed_delineation(
         hover_style = {"fillOpacity": 0.9}
         m.add_data(
             gdf,
-            column="Upstream Area (sq. km).",
+            column="Upstream Area (sq. km)",
             scheme="Quantiles",
             cmap="YlGnBu",
             hover_style=hover_style,
             style=style,
-            legend_title="Upstream Area (sq. km).",
+            legend_title="Upstream Area (sq. km)",
             layer_name="Basins",
         )
 
@@ -203,8 +202,8 @@ def watershed_properties(
     output_dataset["area (m2)"] = projected_gdf.area
 
     # Compare the area calculated with the original source (using nomenclature from HydroBASINS and xdatasets; might not always work)
-    if any(est in gdf.columns for est in ["Upstream Area (sq. km).", "Superficie"]):
-        est = "Upstream Area (sq. km)." if "Upstream Area (sq. km)." in gdf.columns else "Superficie"
+    if any(est in gdf.columns for est in ["Upstream Area (sq. km)", "Superficie"]):
+        est = "Upstream Area (sq. km)" if "Upstream Area (sq. km)" in gdf.columns else "Superficie"
         output_dataset["estimated_area_diff (%)"] = (output_dataset["area (m2)"] / 1e6 - gdf[est]) / gdf[est] * 100
         if output_dataset["estimated_area_diff (%)"].abs().max() > 5:
             warnings.warn(
@@ -344,13 +343,6 @@ def _recursive_upstream_lookup(
     return all_upstream_indexes
 
 
-def _flatten(x, dim="time"):
-    if isinstance(x, xr.DataArray):
-        if len(x[dim].values) > len(set(x[dim].values)):
-            x = x.groupby(dim).map(stackstac.mosaic)
-    return x
-
-
 def surface_properties(
     gdf: gpd.GeoDataFrame,
     *,
@@ -428,34 +420,41 @@ def surface_properties(
 
     items = list(search.items())
 
-    # Create a mosaic of
+    # Create a mosaic of the selected items
     epsg = ProjectionExtension.ext(items[0]).epsg
-    da = stackstac.stack(items, epsg=epsg)
-    da = _flatten(da, dim="time")  # https://hrodmn.dev/posts/stackstac/#wrangle-the-time-dimension
+    da = odc.stac.stac_load(
+        items,
+        bands=["data"],
+        crs=epsg,
+        chunks={},  # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
+        bbox=gdf.total_bounds,
+    )
+    # The X/Y dimensions might have different names depending on the dataset
+    y_name = [dim for dim in da.dims if dim in ["y", "latitude", "lat", "lats", "rlat"] or da[dim].attrs.get("axis") == "Y"]
+    if len(y_name) != 1:
+        raise ValueError("Could not identify 'y' dimension in the loaded dataset.")
+    da[y_name[0]].attrs["axis"] = "Y"
+    x_name = [dim for dim in da.dims if dim in ["x", "longitude", "lon", "lons", "rlon"] or da[dim].attrs.get("axis") == "X"]
+    if len(x_name) != 1:
+        raise ValueError("Could not identify 'x' dimension in the loaded dataset.")
+    da[x_name[0]].attrs["axis"] = "X"
+
     ds = (
-        da.sel(time=dataset_date)
-        .coarsen({"y": 5, "x": 5}, boundary="trim")
+        da["data"]
+        .sel(time=dataset_date)
+        .coarsen({f"{da.cf.axes['Y'][0]}": 5, f"{da.cf.axes['X'][0]}": 5}, boundary="trim")
         .mean()
         .to_dataset(name="elevation")
         .rio.write_crs(f"epsg:{epsg}", inplace=True)
         .rio.reproject(projected_crs)
-        .isel(band=0)
     )
+    ds["slope"] = slope(ds.elevation)
+    ds["aspect"] = aspect(ds.elevation)
 
-    # Use Xvec to extract elevation for each geometry in the projected gdf
-    da_elevation = ds.xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["elevation"].squeeze()
-
-    da_slope = slope(ds.elevation)
-
-    # Use Xvec to extract slope for each geometry in the projected gdf
-    da_slope = da_slope.to_dataset(name="slope").xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["slope"]
-
-    da_aspect = aspect(ds.elevation)
-
-    # Use Xvec to extract aspect for each geometry in the projected gdf
-    da_aspect = da_aspect.to_dataset(name="aspect").xvec.zonal_stats(projected_gdf.geometry, x_coords="x", y_coords="y", stats=operation)["aspect"]
-
-    output_dataset = xr.merge([da_elevation, da_slope, da_aspect]).astype("float32")
+    # Use Xvec to extract the properties for each geometry in the projected gdf
+    output_dataset = ds.xvec.zonal_stats(projected_gdf.geometry, x_coords=ds.cf.axes["X"][0], y_coords=ds.cf.axes["Y"][0], stats=operation).astype(
+        "float32"
+    )
 
     # Add attributes for each variable
     output_dataset["slope"].attrs = {"units": "degrees", "long_name": "Slope"}
@@ -466,13 +465,7 @@ def surface_properties(
         "standard_name": "surface_altitude",
     }
 
-    # Clean up the dataset
-    for c in output_dataset.coords:
-        # If the coordinate is a scalar, assign its value to the dataset attributes instead
-        if len(output_dataset[c].dims) == 0:
-            output_dataset.attrs[c] = str(output_dataset[c].values)
-            output_dataset = output_dataset.drop_vars(c)
-
+    # If unique_id is provided, use it as dimension
     if unique_id is not None:
         output_dataset = output_dataset.assign_coords({unique_id: ("geometry", gdf[unique_id])})
         output_dataset = output_dataset.swap_dims({"geometry": unique_id})
@@ -499,23 +492,17 @@ def _merge_stac_dataset(catalog, bbox_of_interest, year, collection):
     item = items[0]
 
     # Create a single DataArray from out multiple results with the corresponding
-    # rasters projected to a single CRS. Note that we set the dtype to ubyte, which
-    # matches our data, since stackstac will use float64 by default.
-    stack = (
-        stackstac.stack(
-            items,
-            dtype=np.uint8,
-            fill_value=np.uint8(255),
-            bounds_latlon=bbox_of_interest,
-            epsg=ProjectionExtension.ext(item).epsg,
-            sortby_date=False,
-            rescale=False,
-        )
-        .assign_coords(time=pd.to_datetime([item.properties["start_datetime"] for item in items]).tz_convert(None).to_numpy())
-        .sortby("time")
-    )
+    # rasters projected to a single CRS.
+    merged = odc.stac.stac_load(
+        items,
+        bands=["data"],
+        bbox=bbox_of_interest,
+        crs=ProjectionExtension.ext(item).epsg,
+        dtype="uint8",
+        fill_value=255,
+        chunks={},  # FIXME: Keep track of https://github.com/opendatacube/odc-stac/issues/252
+    ).squeeze()
 
-    merged = stack.squeeze().compute()
     if year == "latest":
         year = str(merged.time.dt.year[-1].values)
     else:
@@ -538,10 +525,11 @@ def _count_pixels_from_bbox(gdf, idx, catalog, unique_id, values_to_classes, yea
     # Mask with polygon
     merged = merged.rio.write_crs(epsg).rio.clip([gdf.to_crs(epsg).iloc[idx].geometry])
 
-    data = merged.data.ravel()
+    # FIXME: Moving to a DataFrame loads all data into memory. Refactor to use xarray as much as possible.
+    data = merged.data.values.ravel()
     data = data[data != 0]
 
-    df = pd.DataFrame(pd.value_counts(data, sort=False).rename(values_to_classes) / data.shape[0])
+    df = pd.DataFrame(pd.Series(data).value_counts().rename(values_to_classes) / data.shape[0])
 
     if unique_id is not None:
         column_name = [gdf[unique_id].iloc[idx]]
@@ -556,7 +544,9 @@ def _count_pixels_from_bbox(gdf, idx, catalog, unique_id, values_to_classes, yea
     ds = xr.Dataset(df.T).rename({"dim_0": dim_name})
 
     ds.attrs = merged.attrs
-    ds.attrs["spatial_resolution"] = merged["raster:bands"].to_dict()["data"]["spatial_resolution"]
+    ds["spatial_ref"] = merged.odc.crs_coord
+    ds = ds.assign_coords({"spatial_ref": ds.spatial_ref})
+    ds.attrs["spatial_resolution"] = merged.rio.resolution()[0]
     return ds
 
 
@@ -602,8 +592,8 @@ def land_use_classification(
         modifier=planetary_computer.sign_inplace,
     )
     collection = catalog.get_collection(collection)
-    ia = ItemAssetsExtension.ext(collection)
-    x = ia.item_assets["data"]
+    ia = collection.item_assets
+    x = ia["data"]
     class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
 
     values_to_classes = {v: "_".join(("pct", k.lower().replace(" ", "_"))) for k, v in class_names.items()}
@@ -674,8 +664,8 @@ def land_use_plot(
     )
 
     collection = catalog.get_collection(collection)
-    ia = ItemAssetsExtension.ext(collection)
-    x = ia.item_assets["data"]
+    ia = collection.item_assets
+    x = ia["data"]
     class_names = {x["summary"]: x["values"][0] for x in x.properties["file:values"]}
 
     gdf = gdf.iloc[[idx]]
@@ -704,7 +694,7 @@ def land_use_plot(
         subplot_kw=dict(projection=ccrs.epsg(epsg)),
         frameon=False,
     )
-    p = merged.plot(
+    p = merged.data.plot(
         ax=ax,
         transform=ccrs.epsg(epsg),
         cmap=cmap,

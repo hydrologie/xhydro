@@ -9,12 +9,14 @@ dependencies:
   - cartopy >=0.23.0
   - dask
   - dask-geopandas
+  - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   - geopandas >=1.0
   - haversine >=2.8.1
   - leafmap
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
   - numpy >=1.25
-  - pandas >=2.2
+  - odc-stac
+  - pandas >=2.2,<3.0.0
   - planetary-computer
   - pooch >=1.8.0
   - pystac >=1.12.0
@@ -23,8 +25,8 @@ dependencies:
   - rasterio
   - ravenpy >=0.18.1
   - rioxarray >=0.15.0
+  - scipy
   - spotpy >=1.6.2
-  - stackstac >=0.5.1
   - statsmodels >=0.14.0
   - tqdm
   - xarray >=2023.11.0

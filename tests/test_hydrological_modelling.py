@@ -379,7 +379,7 @@ class TestFormatInputs:
     def test_raven_1dspatial(self):
         ds = self.ds_bad.copy()
         ds = ds.stack({"station": ("lon", "lat")})
-        ds = ds.drop_vars(["lon", "lat"]).reset_coords()
+        ds = ds.drop_vars(["station", "lon", "lat"]).reset_coords()
         ds = ds.assign_coords(
             {
                 "station": np.arange(len(ds.station)),
@@ -409,7 +409,7 @@ class TestFormatInputs:
     def test_missing_lon(self):
         ds = self.ds_bad.copy()
         ds = ds.stack({"station": ("lon", "lat")})
-        ds = ds.drop_vars(["lon", "lat"]).reset_coords()
+        ds = ds.drop_vars(["station", "lon", "lat"]).reset_coords()
         ds = ds.assign_coords(
             {
                 "station": np.arange(len(ds.station)),
@@ -442,7 +442,7 @@ class TestFormatInputs:
     def test_unrecog_1dspatial(self):
         ds = self.ds_bad.copy()
         ds = ds.stack({"station": ("lon", "lat")})
-        ds = ds.drop_vars(["lon", "lat"]).reset_coords()
+        ds = ds.drop_vars(["station", "lon", "lat"]).reset_coords()
         ds = ds.assign_coords(
             {
                 "station": np.arange(len(ds.station)),

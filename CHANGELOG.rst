@@ -4,11 +4,19 @@ Changelog
 
 v0.7.0 (unreleased)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event. (:pull:`370`).
+* New objective functions have been added to the calibration module. (:issue:`365`, :pull:`366`).
+* Added a new submodule `xhydro.indicators.signatures` to compute hydrological signatures. (:issue:`365`, :pull:`366`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The migration from `stackstac` to `odc-stac` in `xhydro.gis` has led to changes in the results of `xhydro.gis.land_use_classification` and `xhydro.gis.surface_properties` due to differences in projection handling between the two libraries. (:pull:`403`).
+    * Our tests show that the differences are generally minor, but users should verify that their results remain consistent after the update.
+* The `Upstream Area (sq. km).` column in the output of `xh.gis.watershed_properties` has been renamed to `Upstream Area (sq. km)`. (:pull:`403`).
 
 Bug fixes
 ^^^^^^^^^
@@ -27,6 +35,10 @@ Internal changes
     * `pre-commit` hooks have been updated
     * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
     * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+* Addressed multiple FutureWarnings coming from `xarray` and `pandas`. (:pull:`403`).
+* The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
+    * This change addresses compatibility issues with new versions of `rasterio`.
+* Added an additional xfail condition to the tests calling `planetary_computer` to account for occasional server issues. (:pull:`403`).
 
 v0.6.1 (2025-10-22)
 -------------------
