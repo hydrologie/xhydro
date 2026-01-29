@@ -179,6 +179,7 @@ class Hydrotel(HydrologicalModel):
         xr_open_kwargs_out: dict | None = None,
         check_missing=None,
         xr_open_kwargs_in=None,
+        output_flow: bool = True,
     ) -> str | xr.Dataset:
         """
         Run the simulation.
@@ -200,6 +201,8 @@ class Hydrotel(HydrologicalModel):
             Deprecated, as it was redundant with checkups performed by the Hydrotel executable.
         xr_open_kwargs_in : None
             Deprecated, as it is not used anymore.
+        output_flow : bool
+            If False, returns nothing, if True returns streamflow. Default is True.
 
         Returns
         -------
@@ -277,7 +280,10 @@ class Hydrotel(HydrologicalModel):
             warnings.warn("The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted.", stacklevel=2)
         self._standardise_outputs(**(xr_open_kwargs_out or {}))
 
-        return self.get_streamflow()
+        if output_flow:
+            return self.get_streamflow()
+        else:
+            return
 
     def get_inputs(self, subset_time: bool = False, return_config=False, **kwargs) -> xr.Dataset | tuple[xr.Dataset, dict]:
         r"""
