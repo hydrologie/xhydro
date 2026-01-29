@@ -664,7 +664,12 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False) -> xr.Dataset:
+    def run(
+        self,
+        *,
+        overwrite: bool = False,
+        output_flow: bool = True,
+    ) -> xr.Dataset:
         """
         Run the Raven hydrological model and return simulated streamflow.
 
@@ -672,6 +677,8 @@ class RavenpyModel(HydrologicalModel):
         ----------
         overwrite : bool
             If True, overwrite the existing output files. Default is False.
+        output_flow : bool
+            If False, returns nothing, if True returns streamflow. Default is True.
 
         Returns
         -------
@@ -707,7 +714,10 @@ class RavenpyModel(HydrologicalModel):
 
         self._standardise_outputs()
 
-        return self.get_streamflow()
+        if output_flow:
+            return self.get_streamflow()
+        else:
+            return
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
         r"""
@@ -775,6 +785,36 @@ class RavenpyModel(HydrologicalModel):
                 return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
             else:
                 return xr.open_dataset(outputs.files["hydrograph"], **kwargs)
+
+    def get_storage(self, output: Literal["all", "path"] = "q", **kwargs) -> xr.Dataset | Path:
+        r"""
+        Return the simulated streamflow from the Raven model.
+
+        Parameters
+        ----------
+        output : {"all", "path"}
+            The type of output to return.
+            If "all", return the entire hydrograph dataset.
+            If "path", return the path to the streamflow file.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        xr.Dataset
+            The streamflow file.
+        Path
+            The path to the streamflow file if output is set to "path".
+        """
+        outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
+
+        if output == "path":
+            return Path(outputs.files["storage"])
+        else:
+            if output == "all":
+                return xr.open_dataset(outputs.files["storage"], **kwargs)
+            else:
+                return xr.open_dataset(outputs.files["storage"], **kwargs)[[output]]
 
     def _read_qobs(self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q") -> None:
         """Read the observed streamflow data from a NetCDF file and update the .qobs properties of the RavenPy model."""
