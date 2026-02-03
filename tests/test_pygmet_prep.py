@@ -2,6 +2,7 @@ from xhydro.pygmet.make_toml_config_pygmet import write_config_toml
 from xhydro.pygmet.make_toml_settings_pygmet import write_settings_toml
 from xhydro.pygmet.subsample_vector_format_stations import isel_every_about_n
 from xhydro.pygmet.transform_to_station_order import convert_2d_nc_to_1d_stations, make_target_pygmet_grid
+from xhydro.testing.helpers import deveraux
 
 
 def test_make_pygmet_config():
@@ -50,8 +51,9 @@ def test_make_pygmet_settings():
 
 
 def test_convert_2d_to_1d():
-    path_nc_oi_precip = "./subset_oi_tp.nc"
-    path_nc_grid_temperature = "./subset_grid_temperature.nc"
+    path_nc_oi_precip = deveraux(branch="pygmet").fetch("pygmet/subset_oi_tp.nc")
+    path_nc_grid_temperature = deveraux(branch="pygmet").fetch("pygmet/subset_grid_temperature.nc")
+
     outpath = "./subset_reordered_grids_to_stations.nc/"
 
     convert_2d_nc_to_1d_stations(
