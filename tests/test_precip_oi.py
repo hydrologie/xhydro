@@ -1,13 +1,15 @@
 import datetime as dt
 
 import xhydro.optimal_interpolation.optimal_interpolation_precip as oi
+from xhydro.testing.helpers import deveraux
 
 
 start_time = dt.datetime(1970, 1, 1)
 end_time = dt.datetime(1970, 12, 31)
-filename_stations = "./stations_flags_clean_subset.nc"
-filename_gridded = "./ERA5_land_3_variables_raw_subset.nc"
-filename_output = "./ERA5Land_with_OI_flags_validation_subset.nc"
+
+filename_stations = deveraux(branch="pygmet").fetch("precip_oi/stations_flags_clean_subset.nc")
+filename_gridded = deveraux(branch="pygmet").fetch("precip_oi/ERA5_land_3_variables_raw_subset.nc")
+filename_output = deveraux(branch="pygmet").fetch("precip_oi/ERA5Land_with_OI_flags_validation_subset.nc")
 
 oi.main(
     start_time=start_time,
