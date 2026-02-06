@@ -29,7 +29,7 @@ __all__ = [
     "populate_testing_data",
 ]
 
-default_testdata_version = "v2025.8.14"
+default_testdata_version = "v2026.02.04"
 """Default version of the testing data to use when fetching datasets."""
 
 default_testdata_repo_url = "https://raw.githubusercontent.com/hydrologie/xhydro-testdata/"
