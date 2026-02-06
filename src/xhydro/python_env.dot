@@ -1,0 +1,4 @@
+# Source this file first if you don't have these in your profile
+# python3 with default packages for U2
+. ssmuse-sh -p /fs/ssm/eccc/cmd/cmds/env/python/py310_2023.07.28_all
+
