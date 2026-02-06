@@ -51,8 +51,8 @@ def test_make_pygmet_settings():
 
 
 def test_convert_2d_to_1d():
-    path_nc_oi_precip = deveraux(branch="pygmet").fetch("pygmet/subset_oi_tp.nc")
-    path_nc_grid_temperature = deveraux(branch="pygmet").fetch("pygmet/subset_grid_temperature.nc")
+    path_nc_oi_precip = deveraux().fetch("pygmet/subset_oi_tp.nc")
+    path_nc_grid_temperature = deveraux().fetch("pygmet/subset_grid_temperature.nc")
 
     outpath = "./subset_reordered_grids_to_stations.nc/"
 
@@ -80,6 +80,6 @@ def test_subsample_stations_for_pygmet():
 
 
 def test_make_target_pygmet_grid():
-    ds_in_path = "./subset_grid_temperature.nc"
+    ds_in_path = deveraux().fetch("pygmet/subset_grid_temperature.nc")
     outpath = "./new_grid_output_shape.nc"
     make_target_pygmet_grid(ds_in_path, outpath)
