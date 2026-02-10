@@ -27,6 +27,8 @@ Bug fixes
 * The version detection logic in `xhydro.modelling._hydrotel` should now be more robust. (:pull:`388`).
 * Added a temporary workaround in `xhydro.modelling._hydrotel` to avoid `OverflowError` when chunks are automatically estimated as `-1` by `xscen.estimate_chunks`. (:pull:`388`).
     * Automated chunk estimation is also now skipped if the dataset is smaller than 100 MB.
+* `xh.modelling.format_input` now correctly handles subdaily meteorological data with Hydrotel. (:pull:`405`).
+* `xh.modelling.format_input` now correctly handles station-based meteorological data with Hydrotel. (:pull:`405`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -39,6 +41,8 @@ Internal changes
 * The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
     * This change addresses compatibility issues with new versions of `rasterio`.
 * Added an additional xfail condition to the tests calling `planetary_computer` to account for occasional server issues. (:pull:`403`).
+* Updated `test_hydrotel.py` to enable testing with the Hydrotel executable and demo project. (:pull:`405`).
+    * You need to create a `.env` file in the `tests` directory and add the three required environment variables (`HYDROTEL_EXECUTABLE`, `HYDROTEL_DEMO`, and `HYDROTEL_VERSION`).
 
 v0.6.1 (2025-10-22)
 -------------------
