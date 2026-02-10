@@ -27,7 +27,7 @@ Bug fixes
 * The version detection logic in `xhydro.modelling._hydrotel` should now be more robust. (:pull:`388`).
 * Added a temporary workaround in `xhydro.modelling._hydrotel` to avoid `OverflowError` when chunks are automatically estimated as `-1` by `xscen.estimate_chunks`. (:pull:`388`).
     * Automated chunk estimation is also now skipped if the dataset is smaller than 100 MB.
-* `xh.modelling.format_input` now correctly handles subdaily meteorological data with Hydrotel. (:pull:`405`).
+* `xh.modelling.format_input` now correctly handles subdaily meteorological data with Hydrotel. (:issue:`404`, :pull:`405`).
 * `xh.modelling.format_input` now correctly handles station-based meteorological data with Hydrotel. (:pull:`405`).
 
 Internal changes
