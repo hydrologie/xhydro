@@ -1,18 +1,18 @@
 structure:
   _main:
-    - SLNO.csv
+    - DELISLE.csv
   etat:
     -
   hgm:
-    - malbaie.hgm
+    - hydrogramme.hgm
   hydro:
     - station.sth
   info:
     - uhrh_amont.txt
   meteo:
-    - SLNO_meteo_GC3H.nc
-    - SLNO_meteo_GC3H.nc.config
-    - SLNO_meteo_GC3H.pth
+    - meteo.nc
+    - meteo.nc.config
+    - meteo.pth
   neige:
     - station.stn
   physio:

@@ -63,8 +63,8 @@ def fake_hydrotel_project(
                 elif file is not None and Path(file).suffix not in [".nc", ".config"]:
                     (project_dir / k / file).touch()
     for file in struct["_main"]:
-        if file in ["SLNO.csv"]:
-            shutil.copy(default_csv / "SLNO.csv", project_dir / file)
+        if file in ["DELISLE.csv"]:
+            shutil.copy(default_csv / "DELISLE.csv", project_dir / file)
         elif file is not None:
             (project_dir / file).touch()
 
@@ -72,7 +72,7 @@ def fake_hydrotel_project(
     if isinstance(meteo, bool) and meteo:
         meteo = timeseries(
             np.zeros(365 * 2),
-            start="2001-01-01",
+            start="2020-01-01",
             freq="D",
             variable="tasmin",
             as_dataset=True,
@@ -80,14 +80,14 @@ def fake_hydrotel_project(
         )
         meteo["tasmax"] = timeseries(
             np.ones(365 * 2),
-            start="2001-01-01",
+            start="2020-01-01",
             freq="D",
             variable="tasmax",
             units="degC",
         )
         meteo["pr"] = timeseries(
             np.ones(365 * 2) * 10,
-            start="2001-01-01",
+            start="2020-01-01",
             freq="D",
             variable="pr",
             units="mm",
@@ -97,7 +97,7 @@ def fake_hydrotel_project(
         for c in ["lat", "lon", "z"]:
             meteo[c] = meteo[c].expand_dims("stations")
     if isinstance(meteo, xr.Dataset):
-        meteo.to_netcdf(project_dir / "meteo" / "SLNO_meteo_GC3H.nc")
+        meteo.to_netcdf(project_dir / "meteo" / "meteo.nc")
         cfg = pd.Series(
             {
                 "TYPE (STATION/GRID/GRID_EXTENT)": "STATION",
@@ -112,19 +112,19 @@ def fake_hydrotel_project(
             }
         )
         cfg.to_csv(
-            project_dir / "meteo" / "SLNO_meteo_GC3H.nc.config",
+            project_dir / "meteo" / "meteo.nc.config",
             sep=";",
             header=False,
             columns=[0],
         )
     else:
-        (project_dir / "meteo" / "SLNO_meteo_GC3H.nc").touch()
-        (project_dir / "meteo" / "SLNO_meteo_GC3H.nc.config").touch()
+        (project_dir / "meteo" / "meteo.nc").touch()
+        (project_dir / "meteo" / "meteo.nc.config").touch()
 
     if isinstance(debit_aval, bool) and debit_aval:
         debit_aval = timeseries(
             np.zeros(365 * 2),
-            start="2001-01-01",
+            start="2020-01-01",
             freq="D",
             variable="streamflow",
             as_dataset=True,

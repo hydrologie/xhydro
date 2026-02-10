@@ -1,11 +1,12 @@
 import os
+import shutil
 from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
 import pytest
-from packaging.version import parse
-from xclim import __version__ as __xclim_version__
+import xarray as xr
+from dotenv import load_dotenv
 from xclim.testing.helpers import test_timeseries as timeseries
 
 import xhydro.testing
@@ -13,19 +14,91 @@ from xhydro.modelling import Hydrotel, hydrological_model
 from xhydro.modelling._hydrotel import _overwrite_csv, _read_csv
 
 
+# If you want to execute the tests with the actual Hydrotel executable, create a .env file in the tests/ folder with the following variables:
+# HYDROTEL_DEMO: path to the DELISLE demo project (copied from https://github.com/INRS-Modelisation-hydrologique/hydrotel/tree/main/DemoProject/DELISLE)
+# HYDROTEL_EXECUTABLE: path to the Hydrotel executable
+# HYDROTEL_VERSION: version of Hydrotel (e.g. "4.3.6.0000")
+load_dotenv()
+hydrotel_demo = os.getenv("HYDROTEL_DEMO", None)
+hydrotel_executable = os.getenv("HYDROTEL_EXECUTABLE", "command")
+hydrotel_version = os.getenv("HYDROTEL_VERSION", None)
+if hydrotel_executable != "command" and (hydrotel_version is None or hydrotel_demo is None):
+    raise ValueError(
+        "If HYDROTEL_EXECUTABLE is set to a path, you must also set HYDROTEL_VERSION and HYDROTEL_DEMO to the"
+        " corresponding version and demo project path."
+    )
+
+
 class TestHydrotel:
-    def test_options(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir / "fake")
+    @pytest.fixture(scope="class")
+    def project_path(self, tmp_path_factory):
+        # Create a temporary directory for the project and clean it up after the tests
+        tmp_path_factory.mktemp("hydrotel")
+        yield tmp_path_factory.getbasetemp() / "hydrotel"
+        shutil.rmtree(tmp_path_factory.getbasetemp() / "hydrotel", ignore_errors=True)
+
+    @staticmethod
+    def create_project(project_path, replace_meteo=None, **kwargs):
+        if hydrotel_demo is None:
+            xhydro.testing.utils.fake_hydrotel_project(project_path, **kwargs)
+        else:
+            shutil.copytree(hydrotel_demo, project_path)
+            shutil.rmtree(project_path / "simulation" / "simulation" / "resultat", ignore_errors=True)
+            if replace_meteo is not None:
+                for f in (project_path / "meteo").glob("*"):
+                    f.unlink()
+
+                if replace_meteo in ["station", "grid"]:
+                    meteo = timeseries(
+                        np.zeros(365 * 2),
+                        start="2020-01-01",
+                        freq="D",
+                        variable="tasmin",
+                        as_dataset=True,
+                        units="degC",
+                    )
+                    meteo["tasmax"] = timeseries(
+                        np.ones(365 * 2),
+                        start="2020-01-01",
+                        freq="D",
+                        variable="tasmax",
+                        units="degC",
+                    )
+                    meteo["pr"] = timeseries(
+                        np.ones(365 * 2) * 10,
+                        start="2020-01-01",
+                        freq="D",
+                        variable="pr",
+                        units="mm",
+                    )
+                    if replace_meteo == "station":
+                        meteo = meteo.expand_dims({"stations": [0, 1, 2]})
+                        meteo["lat"] = xr.DataArray([45.18, 45.28, 45.38], dims=["stations"])
+                        meteo["lon"] = xr.DataArray([-74.18, -74.28, -74.38], dims=["stations"])
+                        meteo["z"] = xr.DataArray([0, 0, 0], dims=["stations"])
+                        meteo = meteo.assign_coords(coords={"lat": meteo.lat, "lon": meteo.lon, "z": meteo.z})
+                    else:
+                        meteo = meteo.expand_dims({"lat": [45.18, 45.28, 45.38], "lon": [-74.18, -74.28, -74.38]})
+                        meteo["z"] = xr.DataArray([[0, 0, 0], [0, 0, 0], [0, 0, 0]], dims=["lat", "lon"])
+
+                    meteo["lon"].attrs = {"units": "degrees_east"}
+                    meteo["lat"].attrs = {"units": "degrees_north"}
+                    meteo["z"].attrs = {"units": "m"}
+
+                    return meteo
+
+    def test_options(self, project_path):
+        self.create_project(project_path / "fake-for-options")
 
         model_config = dict(
             model_name="Hydrotel",
-            project_dir=tmpdir / "fake",
-            project_file="SLNO.csv",
+            project_dir=project_path / "fake-for-options",
+            project_file="DELISLE.csv",
             use_defaults=True,
-            executable="command",
+            executable=hydrotel_executable,
             project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
             simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
-            output_config={"TMAX_JOUR": "1"},
+            output_config={"TMAX_JOUR": "1", "OUTPUT_NETCDF": "1"},
         )
 
         with pytest.warns(FutureWarning, match="Please refer to the DemoProject in"):
@@ -34,7 +107,7 @@ class TestHydrotel:
             )
 
         assert ht.simulation_dir.name == "simulation"
-        assert ht.project_dir.name == "fake"
+        assert ht.project_dir.name == "fake-for-options"
 
         # Check that the configuration options have been updated and that the files have been overwritten
         assert ht.project_config["PROJET HYDROTEL VERSION"] == "2.1.0"
@@ -49,42 +122,68 @@ class TestHydrotel:
         df = _read_csv(ht.config_files["output"])
         assert ht.output_config == df
 
+        if hydrotel_executable != "command":
+            ds = ht.run()
+            # The version in the configuration should not affect the version in the output dataset, which is read from the output file attributes
+            assert ds.attrs["Hydrotel_version"] == hydrotel_version
+            assert ds.attrs["Hydrotel_config_version"] == "1.0.5"
+            assert (project_path / "fake-for-options" / "simulation" / "simulation" / "resultat" / "tmaxjour.nc").exists()
+
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
-    def test_get_data(self, tmpdir, test):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True, debit_aval=True)
-        if test == "station":
-            simulation_config = {"FICHIER STATIONS METEO": "meteo\\SLNO_meteo_GC3H.nc"}
-        elif test == "grid":
-            simulation_config = {"FICHIER GRILLE METEO": "meteo\\SLNO_meteo_GC3H.nc"}
+    def test_get_data(self, project_path, test):
+        meteo = self.create_project(
+            project_path / f"fake-for-get-data-{test}", replace_meteo=test if test in ["station", "grid"] else None, meteo=True, debit_aval=True
+        )
+
+        if test in ["station", "grid"]:
+            simulation_config = {
+                "FICHIER STATIONS METEO": "meteo\\meteo.nc",
+                "FICHIER GRILLE METEO": "",
+            }
         elif test == "none":
-            simulation_config = {}
+            if hydrotel_executable == "command":
+                simulation_config = {}
+            else:
+                simulation_config = {
+                    "FICHIER STATIONS METEO": "",
+                    "FICHIER GRILLE METEO": "",
+                }
         else:
             simulation_config = {
-                "FICHIER STATIONS METEO": "meteo\\SLNO_meteo_GC3H.nc",
-                "FICHIER GRILLE METEO": "meteo\\SLNO_meteo_GC3H.nc",
+                "FICHIER STATIONS METEO": "meteo\\meteo.nc",
+                "FICHIER GRILLE METEO": "meteo\\meteo.nc",
             }
 
         ht = Hydrotel(
-            project_dir=tmpdir,
-            project_file="SLNO.csv",
-            executable="command",
+            project_dir=project_path / f"fake-for-get-data-{test}",
+            project_file="DELISLE.csv",
+            executable=hydrotel_executable,
             simulation_config=simulation_config,
+            output_config={"OUTPUT_NETCDF": "1"},
         )
         if test in ["station", "grid"]:
-            ds = ht.get_inputs(return_config=True if test == "station" else False)
-            if isinstance(ds, tuple):
-                ds, config = ds
-                assert config["STATION_DIM_NAME"] == "stations"
-                assert config["TMAX_NAME"] == "tasmax"
+            if hydrotel_executable != "command":
+                xhydro.modelling.format_input(meteo, "Hydrotel", save_as=project_path / f"fake-for-get-data-{test}" / "meteo" / "meteo.nc")
+                ht.run()
 
+            ds, config = ht.get_inputs(return_config=True)
+            assert config["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"  # It's always reformatted to stations
+            assert config["STATION_DIM_NAME"] == "station_id" if hydrotel_executable != "command" else "stations"
+            assert config["TMAX_NAME"] == "tasmax"
             assert all(v in ds.variables for v in ["tasmin", "tasmax", "pr"])
-            np.testing.assert_array_equal(ds.tasmin, np.zeros([1, 365 * 2]))
-            np.testing.assert_array_equal(ds.tasmax.mean(), 1)
+            np.testing.assert_array_equal(ds.tasmin, 0)
+            np.testing.assert_array_equal(ds.tasmax, 1)
 
-            ds = ht.get_streamflow()
-            assert all(v in ds.variables for v in ["debit_aval"])
-            assert set(ds.dims) == {"time", "troncon"}
-            np.testing.assert_array_equal(ds.debit_aval.mean(), 0)
+            out = ht.get_streamflow()
+            if hydrotel_executable == "command":
+                assert all(v in out.variables for v in ["debit_aval"])
+                assert set(out.dims) == {"time", "troncon"}
+                np.testing.assert_array_equal(out.debit_aval.mean(), 0)
+            else:
+                assert all(v in out.variables for v in ["q"])
+                assert set(out.dims) == {"time", "subbasin_id"}
+                np.testing.assert_array_almost_equal(out.q.mean(), 10.15166855)
+
         elif test == "toomany":
             with pytest.raises(
                 ValueError,
@@ -99,76 +198,102 @@ class TestHydrotel:
                 ht.get_inputs()
 
     @pytest.mark.parametrize("subset", [True, False])
-    def test_input_dates(self, tmpdir, subset):
+    def test_input_dates(self, project_path, subset):
         meteo = timeseries(
-            np.zeros(365 * 10),
-            start="2001-01-01",
+            np.zeros(365 * 2),
+            start="2020-01-01",
             freq="D",
             variable="tasmin",
             as_dataset=True,
-            units="K",
+            units="degC",
         )
         meteo["tasmax"] = timeseries(
-            np.ones(365 * 10),
-            start="2001-01-01",
+            np.ones(365 * 2),
+            start="2020-01-01",
             freq="D",
             variable="tasmax",
             units="degC",
         )
         meteo["pr"] = timeseries(
-            np.ones(365 * 10) * 10,
-            start="2001-01-01",
+            np.ones(365 * 2) * 10,
+            start="2020-01-01",
             freq="D",
             variable="pr",
             units="mm",
         )
-        meteo = meteo.expand_dims("stations").assign_coords(stations=["010101"])
-        meteo = meteo.assign_coords(coords={"lat": 46, "lon": -77})
-        for c in ["lat", "lon"]:
-            meteo[c] = meteo[c].expand_dims("stations")
+        meteo = meteo.expand_dims({"stations": [0, 1, 2]})
+        meteo["lat"] = xr.DataArray([45.18, 45.28, 45.38], dims=["stations"])
+        meteo["lon"] = xr.DataArray([-74.18, -74.28, -74.38], dims=["stations"])
+        meteo["z"] = xr.DataArray([0, 0, 0], dims=["stations"])
+        meteo = meteo.assign_coords(coords={"lat": meteo.lat, "lon": meteo.lon, "z": meteo.z})
+        meteo["lon"].attrs = {"units": "degrees_east"}
+        meteo["lat"].attrs = {"units": "degrees_north"}
+        meteo["z"].attrs = {"units": "m"}
+        self.create_project(project_path / f"fake-for-input-dates-{subset}", replace_meteo="grid", meteo=meteo)
 
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=meteo)
-
-        date_debut = "2002-01-01"
-        date_fin = "2005-12-31"
+        date_debut = "2021-01-01"
+        date_fin = "2021-05-31"
         simulation_config = {
-            "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
+            "FICHIER STATIONS METEO": "meteo\\meteo.nc",
             "DATE DEBUT": date_debut,
             "DATE FIN": date_fin,
             "PAS DE TEMPS": 24,
         }
         ht = Hydrotel(
-            project_dir=tmpdir,
-            project_file="SLNO.csv",
-            executable="command",
+            project_dir=project_path / f"fake-for-input-dates-{subset}",
+            project_file="DELISLE.csv",
+            executable=hydrotel_executable,
             simulation_config=simulation_config,
+            output_config={"OUTPUT_NETCDF": "1"},
         )
+        assert ht.simulation_config["DATE DEBUT"] == f"{date_debut} 00:00"
+        assert ht.simulation_config["DATE FIN"] == f"{date_fin} 00:00"
+
+        if hydrotel_executable != "command":
+            xhydro.modelling.format_input(meteo, "Hydrotel", save_as=project_path / f"fake-for-input-dates-{subset}" / "meteo" / "meteo.nc")
+            ht.run()
 
         ds = ht.get_inputs(subset_time=subset)
         if subset:
             assert ds.time.min().dt.strftime("%Y-%m-%d").item() == date_debut
             assert ds.time.max().dt.strftime("%Y-%m-%d").item() == date_fin
         else:
-            assert ds.time.min().dt.strftime("%Y-%m-%d").item() == "2001-01-01"
-            assert ds.time.max().dt.strftime("%Y-%m-%d").item() == "2010-12-29"
+            assert ds.time.min().dt.strftime("%Y-%m-%d").item() == "2020-01-01"
+            assert ds.time.max().dt.strftime("%Y-%m-%d").item() == "2021-12-30"
 
-    def test_standard(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, debit_aval=True)
+        if hydrotel_executable != "command":
+            out = ht.get_streamflow()
+            np.testing.assert_array_equal(out.time.min().dt.strftime("%Y-%m-%d").item(), date_debut)
+            np.testing.assert_array_equal(out.time.max().dt.strftime("%Y-%m-%d").item(), "2021-05-30")  # The end date in Hydrotel is exclusive
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command")
-        with ht.get_streamflow() as ds_tmp:
-            ds_orig = deepcopy(ds_tmp)
-        ht._standardise_outputs()
+    def test_standard(self, project_path):
+        self.create_project(project_path / "fake-for-standard", debit_aval=True)
+
+        ht = Hydrotel(
+            project_dir=project_path / "fake-for-standard",
+            project_file="DELISLE.csv",
+            executable=hydrotel_executable,
+            output_config={"OUTPUT_NETCDF": "1"},
+        )
+
+        if hydrotel_executable != "command":
+            ht.run()
+            ds_orig = None
+        else:
+            with ht.get_streamflow() as ds_tmp:
+                ds_orig = deepcopy(ds_tmp)
+            ht._standardise_outputs()
         ds = ht.get_streamflow()
 
-        # To make sure the original dataset was not modified prior to standardisation
-        assert list(ds_orig.data_vars) == ["debit_aval"]
-        assert set(ds_orig.dims) == {"time", "troncon"}
+        if ds_orig is not None:
+            # To make sure the original dataset was not modified prior to standardisation
+            assert list(ds_orig.data_vars) == ["debit_aval"]
+            assert set(ds_orig.dims) == {"time", "troncon"}
 
         assert list(ds.data_vars) == ["q"]
         assert set(ds.dims) == {"time", "subbasin_id"}
         correct_attrs = {
-            "units": ("m^3 s-1" if parse(__xclim_version__) < parse("0.48.0") else "m3 s-1"),
+            "units": "m3 s-1",
             "description": "Simulated streamflow at the outlet of the subbasin.",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
             "long_name": "Simulated streamflow",
@@ -179,109 +304,162 @@ class TestHydrotel:
         for k, v in correct_attrs.items():
             assert ds.q.attrs[k] == v
 
-        assert ds.attrs["Hydrotel_version"] == "unspecified"
-        assert ds.attrs["Hydrotel_config_version"] == ""
+        assert ds.attrs["Hydrotel_version"] == "unspecified" if hydrotel_executable == "command" else hydrotel_version
+        assert ds.attrs["Hydrotel_config_version"] == "" if hydrotel_executable == "command" else "4.3.1.0000"
 
         assert "initial_simulation_path" not in ds.attrs
 
-    def test_simname(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
+    def test_simname(self, project_path):
+        self.create_project(project_path / "fake-for-simname", debit_aval=True)
         with pytest.raises(ValueError, match="folder does not exist"):
             Hydrotel(
-                tmpdir,
-                "SLNO.csv",
+                project_path / "fake-for-simname",
+                "DELISLE.csv",
                 executable="command",
                 project_config={"SIMULATION COURANTE": "test"},
             )
 
-        ht = Hydrotel(tmpdir, "SLNO.csv", executable="command")
+        ht = Hydrotel(project_path / "fake-for-simname", "DELISLE.csv", executable="command")
         with pytest.raises(ValueError, match="folder does not exist"):
             ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
-        Path(tmpdir / "simulation" / "simulation").rename(
-            tmpdir / "simulation" / "test",
+        Path(project_path / "fake-for-simname" / "simulation" / "simulation").rename(
+            project_path / "fake-for-simname" / "simulation" / "test",
         )
-        Path(tmpdir / "simulation" / "test" / "simulation.csv").rename(
-            tmpdir / "simulation" / "test" / "test.csv",
+        Path(project_path / "fake-for-simname" / "simulation" / "test" / "simulation.csv").rename(
+            project_path / "fake-for-simname" / "simulation" / "test" / "test.csv",
         )
-        Hydrotel(
-            tmpdir,
-            "SLNO.csv",
-            executable="command",
+        Path(project_path / "fake-for-simname" / "simulation" / "test" / "simulation.gsb").rename(
+            project_path / "fake-for-simname" / "simulation" / "test" / "test.gsb",
+        )
+        ht2 = Hydrotel(
+            project_path / "fake-for-simname",
+            "DELISLE.csv",
+            executable=hydrotel_executable,
             project_config={"SIMULATION COURANTE": "test"},
+            output_config={"OUTPUT_NETCDF": "1"},
         )
-
-    def test_dates(self, tmpdir):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir)
-        ht = Hydrotel(
-            tmpdir,
-            "SLNO.csv",
-            executable="command",
-            simulation_config={"DATE DEBUT": "2001-01-01", "DATE FIN": "2001-12-31 12"},
-        )
-        assert ht.simulation_config["DATE DEBUT"] == "2001-01-01 00:00"
-        assert ht.simulation_config["DATE FIN"] == "2001-12-31 12:00"
+        if hydrotel_executable != "command":
+            ht2.run()
 
     @pytest.mark.parametrize("test", ["ok", "pdt", "cfg", "raise"])
-    def test_run(self, tmpdir, test):
-        xhydro.testing.utils.fake_hydrotel_project(tmpdir, meteo=True)
+    def test_run(self, project_path, test):
+        self.create_project(project_path / f"fake-for-run-{test}", meteo=True)
+
+        path_to_executable = hydrotel_executable if test != "raise" else "not_a_command"
+        if path_to_executable == "command":
+            path_to_executable = "hydrotel"
         ht = Hydrotel(
-            tmpdir,
-            "SLNO.csv",
-            executable="hydrotel" if test != "raise" else "command",
-            simulation_config={
-                "DATE DEBUT": "2001-01-01",
-                "DATE FIN": "2001-12-31",
-                "FICHIER STATIONS METEO": r"meteo\SLNO_meteo_GC3H.nc",
-                "PAS DE TEMPS": (24 if test != "pdt" else None),  # xHydro no longer checks the configuration files
-            },
+            project_dir=project_path / f"fake-for-run-{test}",
+            project_file="DELISLE.csv",
+            executable=path_to_executable,
         )
 
-        if os.name == "nt":
-            with pytest.raises(ValueError, match="You must specify the path to Hydrotel.exe"):
+        if test in ["ok", "pdt"]:
+            command = ht.run(dry_run=True)
+            assert command == f"{path_to_executable} {ht.config_files['project']} -t 1"
+        elif test == "cfg":
+            run_options = ["-t 10", "-c", "-s"]
+            check_missing = True
+            xr_open_kwargs_in = {"chunks": {"time": 10}}
+            with pytest.warns(
+                FutureWarning,
+            ) as w:
+                command = ht.run(
+                    dry_run=True,
+                    run_options=run_options,
+                    check_missing=check_missing,
+                    xr_open_kwargs_in=xr_open_kwargs_in,
+                )
+            assert len(w) == 2
+            assert command == (f"{path_to_executable} {ht.config_files['project']} -c -s -t 10")
+        elif test == "raise":
+            with pytest.raises(
+                ValueError,
+                match="The executable command does not seem to be a valid Hydrotel command",
+            ):
                 ht.run(dry_run=True)
-        else:
-            if test in ["ok", "pdt"]:
-                command = ht.run(dry_run=True)
-                assert command == f"hydrotel {ht.config_files['project']} -t 1"
-            elif test == "cfg":
-                run_options = ["-t 10", "-c", "-s"]
-                check_missing = True
-                xr_open_kwargs_in = {"chunks": {"time": 10}}
-                with pytest.warns(
-                    FutureWarning,
-                ) as w:
-                    command = ht.run(
-                        dry_run=True,
-                        run_options=run_options,
-                        check_missing=check_missing,
-                        xr_open_kwargs_in=xr_open_kwargs_in,
-                    )
-                assert len(w) == 2
-                assert command == (f"hydrotel {ht.config_files['project']} -c -s -t 10")
-            elif test == "raise":
-                with pytest.raises(
-                    ValueError,
-                    match="The executable command does not seem to be a valid Hydrotel command",
-                ):
-                    ht.run(dry_run=True)
+
+    # This test is quite slow, because Hydrotel needs to recompute one of the files with the new time step.
+    def test_subdaily(self, project_path):
+        meteo = timeseries(
+            np.zeros(365 * 2),
+            start="2020-01-01",
+            freq="3H",
+            variable="tasmin",
+            as_dataset=True,
+            units="degC",
+        )
+        meteo["tasmax"] = timeseries(
+            np.ones(365 * 2),
+            start="2020-01-01",
+            freq="3H",
+            variable="tasmax",
+            units="degC",
+        )
+        meteo["pr"] = timeseries(
+            np.ones(365 * 2) * 10,
+            start="2020-01-01",
+            freq="3H",
+            variable="pr",
+            units="mm",
+        )
+        meteo = meteo.expand_dims({"stations": [0, 1, 2]})
+        meteo["lat"] = xr.DataArray([45.18, 45.28, 45.38], dims=["stations"])
+        meteo["lon"] = xr.DataArray([-74.18, -74.28, -74.38], dims=["stations"])
+        meteo["z"] = xr.DataArray([0, 0, 0], dims=["stations"])
+        meteo = meteo.assign_coords(coords={"lat": meteo.lat, "lon": meteo.lon, "z": meteo.z})
+        meteo["lon"].attrs = {"units": "degrees_east"}
+        meteo["lat"].attrs = {"units": "degrees_north"}
+        meteo["z"].attrs = {"units": "m"}
+        self.create_project(project_path / "fake-for-subdaily", replace_meteo="delete", meteo=meteo)
+
+        ht = Hydrotel(
+            project_dir=project_path / "fake-for-subdaily",
+            project_file="DELISLE.csv",
+            executable=hydrotel_executable,
+            simulation_config={
+                "FICHIER STATIONS METEO": "meteo\\meteo.nc",
+                "DATE DEBUT": "2020-01-01",
+                "DATE FIN": "2020-02-01",
+                "PAS DE TEMPS": 3,
+                "LECTURE ETAT FONTE NEIGE": "",
+                "LECTURE ETAT BILAN VERTICAL": "",
+                "LECTURE ETAT RUISSELEMENT SURFACE": "",
+                "LECTURE ETAT ACHEMINEMENT RIVIERE": "",
+            },
+            output_config={"OUTPUT_NETCDF": "1"},
+        )
+        assert ht.simulation_config["DATE DEBUT"] == "2020-01-01 00:00"
+        assert ht.simulation_config["DATE FIN"] == "2020-02-01 00:00"
+
+        ds, _ = xhydro.modelling.format_input(meteo, "Hydrotel", save_as=project_path / "fake-for-subdaily" / "meteo" / "meteo.nc")
+        assert xr.infer_freq(xr.decode_cf(ds).time) == "3h"
+
+        if hydrotel_executable != "command":
+            shutil.rmtree(project_path / "fake-for-subdaily" / "etats", ignore_errors=True)
+            ht.run()
+            out = ht.get_streamflow()
+            assert xr.infer_freq(out.time) == "3h"
+            assert out.time.min().dt.strftime("%Y-%m-%d %H:%M").item() == "2020-01-01 00:00"
+            assert out.time.max().dt.strftime("%Y-%m-%d %H:%M").item() == "2020-01-31 21:00"
 
     def test_errors(self, tmpdir):
         # Missing project folder
         with pytest.raises(ValueError, match="The project folder does not exist."):
-            Hydrotel("fake", "SLNO.csv", executable="command")
+            Hydrotel("fake", "DELISLE.csv", executable="command")
 
         # Missing project name
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
         project_config = {
             "SIMULATION COURANTE": "",
         }
-        _overwrite_csv(tmpdir / "SLNO.csv", project_config)
+        _overwrite_csv(tmpdir / "DELISLE.csv", project_config)
         with pytest.raises(
             ValueError,
             match="'SIMULATION COURANTE' must be specified",
         ):
-            Hydrotel(tmpdir, "SLNO.csv", executable="command")
+            Hydrotel(tmpdir, "DELISLE.csv", executable="command")
 
         # Simulation does not match project name
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
@@ -295,13 +473,13 @@ class TestHydrotel:
             FileNotFoundError,
             match="/abc/abc.csv",
         ):
-            Hydrotel(tmpdir, "SLNO.csv", executable="command", project_config=project_config)
+            Hydrotel(tmpdir, "DELISLE.csv", executable="command", project_config=project_config)
 
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)
         # Remove simulation.csv
         Path(tmpdir / "simulation" / "simulation" / "simulation.csv").unlink()
         with pytest.raises(FileNotFoundError):
-            Hydrotel(tmpdir, "SLNO.csv", executable="command")
+            Hydrotel(tmpdir, "DELISLE.csv", executable="command")
 
     def test_bad_overwrite(self, tmpdir):
         xhydro.testing.utils.fake_hydrotel_project(tmpdir)

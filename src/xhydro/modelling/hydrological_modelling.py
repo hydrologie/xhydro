@@ -392,8 +392,11 @@ def format_input(  # noqa: C901
             if c in ds:
                 ds[c] = ds[c].expand_dims("station_id")
 
-        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
-        ds = ds.transpose("station_id", "time")
+        # Reorder dimensions to match model expectations
+        if model == "Hydrotel":
+            ds = ds.transpose("time", "station_id")  # Hydrotel expects (time, station)
+        else:
+            ds = ds.transpose("station_id", "time")  # Raven expects (station, time)
 
     # Case 2: Time series with a station dimension
     elif (ds.cf.axes.get("X") is None and ds.cf.cf_roles.get("timeseries_id") is not None) or len(ds.squeeze().dims) == 2:
@@ -412,8 +415,11 @@ def format_input(  # noqa: C901
         ds["station_id"] = ds["station_id"].astype(str)  # Raven needs the station dimension to be a string
         ds["station_id"].attrs["cf_role"] = "timeseries_id"
 
-        # Reorder dimensions to match Raven's expectations for .rvt (station, t)
-        ds = ds.transpose("station_id", "time")
+        # Reorder dimensions to match model expectations
+        if model == "Hydrotel":
+            ds = ds.transpose("time", "station_id")  # Hydrotel expects (time, station)
+        else:
+            ds = ds.transpose("station_id", "time")  # Raven expects (station, time)
 
     # Case 3: Time series with a gridded dataset
     elif (ds.cf.axes.get("X") is not None) or len(ds.squeeze().dims) == 3:
@@ -475,14 +481,14 @@ def format_input(  # noqa: C901
 
     # Additional data processing specific to Hydrotel
     if model == "Hydrotel":
-        # Time units in Hydrotel must be exactly "days since 1970-01-01 00:00:00"
+        # Time units in Hydrotel must be exactly "days/minutes since 1970-01-01 00:00:00"
         # We need to convert the time variable to a 1D array of integers to prevent xarray from trying to convert it to a datetime64 array
-        new_time = (ds["time"].values - np.datetime64("1970-01-01 00:00:00")).astype("timedelta64[D]").astype(int)
+        new_time = (ds["time"].values - np.datetime64("1970-01-01 00:00:00")).astype("timedelta64[m]").astype(int)
         ds["time"] = xr.DataArray(
             new_time,
             dims="time",
             coords={"time": new_time},
-            attrs={"units": "days since 1970-01-01 00:00:00"},
+            attrs={"units": "minutes since 1970-01-01 00:00:00"},
         )
 
         # Prepare the information for the .nc.config file
