@@ -239,8 +239,8 @@ class TestFormatInputs:
         assert ds_out.tasmax.attrs["units"] == "degC"
         assert ds_out.pr.attrs["units"] == "mm"
 
-        assert ds_out.time.attrs["units"] == "days since 1970-01-01 00:00:00"
-        np.testing.assert_array_equal(ds_out.time[0], 10957)
+        assert ds_out.time.attrs["units"] == "minutes since 1970-01-01 00:00:00"
+        np.testing.assert_array_equal(ds_out.time[0], 15778080)
         np.testing.assert_array_equal(ds_loaded.time[0], pd.Timestamp("2000-01-01").to_datetime64())
 
     def test_hydrotel_calendars(self, tmpdir):
