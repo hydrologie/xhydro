@@ -293,7 +293,7 @@ def format_input(  # noqa: C901
                 stacklevel=2,
             )
 
-    elif model == "Hydrotel":
+    elif model == "HYDROTEL":
         required_vars.extend(["longitude", "latitude", "elevation", "tasmax", "tasmin", "pr"])
 
     if not all(v in ds for v in required_vars):

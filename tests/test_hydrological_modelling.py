@@ -249,7 +249,7 @@ class TestFormatInputs:
 
         with pytest.raises(
             ValueError,
-            match="is not supported by Hydrotel.",
+            match="is not supported by HYDROTEL.",
         ):
             ds_out, _ = format_input(ds, "Hydrotel", convert_calendar_missing=False)
         with pytest.warns(

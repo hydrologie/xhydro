@@ -125,8 +125,8 @@ class TestHydrotel:
         if hydrotel_executable != "command":
             ds = ht.run()
             # The version in the configuration should not affect the version in the output dataset, which is read from the output file attributes
-            assert ds.attrs["Hydrotel_version"] == hydrotel_version
-            assert ds.attrs["Hydrotel_config_version"] == "1.0.5"
+            assert ds.attrs["HYDROTEL_version"] == hydrotel_version
+            assert ds.attrs["HYDROTEL_config_version"] == "1.0.5"
             assert (project_path / "fake-for-options" / "simulation" / "simulation" / "resultat" / "tmaxjour.nc").exists()
 
     @pytest.mark.parametrize("test", ["station", "grid", "none", "toomany"])
@@ -304,8 +304,8 @@ class TestHydrotel:
         for k, v in correct_attrs.items():
             assert ds.q.attrs[k] == v
 
-        assert ds.attrs["Hydrotel_version"] == "unspecified" if hydrotel_executable == "command" else hydrotel_version
-        assert ds.attrs["Hydrotel_config_version"] == "" if hydrotel_executable == "command" else "4.3.1.0000"
+        assert ds.attrs["HYDROTEL_version"] == "unspecified" if hydrotel_executable == "command" else hydrotel_version
+        assert ds.attrs["HYDROTEL_config_version"] == "" if hydrotel_executable == "command" else "4.3.1.0000"
 
         assert "initial_simulation_path" not in ds.attrs
 
@@ -371,7 +371,7 @@ class TestHydrotel:
         elif test == "raise":
             with pytest.raises(
                 ValueError,
-                match="The executable command does not seem to be a valid Hydrotel command",
+                match="The executable command does not seem to be a valid HYDROTEL command",
             ):
                 ht.run(dry_run=True)
 
