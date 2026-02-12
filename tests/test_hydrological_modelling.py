@@ -174,7 +174,7 @@ class TestFormatInputs:
         if lons == "360":
             ds = cf_convert_between_lon_frames(ds, (0, 360))[0]
 
-        ds_out, cfg = format_input(ds, "Hydrotel", save_as=tmpdir / "meteo.nc")
+        ds_out, cfg = format_input(ds, "hydrotel", save_as=tmpdir / "meteo.nc")
 
         ds_loaded = xr.open_dataset(tmpdir / "meteo.nc")
         # Time will differ when xarray reads the file

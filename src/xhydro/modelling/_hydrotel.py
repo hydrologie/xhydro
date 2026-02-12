@@ -24,7 +24,7 @@ __all__ = ["Hydrotel"]
 
 class Hydrotel(HydrologicalModel):
     """
-    Class to handle Hydrotel simulations.
+    Class to handle HYDROTEL simulations.
 
     Parameters
     ----------
@@ -33,8 +33,8 @@ class Hydrotel(HydrologicalModel):
     project_file : str
         Name of the project file (e.g. 'projet.csv').
     executable : str or Path
-        Command to execute Hydrotel.
-        On Windows, this should be the path to Hydrotel.exe.
+        Command to execute HYDROTEL.
+        On Windows, this should be the path to hydrotel.exe.
     project_config : dict, optional
         Dictionary of configuration options to overwrite in the project file.
     simulation_config : dict, optional
@@ -49,10 +49,10 @@ class Hydrotel(HydrologicalModel):
     -----
     The name of the simulation file must match the name of the 'SIMULATION COURANTE' option in the project file.
 
-    This class is designed to handle the execution of Hydrotel simulations, with the ability to overwrite configuration options,
+    This class is designed to handle the execution of HYDROTEL simulations, with the ability to overwrite configuration options,
     but it does not handle the creation of the project folder itself. The project folder must be created beforehand.
 
-    For more information on how to configure the project, refer to the documentation of Hydrotel:
+    For more information on how to configure the project, refer to the documentation of HYDROTEL:
     https://github.com/INRS-Modelisation-hydrologique/hydrotel
     """
 
@@ -76,7 +76,7 @@ class Hydrotel(HydrologicalModel):
                 stacklevel=2,
             )
 
-        """Initialize the Hydrotel simulation."""
+        """Initialize the HYDROTEL simulation."""
         project_config = project_config or dict()
         simulation_config = simulation_config or dict()
         output_config = output_config or dict()
@@ -186,7 +186,7 @@ class Hydrotel(HydrologicalModel):
         Parameters
         ----------
         run_options : list[str] | None
-            Additional options to pass to the Hydrotel executable.
+            Additional options to pass to the HYDROTEL executable.
             Common arguments include:
             - `-t NUM`: Run the simulation using a given number of threads (default is 1).
             - `-c`: Skip the validation of the input files.
@@ -197,7 +197,7 @@ class Hydrotel(HydrologicalModel):
         xr_open_kwargs_out : dict, optional
             Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading the raw output files.
         check_missing : None
-            Deprecated, as it was redundant with checkups performed by the Hydrotel executable.
+            Deprecated, as it was redundant with checkups performed by the HYDROTEL executable.
         xr_open_kwargs_in : None
             Deprecated, as it is not used anymore.
 
@@ -211,7 +211,7 @@ class Hydrotel(HydrologicalModel):
         if check_missing is not None:
             warnings.warn(
                 "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The Hydrotel executable already performs checks on the input files. "
+                "The HYDROTEL executable already performs checks on the input files. "
                 "This parameter will be removed in xHydro v0.7.0.",
                 FutureWarning,
                 stacklevel=2,
@@ -224,9 +224,9 @@ class Hydrotel(HydrologicalModel):
             )
 
         if os.name == "nt" and Path(self.executable).suffix != ".exe":
-            raise ValueError("You must specify the path to Hydrotel.exe")
+            raise ValueError("You must specify the path to hydrotel.exe")
         if "hydrotel" not in self.executable.lower():
-            raise ValueError("The executable command does not seem to be a valid Hydrotel command. Please check the 'executable' parameter.")
+            raise ValueError("The executable command does not seem to be a valid HYDROTEL command. Please check the 'executable' parameter.")
 
         # Make sure that the files reflect the configuration
         self.update_config(
@@ -252,7 +252,7 @@ class Hydrotel(HydrologicalModel):
         else:
             run_options.append("-t 1")
 
-        # Hydrotel cares about the order of the arguments
+        # HYDROTEL cares about the order of the arguments
         call = [
             self.executable,
             *[r for r in run_options if any(opt in r for opt in ["-i", "-g", "-n", "-u", "-v"])],
@@ -414,10 +414,10 @@ class Hydrotel(HydrologicalModel):
                 )
             hydrotel_version = re.search(r"HYDROTEL \d\.\d\.\d.\d{4}", stdout)
             if hydrotel_version is not None:
-                ds.attrs["Hydrotel_version"] = hydrotel_version.group(0).split(" ")[1]
+                ds.attrs["HYDROTEL_version"] = hydrotel_version.group(0).split(" ")[1]
             else:
-                ds.attrs["Hydrotel_version"] = "unspecified"
-            ds.attrs["Hydrotel_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
+                ds.attrs["HYDROTEL_version"] = "unspecified"
+            ds.attrs["HYDROTEL_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
 
             # Overwrite the file
             # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
@@ -447,7 +447,7 @@ class Hydrotel(HydrologicalModel):
 
 
 def _fix_os_paths(d: dict):
-    """Convert paths to fit the OS. Probably not required anymore as of Hydrotel 4.3.2, but kept in case."""
+    """Convert paths to fit the OS. Probably not required anymore as of HYDROTEL 4.3.2, but kept in case."""
     return {k: (str(Path(PureWindowsPath(v).as_posix())) if any(slash in str(v) for slash in ["/", "\\"]) else v) for k, v in d.items()}
 
 
@@ -503,7 +503,7 @@ def _overwrite_csv(file: str | os.PathLike, d: dict):
     """
     Overwrite a CSV file with new configuration options.
 
-    Hydrotel is very picky about the formatting of the files and needs blank lines at specific places
+    Older versions of HYDROTEL are very picky about the formatting of the files and need blank lines at specific places
     so we can't use pandas or a simple dictionary to read the files.
 
     Parameters

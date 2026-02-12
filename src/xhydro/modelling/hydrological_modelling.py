@@ -22,7 +22,7 @@ from ._ravenpy_models import RavenpyModel
 __all__ = ["format_input", "get_hydrological_model_inputs", "hydrological_model"]
 
 
-def hydrological_model(model_config):
+def hydrological_model(model_config: dict) -> Hydrotel | RavenpyModel:
     """
     Initialize an instance of a hydrological model.
 
@@ -30,7 +30,7 @@ def hydrological_model(model_config):
     ----------
     model_config : dict
         A dictionary containing the configuration for the hydrological model.
-        Must contain a key "model_name" with the name of the model to use: "Hydrotel".
+        Must contain a key "model_name" with the name of the model to use: e.g. "Hydrotel".
         The required keys depend on the model being used. Use the function
         `get_hydrological_model_inputs` to get the required keys for a given model.
 
@@ -43,19 +43,19 @@ def hydrological_model(model_config):
         raise ValueError("The model name must be provided in the model configuration.")
 
     model_config = deepcopy(model_config)
-    model_name = model_config["model_name"]
+    model_name = str(model_config["model_name"]).upper()
 
-    if model_name == "Hydrotel":
+    if model_name == "HYDROTEL":
         model_config.pop("model_name")
         return Hydrotel(**model_config)
 
     elif model_name in [
-        "Blended",
+        "BLENDED",
         "GR4JCN",
         "HBVEC",
         "HMETS",
         "HYPR",
-        "Mohyse",
+        "MOHYSE",
         "SACSMA",
     ]:
         return RavenpyModel(**model_config)
@@ -63,7 +63,7 @@ def hydrological_model(model_config):
         raise NotImplementedError(f"The model '{model_name}' is not recognized.")
 
 
-def get_hydrological_model_inputs(model_name, required_only: bool = False) -> tuple[dict, str]:
+def get_hydrological_model_inputs(model_name: str, required_only: bool = False) -> tuple[dict, str]:
     """
     Get the required inputs for a given hydrological model.
 
@@ -71,7 +71,7 @@ def get_hydrological_model_inputs(model_name, required_only: bool = False) -> tu
     ----------
     model_name : str
         The name of the hydrological model to use.
-        Currently supported models are ["Hydrotel", "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"].
+        Currently supported models are ["HYDROTEL", "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"].
     required_only : bool
         If True, only the required inputs will be returned.
 
@@ -82,15 +82,16 @@ def get_hydrological_model_inputs(model_name, required_only: bool = False) -> tu
     str
         The documentation for the hydrological model.
     """
-    if model_name == "Hydrotel":
+    model_name = model_name.upper()
+    if model_name == "HYDROTEL":
         model = Hydrotel
     elif model_name in [
-        "Blended",
+        "BLENDED",
         "GR4JCN",
         "HBVEC",
         "HMETS",
         "HYPR",
-        "Mohyse",
+        "MOHYSE",
         "SACSMA",
     ]:
         model = RavenpyModel
@@ -124,7 +125,7 @@ def format_input(  # noqa: C901
     model : str
         The name of the hydrological model to use.
         Currently supported models are:
-        - "Hydrotel", "Raven" (which is an alias for all RavenPy models), "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA".
+        - "HYDROTEL", "Raven" (which is an alias for all RavenPy models), "Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA".
     convert_calendar_missing : float | str | dict | bool, optional
         The value to use for missing values when converting the calendar to "standard".
         If the value is a float, it will be used as the fill value for all variables.
@@ -135,7 +136,7 @@ def format_input(  # noqa: C901
         If False, the calendar will not be converted. Only possible for "Raven" models.
     save_as : str, optional
         Where to save the reformatted data. If None, the data will not be saved.
-        This can be useful when multiple files are needed for a single model run (e.g. Hydrotel needs a configuration file).
+        This can be useful when multiple files are needed for a single model run (e.g. HYDROTEL needs a configuration file).
     \*\*kwargs : dict
         Additional keyword arguments to pass to the save function.
 
@@ -144,7 +145,7 @@ def format_input(  # noqa: C901
     xr.Dataset
         The reformatted dataset.
     dict
-        For Hydrotel, a dictionary containing the configuration for the meteorological data.
+        For HYDROTEL, a dictionary containing the configuration for the meteorological data.
         If `save_as` is provided, the configuration will have been saved to a file with the same name as `save_as`, but with a ".nc.config" extension.
         For Raven, a dictionary containing the 'data_type' and 'alt_names_meteo' keys required for the 'model_config' argument.
 
@@ -193,13 +194,15 @@ def format_input(  # noqa: C901
             - cell_methods: "time: mean"
             - variable name: "tas", "tmean", "t2m", "temperature_mean"
 
-    Hydrotel requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax", "tasmin", "pr"].
+    HYDROTEL requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax", "tasmin", "pr"].
     Raven requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax/tasmin" or "tas", "pr" or "prlp/prsn"].
     """
     ds = ds.copy()
-    if model in ["Blended", "GR4JCN", "HBVEC", "HMETS", "HYPR", "Mohyse", "SACSMA"]:
+    if model.lower() in ["blended", "gr4jcn", "hbvec", "hmets", "hypr", "mohyse", "sacsma", "raven"]:
         model = "Raven"
-    if model not in ["Hydrotel", "Raven"]:
+    elif model.upper() in ["HYDROTEL"]:
+        model = "HYDROTEL"
+    else:
         raise NotImplementedError(f"The model '{model}' is not recognized.")
 
     # Detect and rename variables if necessary
@@ -348,7 +351,7 @@ def format_input(  # noqa: C901
             if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"] and convert_calendar_missing is np.nan:
                 warnings.warn(
                     f"The calendar '{ds.time.dt.calendar}' needs to be converted to 'standard', but 'convert_calendar_missing' is set to np.nan. "
-                    f"NaNs will need to be filled manually before running Hydrotel or Raven.",
+                    f"NaNs will need to be filled manually before running HYDROTEL or Raven.",
                     stacklevel=2,
                 )
 
@@ -361,11 +364,11 @@ def format_input(  # noqa: C901
         for v in var_no_time:
             if "time" in ds[v].dims:
                 ds[v] = ds[v].isel(time=0).drop_vars("time")
-    elif model == "Hydrotel":
-        # Hydrotel requires the calendar to be "standard"
+    elif model == "HYDROTEL":
+        # HYDROTEL requires the calendar to be "standard"
         if ds.time.dt.calendar not in ["standard", "gregorian", "proleptic_gregorian"]:
             raise ValueError(
-                f"The calendar '{ds.time.dt.calendar}' is not supported by Hydrotel. Please convert it to 'standard' before running the model."
+                f"The calendar '{ds.time.dt.calendar}' is not supported by HYDROTEL. Please convert it to 'standard' before running the model."
             )
 
     # Ensure that the spatial coordinates are recognized by cf_xarray (primarily for RavenPy, but useful anyway)
@@ -393,8 +396,8 @@ def format_input(  # noqa: C901
                 ds[c] = ds[c].expand_dims("station_id")
 
         # Reorder dimensions to match model expectations
-        if model == "Hydrotel":
-            ds = ds.transpose("time", "station_id")  # Hydrotel expects (time, station)
+        if model == "HYDROTEL":
+            ds = ds.transpose("time", "station_id")  # HYDROTEL expects (time, station)
         else:
             ds = ds.transpose("station_id", "time")  # Raven expects (station, time)
 
@@ -416,8 +419,8 @@ def format_input(  # noqa: C901
         ds["station_id"].attrs["cf_role"] = "timeseries_id"
 
         # Reorder dimensions to match model expectations
-        if model == "Hydrotel":
-            ds = ds.transpose("time", "station_id")  # Hydrotel expects (time, station)
+        if model == "HYDROTEL":
+            ds = ds.transpose("time", "station_id")  # HYDROTEL expects (time, station)
         else:
             ds = ds.transpose("station_id", "time")  # Raven expects (station, time)
 
@@ -437,8 +440,8 @@ def format_input(  # noqa: C901
             if x_name is None or y_name is None:
                 raise ValueError("The dataset appears to be gridded, but the axes 'X' and 'Y' could not be determined.")
 
-        if model == "Hydrotel":
-            # Hydrotel is faster with 1D time series
+        if model == "HYDROTEL":
+            # HYDROTEL is faster with 1D time series
             mask = ~ds.pr.isnull().all(dim="time")
             if xc.core.utils.uses_dask(mask):
                 mask = mask.compute()
@@ -479,9 +482,9 @@ def format_input(  # noqa: C901
             ds = ds.load()
         ds = cf_convert_between_lon_frames(ds, lon_interval=(-180, 180))[0]
 
-    # Additional data processing specific to Hydrotel
-    if model == "Hydrotel":
-        # Time units in Hydrotel must be exactly "days/minutes since 1970-01-01 00:00:00"
+    # Additional data processing specific to HYDROTEL
+    if model == "HYDROTEL":
+        # Time units in HYDROTEL must be exactly "days/minutes since 1970-01-01 00:00:00"
         # We need to convert the time variable to a 1D array of integers to prevent xarray from trying to convert it to a datetime64 array
         new_time = (ds["time"].values - np.datetime64("1970-01-01 00:00:00")).astype("timedelta64[m]").astype(int)
         ds["time"] = xr.DataArray(
