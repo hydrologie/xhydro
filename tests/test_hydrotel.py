@@ -18,7 +18,7 @@ from xhydro.modelling._hydrotel import _overwrite_csv, _read_csv
 # HYDROTEL_DEMO: path to the DELISLE demo project (copied from https://github.com/INRS-Modelisation-hydrologique/hydrotel/tree/main/DemoProject/DELISLE)
 # HYDROTEL_EXECUTABLE: path to the Hydrotel executable
 # HYDROTEL_VERSION: version of Hydrotel (e.g. "4.3.6.0000")
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 hydrotel_demo = os.getenv("HYDROTEL_DEMO", None)
 hydrotel_executable = os.getenv("HYDROTEL_EXECUTABLE", "command")
 hydrotel_version = os.getenv("HYDROTEL_VERSION", None)
@@ -323,15 +323,10 @@ class TestHydrotel:
         with pytest.raises(ValueError, match="folder does not exist"):
             ht.update_config(project_config={"SIMULATION COURANTE": "test"})
 
-        Path(project_path / "fake-for-simname" / "simulation" / "simulation").rename(
-            project_path / "fake-for-simname" / "simulation" / "test",
-        )
-        Path(project_path / "fake-for-simname" / "simulation" / "test" / "simulation.csv").rename(
-            project_path / "fake-for-simname" / "simulation" / "test" / "test.csv",
-        )
-        Path(project_path / "fake-for-simname" / "simulation" / "test" / "simulation.gsb").rename(
-            project_path / "fake-for-simname" / "simulation" / "test" / "test.gsb",
-        )
+        simdir = project_path / "fake-for-simname" / "simulation"
+        (simdir / "simulation").rename(simdir / "test")
+        (simdir / "test" / "simulation.csv").rename(simdir / "test" / "test.csv")
+        (simdir / "test" / "simulation.gsb").rename(simdir / "test" / "test.gsb")
         ht2 = Hydrotel(
             project_path / "fake-for-simname",
             "DELISLE.csv",
@@ -380,7 +375,8 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
 
-    # This test is quite slow, because Hydrotel needs to recompute one of the files with the new time step.
+    # Note that if using the actual executable, this test is quite slow (~2-4 minutes), because HYDROTEL needs to recompute/convert
+    # the geomorphological hydrograph at the new time step.
     def test_subdaily(self, project_path):
         meteo = timeseries(
             np.zeros(365 * 2),
