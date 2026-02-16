@@ -555,6 +555,10 @@ def prepare_initial_data(
     ds_gridded: Dataset
         The original gridded dataset, loaded and subset for the correct time. Also used later for plotting in
         cross-validation.
+    train_idx: ndarray
+        Indices of the training stations for calibrating OI.
+    valid_idx: ndarray
+        Indices of the validation stations.
     """
     # This first section processes the observation stations
     # Read the station data.
@@ -604,10 +608,6 @@ def prepare_initial_data(
 
     # Continue the process. Extract the training station indices.
     train_idx = list_stations[round(number_stations * frac_validation) :]
-
-    # Save the IDs of the validation and training stations for future reference
-    np.savetxt("./validation_stations.txt", valid_idx)
-    np.savetxt("./training_stations.txt", train_idx)
 
     # Extract the training stations and valid stations in the 2 different datasets
     ds_stations_train = ds_stations_full.isel(indexers={dims_stations: train_idx})
@@ -693,6 +693,8 @@ def prepare_initial_data(
         original_shape,
         observed_precip_valid,
         ds_gridded,
+        train_idx,
+        valid_idx,
     )
 
 
@@ -1134,6 +1136,15 @@ def main(
     frac_validation : float | None
         The fraction of stations to use for cross-validation, independent of the training data. Between 0 and 1.
 
+    Returns
+    -------
+    ds_final: xr.Dataset
+        The dataset after optimal interpolation.
+    train_idx: ndarray
+        Indices of the training stations for calibrating OI.
+    valid_idx: ndarray
+        Indices of the validation stations.
+
     Notes
     -----
     The possible forms for the ecf function fitting are as follows:
@@ -1170,6 +1181,8 @@ def main(
         original_shape,
         observed_precip_valid,
         ds_gridded,
+        train_idx,
+        valid_idx,
     ) = prepare_initial_data(
         filename_stations,
         filename_gridded,
@@ -1247,3 +1260,5 @@ def main(
 
         # Plot them for quick analysis
         cv.plot_cross_validation_rmse_results(filename_stations)
+
+    return ds_final, train_idx, valid_idx
