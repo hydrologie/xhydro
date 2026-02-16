@@ -3,6 +3,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 import xarray as xr
+from numpy.ma.testutils import assert_almost_equal
 
 from xhydro.pygmet.make_toml_config_pygmet import write_config_toml
 from xhydro.pygmet.make_toml_settings_pygmet import write_settings_toml
@@ -188,6 +189,12 @@ class TestPreparePygmetInputs:
             self.tempout + "/subset_reordered_grids_to_stations.nc/",
         )
 
+        ds = xr.open_dataset(self.tempout + "/subset_reordered_grids_to_stations.nc/")
+        assert_almost_equal(ds.precip.isel(stn=5, time=5).values, 0.2762543, 5)
+        assert_almost_equal(ds.tmax.isel(stn=6, time=5).values, 13.288241, 5)
+        assert ds.stn.shape[0] == 100
+        assert ds.stn[-1] == 99
+
     def test_subsample_stations_for_pygmet(self):
         # Take roughly 1 out of every ~10 stations
         isel_every_about_n(
@@ -200,5 +207,18 @@ class TestPreparePygmetInputs:
             jitter=3,
         )
 
+        ds = xr.open_dataset(self.tempout + "/subset_oi_vector_format_subsampled.nc/")
+        assert_almost_equal(ds.precip.isel(stn=5, time=5).values, 3.057068, 5)
+        assert_almost_equal(ds.tmax.isel(stn=6, time=5).values, 10.385146, 5)
+        assert ds.stn.shape[0] == 11
+        assert ds.stn[-1] == 96
+
     def test_make_target_pygmet_grid(self):
-        make_target_pygmet_grid(self.path_nc_grid_temperature, self.tempout + "/new_grid_output_shape.nc")
+        make_target_pygmet_grid(
+            self.path_nc_grid_temperature,
+            self.tempout + "/new_grid_output_shape.nc",
+        )
+
+        ds = xr.open_dataset(self.tempout + "/new_grid_output_shape.nc")
+        assert ds.y[0] == 50
+        assert ds.mask[5, 5].values == 1
