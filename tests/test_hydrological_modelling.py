@@ -174,7 +174,7 @@ class TestFormatInputs:
         if lons == "360":
             ds = cf_convert_between_lon_frames(ds, (0, 360))[0]
 
-        ds_out, cfg = format_input(ds, "Hydrotel", save_as=tmpdir / "meteo.nc")
+        ds_out, cfg = format_input(ds, "hydrotel", save_as=tmpdir / "meteo.nc")
 
         ds_loaded = xr.open_dataset(tmpdir / "meteo.nc")
         # Time will differ when xarray reads the file
@@ -239,8 +239,8 @@ class TestFormatInputs:
         assert ds_out.tasmax.attrs["units"] == "degC"
         assert ds_out.pr.attrs["units"] == "mm"
 
-        assert ds_out.time.attrs["units"] == "days since 1970-01-01 00:00:00"
-        np.testing.assert_array_equal(ds_out.time[0], 10957)
+        assert ds_out.time.attrs["units"] == "minutes since 1970-01-01 00:00:00"
+        np.testing.assert_array_equal(ds_out.time[0], 15778080)
         np.testing.assert_array_equal(ds_loaded.time[0], pd.Timestamp("2000-01-01").to_datetime64())
 
     def test_hydrotel_calendars(self, tmpdir):
@@ -249,7 +249,7 @@ class TestFormatInputs:
 
         with pytest.raises(
             ValueError,
-            match="is not supported by Hydrotel.",
+            match="is not supported by HYDROTEL.",
         ):
             ds_out, _ = format_input(ds, "Hydrotel", convert_calendar_missing=False)
         with pytest.warns(
