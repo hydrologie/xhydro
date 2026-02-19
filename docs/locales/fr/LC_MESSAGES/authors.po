@@ -1,12 +1,9 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2023, Thomas-Charles Fortier Filion
-# This file is distributed under the same license as the xHydro package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-19 15:27-0500\n"
+"POT-Creation-Date: 2026-02-19 15:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -84,8 +81,9 @@ msgid "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
 msgstr "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
 
 #: ../../../AUTHORS.rst:24
-msgid ""
-msgstr ""
+#, fuzzy
+msgid "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
+msgstr "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
 
 #: ../../../AUTHORS.rst:25
 msgid "Essi Parent `@essicolo <https://github.com/essicolo>`_"
