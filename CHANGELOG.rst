@@ -17,6 +17,15 @@ Breaking changes
 * The migration from `stackstac` to `odc-stac` in `xhydro.gis` has led to changes in the results of `xhydro.gis.land_use_classification` and `xhydro.gis.surface_properties` due to differences in projection handling between the two libraries. (:pull:`403`).
     * Our tests show that the differences are generally minor, but users should verify that their results remain consistent after the update.
 * The `Upstream Area (sq. km).` column in the output of `xh.gis.watershed_properties` has been renamed to `Upstream Area (sq. km)`. (:pull:`403`).
+* Features that were deprecated and planned to be removed in v0.7.0 have now been removed. This includes: (:pull:`408`).
+    * The `map` argument in `xh.gis.watershed_delineation` (now `m`).
+    * The `use_defaults` and `check_missing` arguments in the `Hydrotel` class.
+    * Most of the arguments in the `RavenpyModel.create_rv()` method, which are now expected to be given to the class itself or to the `update_data()` method.
+    * Streamflow is now always `q`.
+    * `return_period` is now the only accepted argument for return periods in the `xhfa` module, and the old `t`, `rp`, and `return_periods` arguments have been removed.
+    * `xhfa.regional.get_group_from_fit` has been renamed to `xhfa.regional.get_clusters` and the old function has been removed.
+    * `xhfa.regional.calculate_rp_from_afr` has been renamed to `xhfa.regional.calculate_return_period` and the old function has been removed.
+    * `xhfa.uncertainties.calc_q_iter` has been renamed to `xhfa.uncertainties.calculate_quantiles_over_boostraped_groups` and the old function has been removed.
 
 Bug fixes
 ^^^^^^^^^
