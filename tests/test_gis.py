@@ -42,11 +42,7 @@ class TestWatershedDelineation:
                 "geometry": {"type": "Point", "coordinates": [-66.153789, 50.265321]},
             }
         ]
-        with pytest.warns(
-            FutureWarning,
-            match="argument is deprecated and will be removed",
-        ):
-            gdf = xh.gis.watershed_delineation(map=self.m)
+        gdf = xh.gis.watershed_delineation(m=self.m)
         np.testing.assert_allclose(
             [gdf.to_crs(32198).area.values[0]],
             [area],
@@ -115,11 +111,7 @@ class TestWatershedOperations:
 
         pd.testing.assert_frame_equal(df_properties[_properties_name], watershed_properties_data[_properties_name])
 
-        with pytest.warns(
-            FutureWarning,
-            match="The default value for",
-        ):
-            df_properties_def = xh.gis.watershed_properties(self.gdf)
+        df_properties_def = xh.gis.watershed_properties(self.gdf)
         pd.testing.assert_frame_equal(
             df_properties_def[_properties_name],
             df_properties[_properties_name],
@@ -235,11 +227,7 @@ class TestSurfaceProperties:
             rtol=0.02,
         )
 
-        with pytest.warns(
-            FutureWarning,
-            match="The default value for",
-        ):
-            df_properties_def = xh.gis.surface_properties(self.gdf)
+        df_properties_def = xh.gis.surface_properties(self.gdf)
         df_properties_def.index.name = None
         pd.testing.assert_frame_equal(
             df_properties_def[_properties_name],

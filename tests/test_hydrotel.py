@@ -21,17 +21,15 @@ class TestHydrotel:
             model_name="Hydrotel",
             project_dir=tmpdir / "fake",
             project_file="SLNO.csv",
-            use_defaults=True,
             executable="command",
             project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
             simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
             output_config={"TMAX_JOUR": "1"},
         )
 
-        with pytest.warns(FutureWarning, match="Please refer to the DemoProject in"):
-            ht = hydrological_model(
-                model_config=model_config,
-            )
+        ht = hydrological_model(
+            model_config=model_config,
+        )
 
         assert ht.simulation_dir.name == "simulation"
         assert ht.project_dir.name == "fake"
@@ -246,18 +244,10 @@ class TestHydrotel:
                 assert command == f"hydrotel {ht.config_files['project']} -t 1"
             elif test == "cfg":
                 run_options = ["-t 10", "-c", "-s"]
-                check_missing = True
-                xr_open_kwargs_in = {"chunks": {"time": 10}}
-                with pytest.warns(
-                    FutureWarning,
-                ) as w:
-                    command = ht.run(
-                        dry_run=True,
-                        run_options=run_options,
-                        check_missing=check_missing,
-                        xr_open_kwargs_in=xr_open_kwargs_in,
-                    )
-                assert len(w) == 2
+                command = ht.run(
+                    dry_run=True,
+                    run_options=run_options,
+                )
                 assert command == (f"hydrotel {ht.config_files['project']} -c -s -t 10")
             elif test == "raise":
                 with pytest.raises(

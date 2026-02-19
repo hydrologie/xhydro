@@ -81,32 +81,6 @@ def _get_clusters_indices(cluster: list, sample: xr.Dataset) -> list:
     return grouped
 
 
-def get_group_from_fit(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
-    """
-    Get indices of groups from a fit using the specified model and parameters.
-
-    Parameters
-    ----------
-    model : callable
-        Model class or instance with a fit method.
-    param : dict
-        Parameters for the model.
-    sample : xr.Dataset or xr.DataArray
-        Data sample to fit the model.
-
-    Returns
-    -------
-    list :
-        List of indices for each non-excluded group.
-    """
-    warnings.warn("This function is deprecated and will be removed in xhydro v0.7.0. Use get_clusters instead.", FutureWarning, stacklevel=2)
-    return get_clusters(
-        model,
-        param,
-        sample,
-    )
-
-
 def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
@@ -514,56 +488,12 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     return new_ds
 
 
-def calculate_rp_from_afr(
-    ds_regions: xr.Dataset,
-    ds_moments_regions: xr.Dataset,
-    *,
-    return_period: np.array,
-    l1: xr.DataArray | None = None,
-    rp: np.ndarray | None = None,
-) -> xr.DataArray:
-    """
-    Calculate return periods from Annual Flow Regime (AFR) analysis.
-
-    Parameters
-    ----------
-    ds_regions : xr.Dataset
-        Dataset containing region flow data.
-    ds_moments_regions : xr.Dataset
-        Dataset containing L-moments for region data.
-    return_period : array-like
-        Return periods to calculate.
-    l1 : xr.DataArray, optional
-        First L-moment (location) values. L-moment can be specified for ungauged catchments.
-        If None, values are taken from ds_moments_regions.
-    rp : array-like, optional
-        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
-
-    Returns
-    -------
-    xr.DataArray
-        Calculated return periods for each region and specified return period.
-
-    Notes
-    -----
-    This function calculates return periods using the Annual Flow Regime method.
-    If l1 is not provided, it uses the first L-moment from ds_moments_regions.
-    The function internally calls calculate_ic_from_AFR to compute the flood index.
-    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
-    """
-    warnings.warn(
-        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.", FutureWarning, stacklevel=2
-    )
-    return calculate_return_period(ds_regions, ds_moments_regions, return_period=return_period, l1=l1, rp=rp)
-
-
 def calculate_return_period(
     ds_regions: xr.Dataset,
     ds_moments_regions: xr.Dataset,
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
-    rp: np.ndarray | None = None,
 ) -> xr.DataArray:
     """
     Calculate return periods from the regional frequency analysis.
@@ -579,8 +509,6 @@ def calculate_return_period(
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If None, values are taken from ds_moments_regions.
-    rp : array-like, optional
-        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
@@ -594,10 +522,6 @@ def calculate_return_period(
     The function internally calls calculate_ic_from_AFR to compute the flood index.
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
-    if rp is not None:
-        warnings.warn("The 'rp' parameter has been renamed to 'return_period' and will be dropped in a future release.", FutureWarning, stacklevel=2)
-        return_period = rp
-
     if l1 is None:
         station_dim = ds_moments_regions.cf.cf_roles["timeseries_id"][0]
         l1 = ds_moments_regions.sel(lmom="l1").dropna(dim=station_dim, how="all")
