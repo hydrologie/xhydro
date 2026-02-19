@@ -513,7 +513,6 @@ def format_input(  # noqa: C901
                 for k, v in cfg.items():
                     f.write(f"{k}; {v}\n")
 
-            ds = ds.chunk({"station_id": 1, "time": -1})
             ds.to_netcdf(Path(save_as).with_suffix(".nc"), **kwargs)
 
     # Additional data processing specific to Raven
