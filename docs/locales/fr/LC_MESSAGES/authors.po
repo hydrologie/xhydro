@@ -81,7 +81,6 @@ msgid "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
 msgstr "Francis Gravel `@mayetea <https://github.com/mayetea>`_"
 
 #: ../../../AUTHORS.rst:24
-#, fuzzy
 msgid "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
 msgstr "Louise Arnal `@lou-a <https://github.com/lou-a>`_"
 
