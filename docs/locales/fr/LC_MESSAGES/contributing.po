@@ -2,7 +2,6 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
@@ -532,7 +531,6 @@ msgstr ""
 "fichiers `AUTHORS.rst` et `.zenodo.json`."
 
 #: ../../../CONTRIBUTING.rst:207
-#, fuzzy
 msgid ""
 "The Pull Request should work for all currently supported Python versions."
 " Check the `pyproject.toml` or `tox.toml` files for the supported "
@@ -540,11 +538,11 @@ msgid ""
 "versions as recommended by the NumPy NEP calendar: "
 "https://numpy.org/neps/nep-0029-deprecation_policy.html"
 msgstr ""
-"La Pull Request doit fonctionner pour toutes les versions actuellement "
-"prises en charge de Python. Vérifiez les fichiers `pyproject.toml` ou "
-"`tox.toml` pour les versions soutenues. Nous visons à suivre le calendrier"
-" de prise en charge et de retrait des versions de Python recommandé par "
-"le calendrier NumPy NEP : "
+"La Pull Request doit fonctionner pour toutes les versions de Python "
+"actuellement prises en charge. Vérifiez les fichiers `pyproject.toml` ou "
+"`tox.toml` pour les versions prises en charge. Nous visons à suivre le "
+"calendrier de support et de suppression des versions de Python tel que "
+"recommandé par le calendrier NEP de NumPy : "
 "https://numpy.org/neps/nep-0029-deprecation_policy.html"
 
 #: ../../../CONTRIBUTING.rst:210
