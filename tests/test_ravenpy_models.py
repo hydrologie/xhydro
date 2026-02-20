@@ -85,8 +85,7 @@ class TestRavenpyModels:
         np.testing.assert_array_equal(met.time, qsim.time)
         assert all(var in met.variables for var in self.alt_names_meteo.values())
 
-    @pytest.mark.parametrize("backwards", [True, False])
-    def test_build_later(self, deveraux, backwards):
+    def test_build_later(self, deveraux):
         model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
@@ -97,41 +96,23 @@ class TestRavenpyModels:
         with pytest.raises(ValueError, match="The following required inputs are missing"):
             rpm_empty.create_rv()
 
-        if backwards:
-            # Test backward compatibility
-            with pytest.warns(FutureWarning):
-                rpm_empty.create_rv(
-                    model_name=model_name,
-                    parameters=parameters,
-                    hru=self.hru,
-                    start_date=self.start_date,
-                    end_date=self.end_date,
-                    meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
-                    data_type=self.data_type,
-                    alt_names_meteo=self.alt_names_meteo,
-                    meteo_station_properties=self.meteo_station_properties,
-                    rain_snow_fraction=self.rain_snow_fraction,  # Test that we can add kwargs
-                    evaporation=self.evaporation,
-                    global_parameter=global_parameter,
-                )
-        else:
-            rpm_empty.model_name = model_name
-            rpm_empty.parameters = parameters
-            rpm_empty.start_date = self.start_date
-            rpm_empty.end_date = self.end_date
-            rpm_empty.kwargs = {
-                "rain_snow_fraction": self.rain_snow_fraction,
-                "evaporation": self.evaporation,
-                "global_parameter": global_parameter,
-            }
-            rpm_empty.update_data(
-                hru=self.hru,
-                meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
-                data_type=self.data_type,
-                alt_names_meteo=self.alt_names_meteo,
-                meteo_station_properties=self.meteo_station_properties,
-            )
-            rpm_empty.create_rv()
+        rpm_empty.model_name = model_name
+        rpm_empty.parameters = parameters
+        rpm_empty.start_date = self.start_date
+        rpm_empty.end_date = self.end_date
+        rpm_empty.kwargs = {
+            "rain_snow_fraction": self.rain_snow_fraction,
+            "evaporation": self.evaporation,
+            "global_parameter": global_parameter,
+        }
+        rpm_empty.update_data(
+            hru=self.hru,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+        )
+        rpm_empty.create_rv()
 
         assert rpm_empty.start_date == self.start_date
         assert rpm_empty.end_date == self.end_date
@@ -222,10 +203,9 @@ class TestRavenpyModels:
         rpm.run(overwrite=True)
 
         # Try to overwrite the model again
-        config2 = {k: v for k, v in model_config.items() if k in ["parameters", "start_date", "end_date"]}
         with pytest.raises(FileExistsError):
-            rpm.create_rv(**config2)
-        rpm.create_rv(overwrite=True, **config2)
+            rpm.create_rv()
+        rpm.create_rv(overwrite=True)
 
         # Through RavenpyModel, both should work
         RavenpyModel(**model_config, overwrite=True).run(overwrite=True)

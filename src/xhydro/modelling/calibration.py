@@ -59,7 +59,6 @@ Any comments are welcome!
 """
 
 import os
-import warnings
 from copy import deepcopy
 
 # Import packages
@@ -243,30 +242,12 @@ class SpotSetup:
         else:
             # FIXME: This should be more robust, and should be able to handle other names
             if isinstance(qobs, xr.Dataset):
-                if "streamflow" in qobs and "q" not in qobs:
-                    warnings.warn(
-                        "Default variable name has changed from 'streamflow' to 'q'. "
-                        "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
-                        FutureWarning,
-                        stacklevel=2,
-                    )
-                    da = qobs.streamflow
-                else:
-                    da = qobs.q
+                da = qobs.q
             elif isinstance(qobs, xr.DataArray):
                 da = qobs
             elif isinstance(qobs, os.PathLike):
                 with xr.open_dataset(qobs) as ds:
-                    if "streamflow" in ds and "q" not in ds:
-                        warnings.warn(
-                            "Default variable name has changed from 'streamflow' to 'q'. "
-                            "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
-                            FutureWarning,
-                            stacklevel=2,
-                        )
-                        da = ds.streamflow
-                    else:
-                        da = ds.q
+                    da = ds.q
             else:
                 raise ValueError("qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file.")
             da = da.squeeze()

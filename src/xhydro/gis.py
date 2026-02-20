@@ -51,7 +51,6 @@ def watershed_delineation(
     *,
     coordinates: list[tuple] | tuple | None = None,
     m: leafmap.Map | None = None,
-    map: leafmap.Map | None = None,
 ) -> gpd.GeoDataFrame:
     """
     Calculate watershed delineation from pour point.
@@ -68,8 +67,6 @@ def watershed_delineation(
         If the function receives both a map and coordinates as inputs, it will generate and display watershed
         boundaries on the map. Additionally, any markers present on the map will be transformed into
         corresponding watershed boundaries for each marker.
-    map : leafmap.Map, optional
-        Deprecated. Use `m` instead.
 
     Returns
     -------
@@ -80,15 +77,6 @@ def watershed_delineation(
     --------
     This function relies on an Amazon S3-hosted dataset to delineate watersheds.
     """
-    if map is not None:
-        warnings.warn(
-            "The `map` argument is deprecated and will be removed in xHydro v0.7.0. Use `m` instead.",
-            FutureWarning,
-            stacklevel=2,
-        )
-        if m is None:
-            m = map
-
     # level 12 HydroBASINS polygons dataset url (North America only at the moment)
     url = "https://s3.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
 
@@ -181,14 +169,6 @@ def watershed_properties(
     gpd.GeoDataFrame or xr.Dataset
         Output dataset containing the watershed properties.
     """
-    if projected_crs == "NAD83":
-        warnings.warn(
-            "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
-            "This warning will be removed in xHydro v0.7.0.",
-            FutureWarning,
-            stacklevel=2,
-        )
     if not gdf.crs:
         raise ValueError("The provided gpd.GeoDataFrame is missing the crs attribute.")
     if isinstance(projected_crs, str):
@@ -393,14 +373,6 @@ def surface_properties(
     --------
     This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
-    if projected_crs == "NAD83":
-        warnings.warn(
-            "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
-            "This warning will be removed in xHydro v0.7.0.",
-            FutureWarning,
-            stacklevel=2,
-        )
     # Geometries are projected to make calculations more accurate
     if isinstance(projected_crs, str):
         projected_crs = gdf.estimate_utm_crs(projected_crs)

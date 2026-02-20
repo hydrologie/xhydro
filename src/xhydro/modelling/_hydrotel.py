@@ -41,9 +41,6 @@ class Hydrotel(HydrologicalModel):
         Dictionary of configuration options to overwrite in the simulation file. See the Notes section for more details.
     output_config : dict, optional
         Dictionary of configuration options to overwrite in the output file (output.csv).
-    use_defaults : bool
-        Deprecated, as it caused confusion. Consult the DemoProject in https://github.com/INRS-Modelisation-hydrologique/hydrotel
-        to get an idea of the configuration options to use.
 
     Notes
     -----
@@ -65,17 +62,7 @@ class Hydrotel(HydrologicalModel):
         project_config: dict | None = None,
         simulation_config: dict | None = None,
         output_config: dict | None = None,
-        use_defaults=None,
     ):
-        if use_defaults is not None:
-            warnings.warn(
-                "The 'use_defaults' parameter is deprecated and will be ignored. It will be removed in xHydro v0.7.0. "
-                "Please refer to the DemoProject in https://github.com/INRS-Modelisation-hydrologique/hydrotel "
-                "to get an idea of the configuration options to use.",
-                FutureWarning,
-                stacklevel=2,
-            )
-
         """Initialize the HYDROTEL simulation."""
         project_config = project_config or dict()
         simulation_config = simulation_config or dict()
@@ -177,8 +164,6 @@ class Hydrotel(HydrologicalModel):
         run_options: list[str] | None = None,
         dry_run: bool = False,
         xr_open_kwargs_out: dict | None = None,
-        check_missing=None,
-        xr_open_kwargs_in=None,
     ) -> str | xr.Dataset:
         """
         Run the simulation.
@@ -196,10 +181,6 @@ class Hydrotel(HydrologicalModel):
             If True, returns the command to run the simulation without actually running it.
         xr_open_kwargs_out : dict, optional
             Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading the raw output files.
-        check_missing : None
-            Deprecated, as it was redundant with checkups performed by the HYDROTEL executable.
-        xr_open_kwargs_in : None
-            Deprecated, as it is not used anymore.
 
         Returns
         -------
@@ -208,21 +189,6 @@ class Hydrotel(HydrologicalModel):
         xr.Dataset
             The streamflow file, if 'dry_run' is False.
         """
-        if check_missing is not None:
-            warnings.warn(
-                "The 'check_missing' parameter is deprecated and will be ignored. "
-                "The HYDROTEL executable already performs checks on the input files. "
-                "This parameter will be removed in xHydro v0.7.0.",
-                FutureWarning,
-                stacklevel=2,
-            )
-        if xr_open_kwargs_in is not None:
-            warnings.warn(
-                "The 'xr_open_kwargs_in' parameter is deprecated and will be ignored. It is not used anymore and will be removed in xHydro v0.7.0.",
-                FutureWarning,
-                stacklevel=2,
-            )
-
         if os.name == "nt" and Path(self.executable).suffix != ".exe":
             raise ValueError("You must specify the path to hydrotel.exe")
         if "hydrotel" not in self.executable.lower():
