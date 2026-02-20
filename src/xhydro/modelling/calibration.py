@@ -258,7 +258,7 @@ class SpotSetup:
                 raise ValueError("qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file.")
             da = da.squeeze()
 
-            if self.model_config["model_name"] == "HELP" or self.model_config["model_name"] == "HELP":
+            if self.model_config["model_name"] == "Hydrobudget" or self.model_config["model_name"] == "HELP":
                 # changement pour ne pas utiliser slice car les time code ne se suivent pas (données mensuelles)
                 da = da.where(da.time.values <= np.datetime64(self.model_config["end_date"]))
                 da = da.where(da.time.values >= np.datetime64(self.model_config["start_date"]))

@@ -1,6 +1,7 @@
 # numpydoc ignore=EX01,SA01,ES01
 """Class to handle Hydrotel simulations."""
 
+import csv
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -11,9 +12,12 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
 import pandas as pd
+import pyproj
+import rasterio
 import xarray as xr
 from matplotlib.dates import DateFormatter
 from pyhelp.managers import HelpManager
+from rasterio.transform import from_origin
 from scipy.io import netcdf_file
 
 from ._hm import HydrologicalModel
@@ -35,6 +39,10 @@ class HELP(HydrologicalModel):
         Name of the file (in project_dir) describing which cells are contained in which gauging stations.
     simulation_config : dict, optional
         Begin and end dates of the simulation, format "%Y-%m-%d".
+    parameters_base : np.array or list, optional
+        Parameters values for modifying default parameters.
+    parameters_base_names : np.array or list, optional
+        Parameters names for for modifying default parameters.
     parameters : np.array or list, optional
         Parameters values for calibration.
     parameters_names : np.array or list, optional
@@ -57,6 +65,8 @@ class HELP(HydrologicalModel):
         project_dir: str | os.PathLike,
         gauging_cells: str,
         simulation_config: dict | None = None,
+        parameters_base: np.ndarray | list[float] | None = None,
+        parameters_base_names: np.ndarray | list[float] | None = None,
         parameters: np.ndarray | list[float] | None = None,
         parameters_names: np.ndarray | list[float] | None = None,
         qobs: np.ndarray | xr.Dataset | None = None,
@@ -71,25 +81,29 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         project_dir : str or os.PathLike
-        Path to the project folder (including inputs file, shell script and R script).
+            Path to the project folder (including inputs file, shell script and R script).
         gauging_cells : str
-        Name of the file (in project_dir) describing which cells are contained in which gauging stations.
+            Name of the file (in project_dir) describing which cells are contained in which gauging stations.
         simulation_config : dict, optional
-        Begin and end dates of the simulation, format "%Y-%m-%d".
+            Begin and end dates of the simulation, format "%Y-%m-%d".
+        parameters_base : np.array or list, optional
+            Parameters values for modifying default parameters.
+        parameters_base_names : np.array or list, optional
+            Parameters names for for modifying default parameters.
         parameters : np.array or list, optional
-        Parameters values for calibration.
+            Parameters values for calibration.
         parameters_names : np.array or list, optional
-        Parameters names for calibration.
+            Parameters names for calibration.
         qobs : np.array, optional
-        Observed streamflows.
+            Observed streamflows.
         start_date : str, optional
-        Calibration start date.
+            Calibration start date.
         end_date : str, optional
-        Calibration end date.
+            Calibration end date.
         frequency : str, optional
-        Frequency of output data : month, season, year, all. If None, default is season.
+            Frequency of output data : month, season, year, all. If None, default is season.
         graph_outputs : int, optional
-        Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
+            Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
         self.project_dir = Path(project_dir)
         if not self.project_dir.is_dir():
@@ -104,16 +118,37 @@ class HELP(HydrologicalModel):
         self.frequency = frequency
         self.graph_outputs = graph_outputs
 
-        if parameters is None:
-            parameters = [1, 1, 1, 0]
-            parameters_names = ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]
-        param_dict = dict(zip(parameters_names, parameters, strict=True))
+        if parameters_base is None and parameters is None:
+            parameters_base = [1, 1, 1, 0, 1]
+            parameters_base_names = ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil", "sfrad"]
+            param_base_dict = dict(zip(parameters_base_names, parameters_base, strict=True))
+            self.param_dict = param_base_dict
 
-        self.param_dict = param_dict
+        if parameters_base is not None and parameters is None:
+            param_base_dict = dict(zip(parameters_base_names, parameters_base, strict=True))
+            self.param_dict = param_base_dict
 
-        self.param_grid = [elem for elem in parameters_names if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]]
-        if len(self.param_grid) > 0:
+        if parameters_base is None and parameters is not None:
+            param_dict = dict(zip(parameters_names, parameters, strict=True))
+            self.param_dict = param_dict
+
+        if parameters_base is not None and parameters is not None:
+            param_base_dict = dict(zip(parameters_base_names, parameters_base, strict=True))
+            param_dict = dict(zip(parameters_names, parameters, strict=True))
+            # Fusion of the two dict, with priority to calibration parameters when present
+            self.param_dict = param_base_dict | param_dict
+
+        self.param_base_grid = [elem for elem in self.param_dict if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil", "sfrad"]]
+        if len(self.param_base_grid) > 0:
             self.modify_input_file()
+
+        # Enregistrement des jeux de param generes dans un fichier csv
+        file_exists = Path(self.project_dir / "param_.csv").exists()
+        with Path(self.project_dir / "param_.csv").open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=self.param_dict.keys())
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(self.param_dict)
 
         self.start_year = str(datetime.strptime(self.simu_begin, "%Y-%m-%d").year)
 
@@ -148,8 +183,21 @@ class HELP(HydrologicalModel):
         # numpydoc ignore=EX01,SA01,ES01
         self,
     ):
-        """Modify grid input file if parameters are given."""
+        """Modify HELP input files with new parameters."""
+        df_rad = pd.read_csv(self.project_dir / "solrad_input_data_origin.csv", sep=",", decimal=".", header=None)
+        firstlignes = df_rad.iloc[0:2].copy()
+        rest = df_rad.iloc[2:].copy()
+        colonnesmod = rest.columns[1:]
+        rest[colonnesmod] = rest[colonnesmod] * self.param_dict["sfrad"]
+        df_final_rad = pd.concat([firstlignes, rest], ignore_index=True)
+        df_final_rad.to_csv(self.project_dir / "solrad_input_data.csv", sep=",", decimal=".", index=False, header=None, encoding="utf-8")
+        self.p_to_solrad = self.project_dir / "solrad_input_data.csv"
+
         grid_data = pd.read_csv(self.project_dir / "input_grid.csv", delimiter=",", dtype={"cell_ID": int, "gauging_stat": str})
+
+        grid_data["thick1"][grid_data["thick1"] < 100] = 100
+        grid_data["thick1"][grid_data["context"] == 0] = 0
+        grid_data["run"][grid_data["context"] == 0] = 0
 
         self.param_grid = [elem for elem in list(self.param_dict.keys()) if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]]
 
@@ -161,24 +209,36 @@ class HELP(HydrologicalModel):
         if len(param_ksat) > 0:
             g = [m[-1] for m in param_ksat]
             for ge in range(len(g)):
-                grid_data["ksat1"][grid_data["geol"] == ge] = self.param_dict[param_ksat[ge]]
+                grid_data["ksat1"][grid_data["geol"] == ge + 1] = self.param_dict[param_ksat[ge]]
+                # activate if 3 layers
+                grid_data["ksat2"][grid_data["geol"] == ge + 1] = self.param_dict[param_ksat[ge]]
+                grid_data["ksat3"][grid_data["geol"] == ge + 1] = self.param_dict[param_ksat[ge]]
 
         if len(param_poro) > 0:
             g = [m[-1] for m in param_poro]
             for ge in range(len(g)):
-                grid_data["poro1"][grid_data["geol"] == ge] = self.param_dict[param_poro[ge]]
+                grid_data["poro1"][grid_data["geol"] == ge + 1] = self.param_dict[param_poro[ge]]
+                # activate if 3 layers
+                grid_data["poro2"][grid_data["geol"] == ge + 1] = self.param_dict[param_poro[ge]]
+                grid_data["poro3"][grid_data["geol"] == ge + 1] = self.param_dict[param_poro[ge]]
 
         if len(param_fc) > 0:
             g = [m[-1] for m in param_fc]
             for ge in range(len(g)):
-                grid_data["fc1"][grid_data["geol"] == ge] = self.param_dict[param_fc[ge]]
+                grid_data["fc1"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]]
+                # activate if 3 layers
+                grid_data["fc2"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]]
+                grid_data["fc3"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]]
 
         if len(param_difffcwp) > 0:
             g = [m[-1] for m in param_difffcwp]
             for ge in range(len(g)):
-                grid_data["wp1"][grid_data["geol"] == ge] = self.param_dict[param_fc[ge]] - self.param_dict[param_difffcwp[ge]]
+                grid_data["wp1"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]] - self.param_dict[param_difffcwp[ge]]
+                # activate if 3 layers
+                grid_data["wp2"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]] - self.param_dict[param_difffcwp[ge]]
+                grid_data["wp3"][grid_data["geol"] == ge + 1] = self.param_dict[param_fc[ge]] - self.param_dict[param_difffcwp[ge]]
 
-        grid_data.to_csv("input_grid.csv", index=False, header=True, sep=",")
+        grid_data.to_csv(self.project_dir / "input_grid.csv", index=False, header=True, sep=",")
 
         return
 
@@ -221,6 +281,12 @@ class HELP(HydrologicalModel):
             sf_cn=self.param_dict["sf_cn"],
         )
         self.output_help = output_help
+
+        output_help.save_to_csv(
+            self.project_dir / "Results" / "gwr_annuel_spat.csv",
+            datetime.strptime(self.simu_begin, "%Y-%m-%d").year + 1,
+            datetime.strptime(self.simu_end, "%Y-%m-%d").year,
+        )
 
         varnames = ["precip", "rechg", "runoff", "evapo", "subrun1", "subrun2", "perco"]
 
@@ -265,7 +331,7 @@ class HELP(HydrologicalModel):
 
             for varname in varnames:
                 var = []
-                var_mat = np.sum(self.data[varname][cell_rep], axis=0) / len(list_cells_stat)
+                var_mat = np.nansum(self.data[varname][cell_rep], axis=0) / len(list_cells_stat)
                 for y in range(self.data[varname].shape[1]):
                     var.extend(var_mat[y])
                     # for m in range(self.data[varname].shape[2]):
@@ -418,7 +484,9 @@ class HELP(HydrologicalModel):
 
                 for y in years_an:
                     subset_sim = resul_sim[resul_sim["year"] == y]
-                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["runoff_2"]) + np.sum(subset_sim["gwr"]))
+                    somme_qtot = np.sum(
+                        np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["subrun2"]) + np.sum(subset_sim["gwr"])
+                    )
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
@@ -439,7 +507,9 @@ class HELP(HydrologicalModel):
 
                 for y in trimestres_an:
                     subset_sim = resul_sim[resul_sim["trim_year"] == y]
-                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["runoff_2"]) + np.sum(subset_sim["gwr"]))
+                    somme_qtot = np.sum(
+                        np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["subrun2"]) + np.sum(subset_sim["gwr"])
+                    )
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
@@ -513,11 +583,11 @@ class HELP(HydrologicalModel):
         # Application of weights to measurements to prioritize annual, then seasonal, then monthly reports.
         if frequency == "all":
             qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
-            qflow_sim_unique[qflow_sim_unique["frequen"] == "season"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
-            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 5
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "season"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 3.3
-            qflow_obs_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 1.7
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "season"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "season"]["q"] * 3.3
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] * 1.7
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] * 5
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] * 3.3
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] * 1.7
 
         # Afficher les kge et rmse avec les poids
         qsim = qflow_sim_unique["q"]
@@ -564,6 +634,9 @@ class HELP(HydrologicalModel):
                     output_dir=self.output_dir,
                     timestamp=self.timestamp,
                 )
+
+        self.create_raster("precip")
+        self.create_raster("recharge")
 
         # Build Netcdf file with the two variables qobs ad qsim
         # Write out data to a new netCDF file with some attributes
@@ -649,7 +722,8 @@ class HELP(HydrologicalModel):
         filename.close()
 
         # Write out data to a new netCDF file with some attributes
-        netcdf_sim_path = Path(output_dir, f"qsim_netcdf_{self.timestamp}.nc")
+        # netcdf_sim_path = Path(output_dir, f"qsim_netcdf_{self.timestamp}.nc")
+        netcdf_sim_path = Path(output_dir, "qsim_netcdf.nc")
 
         # if os.path.exists(netcdf_sim_path):
         #    os.remove(netcdf_sim_path)
@@ -1065,8 +1139,6 @@ class HELP(HydrologicalModel):
             colorslist = generate_colors(len(station_))
 
             if freq[decompte] == "year":
-                years_nb = len(list(dict.fromkeys(yearly_qflow.temps_list1)))
-                colorslist = generate_colors(years_nb)
                 qmin = 200
                 qmax = 1400
                 qbasemax = 800
@@ -1496,5 +1568,90 @@ class HELP(HydrologicalModel):
                 fig.savefig(chemin)
 
             decompte = decompte + 1
+
+        return
+
+    def create_raster(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+        variable,
+    ):
+        """
+        Create a raster of average yearly groundwater recharge.
+
+        Parameters
+        ----------
+        variable : str
+            Set variable for the raster : precip or rechg.
+        """
+        columns_to_read = ["cid", "lat_dd", "lon_dd", "rechg", "precip"]
+
+        gwr_an_spat = pd.read_csv(
+            Path(self.output_dir, "gwr_annuel_spat.csv"),
+            delimiter=",",
+            usecols=columns_to_read,
+        )
+
+        df = gwr_an_spat.rename(columns={"lon_dd": "lon", "lat_dd": "lat"})
+        pixel_size = 1000  # 1000 m taille des mailles du modèle
+
+        # 1. Définir les CRS
+
+        crs_in = pyproj.CRS("EPSG:8237")  # lat/lon GRS80
+        crs_out = pyproj.CRS("EPSG:6622")  # Lambert 93
+        transformer = pyproj.Transformer.from_crs(crs_in, crs_out, always_xy=True)
+
+        # 2. Conversion en Lambert 93
+
+        df["x"], df["y"] = transformer.transform(df["lon"].values, df["lat"].values)
+
+        # 3. Définir l'étendue de la grille
+
+        min_x = df["x"].min() - pixel_size / 2
+        max_x = df["x"].max() + pixel_size / 2
+        min_y = df["y"].min() - pixel_size / 2
+        max_y = df["y"].max() + pixel_size / 2
+
+        # 4. Construire les vecteurs de grille
+
+        x_vals = np.arange(min_x, max_x, pixel_size)
+        y_vals = np.arange(max_y, min_y, -pixel_size)  # du nord vers le sud
+
+        # 5. Créer une matrice vide
+
+        raster = np.full((len(y_vals), len(x_vals)), np.nan)
+
+        # 6. Remplir le raster
+        if variable == "precip":
+            for _, row in df.iterrows():
+                ix = int((row["x"] - min_x) // pixel_size)
+                iy = int((max_y - row["y"]) // pixel_size)
+                raster[iy, ix] = row["precip"]
+
+        if variable == "recharge":
+            for _, row in df.iterrows():
+                ix = int((row["x"] - min_x) // pixel_size)
+                iy = int((max_y - row["y"]) // pixel_size)
+                raster[iy, ix] = row["rechg"]
+
+        # 7. Définir la transformation géographique
+
+        transform = from_origin(x_vals[0], y_vals[0], pixel_size, pixel_size)
+
+        # 8. Écrire le raster GeoTIFF
+
+        with rasterio.open(
+            Path(self.output_dir, f"{variable}_raster.tiff"),
+            "w",
+            driver="GTiff",
+            height=raster.shape[0],
+            width=raster.shape[1],
+            count=1,
+            dtype=raster.dtype,
+            crs=crs_out,
+            transform=transform,
+            nodata=np.nan,
+        ) as dst:
+            dst.write(raster, 1)
 
         return
