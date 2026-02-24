@@ -2,7 +2,28 @@
 Changelog
 =========
 
-v0.7.0 (unreleased)
+.. v0.8.0 (unreleased)
+   -------------------
+
+   Contributors to this version: <INSERT AUTHORS HERE>.
+
+   New features and enhancements
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   * No changes.
+
+   Breaking changes
+   ^^^^^^^^^^^^^^^^
+   * No changes.
+
+   Bug fixes
+   ^^^^^^^^^
+   * No changes.
+
+   Internal changes
+   ^^^^^^^^^^^^^^^^
+   * No changes.
+
+v0.7.0 (2026-02-24)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
 
