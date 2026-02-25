@@ -23,6 +23,30 @@ Changelog
    ^^^^^^^^^^^^^^^^
    * No changes.
 
+v0.7.1 (unreleased)
+-------------------
+
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added support for Python 3.14. (:pull:`410`).
+* Added support for the latest version of `xclim`, `xscen`, `xarray`, and `pandas`. (:pull:`410`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Due to the added support for `pandas` v3.0.0, the `leafmap` dependency has been made optional when installing `xhydro` through `pip`. (:pull:`410`).
+  * The dependency can be installed separately with `pip install xhydro[leafmap]`.
+  * This does not affect the `conda` installation, which still includes `leafmap` as a dependency.
+
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* No changes.
+
 v0.7.0 (2026-02-24)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
