@@ -2,7 +2,7 @@ name: xhydro-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.14
+  - python >=3.10,<3.15
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
@@ -15,7 +15,7 @@ dependencies:
   - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
   - numpy >=1.25
   - odc-stac
-  - pandas >=2.2,<3.0.0
+  - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
   - pystac >=1.12.0
@@ -24,14 +24,14 @@ dependencies:
   - rasterio
   - ravenpy >=0.18.1
   - rioxarray >=0.15.0
-  - scipy
+  - scipy >=1.12.0
   - spotpy >=1.6.2
   - statsmodels >=0.14.0
   - tqdm
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
   - xclim
-  - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
+  - xscen >=0.12.1,<0.15  # xscen controls the version of xclim
   - xvec
   # Julia
   # - julia >=1.6.0  # Works locally, breaks remotely
@@ -70,7 +70,7 @@ dependencies:
   # Testing
   - requests
   - tox >=4.30.3
-  - xdatasets >=0.3.8
+  - xdatasets >=0.3.9
   # Notebooks
   - hvplot
   - xagg

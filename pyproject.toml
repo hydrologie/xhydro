@@ -29,7 +29,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  # "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology",
@@ -44,26 +44,24 @@ dependencies = [
   "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
-  "leafmap",
-  "mapclassify", # Hidden dependency needed to extract watershed delineation using leafmap objects
   "numpy >=1.25",
   "odc-stac",
-  "pandas >=2.2,<3.0.0",
+  "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
   "pystac >=1.12.0",
   "pystac-client",
   "pyyaml >=6.0.2",
   "rasterio",
-  "rioxarray >=0.15.0",
-  "scipy",
-  "spotpy >=1.6.2",
+  "rioxarray >=0.15.0", # FIXME: This currently downgrades xarray to 2025.11.0 on pip installations, but the conda-forge version is fixed.
+  "scipy >=1.12.0",
+  "spotpy >=1.6.2", # FIXME: spotpy 1.6.2 on conda-forge, currently 1.6.7 on PyPI. Also, missing components on conda-forge cause pip to not detect its version, which causes pip to reinstall it.
   "statsmodels >=0.14.0",
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
   "xclim",
-  "xscen >=0.12.1,<0.14", # xscen controls the version of xclim
+  "xscen >=0.12.1,<0.15", # xscen controls the version of xclim
   "xvec"
 ]
 
@@ -89,7 +87,7 @@ dev = [
   "tox >=4.30.3",
   "watchdog >=4.0.0",
   "vulture >=2.14",
-  "xdatasets >=0.3.8" # Needed for test_gis.py
+  "xdatasets >=0.3.9" # Needed for test_gis.py
 ]
 docs = [
   # Documentation and examples
@@ -113,7 +111,14 @@ raven = [
   # Only needed for pip installations. Anaconda installations will install it automatically.
   "ravenpy[raven-hydro] >=0.18.1"
 ]
-all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
+# FIXME: Temporary fix until leafmap's dependency bqplot is updated to a version compatible with pandas >=3.0.0 (https://github.com/bqplot/bqplot/pull/1692)
+# The conda-forge version of bqplot is actually badly tagged and doesn't specify a minimum version, but this is fine since we never actually call bqplot ourselves.
+# Return this to the main dependencies once the issue is resolved.
+leafmap = [
+  "leafmap",
+  "mapclassify" # Hidden dependency needed to extract watershed delineation using leafmap objects
+]
+all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]", "xhydro[leafmap]"]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"

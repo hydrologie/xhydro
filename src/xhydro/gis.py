@@ -17,7 +17,12 @@ except ImportError:
     warnings.warn("The `exactextract` library is not present in the environment and will not be used.", stacklevel=2)
 
 import geopandas as gpd
-import leafmap
+
+
+try:
+    from leafmap import Map as Leafmap_map  # noqa: F401
+except ImportError:
+    Leafmap_map = None
 import matplotlib.pyplot as plt
 import numpy as np
 import odc.stac
@@ -50,7 +55,7 @@ __all__ = [
 def watershed_delineation(
     *,
     coordinates: list[tuple] | tuple | None = None,
-    m: leafmap.Map | None = None,
+    m=None,
 ) -> gpd.GeoDataFrame:
     """
     Calculate watershed delineation from pour point.
@@ -83,14 +88,17 @@ def watershed_delineation(
     coordinates = [coordinates] if isinstance(coordinates, tuple) else coordinates
 
     # combine coordinates from both coordinates argument and markers on the map, if they exist
-    if m is not None and any(m.draw_features):
-        if coordinates is None:
-            coordinates = []
-        gdf_markers = gpd.GeoDataFrame.from_features(m.draw_features)[["geometry"]]
-        gdf_markers = gdf_markers.loc[gdf_markers.type == "Point"]
+    if m is not None:
+        if Leafmap_map is None:
+            raise ImportError("The `leafmap` library is not present in the environment and is required to use the `m` argument in this function.")
+        if any(m.draw_features):
+            if coordinates is None:
+                coordinates = []
+            gdf_markers = gpd.GeoDataFrame.from_features(m.draw_features)[["geometry"]]
+            gdf_markers = gdf_markers.loc[gdf_markers.type == "Point"]
 
-        marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y, strict=False))
-        coordinates = coordinates + marker_coordinates
+            marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y, strict=False))
+            coordinates = coordinates + marker_coordinates
 
     # cache and read level 12 HydroBASINS polygons' file
     proxies = urllib.request.getproxies()

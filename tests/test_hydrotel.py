@@ -371,7 +371,7 @@ class TestHydrotel:
         meteo = timeseries(
             np.zeros(365 * 2),
             start="2020-01-01",
-            freq="3H",
+            freq="3h",
             variable="tasmin",
             as_dataset=True,
             units="degC",
@@ -379,14 +379,14 @@ class TestHydrotel:
         meteo["tasmax"] = timeseries(
             np.ones(365 * 2),
             start="2020-01-01",
-            freq="3H",
+            freq="3h",
             variable="tasmax",
             units="degC",
         )
         meteo["pr"] = timeseries(
             np.ones(365 * 2) * 10,
             start="2020-01-01",
-            freq="3H",
+            freq="3h",
             variable="pr",
             units="mm",
         )
