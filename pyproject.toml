@@ -92,13 +92,16 @@ dynamic = ["description", "version"]
 dependencies = [
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy >=0.23.0",
+  "clisops",
   "dask",
   "dask-geopandas",
   "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
+  "matplotlib",
   "numpy >=1.25",
   "odc-stac",
+  "packaging",
   "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
@@ -107,6 +110,7 @@ dependencies = [
   "pyyaml >=6.0.2",
   "rasterio",
   "rioxarray >=0.15.0", # FIXME: This currently downgrades xarray to 2025.11.0 on pip installations, but the conda-forge version is fixed.
+  "scikit-learn",
   "scipy >=1.12.0",
   "spotpy >=1.6.2", # FIXME: spotpy 1.6.2 on conda-forge, currently 1.6.7 on PyPI. Also, missing components on conda-forge cause pip to not detect its version, which causes pip to reinstall it.
   "statsmodels >=0.14.0",
@@ -120,7 +124,8 @@ dependencies = [
 
 [project.optional-dependencies]
 julia = [
-  "juliacall >=0.9.20"
+  "juliacall >=0.9.20",
+  "juliapk >=0.1.15"
 ]
 raven = [
   # Only needed for pip installations. Anaconda installations will install it automatically.
@@ -204,6 +209,12 @@ omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
+
+[tool.deptry.package_module_name_map]
+"scikit-learn" = "sklearn"
+
+[tool.deptry.per_rule_ignores]
+DEP001 = ["juliapkg"]
 
 [tool.flit.sdist]
 include = [

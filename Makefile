@@ -125,7 +125,7 @@ endif
 
 docs: build-docs  ## open the built documentation in a web browser
 ifndef READTHEDOCS
- 	$(BROWSER) docs/_build/html/en/html/index.html
+	$(BROWSER) docs/_build/html/en/html/index.html
 endif
 servedocs: autodoc ## compile the docs while watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
