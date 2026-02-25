@@ -25,7 +25,7 @@ test = [
   "python-dotenv >=1.2.1",
   "pytest-xdist >=3.2",
   "requests",
-  "xdatasets >=0.3.9", # Needed for test_gis.py
+  "xdatasets >=0.3.9" # Needed for test_gis.py
 ]
 notebooks = [
   "hvplot",
