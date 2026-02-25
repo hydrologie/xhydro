@@ -93,8 +93,6 @@ dependencies = [
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy >=0.23.0",
   "clisops",
-  "dask",
-  "dask-geopandas",
   "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
@@ -112,6 +110,7 @@ dependencies = [
   "rioxarray >=0.15.0", # FIXME: This currently downgrades xarray to 2025.11.0 on pip installations, but the conda-forge version is fixed.
   "scikit-learn",
   "scipy >=1.12.0",
+  "shapely >=2.0",
   "spotpy >=1.6.2", # FIXME: spotpy 1.6.2 on conda-forge, currently 1.6.7 on PyPI. Also, missing components on conda-forge cause pip to not detect its version, which causes pip to reinstall it.
   "statsmodels >=0.14.0",
   "tqdm",
@@ -127,16 +126,20 @@ julia = [
   "juliacall >=0.9.20",
   "juliapkg >=0.1.15"
 ]
-raven = [
-  # Only needed for pip installations. Anaconda installations will install it automatically.
-  "ravenpy[raven-hydro] >=0.18.1"
-]
 # FIXME: Temporary fix until leafmap's dependency bqplot is updated to a version compatible with pandas >=3.0.0 (https://github.com/bqplot/bqplot/pull/1692)
 # The conda-forge version of bqplot is actually badly tagged and doesn't specify a minimum version, but this is fine since we never actually call bqplot ourselves.
 # Return this to the main dependencies once the issue is resolved.
 leafmap = [
   "leafmap",
   "mapclassify" # Hidden dependency needed to extract watershed delineation using leafmap objects
+]
+raven = [
+  # Only needed for pip installations. Anaconda installations will install it automatically.
+  "ravenpy[raven-hydro] >=0.18.1"
+]
+speedup = [
+  "dask",
+  "dask-geopandas"
 ]
 all = [
   "xhydro[julia]",
@@ -209,11 +212,16 @@ omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
+pep621_dev_dependency_groups = ["leafmap", "speedup"]
 
 [tool.deptry.package_module_name_map]
+"odc-stac" = "odc"
 "scikit-learn" = "sklearn"
+"xarray-spatial" = "xrspatial"
 
 [tool.deptry.per_rule_ignores]
+DEP001 = ["exactextract"]
+DEP002 = ["fastprogress"]
 
 [tool.flit.sdist]
 include = [
