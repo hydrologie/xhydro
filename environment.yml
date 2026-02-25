@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python >=3.10,<3.15
-  - pip >=24.2.0
+  - pip >=26.0
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0

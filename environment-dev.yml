@@ -37,7 +37,7 @@ dependencies:
   # - julia >=1.6.0  # Works locally, breaks remotely
   # - pyjuliacall >=0.9.20
   # Dev tools and testing
-  - pip >=26.1
+  - pip >=26.0
   - bump-my-version >=1.2.6
   - codespell >=2.4.1
   - coverage >=7.5.0
