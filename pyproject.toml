@@ -125,7 +125,7 @@ dependencies = [
 [project.optional-dependencies]
 julia = [
   "juliacall >=0.9.20",
-  "juliapk >=0.1.15"
+  "juliapkg >=0.1.15"
 ]
 raven = [
   # Only needed for pip installations. Anaconda installations will install it automatically.
@@ -214,7 +214,6 @@ relative_files = true
 "scikit-learn" = "sklearn"
 
 [tool.deptry.per_rule_ignores]
-DEP001 = ["juliapkg"]
 
 [tool.flit.sdist]
 include = [
