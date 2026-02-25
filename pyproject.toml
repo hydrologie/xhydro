@@ -19,13 +19,21 @@ lint = [
 test = [
   # Base testing support
   "coverage[toml] >=7.13.4",
+  "lmoments3 >=1.0.7",
   "pytest >=9.0.2",
-  "pytest-cov >=7.0.0"
+  "pytest-cov >=7.0.0",
+  "python-dotenv >=1.2.1",
+  "pytest-xdist >=3.2",
+  "requests",
+  "xdatasets >=0.3.9", # Needed for test_gis.py
+]
+notebooks = [
+  "hvplot",
+  "xagg"
 ]
 docs = [
   # Documentation and example support
   "furo",
-  "hvplot",
   "ipykernel",
   "ipython >=8.10.0",
   "jupyter_client",
@@ -35,7 +43,7 @@ docs = [
   "sphinx-codeautolink >=0.16.2",
   "sphinx-copybutton >=0.5.2",
   "sphinx-intl",
-  "xagg"
+  {include-group = "notebooks"}
 ]
 tox = [
   "tox >=4.41.0",
@@ -47,7 +55,6 @@ dev = [
   "pip >=26.0.1",
   "prek >=0.3.0",
   "watchdog >=6.0.0",
-  "xdatasets >=0.3.9", # Needed for test_gis.py
   {include-group = "docs"},
   {include-group = "lint"},
   {include-group = "test"},
@@ -136,14 +143,15 @@ raven = [
   # Only needed for pip installations. Anaconda installations will install it automatically.
   "ravenpy[raven-hydro] >=0.18.1"
 ]
-speedup = [
+speedups = [
   "dask",
   "dask-geopandas"
 ]
 all = [
   "xhydro[julia]",
   "xhydro[leafmap]",
-  "xhydro[raven]"
+  "xhydro[raven]",
+  "xhydro[speedups]"
 ]
 
 [project.urls]
@@ -211,7 +219,7 @@ omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
-pep621_dev_dependency_groups = ["leafmap", "speedup"]
+pep621_dev_dependency_groups = ["leafmap", "speedups"]
 
 [tool.deptry.package_module_name_map]
 "odc-stac" = "odc"

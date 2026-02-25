@@ -7,15 +7,14 @@ dependencies:
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
-  - dask
-  - dask-geopandas
+  - clisops
   - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   - geopandas >=1.0
   - haversine >=2.8.1
-  - leafmap
-  - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
+  - matplotlib-base
   - numpy >=1.25
   - odc-stac
+  - packaging
   - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
@@ -23,9 +22,10 @@ dependencies:
   - pystac-client
   - pyyaml >=6.0.2
   - rasterio
-  - ravenpy >=0.18.1
   - rioxarray >=0.15.0
+  - scikit-learn
   - scipy >=1.12.0
+  - shapely >=2.0
   - spotpy >=1.6.2
   - statsmodels >=0.14.0
   - tqdm
@@ -34,3 +34,11 @@ dependencies:
   - xclim
   - xscen >=0.12.1,<0.15  # xscen controls the version of xclim
   - xvec
+  # Leafmap
+  - leafmap
+  - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
+  # Raven
+  - ravenpy >=0.18.1
+  # Speedups
+  - dask
+  - dask-geopandas
