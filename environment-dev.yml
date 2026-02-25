@@ -62,9 +62,9 @@ dependencies:
   - python-dotenv >=1.2.1
   - ruff >=0.15.0
   - watchdog >=6.0.0
-  - sphinx >=8.2.0  # Pinned until nbsphinx supports Sphinx 8.2
+  - sphinx >=8.0.0 
   - sphinx-codeautolink >=0.16.2
-  - sphinx-copybutton
+  - sphinx-copybutton >=0.5.2
   - sphinx-intl
   - vulture >=2.14
   - watchdog >=4.0.0
