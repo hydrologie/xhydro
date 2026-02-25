@@ -1,11 +1,7 @@
+import importlib.util
 import warnings
 from pathlib import Path
 
-
-try:
-    from leafmap import Map as Leafmap_map  # noqa: F401
-except ImportError:
-    Leafmap_map = None
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -16,6 +12,9 @@ from pystac_client.exceptions import APIError
 from requests.exceptions import HTTPError
 
 import xhydro as xh
+
+
+HAS_LEAFMAP = bool(importlib.util.find_spec("leafmap"))
 
 
 class TestWatershedDelineation:
@@ -35,9 +34,11 @@ class TestWatershedDelineation:
         )
 
     @pytest.mark.parametrize("area", [18891676494.940426])
-    @pytest.mark.skipif(Leafmap_map is None, reason="The `leafmap` library is not present in the environment.")
+    @pytest.mark.skipif(not HAS_LEAFMAP, reason="The `leafmap` library is not present in the environment.")
     def test_watershed_delineation_from_map(self, area):
-        m = Leafmap_map(center=(48.63, -74.71), zoom=5, basemap="USGS Hydrography")
+        import leafmap
+
+        m = leafmap.Map(center=(48.63, -74.71), zoom=5, basemap="USGS Hydrography")
         # Richelieu watershed
         m.draw_features = [
             {

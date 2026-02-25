@@ -15,14 +15,9 @@ try:  # In the case where exactextract is available, it needs to be imported her
     import exactextract  # noqa: F401
 except ImportError:
     warnings.warn("The `exactextract` library is not present in the environment and will not be used.", stacklevel=2)
+import importlib.util
 
 import geopandas as gpd
-
-
-try:
-    from leafmap import Map as Leafmap_map  # noqa: F401
-except ImportError:
-    Leafmap_map = None
 import matplotlib.pyplot as plt
 import numpy as np
 import odc.stac
@@ -40,6 +35,9 @@ from tqdm.auto import tqdm
 from xrspatial import aspect, slope
 
 from xhydro.utils import update_history
+
+
+HAS_LEAFMAP = bool(importlib.util.find_spec("leafmap"))
 
 
 __all__ = [
@@ -89,7 +87,7 @@ def watershed_delineation(
 
     # combine coordinates from both coordinates argument and markers on the map, if they exist
     if m is not None:
-        if Leafmap_map is None:
+        if not HAS_LEAFMAP:
             raise ImportError("The `leafmap` library is not present in the environment and is required to use the `m` argument in this function.")
         if any(m.draw_features):
             if coordinates is None:
