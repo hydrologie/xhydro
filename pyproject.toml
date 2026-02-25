@@ -1,6 +1,59 @@
 [build-system]
-requires = ["flit_core >=3.11.0,<4"]
+requires = ["flit_core >=3.12.0,<4"]
 build-backend = "flit_core.buildapi"
+
+[dependency-groups]
+lint = [
+  # Linting tools
+  "codespell >=2.4.1",
+  "deptry >=0.24.0",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.4.0",
+  "mypy >=1.19.1",
+  "numpydoc >=1.10.0",
+  "pylint >=4.0.4",
+  "ruff >=0.15.0",
+  "vulture >=2.14",
+  "yamllint >=1.38.0"
+]
+test = [
+  # Base testing support
+  "coverage[toml] >=7.13.4",
+  "pytest >=9.0.2",
+  "pytest-cov >=7.0.0"
+]
+docs = [
+  # Documentation and example support
+  "furo",
+  "hvplot",
+  "ipykernel",
+  "ipython >=8.10.0",
+  "jupyter_client",
+  "nbsphinx >=0.9.8",
+  "nbval",
+  "sphinx >=8.0.0",
+  "sphinx-codeautolink >=0.16.2",
+  "sphinx-copybutton >=0.5.2",
+  "sphinx-intl",
+  "sphinx-rtd-theme >=1.0",
+  "xagg"
+]
+tox = [
+  "tox >=4.41.0",
+  "tox-gh >=1.6.1"
+]
+dev = [
+  # Development and testing tools
+  "bump-my-version >=1.2.6",
+  "pip >=26.0.1",
+  "prek >=0.3.0",
+  "watchdog >=6.0.0",
+  "xdatasets >=0.3.9", # Needed for test_gis.py
+  {include-group = "docs"},
+  {include-group = "lint"},
+  {include-group = "test"},
+  {include-group = "tox"}
+]
 
 [project]
 name = "xhydro"
@@ -66,44 +119,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-  # Dev tools and testing
-  "bump-my-version >=1.2.3",
-  "coverage >=7.5.0",
-  "deptry >=0.23.1",
-  "flake8 >=7.3.0",
-  "flake8-rst-docstrings >=0.4.0",
-  "flit >=3.11.0,<4.0",
-  "mypy >=1.18.2",
-  "numpydoc >=1.9.0",
-  "packaging >=23.0",
-  "pip >=25.2",
-  "pre-commit >=3.5.0",
-  "pytest >=8.3.2",
-  "pytest-cov >=5.0.0",
-  "pytest-xdist[psutil] >=3.2",
-  "python-dotenv >=1.2.1",
-  "ruff >=0.14.3",
-  "tox >=4.30.3",
-  "watchdog >=4.0.0",
-  "vulture >=2.14",
-  "xdatasets >=0.3.9" # Needed for test_gis.py
-]
-docs = [
-  # Documentation and examples
-  "furo",
-  "hvplot",
-  "ipykernel",
-  "ipython >=8.5.0",
-  "jupyter_client",
-  "nbsphinx >=0.9.5",
-  "nbval",
-  "sphinx >=7.1.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
-  "sphinx-codeautolink >=0.16.2",
-  "sphinx-copybutton",
-  "sphinx-intl",
-  "xagg"
-]
 julia = [
   "juliacall >=0.9.20"
 ]
@@ -118,7 +133,11 @@ leafmap = [
   "leafmap",
   "mapclassify" # Hidden dependency needed to extract watershed delineation using leafmap objects
 ]
-all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]", "xhydro[leafmap]"]
+all = [
+  "xhydro[julia]",
+  "xhydro[leafmap]",
+  "xhydro[raven]"
+]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
@@ -174,7 +193,7 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic,algotrithm"
+ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty"
 skip = ["*.po", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
@@ -185,8 +204,6 @@ omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
-extend_exclude = ["docs"]
-pep621_dev_dependency_groups = ["all", "dev", "docs"]
 
 [tool.flit.sdist]
 include = [
@@ -272,7 +289,8 @@ override_SS05 = [
   "^Decompress "
 ]
 
-[tool.pytest.ini_options]
+[tool.pytest]
+min_version = "9.0"
 addopts = [
   "-ra",
   "--color=yes",
