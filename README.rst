@@ -86,7 +86,7 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
 .. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/hydrologie/xHydro/main.svg
          :target: https://results.pre-commit.ci/latest/github/hydrologie/xHydro/main
          :alt: pre-commit.ci status
- 
+
 .. |prek| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
         :target: https://github.com/j178/prek
         :alt: prek

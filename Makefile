@@ -58,7 +58,7 @@ clean-test: ## remove test and coverage artifacts
 
 install-lint: ## install dependencies needed for linting
 	python -m pip install --quiet --group lint
- 
+
 install-docs: ## install dependencies needed for building the docs
 	python -m pip install --quiet --group docs
 

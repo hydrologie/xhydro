@@ -28,7 +28,7 @@ skip_install = true
 dependency_groups = ["lint"]
 commands = [
   ["make", "lint"]
- ]
+]
 commands_post = []
 allowlist_externals = ["make"]
 

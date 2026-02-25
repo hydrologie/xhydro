@@ -97,7 +97,7 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
         python -m pip install --group dev
         python -m pip install --editable .
         prek install
- 
+
     This installs ``xHydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone. It also installs all the libraries necessary to run the ``Extremes.jl`` hooks of the ``extreme_value_analysis`` module.
 
 #. Create a branch for local development:
