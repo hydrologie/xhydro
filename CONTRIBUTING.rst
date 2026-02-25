@@ -133,7 +133,7 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
         git commit -s -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
-    On commit, ``prek`` will will run ``pre-commit`` checks that ensure code quality checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
+    On commit, ``prek`` will run ``pre-commit`` checks that ensure code quality checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
 
     You can always run the hooks manually with:
 
