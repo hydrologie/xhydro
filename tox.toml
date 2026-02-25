@@ -1,6 +1,6 @@
 envlist = [
   "lint",
-  "py3.{10-14}",
+  "py3.{10,11,12,13,14}",
   "docs",
   "notebooks-lax"
 ]
@@ -34,9 +34,9 @@ allowlist_externals = ["make"]
 
 [env.notebooks]
 description = "Run tests on xhydro Notebooks"
-extras = [
-  "dev",
-  "docs"
+dependency_groups = [
+  "notebooks",
+  "test"
 ]
 commands = [
   ["make", "test-notebooks"]
@@ -49,8 +49,8 @@ allowlist_externals = [
 [env.notebooks-lax]
 description = "Run tests on xhydro Notebooks (lax)"
 extras = [
-  "dev",
-  "docs"
+  "docs",
+  "test"
 ]
 commands = [
   ["make", "test-notebooks-lax"]
