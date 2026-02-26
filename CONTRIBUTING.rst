@@ -130,7 +130,7 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
     .. code-block:: console
 
         git add .
-        git commit -s -m "Your detailed description of your changes."
+        git commit -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
     On commit, ``prek`` will run ``pre-commit`` checks that ensure code quality checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
@@ -245,11 +245,18 @@ If you would like to contribute to the French translation of the documentation, 
 
 This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation.
 
-For convenience, you can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
+For convenience, you can simply run the following command:
+
+    .. code-block:: console
+
+        make translate
+
+Alternatively, you can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
 
     .. code-block:: console
 
         pip install deep-translator
+        python CI/translator.p
 
 We aim to automate this process eventually but until then, we want to keep the French translation up-to-date with the English documentation at least when a new release is made.
 

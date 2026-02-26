@@ -231,14 +231,14 @@ msgstr ""
 
 #: ../../installation.rst:92
 msgid "The sources for xHydro can be downloaded from the `Github repo`_."
-msgstr "Les sources de xHydro peuvent être téléchargées depuis le `dépôt Github`_."
+msgstr "Les sources de xHydro peuvent être téléchargées depuis le `Github repo`_."
 
 #: ../../installation.rst:94
 msgid ""
 "Download the source code from the `Github repo`_ using one of the "
 "following methods:"
 msgstr ""
-"Téléchargez le code source depuis le `dépôt Github`_ en utilisant l'une "
+"Téléchargez le code source depuis le `Github repo`_ en utilisant l'une "
 "des méthodes suivantes :"
 
 #: ../../installation.rst:96
@@ -261,10 +261,10 @@ msgstr ""
 
 #: ../../installation.rst:116
 msgid ""
-"If you are on Windows, replace the ``make dev`` command with the "
+"If you are on Windows, replace the ``make development`` command with the "
 "following:"
 msgstr ""
-"Si vous êtes sous Windows, remplacez la commande ``make dev`` par celle-"
+"Si vous êtes sous Windows, remplacez la commande ``make development`` par celle-"
 "ci :"
 
 #: ../../installation.rst:122
@@ -289,7 +289,7 @@ msgid ""
 "When new changes are made to the `Github repo`_, you can update your "
 "local copy using the following commands from the root of the repository:"
 msgstr ""
-"Lorsque de nouveaux changements sont apportés au `dépôt Github`_, vous "
+"Lorsque de nouveaux changements sont apportés au `Github repo`_, vous "
 "pouvez mettre à jour votre copie locale en utilisant les commandes "
 "suivantes depuis la racine du dépôt :"
 

@@ -60,6 +60,9 @@ dev = [
   {include-group = "test"},
   {include-group = "tox"}
 ]
+translate = [
+  "deep-translator >=1.11.4"
+]
 
 [project]
 name = "xhydro"

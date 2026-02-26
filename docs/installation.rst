@@ -111,13 +111,15 @@ The sources for xHydro can be downloaded from the `Github repo`_.
 
          conda env create -f environment-dev.yml
          conda activate xhydro-dev
-         make dev
+         make development
 
-    If you are on Windows, replace the ``make dev`` command with the following:
+    If you are on Windows, replace the ``make development`` command with the following:
 
     .. code-block:: console
 
-        python -m pip install -e .[all]
+       	python -m pip install --group dev
+        python -m pip install --no-user --editable .
+        prek install
 
     Even if you do not intend to contribute to `xHydro`, we favor using `environment-dev.yml` over `environment.yml` because it includes additional packages that are used to run all the examples provided in the documentation. If for some reason you wish to install the `PyPI` version of `xHydro` into an existing Anaconda environment (*not recommended if requirements are not met*), only run the last command above.
 
@@ -130,7 +132,7 @@ The sources for xHydro can be downloaded from the `Github repo`_.
          git pull origin main
          conda env update -n xhydro-dev -f environment-dev.yml
          conda activate xhydro-dev
-         make dev
+         make development
 
     These commands should work most of the time, but if big changes are made to the repository, you might need to remove the environment and create it again.
 

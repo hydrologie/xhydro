@@ -1,4 +1,4 @@
-.PHONY: clean clean-build clean-pyc clean-test coverage development dist docs help install lint release test
+.PHONY: clean clean-build clean-pyc clean-test coverage development dist docs help install lint release test translate
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -68,6 +68,8 @@ install-test: ## install dependencies needed for standard testing
 install-tox: ## install base dependencies needed for running tox
 	python -m pip install --quiet --group tox
 
+install-translate: ## install dependencies needed for automated translation
+	python -m pip install --quiet --group translate
 
 lint: install-lint ## check style
 	python -m ruff check src/xhydro tests
@@ -113,6 +115,9 @@ initialize-translations: clean-docs autodoc ## initialize translations, includin
 	sphinx-intl update -p docs/_build/gettext -d docs/locales -l fr
 	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 
+translate: install-translate ## run translator.py over the documentation
+	python CI/translator.py
+
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck
 
@@ -142,5 +147,5 @@ install: clean ## install the package to the active Python's site-packages
 
 development: clean ## install the package to the active Python's site-packages
 	python -m pip install --group dev
-	python -m pip install --no-user --editable .[extras]
+	python -m pip install --no-user --editable .
 	prek install
