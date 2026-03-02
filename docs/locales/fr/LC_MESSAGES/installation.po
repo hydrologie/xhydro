@@ -42,6 +42,12 @@ msgstr ""
 "Si vous n'avez pas `pip`_ installé, ce `guide d'installation Python`_ "
 "peut vous aider à traverser le processus."
 
+#: ../../installation.rst:15
+msgid ""
+".. _Python installation guide: https://docs.python-guide.org/starting/installation/"
+msgstr ""
+".. _guide d'installation Python: https://python-guide-fr.readthedocs.io/fr/latest/starting/installation.html"
+
 #: ../../installation.rst:19
 msgid ""
 "Some libraries used by `xHydro` or its dependencies may not function "
