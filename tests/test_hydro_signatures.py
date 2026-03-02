@@ -120,9 +120,7 @@ class TestHurstExp:
             # Create NaNs, which will be interpolated and increase the Hurst exponent
             q[100:700] = np.nan
             with pytest.raises(ValueError, match="The following health checks failed"):
-                out = xh.hurst_exp(
-                    q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1}
-                )  # returns a value close to 0.5 representing noise.
+                out = xh.hurst_exp(q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})
 
         expected = 1.13732923 if nans else 0.589359
 
