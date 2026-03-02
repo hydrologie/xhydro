@@ -63,7 +63,7 @@ dependencies:
   - prek >=0.3.0
   - ruff >=0.15.0
   - watchdog >=6.0.0
-  - sphinx >=8.0.0
+  - sphinx >=8.0.0,<9.0.0  # FIXME: French translations failing due to bug: https://github.com/sphinx-doc/sphinx/issues/14162
   - sphinx-codeautolink >=0.16.2
   - sphinx-copybutton >=0.5.2
   - sphinx-intl
