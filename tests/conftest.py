@@ -122,6 +122,8 @@ def oi_data(deveraux):
             "station_id": ("station", df["No.Station"]),
         }
     )
+    station_correspondence["reach_id"] = station_correspondence["reach_id"].astype(str)
+    station_correspondence["station_id"] = station_correspondence["station_id"].astype(str)
 
     qsim = xr.open_dataset(common / "A20_HYDREP_TEST.nc")
     qsim = qsim.assign({"station_id": ("station", qsim["station_id"].values.astype(str))})

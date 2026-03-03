@@ -22,6 +22,11 @@ Welcome to xHydro's documentation!
 
    apidoc/modules
 
+.. toctree::
+   :caption: GitHub Repository
+
+   hydrologie/xHydro <https://github.com/hydrologie/xHydro>
+
 Useful links
 ------------
 - `GitHub Repository <https://github.com/hydrologie/xhydro>`_

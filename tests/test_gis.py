@@ -1,7 +1,7 @@
+import importlib.util
 import warnings
 from pathlib import Path
 
-import leafmap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,9 +14,10 @@ from requests.exceptions import HTTPError
 import xhydro as xh
 
 
-class TestWatershedDelineation:
-    m = leafmap.Map(center=(48.63, -74.71), zoom=5, basemap="USGS Hydrography")
+HAS_LEAFMAP = bool(importlib.util.find_spec("leafmap"))
 
+
+class TestWatershedDelineation:
     @pytest.mark.parametrize(
         "lng_lat, area",
         [
@@ -33,16 +34,20 @@ class TestWatershedDelineation:
         )
 
     @pytest.mark.parametrize("area", [18891676494.940426])
+    @pytest.mark.skipif(not HAS_LEAFMAP, reason="The `leafmap` library is not present in the environment.")
     def test_watershed_delineation_from_map(self, area):
+        import leafmap
+
+        m = leafmap.Map(center=(48.63, -74.71), zoom=5, basemap="USGS Hydrography")
         # Richelieu watershed
-        self.m.draw_features = [
+        m.draw_features = [
             {
                 "type": "Feature",
                 "properties": {},
                 "geometry": {"type": "Point", "coordinates": [-66.153789, 50.265321]},
             }
         ]
-        gdf = xh.gis.watershed_delineation(m=self.m)
+        gdf = xh.gis.watershed_delineation(m=m)
         np.testing.assert_allclose(
             [gdf.to_crs(32198).area.values[0]],
             [area],
@@ -201,6 +206,7 @@ class TestSurfaceProperties:
 
         df = pd.DataFrame.from_dict(data).astype("float32")
         df.index.names = ["Station"]
+        df.index = df.index.astype("O")  # dtype inconsistencies between this and xarray.to_dataframe() cause test failures in pandas >3.0.0
         return df
 
     @pytest.mark.online

@@ -41,7 +41,7 @@ jobs:
       (github.event_name == 'push')
     strategy:
       matrix:
-        python-version: [ "3.13" ]
+        python-version: [ "3.14" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
@@ -153,11 +153,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
         julia: [ false ]
         include: # Only run the latest Python version on push
           - os: 'ubuntu-latest'
-            python-version: "3.12"
+            python-version: "3.14"
             julia: true
     defaults:
       run:
@@ -229,7 +229,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.12" ]
+        python-version: [ "3.14" ]
     defaults:
       run:
         shell: bash -l {0}
@@ -282,7 +282,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
-        python-version: [ "3.12" ]
+        python-version: [ "3.14" ]
         julia: [ true, false ]
     defaults:
       run:

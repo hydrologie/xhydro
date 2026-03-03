@@ -2,35 +2,43 @@ name: xhydro
 channels:
   - conda-forge
 dependencies:
-  - python >=3.10,<3.13
-  - pip >=24.2.0
+  - python >=3.10,<3.15
+  - pip >=26.0
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   # Main packages
   - cartopy >=0.23.0
-  - dask
-  - dask-geopandas
+  - clisops
   - fastprogress <1.1  # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   - geopandas >=1.0
   - haversine >=2.8.1
-  - leafmap
-  - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
+  - matplotlib-base
   - numpy >=1.25
   - odc-stac
-  - pandas >=2.2,<3.0.0
+  - packaging
+  - pandas >=2.2
   - planetary-computer
   - pooch >=1.8.0
   - pystac >=1.12.0
   - pystac-client
   - pyyaml >=6.0.2
   - rasterio
-  - ravenpy >=0.18.1
   - rioxarray >=0.15.0
-  - scipy
+  - scikit-learn
+  - scipy >=1.12.0
+  - shapely >=2.0
   - spotpy >=1.6.2
   - statsmodels >=0.14.0
   - tqdm
   - xarray >=2023.11.0
   - xarray-spatial >=0.3.7
   - xclim
-  - xscen >=0.12.1,<0.14  # xscen controls the version of xclim
+  - xscen >=0.12.1,<0.15  # xscen controls the version of xclim
   - xvec
+  # Leafmap
+  - leafmap
+  - mapclassify  # Hidden dependency needed to extract watershed delineation using leafmap objects
+  # Raven
+  - ravenpy >=0.18.1
+  # Speedups
+  - dask
+  - dask-geopandas

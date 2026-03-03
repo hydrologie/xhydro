@@ -23,6 +23,38 @@ Changelog
    ^^^^^^^^^^^^^^^^
    * No changes.
 
+v0.7.1 (unreleased)
+-------------------
+
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added support for Python 3.14. (:pull:`410`).
+* Added support for the latest version of `xclim`, `xscen`, `xarray`, and `pandas`. (:pull:`410`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Due to the added support for `pandas` v3.0.0, the `leafmap` dependency has been made optional when installing `xhydro` through `pip`. (:pull:`410`).
+    * The dependency can be installed separately with `pip install xhydro[leafmap]`.
+    * This does not affect the `conda` installation, which still includes `leafmap` as a dependency.
+* Development dependencies are now installed via `pip` "dependency-group" entries (see: `PEP-735 <https://peps.python.org/pep-0735/>`_). Requires `pip >=25.2`. (:pull:`411`).
+    * New "optional-dependency" lists are now based on optional features (`julia`, `leafmap`, `raven`, `speedups`, `all`).
+* Depepndencies that are implicitly installed and should have been listed in the core package have been added (`clisops`, `matplotlib`, `packaging`, `scikit-learn`, `shapely`). (:pull:`411`).
+
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter template to the latest commit. (:pull:`411`):
+    * `pre-commit` tool has been replaced by `prek`.
+    * The project repository now requires Developer Certificate of Origin (DCO) in commit messages.
+    * `sphinx` has been pinned below v9.0 due to a false-positive warning raised in the French documentation build.
+    * The project now utilizes `deptry` to ensure that all necessary dependencies are listed in the core package.
+* `ruff` has been configured to temporarily ignore rule `D420` due to an error in its implementation in v0.15.4. (:pull:`411`.)
+
 v0.7.0 (2026-02-24)
 -------------------
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
@@ -153,21 +185,21 @@ Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`), Gab
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added a new module `xhydro.extreme_value_analysis` that wraps the `Extremes.jl` package for Julia. (:pull:`175`).
-  * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
-  * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
-  * You can use `pip install xhydro[julia]` to install the required dependencies.
+    * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
+    * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
+    * You can use `pip install xhydro[julia]` to install the required dependencies.
 * Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, :pull:`293`).
 
 Bug fixes
 ^^^^^^^^^
 * Patched the outputs of `xh.optimal_interpolation.execute` to remove a superfluous `station` dimension and to ensure that the `time` dimension has coordinates. (:pull:`274`).
-  * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
+    * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
 * Added attributes to variables instead of global attributes in `xh.extreme_value_analysis`. Modified dimension names and introduced a new dimension, `return_period`, to the results of `xh.extreme_value_analysis.return_level()`. (:pull:`283`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
-  * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
+    * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
 * The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
 * Multiple functions in the `xhydro.frequency_analysis` and `xhydro.indicators.pmp` modules have been updated to require literal arguments instead of positional arguments. (:pull:`274`).
 

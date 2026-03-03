@@ -1,6 +1,68 @@
 [build-system]
-requires = ["flit_core >=3.11.0,<4"]
+requires = ["flit_core >=3.12.0,<4"]
 build-backend = "flit_core.buildapi"
+
+[dependency-groups]
+lint = [
+  # Linting tools
+  "codespell >=2.4.1",
+  "deptry >=0.24.0",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.4.0",
+  "mypy >=1.19.1",
+  "numpydoc >=1.10.0",
+  "pylint >=4.0.4",
+  "ruff >=0.15.4",
+  "vulture >=2.14",
+  "yamllint >=1.38.0"
+]
+test = [
+  # Base testing support
+  "coverage[toml] >=7.13.4",
+  "lmoments3 >=1.0.7",
+  "pytest >=9.0.2",
+  "pytest-cov >=7.0.0",
+  "python-dotenv >=1.2.1",
+  "pytest-xdist >=3.2",
+  "requests",
+  "xdatasets >=0.3.9" # Needed for test_gis.py
+]
+notebooks = [
+  "hvplot",
+  "xagg"
+]
+docs = [
+  # Documentation and example support
+  "furo",
+  "ipykernel",
+  "ipython >=8.10.0",
+  "jupyter_client",
+  "nbsphinx >=0.9.8",
+  "nbval",
+  "sphinx >=8.0.0,<9.0.0", # FIXME: French translations failing due to bug: https://github.com/sphinx-doc/sphinx/issues/14162
+  "sphinx-codeautolink >=0.16.2",
+  "sphinx-copybutton >=0.5.2",
+  "sphinx-intl",
+  {include-group = "notebooks"}
+]
+tox = [
+  "tox >=4.41.0",
+  "tox-gh >=1.6.1"
+]
+dev = [
+  # Development and testing tools
+  "bump-my-version >=1.2.6",
+  "pip >=26.0.1",
+  "prek >=0.3.0",
+  "watchdog >=6.0.0",
+  {include-group = "docs"},
+  {include-group = "lint"},
+  {include-group = "test"},
+  {include-group = "tox"}
+]
+translate = [
+  "deep-translator >=1.11.4"
+]
 
 [project]
 name = "xhydro"
@@ -29,7 +91,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  # "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering :: GIS",
   "Topic :: Scientific/Engineering :: Hydrology",
@@ -39,81 +101,61 @@ dynamic = ["description", "version"]
 dependencies = [
   # Remember to sync changes between environment.yml, environment-dev.yml, and pyproject.toml!
   "cartopy >=0.23.0",
-  "dask",
-  "dask-geopandas",
+  "clisops",
   "fastprogress <1.1", # FIXME: Temporary fix following https://github.com/intake/intake-esm/pull/773. Remove when intake-esm (via xscen) is updated.
   "geopandas >=1.0",
   "haversine >=2.8.1",
-  "leafmap",
-  "mapclassify", # Hidden dependency needed to extract watershed delineation using leafmap objects
+  "matplotlib",
   "numpy >=1.25",
   "odc-stac",
-  "pandas >=2.2,<3.0.0",
+  "packaging",
+  "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
   "pystac >=1.12.0",
   "pystac-client",
   "pyyaml >=6.0.2",
   "rasterio",
-  "rioxarray >=0.15.0",
-  "scipy",
-  "spotpy >=1.6.2",
+  "rioxarray >=0.15.0", # FIXME: This currently downgrades xarray to 2025.11.0 on pip installations, but the conda-forge version is fixed.
+  "scikit-learn",
+  "scipy >=1.12.0",
+  "shapely >=2.0",
+  "spotpy >=1.6.2", # FIXME: spotpy 1.6.2 on conda-forge, currently 1.6.7 on PyPI. Also, missing components on conda-forge cause pip to not detect its version, which causes pip to reinstall it.
   "statsmodels >=0.14.0",
   "tqdm",
   "xarray >=2023.11.0",
   "xarray-spatial >=0.3.7",
   "xclim",
-  "xscen >=0.12.1,<0.14", # xscen controls the version of xclim
+  "xscen >=0.12.1,<0.15", # xscen controls the version of xclim
   "xvec"
 ]
 
 [project.optional-dependencies]
-dev = [
-  # Dev tools and testing
-  "bump-my-version >=1.2.3",
-  "coverage >=7.5.0",
-  "deptry >=0.23.1",
-  "flake8 >=7.3.0",
-  "flake8-rst-docstrings >=0.4.0",
-  "flit >=3.11.0,<4.0",
-  "mypy >=1.18.2",
-  "numpydoc >=1.9.0",
-  "packaging >=23.0",
-  "pip >=25.2",
-  "pre-commit >=3.5.0",
-  "pytest >=8.3.2",
-  "pytest-cov >=5.0.0",
-  "pytest-xdist[psutil] >=3.2",
-  "python-dotenv >=1.2.1",
-  "ruff >=0.14.3",
-  "tox >=4.30.3",
-  "watchdog >=4.0.0",
-  "vulture >=2.14",
-  "xdatasets >=0.3.8" # Needed for test_gis.py
-]
-docs = [
-  # Documentation and examples
-  "furo",
-  "hvplot",
-  "ipykernel",
-  "ipython >=8.5.0",
-  "jupyter_client",
-  "nbsphinx >=0.9.5",
-  "nbval",
-  "sphinx >=7.1.0,<8.2.0", # Pinned until nbsphinx supports Sphinx 8.2
-  "sphinx-codeautolink >=0.16.2",
-  "sphinx-copybutton",
-  "sphinx-intl",
-  "xagg"
-]
 julia = [
-  "juliacall >=0.9.20"
+  "juliacall >=0.9.20",
+  "juliapkg >=0.1.15"
+]
+# FIXME: Temporary fix until leafmap's dependency bqplot is updated to a version compatible with pandas >=3.0.0 (https://github.com/bqplot/bqplot/pull/1692)
+# The conda-forge version of bqplot is actually badly tagged and doesn't specify a minimum version, but this is fine since we never actually call bqplot ourselves.
+# Return this to the main dependencies once the issue is resolved.
+leafmap = [
+  "leafmap",
+  "mapclassify" # Hidden dependency needed to extract watershed delineation using leafmap objects
 ]
 raven = [
   # Only needed for pip installations. Anaconda installations will install it automatically.
   "ravenpy[raven-hydro] >=0.18.1"
 ]
-all = ["xhydro[dev]", "xhydro[docs]", "xhydro[julia]", "xhydro[raven]"]
+speedups = [
+  "dask",
+  "dask-geopandas"
+]
+all = [
+  "xhydro[julia]",
+  "xhydro[leafmap]",
+  "xhydro[raven]",
+  "xhydro[speedups]"
+]
 
 [project.urls]
 "Homepage" = "https://xhydro.readthedocs.io/"
@@ -169,7 +211,7 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "ans,astroid,nd,parametre,projet,socio-economic,algotrithm"
+ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty"
 skip = ["*.po", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
@@ -180,8 +222,16 @@ omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
-extend_exclude = ["docs"]
-pep621_dev_dependency_groups = ["all", "dev", "docs"]
+pep621_dev_dependency_groups = ["leafmap", "speedups"]
+
+[tool.deptry.package_module_name_map]
+"odc-stac" = "odc"
+"scikit-learn" = "sklearn"
+"xarray-spatial" = "xrspatial"
+
+[tool.deptry.per_rule_ignores]
+DEP001 = ["exactextract"]
+DEP002 = ["fastprogress"]
 
 [tool.flit.sdist]
 include = [
@@ -267,7 +317,8 @@ override_SS05 = [
   "^Decompress "
 ]
 
-[tool.pytest.ini_options]
+[tool.pytest]
+min_version = "9.0"
 addopts = [
   "-ra",
   "--color=yes",
@@ -315,7 +366,9 @@ ignore = [
   "COM", # commas
   "D205", # blank-line-after-summary
   "D400", # ends-in-period
-  "D401" # non-imperative-mood
+  "D401", # non-imperative-mood
+  # The following is disabled due to a bug in ruff 0.15.4 (#23682)
+  "D420" # incorrect-section-order
 ]
 preview = true
 select = [
