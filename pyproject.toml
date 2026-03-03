@@ -12,7 +12,7 @@ lint = [
   "mypy >=1.19.1",
   "numpydoc >=1.10.0",
   "pylint >=4.0.4",
-  "ruff >=0.15.0",
+  "ruff >=0.15.4",
   "vulture >=2.14",
   "yamllint >=1.38.0"
 ]
@@ -366,7 +366,9 @@ ignore = [
   "COM", # commas
   "D205", # blank-line-after-summary
   "D400", # ends-in-period
-  "D401" # non-imperative-mood
+  "D401", # non-imperative-mood
+  # The following is disabled due to a bug in ruff 0.15.4 (#23682)
+  "D420" # incorrect-section-order
 ]
 preview = true
 select = [
