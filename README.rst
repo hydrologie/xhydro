@@ -9,7 +9,7 @@ xHydro |logo| |logo-light| |logo-dark|
 +----------------------------+-----------------------------------------------------+
 | Open Source                | |license| |ossf-score|                              |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |ruff| |pre-commit|                                 |
+| Coding Standards           | |ruff| |prek| |pre-commit-ci|                       |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
 +----------------------------+-----------------------------------------------------+
@@ -83,9 +83,13 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
         :target: https://securityscorecards.dev/viewer/?uri=github.com/hydrologie/xhydro
         :alt: OpenSSF Scorecard
 
-.. |pre-commit| image:: https://results.pre-commit.ci/badge/github/hydrologie/xhydro/main.svg
-        :target: https://results.pre-commit.ci/latest/github/hydrologie/xhydro/main
-        :alt: pre-commit.ci Status
+.. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/hydrologie/xHydro/main.svg
+         :target: https://results.pre-commit.ci/latest/github/hydrologie/xHydro/main
+         :alt: pre-commit.ci status
+
+.. |prek| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
+        :target: https://github.com/j178/prek
+        :alt: prek
 
 .. |pypi| image:: https://img.shields.io/pypi/v/xhydro.svg
         :target: https://pypi.python.org/pypi/xhydro

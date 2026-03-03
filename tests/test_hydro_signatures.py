@@ -106,28 +106,23 @@ class TestElastIndex:
 
         out = xh.elasticity_index(q, pr)
         np.testing.assert_allclose(out, 1)
-        # print(type(out))
-
-
-class TestHurstExpNoise:
-    def test_simple(self, q_series):
-        # daily time index
-        np.random.seed(0)
-        q = np.random.randn(365 * 10)  # 10 years of random daily flows
-        q = q_series(q)
-
-        out = xh.hurst_exp(q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})  # returns a value close to 0.5 representing noise.
-        print(out)
-
-        assert 0.3 <= out <= 0.5, f"H={out:.3f} out of expected range"
 
 
 class TestHurstExp:
-    def test_simple(self, q_series):
+    @pytest.mark.parametrize("nans", [True, False])
+    def test_simple(self, q_series, nans):
         # daily time index
-        q = np.arange(1, 1826)
+        rng = np.random.default_rng(0)
+        q = rng.standard_normal(365 * 10)  # 10 years of random daily flows
         q = q_series(q)
 
-        out = xh.hurst_exp(q)  # returns very high value due to artificial input
-        print(out)
-        np.testing.assert_allclose(out, 1.500184, rtol=1e-6)
+        if nans:
+            # Create NaNs, which will be interpolated and increase the Hurst exponent
+            q[100:700] = np.nan
+            with pytest.raises(ValueError, match="The following health checks failed"):
+                out = xh.hurst_exp(q, missing="pct", missing_options={"freq": "YE", "tolerance": 0.1})
+
+        expected = 1.13732923 if nans else 0.589359
+
+        out = xh.hurst_exp(q)
+        np.testing.assert_allclose(out, expected, rtol=1e-6)
