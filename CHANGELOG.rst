@@ -23,7 +23,7 @@ Changelog
    ^^^^^^^^^^^^^^^^
    * No changes.
 
-v0.7.1 (unreleased)
+v0.7.1 (2026-03-03)
 -------------------
 
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
