@@ -8,6 +8,7 @@ import pandas as pd
 import pooch
 import pytest
 import xarray as xr
+from packaging.version import Version
 from pystac_client.exceptions import APIError
 from requests.exceptions import HTTPError
 from shapely import Polygon
@@ -20,7 +21,7 @@ from xhydro.modelling import RavenpyModel
 try:
     import raven_hydro
     import ravenpy
-except ImportError:
+except (ImportError, RuntimeError):
     ravenpy = None
     raven_hydro = None
 
@@ -622,7 +623,7 @@ class TestDistributedRavenpy:
         ds["orog"] = ds_fx["orog"]
         ds["pr"].attrs = {"units": "mm", "long_name": "precipitation"}
         ds = ds.drop_vars(["height", "prsn"])
-        ds = ds.isel(plev=0)
+        ds = ds.isel(plev=0).drop_vars("plev")
         meteo, cfg = xhm.format_input(ds, model="HBVEC")
         return meteo, cfg
 
@@ -950,3 +951,137 @@ class TestDistributedRavenpy:
         np.testing.assert_array_equal(ds2["subbasin_id"].values, [f"{prefix}13", f"{prefix}17"])
 
         assert Path(rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc").exists()
+
+    def test_aggregate_sb(self, tmp_path, gridded_meteo, df):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+
+        # Update the model
+        commands = []
+        for aggregation in ["BY_HRU", "BY_SUBBASIN"]:
+            commands.extend(
+                [
+                    f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
+                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
+                    f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
+                ]
+            )
+
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=commands,
+            rvt=True,
+            rvh=True,
+        )
+
+        rpm.run(overwrite=True)
+        rpm.aggregate_outputs(by="hru", to="subbasin")
+
+        files_true = rpm.get_output("BySubbasin", return_paths=True)
+        files_calc = sorted(rpm.get_output("BySubbasin_v2", return_paths=True))
+        files_true = sorted(list(set(files_true).difference(files_calc)))
+
+        for i in range(len(files_calc)):
+            ds_true = xr.open_dataset(files_true[i])
+            ds_calc = xr.open_dataset(files_calc[i])
+            xr.testing.assert_allclose(ds_true, ds_calc)
+
+    @pytest.mark.skipif(ravenpy is None or Version(ravenpy.__version__) < Version("0.5.0"), reason="Requires RavenPy 0.5.0 or higher.")
+    @pytest.mark.parametrize("agg", ["BY_HRU", "BY_SUBBASIN"])
+    def test_aggregate_drainage(self, tmp_path, gridded_meteo, df, agg):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+
+        # Update the model
+        commands = []
+        for aggregation in [agg, "BY_DRAINAGE_AREA"]:
+            commands.extend(
+                [
+                    f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
+                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
+                    f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
+                ]
+            )
+
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=commands,
+            rvt=True,
+            rvh=True,
+        )
+
+        rpm.run(overwrite=True)
+        rpm.aggregate_outputs(by=agg.lower().split("_")[1], to="drainage_area")
+
+        files_true = rpm.get_output("ByDrainageArea", return_paths=True)
+        files_calc = sorted(rpm.get_output("ByDrainageArea_v2", return_paths=True))
+        files_true = sorted(list(set(files_true).difference(files_calc)))
+
+        for i in range(len(files_calc)):
+            ds_true = xr.open_dataset(files_true[i])
+            ds_calc = xr.open_dataset(files_calc[i])
+            xr.testing.assert_allclose(ds_true, ds_calc)

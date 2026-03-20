@@ -15,10 +15,8 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-import xscen as xs
-from packaging import version
 from xclim.core.units import convert_units_to
-from xscen.io import estimate_chunks, save_to_netcdf
+from xscen.io import save_to_netcdf
 
 
 try:
@@ -550,7 +548,7 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False) -> xr.Dataset:
+    def run(self, *, overwrite: bool = False, standardize: bool = True, return_streamflow: bool = True) -> xr.Dataset | None:
         """
         Run the Raven hydrological model and return simulated streamflow.
 
@@ -558,6 +556,10 @@ class RavenpyModel(HydrologicalModel):
         ----------
         overwrite : bool
             If True, overwrite the existing output files. Default is False.
+        standardize : bool
+            If True, standardize the output files to ensure they are in a consistent format. Default is True.
+        return_streamflow : bool
+            If True, return the simulated streamflow. Default is True.
 
         Returns
         -------
@@ -591,9 +593,11 @@ class RavenpyModel(HydrologicalModel):
                 stdin=subprocess.DEVNULL,
             )
 
-        self._standardise_outputs()
+        if standardize:
+            self.standardize_outputs()
 
-        return self.get_streamflow()
+        if return_streamflow:
+            return self.get_output("q")
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
         r"""
@@ -652,15 +656,206 @@ class RavenpyModel(HydrologicalModel):
         Path
             The path to the streamflow file if output is set to "path".
         """
+        warnings.warn(
+            "The 'get_streamflow' method is deprecated and will be removed in a future version. Please use the 'get_output' method instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
+
+        if output == "path":
+            return self.get_output("q", return_paths=True)[0]
+        else:
+            if output == "q":
+                return self.get_output("q")
+            else:
+                return self.get_output("Hydrographs", **kwargs)
+
+    def get_output(self, output: str, return_paths: bool = False, **kwargs) -> xr.Dataset | list[Path]:
+        r"""
+        Return a specific output variable from the Raven model.
+
+        Parameters
+        ----------
+        output : str
+            "path" to return the output directory.
+            "q" to only return the streamflow variable.
+            Alternatively, a string matching the name of the output file to return (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
+        return_paths : bool
+            If True, return the path to the output file(s) instead of the dataset. Default is False.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        xr.Dataset
+            The requested output variable.
+        list[Path]
+            The path to the output file(s) if return_paths is True.
+        """
         outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
 
         if output == "path":
-            return Path(outputs.files["hydrograph"])
+            return Path(outputs.files["hydrograph"].parent)
+        elif output == "q":
+            return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
         else:
-            if output == "q":
-                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
+            matching_files = list(Path(outputs.files["hydrograph"].parent).glob(f"{self.run_name}_*{output}*.nc", case_sensitive=False))
+            if return_paths:
+                return matching_files
             else:
-                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)
+                if len(matching_files) == 0:
+                    raise ValueError(f"No output files matching '{self.run_name}_*{output}*.nc' were found.")
+                else:
+                    kwargs = deepcopy(kwargs)
+                    kwargs.setdefault("combine", "by_coords")
+                    kwargs.setdefault("data_vars", "minimal")
+                    return xr.open_mfdataset(matching_files, **kwargs)
+
+    def aggregate_outputs(  # noqa: C901
+        self, by: Literal["hru", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
+    ) -> None:
+        r"""
+        Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
+
+        Parameters
+        ----------
+        by : {"hru", "subbasin"}
+            The spatial unit to aggregate from.
+        to : {"subbasin", "drainage_area"}
+            The spatial unit to aggregate to.
+        subset : list[str] | None
+            The list of variables to aggregate. If None, all variables will be used.
+            The strings should match the names produced by the Raven model, typically found under ":CustomOutput" in the .rvi file.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Notes
+        -----
+        This method expects that relevant spatial information has been provided to the RavenPy model, either through the initial configuration or
+        through the `update_data` method. Furthermore, that spatial information should be consistent with ravenpy.extractors.BasinMakerExtractor
+        expectations, as well as the Data Specifications of Basin Maker (https://hydrology.uwaterloo.ca/basinmaker/) and the outputs of
+        BasinMaker's `Generate_HRUs` function. In particular, the following variables should be present in the HRU file:
+
+        - Always:
+            - SubId: The ID of the subbasins.
+            - BasArea: The area of the subbasins.
+        - by == "hru":
+            - HRU_ID: The ID of the HRUs.
+            - HRU_Area: The area of the HRUs, in units consistent with the area of the subbasins.
+        - to == "drainage_area":
+            - DowSubId: The ID of the downstream subbasin for each HRU.
+                        This variable is standard in the RavenPy HRU files, but determining the upstream subbasins from it can be very slow.
+            - UpSubId: The ID(s) of the upstream subbasin(s) for each HRU. If multiple, should be separated by a comma and no spaces (e.g. "1,2,3").
+                       This variable is not standard, but if present, it will be used for a much faster aggregation to drainage areas.
+        """
+        if to.lower() == "subbasin" and by.lower() != "hru":
+            raise ValueError("Invalid aggregation levels.")
+
+        info = {
+            "hru": {
+                "clean": "HRU",
+                "dim": "hru_id",
+                "area_var": "hru_area",
+            },
+            "subbasin": {
+                "clean": "Subbasin",
+                "dim": "subbasin_id",
+                "area_var": "subbasin_area",
+            },
+            "drainage_area": {
+                "clean": "DrainageArea",
+                "dim": "subbasin_id",
+                "area_var": "drainage_area",
+            },
+        }
+
+        # Get the files to aggregate
+        files = self.get_output(output=f"_By{by}", return_paths=True)
+        if subset is not None:
+            files = [file for file in files if any(s in file.name for s in subset)]
+        if len(files) == 0:
+            raise ValueError(f"No output files matching '{self.run_name}_*_By{info[by]['clean']}*.nc' were found.")
+
+        for file in files:
+            with xr.open_dataset(file) as ds:
+                if "subbasin_id" not in ds.coords:
+                    raise ValueError("The `standardize_outputs` method must be called before using the `aggregate_outputs` method.")
+
+                if by == "hru":
+                    # Even if going from HRU to drainage area, it is much more simple to first aggregate to subbasins
+                    ds_agg = ds.groupby("subbasin_id").map(lambda x: x.weighted(x["hru_area"]).mean(dim="hru_id"))
+
+                    # Re-add the coordinates and attributes that were lost during the aggregation
+                    ds_for_coords = ds.swap_dims({"hru_id": "subbasin_id"}).drop_duplicates("subbasin_id")
+                    ds_for_coords = ds_for_coords.drop_vars(
+                        [c for c in ds_for_coords.coords if ("hru" in c) or ((c in ds_agg.coords) and c != "subbasin_id")]
+                    )
+                    ds_agg = ds_agg.assign_coords(
+                        {c: ds_for_coords[c] for c in ds_for_coords.coords if not c.startswith("hru") and c not in ds_agg.coords}
+                    )
+
+                if to == "drainage_area":
+                    if by == "hru":
+                        ds = ds_agg
+                    upsubid = xr.DataArray(
+                        data=ds["subbasin_id"].values.astype(str),
+                        coords={c: ds[c] for c in ds.coords if "subbasin_id" in ds[c].dims},
+                        dims=ds["subbasin_id"].dims,
+                    )
+                    upsubid = upsubid.assign_coords({"status": xr.zeros_like(upsubid, dtype=int)}).astype("<U1000")
+
+                    # Head subbasins
+                    upsubid["status"] = xr.where(~ds["subbasin_id"].isin(ds["dowsubid"]), 1, upsubid["status"])
+
+                    # Recursively find the upstream subbasins for each subbasin, starting from the head subbasins and moving downstream
+                    while upsubid["status"].min() != 2:
+                        for idx in upsubid["subbasin_id"].where(upsubid["status"] == 1, drop=True):
+                            if idx.values not in (
+                                upsubid["dowsubid"].sel(subbasin_id=upsubid["subbasin_id"].where(upsubid["status"] <= 1, drop=True)).values
+                            ):
+                                upsubid.loc[upsubid["subbasin_id"] == upsubid["dowsubid"].sel(subbasin_id=idx)] += (
+                                    f",{upsubid.sel(subbasin_id=idx).values}"
+                                )
+                                upsubid["status"] = xr.where(upsubid["subbasin_id"] == idx, 2, upsubid["status"])
+                                upsubid["status"] = xr.where(upsubid["subbasin_id"] == upsubid["dowsubid"].sel(subbasin_id=idx), 1, upsubid["status"])
+                    upsubid = upsubid.drop_vars("status")
+                    ds = ds.assign_coords({"upsubid": upsubid})
+
+                    ds_agg = xr.zeros_like(ds)
+                    ds_agg = ds_agg.transpose("subbasin_id", ...)
+                    for sbid in ds["subbasin_id"]:
+                        subset_agg = (
+                            ds.sel(**{"subbasin_id": str(ds["upsubid"].sel(**{"subbasin_id": sbid}).values).split(",")})
+                            .weighted(ds["subbasin_area"])
+                            .mean(dim="subbasin_id")
+                        )
+                        for v in ds.data_vars:
+                            ds_agg[v].loc[ds_agg["subbasin_id"] == sbid] = subset_agg[v]
+
+                    # Remove the coordinates and attributes that are no longer relevant after the aggregation
+                    ds_agg = ds_agg.drop_vars("upsubid")
+                    ds_agg = ds_agg.drop_vars([c for c in ds_agg.coords if c.startswith("hru") or c.startswith("subbasin") and c != "subbasin_id"])
+
+                for v in ds_agg.data_vars:
+                    ds_agg[v].attrs["long_name"] = ds[v].attrs.get("long_name", "").replace(f"By{info[by]['clean']}", f"By{info[to]['clean']}")
+                    ds_agg[v].attrs["history"] = f"{dt.datetime.now().isoformat()}: Aggregated from {info[by]['clean']} to {info[to]['clean']} level."
+
+                try:
+                    ds_agg = ds_agg.sortby(ds_agg[info[to]["dim"]].astype(int))
+                except TypeError:
+                    ds_agg = ds_agg.sortby(ds_agg[info[to]["dim"]])
+                ds_agg = ds_agg.transpose("time", info[to]["dim"], ...)
+
+                file_out = file.parent / file.name.replace(f"_By{info[by]['clean']}", f"_By{info[to]['clean']}")
+                if file_out.exists():
+                    warnings.warn(
+                        f"The file {file_out} already exists.",
+                        stacklevel=2,
+                    )
+                    files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
+                    file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
+
+                ds_agg.to_netcdf(file_out)
 
     def _read_qobs(self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q") -> None:
         """Read the observed streamflow data from a NetCDF file and update the .qobs properties of the RavenPy model."""
@@ -997,12 +1192,15 @@ class RavenpyModel(HydrologicalModel):
                 for v in data_type
             ]
 
-    def _standardise_outputs(self, **kwargs):
+    def standardize_outputs(self, files: list[str] | None = None, **kwargs):  # noqa: C901
         r"""
-        Standardise the outputs of the simulation to be more consistent with CF conventions.
+        Standardize the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
         ----------
+        files : list[str] | None
+            Names of the output files to standardize. If None, all output files will be standardized.
+            The strings can be part of the file name (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -1011,58 +1209,157 @@ class RavenpyModel(HydrologicalModel):
         Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
         a temporary file will be created and then renamed to overwrite the original file.
         """
-        filename = Path(self.get_streamflow(output="path", **kwargs))
+        if files is None:
+            patterns = [f"{self.run_name}_*.nc"]
+        else:
+            patterns = [f"{self.run_name}_*{file}*.nc" for file in files]
 
-        with self.get_streamflow(output="all", **kwargs) as ds:
-            ds = ds.rename({"q_sim": "q"})
-            ds["q"] = convert_units_to(ds["q"], "m3 s-1")
-            ds["q"].attrs.update(
-                {
-                    "standard_name": "water_volume_transport_in_river_channel",
-                    "cell_methods": "time: mean",
-                    "long_name": "Simulated streamflow",
-                    "description": "Simulated streamflow at the outlet of the subbasin.",
+        files = []
+        for pattern in patterns:
+            files.extend(self.get_output(output="path").glob(pattern))
+
+        for file in files:
+            with xr.open_dataset(file, **kwargs) as ds:
+                # Step 1: Standardize the spatial dimensions
+                standard = {
+                    "basin_name": "subbasin_id",
+                    "SBID": "subbasin_id",
+                    "HRU_ID": "hru_id",
                 }
-            )
+                original_dim = [ds[d].dims[0] for d in standard.keys() if d in ds]
+                original_dim = original_dim[0] if len(original_dim) > 0 else "not_applicable"
+                ds = ds.rename({d: standard[d] for d in standard.keys() if d in ds})
 
-            ds = ds.swap_dims({"nbasins": "basin_name"}).rename({"basin_name": "subbasin_id"})
-            ds = ds.squeeze()
-            if "subbasin_id" in ds.dims:
-                ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
+                # Since Raven v4.1, 'basin_name' starting with 'sub_' has been renamed to 'basin_fullname', while a new 'basin_name' variable
+                # without the prefix has been added. This new 'basin_fullname' is not required.
+                ds = ds.drop_vars("basin_fullname", errors="ignore")
 
-                # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
-                ds_size_mb = ds["q"].size * 4 / 1024 / 1024
-                if ds_size_mb > 100:
-                    chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
-                    # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
-                    if version.parse(xs.__version__) <= version.parse("0.13.1"):
-                        for k, v in chunks.items():
-                            if v == -1:
-                                chunks[k] = len(ds[k])
+                # Swap to the correct spatial dimension
+                spatial_dim = [d for d in standard.values() if d in ds]
+                if len(spatial_dim) == 1:
+                    spatial_dim = spatial_dim[0]
+                elif len(spatial_dim) > 1:
+                    # Use the first value in the standard dictionary that is present in the dataset.
+                    spatial_dim = next(standard[d] for d in standard.keys() if standard[d] in ds)
                 else:
-                    chunks = {k: len(ds[k]) for k in ds["q"].dims}
+                    spatial_dim = None
 
-            else:
-                # Since we squeezed the dataset and renamed basin_name, it is preferable to call xs.io.rechunk_for_saving
-                # anyway to clean chunk encoding.
-                chunks = {"time": len(ds.time)}
+                if spatial_dim is not None and spatial_dim not in ds.dims:
+                    ds = ds.swap_dims({ds[spatial_dim].dims[0]: spatial_dim}).drop_vars(ds[spatial_dim].dims[0], errors="ignore")
 
-            # Global attributes are already pretty good, but make the Raven version explicit
-            # Since the executable used might differ from raven-hydro, we trust the dataset's history
-            ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
-            if run is not None:
-                ds.attrs["RavenPy_version"] = ravenpy.__version__
+                standard_info = {
+                    # Note: Once processed by Basin Maker, the coordinates of the river network are dumped and no longer available.
+                    "SubId": {"name": "subbasin_id", "long_name": "Subbasin ID"},
+                    "DowSubId": {"name": "dowsubid", "long_name": "Downstream subbasin ID"},
+                    "DrainArea": {"name": "drainage_area", "long_name": "Drainage area", "units": "m2"},
+                    "BasArea": {"name": "subbasin_area", "long_name": "Area of the subbasin", "units": "m2"},
+                    "MeanElev": {"name": "subbasin_height", "long_name": "Mean elevation of the subbasin", "units": "m"},
+                    "Obs_NM": {"name": "station_id", "long_name": "Observation station ID"},
+                    "centroid_x": {
+                        "name": "subbasin_centroid_longitude",
+                        "long_name": "Longitude of the centroid of the subbasin",
+                        "units": "degrees_east",
+                    },
+                    "centroid_y": {
+                        "name": "subbasin_centroid_latitude",
+                        "long_name": "Latitude of the centroid of the subbasin",
+                        "units": "degrees_north",
+                    },
+                    "HRU_ID": {"name": "hru_id", "long_name": "HRU ID"},
+                    "HRU_CenX": {"name": "hru_centroid_longitude", "long_name": "Longitude of the centroid of the HRU", "units": "degrees_east"},
+                    "HRU_CenY": {"name": "hru_centroid_latitude", "long_name": "Latitude of the centroid of the HRU", "units": "degrees_north"},
+                    "HRU_E_mean": {"name": "hru_height", "long_name": "Mean elevation of the HRU", "units": "m"},
+                    "HRU_Area": {"name": "hru_area", "long_name": "Area of the HRU", "units": "m2"},
+                }
 
-            # Overwrite the file
-            save_to_netcdf(
-                ds,
-                filename.parent / "streamflow_tmp.nc",
-                rechunk=chunks,
-                netcdf_kwargs={"encoding": {"q": {"dtype": "float32", "zlib": True, "complevel": 1}}},
+                if spatial_dim is not None:
+                    # Add some relevant coordinates if the HRU information is available.
+                    ds[spatial_dim] = ds[spatial_dim].astype(str)
+                    if self.hru is not None:
+                        if spatial_dim == "subbasin_id":
+                            df = self.hru["hru"].drop_duplicates("SubId")
+                            col_id = "SubId"
+                            if "ByDrainageArea" in ds[[v for v in ds.data_vars if spatial_dim in ds[v].dims][0]].attrs.get("long_name", ""):
+                                info = ["DowSubId", "DrainArea", "Obs_NM"]
+                            else:
+                                info = ["DowSubId", "DrainArea", "BasArea", "MeanElev", "Obs_NM", "centroid_x", "centroid_y"]
+                        elif spatial_dim == "hru_id":
+                            df = self.hru["hru"]
+                            col_id = "HRU_ID"
+                            info = [
+                                "SubId",
+                                "DowSubId",
+                                "DrainArea",
+                                "BasArea",
+                                "MeanElev",
+                                "Obs_NM",
+                                "centroid_x",
+                                "centroid_y",
+                                "HRU_CenX",
+                                "HRU_CenY",
+                                "HRU_E_mean",
+                                "HRU_Area",
+                            ]
+
+                        for col in [c for c in info if c in df.columns]:
+                            coord = xr.DataArray(
+                                df[col],
+                                dims=[spatial_dim],
+                                coords={spatial_dim: df[col_id]},
+                                attrs={a: standard_info[col][a] for a in ["long_name", "units"] if a in standard_info[col]},
+                            )
+                            if col in ["SubId", "DowSubId", "Obs_NM"]:
+                                coord = coord.astype(str)
+                            coord[spatial_dim] = coord[spatial_dim].astype(str)
+                            ds = ds.assign_coords({standard_info[col]["name"]: coord})
+
+                    # Correct the attributes of the spatial dimension
+                    attrs = [a for a in standard_info.keys() if standard_info[a]["name"] == spatial_dim]
+                    ds[spatial_dim].attrs = {"long_name": standard_info[attrs[0]]["long_name"]}
+
+                # If the dataset has a spatial dimension, add the "timeseries_id" cf_role attribute to it.
+                ds = ds.squeeze()
+                if spatial_dim in ds.dims:
+                    ds[spatial_dim].attrs["cf_role"] = "timeseries_id"
+
+                # Manage the streamflow variable
+                if "q_sim" in ds:
+                    ds = ds.rename({"q_sim": "q"})
+                    ds["q"] = convert_units_to(ds["q"], "m3 s-1")
+                    ds["q"].attrs.update(
+                        {
+                            "standard_name": "water_volume_transport_in_river_channel",
+                            "cell_methods": "time: mean",
+                            "long_name": "Simulated streamflow",
+                            "description": "Simulated streamflow at the outlet of the subbasin.",
+                        }
+                    )
+
+                # Since we squeezed the dataset and renamed the spatial dimension, it is preferable to call xs.io.rechunk_for_saving
+                # to clean chunk encoding.
+                chunks = dict()
+                for v in ds.data_vars:
+                    preferred = ds[v].encoding.get("preferred_chunks", {d: len(ds[v][d]) for d in ds[v].dims})
+                    if original_dim in preferred.keys():
+                        preferred[spatial_dim] = preferred.pop(original_dim)
+                    chunks[v] = preferred
+
+                # Global attributes are already pretty good, but make the Raven version explicit
+                # Since the executable used might differ from raven-hydro, we trust the dataset's history
+                ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
+                if run is not None:
+                    ds.attrs["RavenPy_version"] = ravenpy.__version__
+
+                # Overwrite the file
+                save_to_netcdf(
+                    ds,
+                    file.parent / f"{file.stem}_tmp.nc",
+                    rechunk=chunks,
+                    netcdf_kwargs={"encoding": {v: {"dtype": "float32", "zlib": True, "complevel": 1} for v in ds.data_vars}},
+                )
+
+            # Remove the original file and rename the new one
+            file.unlink()
+            (file.parent / f"{file.stem}_tmp.nc").rename(
+                file,
             )
-
-        # Remove the original file and rename the new one
-        filename.unlink()
-        (filename.parent / "streamflow_tmp.nc").rename(
-            filename,
-        )
