@@ -183,11 +183,11 @@ msgstr ""
 msgid ""
 "This Notebook will focus on lumped RavenPy models. For distributed "
 "models, refer to the `Raven distributed modelling notebook "
-"<hydrological_modelling_raven_distributed.ipynb>`__."
+"<pavics_notebooks/hydrological_modelling_raven_distributed.ipynb>`__."
 msgstr ""
 "Ce Notebook se concentrera sur les modèles RavenPy globaux. Pour les "
 "modèles distribués, consultez le `Notebook de modélisation Raven "
-"distribuée <hydrological_modelling_raven_distributed.ipynb>`__."
+"distribuée <pavics_notebooks/hydrological_modelling_raven_distributed.ipynb>`__."
 
 #: ../../notebooks/hydrological_modelling_raven.ipynb:516
 msgid "Acquiring HRU Data"

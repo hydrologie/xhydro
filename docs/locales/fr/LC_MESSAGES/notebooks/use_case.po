@@ -252,11 +252,11 @@ msgstr "Préparation et calage du modèle hydrologique (xhydro.modelling)"
 #: ../../notebooks/use_case.ipynb:3994
 msgid ""
 "For more information on this section and available options, consult the "
-"`Hydrological modelling notebook <hydrological_modelling_raven.ipynb>`__."
+"`Hydrological modelling notebook <../hydrological_modelling_raven.ipynb>`__."
 msgstr ""
 "Pour plus d'informations sur cette section et les options disponibles, "
 "consultez le `Notebook de modélisation hydrologique "
-"<hydrological_modelling_raven.ipynb>`__."
+"<../hydrological_modelling_raven.ipynb>`__."
 
 #: ../../notebooks/use_case.ipynb:4021
 msgid ""
@@ -314,11 +314,11 @@ msgstr "Indicateurs non fréquenciels"
 #: ../../notebooks/use_case.ipynb:4370 ../../notebooks/use_case.ipynb:7001
 msgid ""
 "For more information on this section and available options, consult the "
-"`Climate change analysis notebook <climate_change.ipynb>`__."
+"`Climate change analysis notebook <../climate_change.ipynb>`__."
 msgstr ""
 "Pour plus d'informations sur cette section et les options disponibles, "
 "consultez le `Notebook d'analyse de l'impact des changements climatiques "
-"<climate_change.ipynb>`__."
+"<../climate_change.ipynb>`__."
 
 #: ../../notebooks/use_case.ipynb:4382
 msgid ""
