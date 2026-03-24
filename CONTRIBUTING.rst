@@ -94,8 +94,9 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
 
     .. code-block:: console
 
-        python -m pip install -e .[all]
-        pre-commit install
+        python -m pip install --group dev
+        python -m pip install --editable .
+        prek install
 
     This installs ``xHydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone. It also installs all the libraries necessary to run the ``Extremes.jl`` hooks of the ``extreme_value_analysis`` module.
 
@@ -132,13 +133,15 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
         git commit -m "Your detailed description of your changes."
         git push origin name-of-your-bugfix-or-feature
 
-    On commit, ``pre-commit`` will check that multiple standards checks are passing, perform automatic fixes if possible, and warn of violations that require manual intervention. If ``pre-commit`` hooks fail, try fixing the issues, re-staging the files to be committed, and re-committing your changes. If need be, you can skip them with `git commit --no-verify`, but note that those checks are also performed on GitHub and a branch that fails to pass them will not be able to be merged.
+    On commit, ``prek`` will run ``pre-commit`` checks that ensure code quality checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
 
     You can always run the hooks manually with:
 
     .. code-block:: console
 
         pre-commit run -a
+
+    If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
 
 #. Submit a `Pull Request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_ through the GitHub website.
 
@@ -206,6 +209,14 @@ Before you submit a Pull Request, check that it meets these guidelines:
 
 #. The Pull Request should work for all currently supported Python versions. Check the `pyproject.toml` or `tox.toml` files for the supported versions. We aim to follow the support and drop schedule of Python versions as recommended by the NumPy NEP calendar: https://numpy.org/neps/nep-0029-deprecation_policy.html
 
+.. #. If you haven't already, ensure that you have read and agreed to the `Developer Certificate of Origin (DCO) <https://developercertificate.org/>`_, and that you have signed your commits using:
+
+..     .. code-block:: bash
+
+..           git commit -s/--signoff
+
+..     This will add a `Signed-off-by:` line to your commit message, which indicates that you agree to the DCO.
+
 Tips
 ----
 
@@ -234,11 +245,18 @@ If you would like to contribute to the French translation of the documentation, 
 
 This will create or update the French translation files in the `docs/locales/fr/LC_MESSAGES` directory. You can then edit the `.po` files in this directory to provide translations for the documentation.
 
-For convenience, you can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
+For convenience, you can simply run the following command:
+
+    .. code-block:: console
+
+        make translate
+
+Alternatively, you can use the `translator.py` script located in the `CI` directory to automatically translate the English documentation to French, which uses Google Translate by default. Note that this script requires the `deep-translator` package to be installed in your environment.
 
     .. code-block:: console
 
         pip install deep-translator
+        python CI/translator.p
 
 We aim to automate this process eventually but until then, we want to keep the French translation up-to-date with the English documentation at least when a new release is made.
 

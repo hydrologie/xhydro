@@ -8,7 +8,7 @@ from xhydro.frequency_analysis.uncertainties import (
     bootstrap_dist,
     bootstrap_obs,
     calc_moments_iter,
-    calc_q_iter,
+    calculate_quantiles_over_boostraped_groups,
     fit_boot_dist,
     generate_combinations,
 )
@@ -72,7 +72,7 @@ def test_calc_moments_iter():
     assert len(result.samples) == n_samples
 
 
-def test_calc_q_iter_ds():
+def test_calculate_quantiles_over_boostraped_groups_ds():
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
         variable="streamflow",
@@ -274,7 +274,7 @@ def test_calc_q_iter_ds():
     ds_moments_iter = xr.concat([ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id")
     ds_moments_iter["id"] = ["S1", "B", "C"]
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
-    result = calc_q_iter(
+    result = calculate_quantiles_over_boostraped_groups(
         "S1",
         ds_groups,
         ds_moments_iter,
@@ -289,7 +289,7 @@ def test_calc_q_iter_ds():
     )
 
 
-def test_calc_q_iter_da():
+def test_calculate_quantiles_over_boostraped_groups_da():
     ds = timeseries(
         np.array([50, 65, 80, 95, 110, 125, 140, 155, 170, 185, 200]),
         variable="streamflow",
@@ -491,7 +491,7 @@ def test_calc_q_iter_da():
     ds_moments_iter = xr.concat([ds_moments_iter, ds_moments_iter, ds_moments_iter], dim="id")
     ds_moments_iter["id"] = ["S1", "B", "C"]
     ds_moments_iter["id"].attrs["cf_role"] = "timeseries_id"
-    result = calc_q_iter(
+    result = calculate_quantiles_over_boostraped_groups(
         "S1",
         ds_groups.streamflow,
         ds_moments_iter.streamflow,

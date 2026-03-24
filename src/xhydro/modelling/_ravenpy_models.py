@@ -214,20 +214,6 @@ class RavenpyModel(HydrologicalModel):
         self,
         *,
         overwrite: bool = False,
-        parameters=None,
-        model_name=None,
-        hru=None,
-        meteo_file=None,
-        data_type=None,
-        start_date=None,
-        end_date=None,
-        alt_names_meteo=None,
-        meteo_station_properties=None,
-        qobs_file=None,
-        alt_name_flow=None,
-        minimum_reservoir_area=None,
-        output_subbasins=None,
-        **kwargs,
     ):
         r"""
         Write the RavenPy project files.
@@ -237,111 +223,11 @@ class RavenpyModel(HydrologicalModel):
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run_name' will be removed, including the output files.
-        parameters : None
-            Deprecated. Use the class attribute instead.
-        model_name : None
-            Deprecated. Use the class attribute instead.
-        hru : None
-            Deprecated. Use the 'update_data' method instead.
-        meteo_file : None
-            Deprecated. Use the 'update_data' method instead.
-        data_type : None
-            Deprecated. Use the 'update_data' method instead.
-        start_date : None
-            Deprecated. Use the class attribute instead.
-        end_date : None
-            Deprecated. Use the class attribute instead.
-        alt_names_meteo : None
-            Deprecated. Use the 'update_data' method instead.
-        meteo_station_properties : None
-            Deprecated. Use the 'update_data' method instead.
-        qobs_file : None
-            Deprecated. Use the 'update_data' method instead.
-        alt_name_flow : str
-            Deprecated. Use the 'update_data' method instead.
-        minimum_reservoir_area : None
-            Deprecated. Use the 'update_data' method instead.
-        output_subbasins : None
-            Deprecated. Use the 'update_data' method instead.
-        \*\*kwargs : dict
-            Deprecated. Instantiate the model with the them or pass them to the class attribute.
         """
         if run is None:
             raise RuntimeError(
                 "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
                 f" Original error: {ravenpy_err_msg}"
-            )
-
-        if parameters is not None:
-            warnings.warn(
-                "The 'parameters' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'parameters' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.parameters = parameters
-        if model_name is not None:
-            warnings.warn(
-                "The 'model_name' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'model_name' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.model_name = model_name
-        if start_date is not None:
-            warnings.warn(
-                "The 'start_date' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'start_date' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.start_date = start_date
-        if end_date is not None:
-            warnings.warn(
-                "The 'end_date' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'end_date' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.end_date = end_date
-        if len(kwargs) > 0:
-            warnings.warn(
-                "Kwargs in the 'create_rv' method are deprecated and will be removed in a future version. "
-                "Set them when first instantiating the RavenPy model, or later by setting the attributes in "
-                "a dictionary under the 'kwargs' attribute of the class.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.kwargs = kwargs
-        if any(
-            opt is not None
-            for opt in [
-                qobs_file,
-                alt_name_flow,
-                hru,
-                output_subbasins,
-                minimum_reservoir_area,
-                meteo_file,
-                data_type,
-                alt_names_meteo,
-                meteo_station_properties,
-            ]
-        ):
-            warnings.warn(
-                "Data-related parameters are deprecated and will be removed in a future version. Please use the 'update_data' method instead.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.update_data(
-                qobs_file=qobs_file,
-                alt_name_flow=alt_name_flow,
-                hru=hru,
-                output_subbasins=output_subbasins,
-                minimum_reservoir_area=minimum_reservoir_area,
-                meteo_file=meteo_file,
-                data_type=data_type,
-                alt_names_meteo=alt_names_meteo,
-                meteo_station_properties=meteo_station_properties,
             )
 
         required = [

@@ -14,14 +14,7 @@ except ImportError:
     warnings.warn("lmoments3 is not installed. Please install it", stacklevel=2)
     KappaGen = None
 
-from xhydro.frequency_analysis.regional import (
-    _cluster_indices,
-    _moment_l_vector,
-    calc_h_z,
-    calculate_return_period,
-    fit_pca,
-    get_group_from_fit,
-)
+from xhydro.frequency_analysis.regional import _cluster_indices, _moment_l_vector, calc_h_z, calculate_return_period, fit_pca, get_clusters
 
 
 @pytest.fixture
@@ -214,7 +207,7 @@ class TestRegionalFrequencyAnalysis:
         result = _cluster_indices(clusters, 0)
         np.testing.assert_array_equal(result, expected)
 
-    def test_get_group_from_fit(self):
+    def test_get_clusters(self):
         df = np.array(
             [
                 [2.67035877, 1.75919216, 0.76206293],
@@ -228,7 +221,7 @@ class TestRegionalFrequencyAnalysis:
         components = [0, 1, 2]
         data = xr.DataArray(data=df, coords=[station, components], dims=["Station", "components"])
         expected = [["020404", "020602"], ["020502"], ["020302", "020802"]]
-        result = get_group_from_fit(AgglomerativeClustering, {"n_clusters": 3}, data)
+        result = get_clusters(AgglomerativeClustering, {"n_clusters": 3}, data)
         # return result
         assert len(result) == len(expected)
         for i, list_st in enumerate(result):

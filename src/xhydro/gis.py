@@ -15,9 +15,9 @@ try:  # In the case where exactextract is available, it needs to be imported her
     import exactextract  # noqa: F401
 except ImportError:
     warnings.warn("The `exactextract` library is not present in the environment and will not be used.", stacklevel=2)
+import importlib.util
 
 import geopandas as gpd
-import leafmap
 import matplotlib.pyplot as plt
 import numpy as np
 import odc.stac
@@ -37,6 +37,9 @@ from xrspatial import aspect, slope
 from xhydro.utils import update_history
 
 
+HAS_LEAFMAP = bool(importlib.util.find_spec("leafmap"))
+
+
 __all__ = [
     "land_use_classification",
     "land_use_plot",
@@ -50,8 +53,7 @@ __all__ = [
 def watershed_delineation(
     *,
     coordinates: list[tuple] | tuple | None = None,
-    m: leafmap.Map | None = None,
-    map: leafmap.Map | None = None,
+    m=None,
 ) -> gpd.GeoDataFrame:
     """
     Calculate watershed delineation from pour point.
@@ -68,8 +70,6 @@ def watershed_delineation(
         If the function receives both a map and coordinates as inputs, it will generate and display watershed
         boundaries on the map. Additionally, any markers present on the map will be transformed into
         corresponding watershed boundaries for each marker.
-    map : leafmap.Map, optional
-        Deprecated. Use `m` instead.
 
     Returns
     -------
@@ -80,29 +80,23 @@ def watershed_delineation(
     --------
     This function relies on an Amazon S3-hosted dataset to delineate watersheds.
     """
-    if map is not None:
-        warnings.warn(
-            "The `map` argument is deprecated and will be removed in xHydro v0.7.0. Use `m` instead.",
-            FutureWarning,
-            stacklevel=2,
-        )
-        if m is None:
-            m = map
-
     # level 12 HydroBASINS polygons dataset url (North America only at the moment)
     url = "https://s3.wasabisys.com/hydrometric/shapefiles/polygons.parquet"
 
     coordinates = [coordinates] if isinstance(coordinates, tuple) else coordinates
 
     # combine coordinates from both coordinates argument and markers on the map, if they exist
-    if m is not None and any(m.draw_features):
-        if coordinates is None:
-            coordinates = []
-        gdf_markers = gpd.GeoDataFrame.from_features(m.draw_features)[["geometry"]]
-        gdf_markers = gdf_markers.loc[gdf_markers.type == "Point"]
+    if m is not None:
+        if not HAS_LEAFMAP:
+            raise ImportError("The `leafmap` library is not present in the environment and is required to use the `m` argument in this function.")
+        if any(m.draw_features):
+            if coordinates is None:
+                coordinates = []
+            gdf_markers = gpd.GeoDataFrame.from_features(m.draw_features)[["geometry"]]
+            gdf_markers = gdf_markers.loc[gdf_markers.type == "Point"]
 
-        marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y, strict=False))
-        coordinates = coordinates + marker_coordinates
+            marker_coordinates = list(zip(gdf_markers.geometry.x, gdf_markers.geometry.y, strict=False))
+            coordinates = coordinates + marker_coordinates
 
     # cache and read level 12 HydroBASINS polygons' file
     proxies = urllib.request.getproxies()
@@ -181,14 +175,6 @@ def watershed_properties(
     gpd.GeoDataFrame or xr.Dataset
         Output dataset containing the watershed properties.
     """
-    if projected_crs == "NAD83":
-        warnings.warn(
-            "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
-            "This warning will be removed in xHydro v0.7.0.",
-            FutureWarning,
-            stacklevel=2,
-        )
     if not gdf.crs:
         raise ValueError("The provided gpd.GeoDataFrame is missing the crs attribute.")
     if isinstance(projected_crs, str):
@@ -393,14 +379,6 @@ def surface_properties(
     --------
     This function relies on the Microsoft Planetary Computer's STAC Catalog to retrieve the Digital Elevation Model (DEM) data.
     """
-    if projected_crs == "NAD83":
-        warnings.warn(
-            "The default value for `projected_crs` has been changed in xHydro v0.6.0 from `EPSG:6622` to an estimated "
-            "UTM CRS based on the provided coordinates. If you want to retain the previous behavior, please set `projected_crs` to '6622'."
-            "This warning will be removed in xHydro v0.7.0.",
-            FutureWarning,
-            stacklevel=2,
-        )
     # Geometries are projected to make calculations more accurate
     if isinstance(projected_crs, str):
         projected_crs = gdf.estimate_utm_crs(projected_crs)

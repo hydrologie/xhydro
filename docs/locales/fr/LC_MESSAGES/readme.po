@@ -2,7 +2,6 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
@@ -45,9 +44,8 @@ msgid "Documentation and Support"
 msgstr "Documentation et support"
 
 #: ../../../README.rst:8
-#, fuzzy
 msgid "|docs| |versions|"
-msgstr "|pypi| |versions|"
+msgstr "|docs| |versions|"
 
 #: ../../../README.rst:55
 msgid "Documentation Status"
@@ -78,7 +76,6 @@ msgid "Coding Standards"
 msgstr "Normes de codage"
 
 #: ../../../README.rst:12
-#, fuzzy
 msgid "|ruff| |pre-commit|"
 msgstr "|ruff| |pre-commit|"
 

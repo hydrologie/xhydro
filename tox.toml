@@ -7,37 +7,36 @@ envlist = [
 skip_missing_interpreters = true
 
 [env.docs]
-description = "Run Build of xhydro Documentation"
+description = "Build the documentation with makefile under {basepython}"
+labels = ["docs"]
+dependency_groups = ["docs"]
 passenv = [
   "{[testenv]passenv}",
   "SKIP_NOTEBOOKS"
 ]
 setenv = [{replace = "ref", of = ["tool", "tox", "env_run_base", "setenv"]}, {"READTHEDOCS" = 1}]
-extras = ["docs"]
 commands = [
-  ["make", "autodoc"],
-  ["make", "--directory=docs", "clean", "html"]
+  ["make", "build-docs"]
 ]
 commands_post = []
 allowlist_externals = ["make"]
 
 [env.lint]
+description = "Run code quality compliance tests under {basepython}"
+labels = ["lint"]
 skip_install = true
-deps = [
-  "flake8 >= 7.3.0",
-  "flake8-rst-docstrings >= 0.4.0",
-  "ruff >= 0.14.3",
-  "numpydoc >= 1.9.0"
+dependency_groups = ["lint"]
+commands = [
+  ["make", "lint"]
 ]
-commands = [["make", "lint"]]
 commands_post = []
 allowlist_externals = ["make"]
 
 [env.notebooks]
 description = "Run tests on xhydro Notebooks"
-extras = [
-  "dev",
-  "docs"
+dependency_groups = [
+  "notebooks",
+  "test"
 ]
 commands = [
   ["make", "test-notebooks"]
@@ -50,8 +49,8 @@ allowlist_externals = [
 [env.notebooks-lax]
 description = "Run tests on xhydro Notebooks (lax)"
 extras = [
-  "dev",
-  "docs"
+  "docs",
+  "test"
 ]
 commands = [
   ["make", "test-notebooks-lax"]
@@ -65,8 +64,8 @@ allowlist_externals = [
 description = "Run tests with pytest under {basepython}"
 setenv = {PYTEST_ADDOPTS = "--color=yes --cov=xhydro --cov-report=lcov", PYTHONPATH = "{toxinidir}"}
 passenv = ["CI", "COVERALLS_*", "GITHUB_*"]
-extras = ["dev"]
 download = true
+dependency_groups = ["test"]
 install_command = ["python", "-m", "pip", "install", "--no-user", "{opts}", "{packages}"]
 commands_pre = [["pip", "list"], ["pip", "check"]]
 commands = [
