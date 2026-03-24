@@ -252,11 +252,11 @@ msgstr "Préparation et calage du modèle hydrologique (xhydro.modelling)"
 #: ../../notebooks/use_case.ipynb:3994
 msgid ""
 "For more information on this section and available options, consult the "
-"`Hydrological modelling notebook <pavics_notebooks/hydrological_modelling_raven.ipynb>`__."
+"`Hydrological modelling notebook <hydrological_modelling_raven.ipynb>`__."
 msgstr ""
 "Pour plus d'informations sur cette section et les options disponibles, "
 "consultez le `Notebook de modélisation hydrologique "
-"<pavics_notebooks/hydrological_modelling_raven.ipynb>`__."
+"<hydrological_modelling_raven.ipynb>`__."
 
 #: ../../notebooks/use_case.ipynb:4021
 msgid ""
