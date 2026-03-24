@@ -1006,11 +1006,11 @@ class TestDistributedRavenpy:
             rvh=True,
         )
 
-        rpm.run(overwrite=True)
+        rpm.run(overwrite=True, return_streamflow=False)
         rpm.aggregate_outputs(by="hru", to="subbasin")
 
-        files_true = rpm.get_output("BySubbasin", return_paths=True)
-        files_calc = sorted(rpm.get_output("BySubbasin_v2", return_paths=True))
+        files_true = rpm.get_outputs("BySubbasin", return_paths=True)
+        files_calc = sorted(rpm.get_outputs("BySubbasin_v2", return_paths=True))
         files_true = sorted(list(set(files_true).difference(files_calc)))
 
         for i in range(len(files_calc)):
@@ -1077,8 +1077,8 @@ class TestDistributedRavenpy:
         rpm.run(overwrite=True)
         rpm.aggregate_outputs(by=agg.lower().split("_")[1], to="drainage_area")
 
-        files_true = rpm.get_output("ByDrainageArea", return_paths=True)
-        files_calc = sorted(rpm.get_output("ByDrainageArea_v2", return_paths=True))
+        files_true = rpm.get_outputs("ByDrainageArea", return_paths=True)
+        files_calc = sorted(rpm.get_outputs("ByDrainageArea_v2", return_paths=True))
         files_true = sorted(list(set(files_true).difference(files_calc)))
 
         for i in range(len(files_calc)):

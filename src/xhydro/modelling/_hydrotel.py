@@ -8,15 +8,13 @@ import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-import xclim as xc
-import xscen as xs
-from packaging import version
-from xscen.io import estimate_chunks, save_to_netcdf
 
 from ._hm import HydrologicalModel
+from ._model_utils import standardize_output
 
 
 __all__ = ["Hydrotel"]
@@ -111,6 +109,7 @@ class Hydrotel(HydrologicalModel):
         # TODO: Clean up and prepare the 'etat' folder (missing the files)
 
         self.executable = str(Path(executable))
+        self.rhhu = None
 
     def update_config(
         self,
@@ -163,7 +162,8 @@ class Hydrotel(HydrologicalModel):
         *,
         run_options: list[str] | None = None,
         dry_run: bool = False,
-        xr_open_kwargs_out: dict | None = None,
+        standardize: bool = True,
+        return_streamflow: bool = True,
     ) -> str | xr.Dataset:
         """
         Run the simulation.
@@ -179,8 +179,10 @@ class Hydrotel(HydrologicalModel):
             Call the executable without arguments to see the full list of available options.
         dry_run : bool
             If True, returns the command to run the simulation without actually running it.
-        xr_open_kwargs_out : dict, optional
-            Keyword arguments to pass to :py:func:`xarray.open_dataset` when reading the raw output files.
+        standardize : bool
+            If True, standardize the output files to ensure they are in a consistent format. Default is True.
+        return_streamflow : bool
+            If True, return the simulated streamflow. Default is True.
 
         Returns
         -------
@@ -239,11 +241,11 @@ class Hydrotel(HydrologicalModel):
         )
 
         # Standardize the outputs
-        if any(self.output_config[k] == 1 for k in self.output_config if k not in ["TRONCONS", "DEBITS_AVAL", "OUTPUT_NETCDF"]):
-            warnings.warn("The output options are not fully supported yet. Only 'debit_aval.nc' will be reformatted.", stacklevel=2)
-        self._standardise_outputs(**(xr_open_kwargs_out or {}))
+        if standardize:
+            self.standardize_outputs()
 
-        return self.get_streamflow()
+        if return_streamflow:
+            return self.get_output("q")
 
     def get_inputs(self, subset_time: bool = False, return_config=False, **kwargs) -> xr.Dataset | tuple[xr.Dataset, dict]:
         r"""
@@ -318,17 +320,65 @@ class Hydrotel(HydrologicalModel):
         xr.Dataset
             The streamflow file.
         """
+        warnings.warn(
+            "The 'get_streamflow' method is deprecated and will be removed in a future version. Please use the 'get_outputs' method instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
         return xr.open_dataset(
             self.simulation_dir / "resultat" / "debit_aval.nc",
             **kwargs,
         )
 
-    def _standardise_outputs(self, **kwargs):
+    def get_outputs(self, output: str, return_paths: bool = False, **kwargs) -> xr.Dataset:
         r"""
-        Standardise the outputs of the simulation to be more consistent with CF conventions.
+        Get the outputs of the simulation.
 
         Parameters
         ----------
+        output : str
+            "path" to return the output directory.
+            Otherwise, the name of the output to retrieve, or "q" for the streamflow.
+            This should match the name of the output file without the extension (e.g. "neige" for "neige.nc").
+        return_paths : bool
+            If True, return the path to the output file(s) instead of the dataset. Default is False.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        xr.Dataset
+            The requested output variable.
+        Path
+            The path to the output directory if output is set to "path".
+        list[Path]
+            The path to the output file(s) if return_path is True.
+        """
+        outputs = self.simulation_dir / "resultat"
+        if output == "path":
+            return outputs
+        if output == "q":
+            output = "debit_aval"
+        matching_files = list(Path(outputs).glob(f"{output}*.nc", case_sensitive=False))
+        if return_paths:
+            return matching_files
+        if len(matching_files) == 0:
+            raise ValueError(f"No output file matching '{output}' was found in the output directory.")
+        else:
+            kwargs = deepcopy(kwargs)
+            kwargs.setdefault("combine", "by_coords")
+            kwargs.setdefault("data_vars", "minimal")
+            return xr.open_mfdataset(matching_files, **kwargs)
+
+    def standardize_outputs(self, files: list[str] | None = None, **kwargs):
+        r"""
+        Standardize the outputs of the simulation to be more consistent with CF conventions.
+
+        Parameters
+        ----------
+        files : list[str] | None
+            Names of the output files to standardize. If None, all output files will be standardized.
+            The strings can be part of the file name (e.g. "devil_aval", "neige", "debit*", etc.).
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -337,79 +387,177 @@ class Hydrotel(HydrologicalModel):
         Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
         a temporary file will be created and then renamed to overwrite the original file.
         """
-        with self.get_streamflow(**kwargs) as ds:
-            # subbasin_id as dimension
-            ds = ds.swap_dims({"troncon": "idtroncon"})
+        if files is None:
+            patterns = ["*.nc"]
+        else:
+            patterns = [f"*{file.replace('.nc', '')}*.nc" for file in files]
 
-            # Rename variables to standard names
-            ds = ds.assign_coords(idtroncon=ds["idtroncon"])
-            ds = ds.rename(
-                {
-                    "idtroncon": "subbasin_id",
-                    "debit_aval": "q",
-                }
-            )
+        files = []
+        for pattern in patterns:
+            files.extend(self.get_outputs(output="path").glob(pattern))
 
-            # Add standard attributes and fix units
-            ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
-            orig_attrs = dict()
-            orig_attrs["_original_name"] = "debit_aval"
-            for attr in ["standard_name", "long_name", "description"]:
-                if attr in ds["q"].attrs:
-                    orig_attrs[f"_original_{attr}"] = ds["q"].attrs[attr]
-            ds["q"].attrs["standard_name"] = "outgoing_water_volume_transport_along_river_channel"
-            ds["q"].attrs["long_name"] = "Simulated streamflow"
-            ds["q"].attrs["description"] = "Simulated streamflow at the outlet of the subbasin."
-            ds["q"] = xc.units.convert_units_to(ds["q"], "m3 s-1")
-            for attr in orig_attrs:
-                ds["q"].attrs[attr] = orig_attrs[attr]
+        stdout = "HYDROTEL version unspecified"
+        if len(files) != 0:
+            if self.rhhu is None:
+                # Get the RHHU information to add relevant coordinates to the output files if possible.
+                self.get_watershed_properties()
 
-            # Adjust global attributes
-            if "initial_simulation_path" in ds.attrs:
-                del ds.attrs["initial_simulation_path"]
-            if "hydrotel" not in self.executable.lower() or not Path(self.executable).is_file():
-                warnings.warn(
-                    "The executable command is suspicious and will not be executed.",
-                    UserWarning,
-                    stacklevel=2,
-                )
-                stdout = "HYDROTEL version unspecified"
-            else:
+            # Get the HYDROTEL version
+            if "hydrotel" in self.executable.lower() and Path(self.executable).is_file():
                 stdout = subprocess.check_output(  # noqa: S603
                     [self.executable], stdin=subprocess.DEVNULL, text=True
                 )
-            hydrotel_version = re.search(r"HYDROTEL \d\.\d\.\d.\d{4}", stdout)
-            if hydrotel_version is not None:
-                ds.attrs["HYDROTEL_version"] = hydrotel_version.group(0).split(" ")[1]
-            else:
-                ds.attrs["HYDROTEL_version"] = "unspecified"
-            ds.attrs["HYDROTEL_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
 
-            # Overwrite the file
-            # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
-            ds_size_mb = ds["q"].size * 4 / 1024 / 1024
-            if ds_size_mb > 100:
-                chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
-                # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
-                if version.parse(xs.__version__) <= version.parse("0.13.1"):
-                    for k, v in chunks.items():
-                        if v == -1:
-                            chunks[k] = len(ds[k])
-            else:
-                chunks = {k: len(ds[k]) for k in ds["q"].dims}
+        alt_names = {
+            # Dimensions
+            # "basin_name": "subbasin_id",
+            "idtroncon": "subbasin_id",
+            "iduhrh": "rhhu_id",
+            # Variables
+            "debit_aval": "q",
+        }
 
-            save_to_netcdf(
-                ds,
-                self.simulation_dir / "resultat" / "debit_aval_tmp.nc",
-                rechunk=chunks,
-                netcdf_kwargs={"encoding": {"q": {"dtype": "float32", "zlib": True, "complevel": 1}}},
+        for file in files:
+            with xr.open_dataset(file, **kwargs) as ds:
+                ds = standardize_output(ds, spatial_info=self.rhhu, alt_names=alt_names)
+
+                # Adjust global attributes
+                if "initial_simulation_path" in ds.attrs:
+                    del ds.attrs["initial_simulation_path"]
+                hydrotel_version = re.search(r"HYDROTEL \d\.\d\.\d.\d{4}", stdout)
+                if hydrotel_version is not None:
+                    ds.attrs["HYDROTEL_version"] = hydrotel_version.group(0).split(" ")[1]
+                else:
+                    ds.attrs["HYDROTEL_version"] = "unspecified"
+                ds.attrs["HYDROTEL_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
+
+                # Save the file
+                ds.to_netcdf(file.parent / f"{file.stem}_tmp.nc")
+
+            # Remove the original file and rename the new one
+            file.unlink()
+            (file.parent / f"{file.stem}_tmp.nc").rename(
+                file,
             )
 
-        # Remove the original file and rename the new one
-        Path(self.simulation_dir / "resultat" / "debit_aval.nc").unlink()
-        Path(self.simulation_dir / "resultat" / "debit_aval_tmp.nc").rename(
-            self.simulation_dir / "resultat" / "debit_aval.nc",
+    def get_watershed_properties(self):
+        """
+        Retrieve the properties of the watershed from the input files and store them in the class attributes for later use.
+
+        It is assumed that the properties of the RHHUs are created by Physitel and follow the standard HYDROTEL structure.
+        See https://github.com/INRS-Modelisation-hydrologique/hydrotel/tree/main/Docs for more information on the input files.
+        """
+        df = pd.DataFrame(
+            columns=[
+                "rhhu_id",
+                "subbasin_id",
+                "dowsub_id",
+                "drainage_area",
+                "lon",
+                "lat",
+                "subbasin_area",
+                "subbasin_elevation",
+                "station_id",
+                "rhhu_centroid_longitude",
+                "rhhu_centroid_latitude",
+                "rhhu_elevation",
+                "rhhu_area",
+            ]
         )
+
+        # Get the properties of the RHHUs
+        uhrh = pd.read_csv(self.project_dir / "physitel" / "uhrh.csv", delimiter=";", header=1)
+        uhrh = uhrh[["UHRH ID", " ALTITUDE MOYENNE (m)", " SUPERFICIE (km2)", " LONGITUDE", " LATITUDE"]]
+        uhrh.columns = ["rhhu_id", "rhhu_elevation", "rhhu_area", "rhhu_centroid_longitude", "rhhu_centroid_latitude"]
+        df = pd.concat([df, uhrh], axis=0, ignore_index=True)
+
+        # Get the properties of the subbasins
+        with (self.project_dir / "physitel" / "troncon.trl").open() as f:
+            data = f.readlines()
+        data = [line.replace("\n", "").strip().split(" ") for line in data if len(line.replace("\n", "").strip().split(" ")) >= 5]
+        for i, line in enumerate(data):
+            subbasin_id = line[0]
+            troncon_type = line[1]
+            node_down = line[2]
+            if troncon_type == "1":  # River reach
+                nodes_up = [line[3]]
+                nb_rhhus = line[7]
+                rhhus = line[8 : 8 + int(nb_rhhus)]
+            else:  # Lakes and reservoirs
+                nb_nodes_up = line[3]
+                nodes_up = line[4 : 4 + int(nb_nodes_up)]
+                if troncon_type == "2":  # Lake
+                    skip = 4
+                elif troncon_type == "4":  # Lake without routing
+                    skip = 0
+                elif troncon_type == "5":  # Reservoir with historical outflow
+                    skip = 1
+                else:
+                    raise ValueError(f"Unknown reach type: {troncon_type}")
+                nb_rhhus = line[4 + int(nb_nodes_up) + skip]
+                rhhus = line[4 + int(nb_nodes_up) + skip + 1 : 4 + int(nb_nodes_up) + skip + 1 + int(nb_rhhus)]
+            data[i] = [subbasin_id, node_down, nodes_up, rhhus]
+
+        # Get the outlet coordinates from the nodes file
+        with (self.project_dir / "physitel" / "noeuds.nds").open() as f:
+            data_nodes = f.readlines()
+        data_nodes = pd.DataFrame(
+            [line.replace("\n", "").strip().split(" ")[:3] for line in data_nodes if len(line.replace("\n", "").strip().split(" ")) >= 4],
+            columns=["node_id", "longitude", "latitude"],
+        )
+        crs = gpd.read_file(self.project_dir / "physitel" / "rivieres.shp").crs
+        gdf_nodes = gpd.GeoDataFrame(
+            data_nodes, geometry=gpd.points_from_xy(data_nodes.longitude.astype(float), data_nodes.latitude.astype(float)), crs=crs
+        ).to_crs(epsg=4326)
+
+        # Get the drainage area from the troncon width and depth file
+        drain = pd.read_csv(self.project_dir / "physio" / "troncon_width_depth.csv", delimiter=";", header=0)
+
+        # Merge all subbasin information into a single dataframe
+        df_sb = pd.DataFrame(data, columns=["subbasin_id", "node_down", "nodes_up", "rhhus"]).assign(
+            dowsub_id="", drainage_area=np.nan, subbasin_area=np.nan, subbasin_elevation=np.nan, station_id="", lon=np.nan, lat=np.nan
+        )
+        for i, row in df_sb.iterrows():
+            # Find 'node_down' in 'nodes_up' (which is a list per line) and get the corresponding 'subbasin_id'
+            search = df_sb[df_sb["nodes_up"].apply(lambda x, row=row: row["node_down"] in x)]
+            df_sb.at[i, "dowsub_id"] = search["subbasin_id"].values[0] if len(search) > 0 else "-1"
+
+            # Add the area and elevation of the subbasin from the uhrh dataframe based on the rhhu_id
+            df_sb.at[i, "subbasin_area"] = df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"].sum()
+            df_sb.at[i, "subbasin_elevation"] = np.round(
+                (
+                    df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_elevation"] * df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"]
+                ).sum()
+                / df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"].sum(),
+                6,
+            )
+
+            # Add the drainage area from the 'troncon_width_depth.csv' file based on the 'subbasin_id'
+            df_sb.at[i, "drainage_area"] = drain[drain["ID"].astype(str) == row["subbasin_id"]][" Superficie [km2]"].values[0]
+
+            # Add the coordinates of the outlet of the subbasin
+            df_sb.at[i, "lon"] = gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.x.values[0]
+            df_sb.at[i, "lat"] = gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.y.values[0]
+
+        # Add the station_id from the stats.txt file if available
+        if (self.simulation_dir / "stats.txt").is_file():
+            with (self.simulation_dir / "stats.txt").open() as f:
+                stats = f.readlines()
+            stats = pd.DataFrame(
+                [line.replace("\n", "").strip().split(" ") for line in stats if "absent" not in line], columns=["subbasin_id", "station_id"]
+            )
+        else:
+            stats = pd.DataFrame(columns=["subbasin_id", "station_id"])
+        df_sb.loc[df_sb["subbasin_id"].isin(stats["subbasin_id"]), "station_id"] = df_sb.loc[
+            df_sb["subbasin_id"].isin(stats["subbasin_id"]), "subbasin_id"
+        ].map(stats.set_index("subbasin_id")["station_id"])
+
+        # Merge the subbasin information with the RHHU information
+        for _, row in df_sb.iterrows():
+            for col in ["subbasin_id", "dowsub_id", "lon", "lat", "drainage_area", "subbasin_area", "subbasin_elevation", "station_id"]:
+                df.loc[df["rhhu_id"].astype(str).isin(row["rhhus"]), col] = row[col]
+
+        self.rhhu = df
 
 
 def _fix_os_paths(d: dict):

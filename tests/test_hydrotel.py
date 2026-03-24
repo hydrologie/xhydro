@@ -365,6 +365,29 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
 
+    def test_aggregate_sb(self, project_path):
+        self.create_project(project_path / "proj-for-sb")
+
+        ht = Hydrotel(
+            project_dir=project_path / "proj-for-sb",
+            project_file="DELISLE.csv",
+            executable=hydrotel_executable,
+            output_config={"OUTPUT_NETCDF": "1"},
+        )
+
+        if hydrotel_executable != "command":
+            ht.run()
+            ht.aggregate_outputs(by="rhhu", to="subbasin")
+
+        # files_true = rpm.get_outputs("ByDrainageArea", return_paths=True)
+        # files_calc = sorted(rpm.get_outputs("ByDrainageArea_v2", return_paths=True))
+        # files_true = sorted(list(set(files_true).difference(files_calc)))
+
+        # for i in range(len(files_calc)):
+        #     ds_true = xr.open_dataset(files_true[i])
+        #     ds_calc = xr.open_dataset(files_calc[i])
+        #     xr.testing.assert_allclose(ds_true, ds_calc)
+
     # Note that if using the actual executable, this test is quite slow (~2-4 minutes), because HYDROTEL needs to recompute/convert
     # the geomorphological hydrograph at the new time step.
     def test_subdaily(self, project_path):
