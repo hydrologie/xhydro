@@ -1,5 +1,8 @@
 coordinates:
   # Dimensions
+  basin_id:
+    long_name: Basin ID
+    description: Unique identifier for each basin in the model.
   subbasin_id:
     long_name: Subbasin ID
     description: Unique identifier for each subbasin in the model.

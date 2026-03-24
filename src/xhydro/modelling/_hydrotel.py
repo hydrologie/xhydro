@@ -7,6 +7,7 @@ import subprocess  # noqa: S404
 import warnings
 from copy import deepcopy
 from pathlib import Path, PureWindowsPath
+from typing import Literal
 
 import geopandas as gpd
 import numpy as np
@@ -277,6 +278,8 @@ class Hydrotel(HydrologicalModel):
         else:
             raise ValueError("You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO' in the simulation configuration file.")
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         ds = xr.open_dataset(
             self.project_dir / weather_file,
             **kwargs,
@@ -325,6 +328,8 @@ class Hydrotel(HydrologicalModel):
             FutureWarning,
             stacklevel=2,
         )
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         return xr.open_dataset(
             self.simulation_dir / "resultat" / "debit_aval.nc",
             **kwargs,
@@ -360,15 +365,87 @@ class Hydrotel(HydrologicalModel):
         if output == "q":
             output = "debit_aval"
         matching_files = list(Path(outputs).glob(f"{output}*.nc", case_sensitive=False))
+
         if return_paths:
             return matching_files
         if len(matching_files) == 0:
             raise ValueError(f"No output file matching '{output}' was found in the output directory.")
         else:
             kwargs = deepcopy(kwargs)
+            kwargs.setdefault("chunks", {})
             kwargs.setdefault("combine", "by_coords")
             kwargs.setdefault("data_vars", "minimal")
             return xr.open_mfdataset(matching_files, **kwargs)
+
+    def aggregate_outputs(  # noqa: C901
+        self, by: Literal["rhhu", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
+    ) -> None:
+        r"""
+        Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
+
+        Parameters
+        ----------
+        by : {"rhhu", "subbasin"}
+            The spatial unit to aggregate from.
+        to : {"subbasin", "drainage_area"}
+            The spatial unit to aggregate to.
+        subset : list[str] | None
+            The list of variables to aggregate. If None, all variables will be processed.
+            The strings should match the names produced by the HYDROTEL model.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Notes
+        -----
+        This method expects that relevant spatial information has been provided to the RavenPy model, either through the initial configuration or
+        through the `update_data` method. Furthermore, that spatial information should be consistent with ravenpy.extractors.BasinMakerExtractor
+        expectations, as well as the Data Specifications of Basin Maker (https://hydrology.uwaterloo.ca/basinmaker/) and the outputs of
+        BasinMaker's `Generate_HRUs` function. In particular, the following variables should be present in the HRU file:
+
+        - Always:
+            - SubId: The ID of the subbasins.
+            - BasArea: The area of the subbasins.
+        - by == "hru":
+            - HRU_ID: The ID of the HRUs.
+            - HRU_Area: The area of the HRUs, in units consistent with the area of the subbasins.
+        - to == "drainage_area":
+            - DowSubId: The ID of the downstream subbasin for each HRU.
+                        This variable is standard in the RavenPy HRU files, but determining the upstream subbasins from it can be very slow.
+            - UpSubId: The ID(s) of the upstream subbasin(s) for each HRU. If multiple, should be separated by a comma and no spaces (e.g. "1,2,3").
+                       This variable is not standard, but if present, it will be used for a much faster aggregation to drainage areas.
+        """
+        if to.lower() == "subbasin" and by.lower() != "hru":
+            raise ValueError("Invalid aggregation levels.")
+
+        # clean = {
+        #     "hru": "HRU",
+        #     "subbasin": "Subbasin",
+        #     "drainage_area": "DrainageArea",
+        # }
+
+        # # Get the files to aggregate
+        # files = self.get_outputs(output=f"_By{by}", return_paths=True)
+        # if subset is not None:
+        #     files = [file for file in files if any(s in file.name for s in subset)]
+        # if len(files) == 0:
+        #     raise ValueError(f"No output files matching '{self.run_name}_*_By{clean[by]}*.nc' were found.")
+
+        # kwargs = deepcopy(kwargs)
+        # kwargs.setdefault("chunks", {})
+        # for file in files:
+        #     with xr.open_dataset(file, **kwargs) as ds:
+        #         ds_agg = aggregate_output(ds, by=by, to=to)
+
+        #         file_out = file.parent / file.name.replace(f"_By{clean[by]}", f"_By{clean[to]}")
+        #         if file_out.exists():
+        #             warnings.warn(
+        #                 f"The file {file_out} already exists.",
+        #                 stacklevel=2,
+        #             )
+        #             files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
+        #             file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
+
+        #         ds_agg.to_netcdf(file_out)
 
     def standardize_outputs(self, files: list[str] | None = None, **kwargs):
         r"""
@@ -417,6 +494,8 @@ class Hydrotel(HydrologicalModel):
             "debit_aval": "q",
         }
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
                 ds = standardize_output(ds, spatial_info=self.rhhu, alt_names=alt_names)

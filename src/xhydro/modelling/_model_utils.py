@@ -4,9 +4,10 @@ import datetime as dt
 from pathlib import Path
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 import xarray as xr
-import xclim as xc
+import xscen as xs
 import yaml
 from xclim.core.units import convert_units_to
 
@@ -106,12 +107,15 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
             ds[v] = convert_units_to(ds[v], VARIABLES["variables"][v]["canonical_units"])
         ds[v].attrs.update({k: v for k, v in VARIABLES["variables"][v].items() if k != "canonical_units"})
 
-    # Since we squeezed the dataset and renamed the spatial dimension, it is preferable to clean the chunking information
+    # Since we squeezed the dataset and renamed the spatial dimension, it is preferable to clean the chunking information.
+    # Default chunking provided by the hydrological models is often not optimal anyway.
+    preferred_chunks = xs.io.estimate_chunks(ds, dims=ds.dims, target_mb=100)
+    if "time" in preferred_chunks and len(ds["time"]) > 3:
+        time_div = 365 if "D" in xr.infer_freq(ds["time"]) else 720 if "H" in xr.infer_freq(ds["time"]) else 1
+        preferred_chunks["time"] = np.min((int(np.round(preferred_chunks["time"] / time_div) * time_div), len(ds["time"])))
+
     for v in ds.data_vars:
-        preferred = ds[v].encoding.get("preferred_chunks", {d: len(ds[v][d]) for d in ds[v].dims})
-        if original_dim in preferred.keys():
-            preferred[spatial_dim] = preferred.pop(original_dim)
-        preferred = {d: preferred[d] for d in ds[v].dims if d in preferred}
+        preferred = {d: preferred_chunks[d] for d in ds[v].dims}
         ds[v] = ds[v].chunk(preferred)
         ds[v].encoding["chunksizes"] = tuple(preferred[d] if d in preferred else ds[d].shape[0] for d in ds[v].dims)
         ds[v].encoding.pop("chunks", None)
@@ -143,9 +147,7 @@ def aggregate_output(  # noqa: C901
     if to.lower() == by.lower():
         raise ValueError("Invalid aggregation levels.")
 
-    # Load the coordinates and remove chunks along the spatial dimension.
-    if xc.core.utils.uses_dask(ds):
-        ds = ds.chunk({c: -1 for c in ds.chunks})
+    # Load the coordinates
     [ds[c].load() for c in ds.coords]
 
     info = {

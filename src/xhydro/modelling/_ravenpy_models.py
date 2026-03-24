@@ -663,7 +663,8 @@ class RavenpyModel(HydrologicalModel):
             FutureWarning,
             stacklevel=2,
         )
-
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         if output == "path":
             return self.get_outputs("q", return_paths=True)[0]
         else:
@@ -729,7 +730,7 @@ class RavenpyModel(HydrologicalModel):
         to : {"subbasin", "drainage_area"}
             The spatial unit to aggregate to.
         subset : list[str] | None
-            The list of variables to aggregate. If None, all variables will be used.
+            The list of variables to aggregate. If None, all variables will be processed.
             The strings should match the names produced by the Raven model, typically found under ":CustomOutput" in the .rvi file.
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
