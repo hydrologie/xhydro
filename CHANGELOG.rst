@@ -2,26 +2,26 @@
 Changelog
 =========
 
-.. v0.8.0 (unreleased)
-   -------------------
+v0.8.0 (unreleased)
+-------------------
 
-   Contributors to this version: <INSERT AUTHORS HERE>.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-   New features and enhancements
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-   Breaking changes
-   ^^^^^^^^^^^^^^^^
-   * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-   Bug fixes
-   ^^^^^^^^^
-   * No changes.
+Bug fixes
+^^^^^^^^^
+* No changes.
 
-   Internal changes
-   ^^^^^^^^^^^^^^^^
-   * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
 
 v0.7.1 (2026-03-03)
 -------------------
