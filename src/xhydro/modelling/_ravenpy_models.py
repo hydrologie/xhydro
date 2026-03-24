@@ -793,7 +793,7 @@ class RavenpyModel(HydrologicalModel):
             "alt_name_flow": alt_name_flow,
         }
 
-        with xr.open_dataset(qobs_file) as ds_qobs:
+        with xr.open_dataset(qobs_file, chunks={}) as ds_qobs:
             ds_qobs = ds_qobs.squeeze()
 
             # Try to get the basin name or ID variable as a string
@@ -1021,7 +1021,7 @@ class RavenpyModel(HydrologicalModel):
         }
 
         # Get some properties from the meteorological file
-        with xr.open_dataset(self.meteo["file"]) as ds:
+        with xr.open_dataset(self.meteo["file"], chunks={}) as ds:
             # Station-based meteorological data (Hard-coding is fine here, since RavenPy only supports station data with a 'station_id' dimension)
             if "station_id" in ds.dims or ds.sizes.keys() == {"time"}:
                 self.meteo["type"] = "station"
@@ -1165,6 +1165,11 @@ class RavenpyModel(HydrologicalModel):
             "HRU_CenY": "hru_centroid_latitude",
             "HRU_E_mean": "hru_elevation",
             "HRU_Area": "hru_area",
+            # Lumped models
+            "area": "drainage_area",
+            "elevation": "elevation",
+            "longitude": "centroid_longitude",
+            "latitude": "centroid_latitude",
             # Variables
             "q_sim": "q",
         }

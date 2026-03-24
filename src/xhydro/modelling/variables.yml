@@ -17,15 +17,24 @@ coordinates:
     description: Unique identifier for each Relatively Homogeneous Hydrological Unit (RHHU) in the HYDROTEL model.
 
   # Drainage area and coordinates
-  longitude:
+  lon:
     long_name: Longitude of the subbasin outlet
     units: degrees_east
-  latitude:
+  lat:
     long_name: Latitude of the subbasin outlet
+    units: degrees_north
+  centroid_longitude:
+    long_name: Longitude of the centroid of the drainage area
+    units: degrees_east
+  centroid_latitude:
+    long_name: Latitude of the centroid of the drainage area
     units: degrees_north
   drainage_area:
     long_name: Drainage area
     units: km2
+  elevation:
+    long_name: Mean elevation of the drainage area
+    units: m
 
   subbasin_centroid_longitude:
     long_name: Longitude of the centroid of the subbasin

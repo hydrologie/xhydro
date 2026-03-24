@@ -6,6 +6,7 @@ from typing import Literal
 
 import pandas as pd
 import xarray as xr
+import xclim as xc
 import yaml
 from xclim.core.units import convert_units_to
 
@@ -110,6 +111,7 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
         preferred = ds[v].encoding.get("preferred_chunks", {d: len(ds[v][d]) for d in ds[v].dims})
         if original_dim in preferred.keys():
             preferred[spatial_dim] = preferred.pop(original_dim)
+        preferred = {d: preferred[d] for d in ds[v].dims if d in preferred}
         ds[v] = ds[v].chunk(preferred)
         ds[v].encoding["chunksizes"] = tuple(preferred[d] if d in preferred else ds[d].shape[0] for d in ds[v].dims)
         ds[v].encoding.pop("chunks", None)
@@ -140,6 +142,11 @@ def aggregate_output(  # noqa: C901
     """
     if to.lower() == by.lower():
         raise ValueError("Invalid aggregation levels.")
+
+    # Load the coordinates and remove chunks along the spatial dimension.
+    if xc.core.utils.uses_dask(ds):
+        ds = ds.chunk({c: -1 for c in ds.chunks})
+    [ds[c].load() for c in ds.coords]
 
     info = {
         "hru": {
@@ -232,5 +239,11 @@ def aggregate_output(  # noqa: C901
     except TypeError:
         ds_agg = ds_agg.sortby(ds_agg[info[to]["dim"]])
     ds_agg = ds_agg.transpose("time", info[to]["dim"], ...)
+
+    # Clean the chunking information after the aggregation
+    for v in ds_agg.data_vars:
+        ds_agg[v].encoding.pop("chunks", None)
+        ds_agg[v].encoding.pop("preferred_chunks", None)
+        ds_agg[v].encoding.pop("chunksizes", None)
 
     return ds_agg
