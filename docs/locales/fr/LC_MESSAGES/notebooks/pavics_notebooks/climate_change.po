@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: ../../../notebooks/pavics_notebooks/pavics_notebooks/climate_change.ipynb:9
+#: ../../../notebooks/pavics_notebooks/climate_change.ipynb:9
 msgid "Climate change analysis of hydrological data"
 msgstr "Analyse de l'impact des changements climatiques sur l'hydrologie"
 
