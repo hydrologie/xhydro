@@ -620,6 +620,8 @@ class RavenpyModel(HydrologicalModel):
             lines = f.readlines()
         all_files = {line.split(":FileNameNC")[1].replace("\n", "").replace(" ", "") for line in lines if ":FileNameNC" in line}
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         ds = xr.open_mfdataset(*list(all_files), **kwargs)
 
         if subset_time:
@@ -696,6 +698,8 @@ class RavenpyModel(HydrologicalModel):
         """
         outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         if output == "path":
             return Path(outputs.files["hydrograph"].parent)
         elif output == "q":
@@ -708,7 +712,6 @@ class RavenpyModel(HydrologicalModel):
                 if len(matching_files) == 0:
                     raise ValueError(f"No output files matching '{self.run_name}_*{output}*.nc' were found.")
                 else:
-                    kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")
                     kwargs.setdefault("data_vars", "minimal")
                     return xr.open_mfdataset(matching_files, **kwargs)
@@ -766,8 +769,10 @@ class RavenpyModel(HydrologicalModel):
         if len(files) == 0:
             raise ValueError(f"No output files matching '{self.run_name}_*_By{clean[by]}*.nc' were found.")
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         for file in files:
-            with xr.open_dataset(file) as ds:
+            with xr.open_dataset(file, **kwargs) as ds:
                 ds_agg = aggregate_output(ds, by=by, to=to)
 
                 file_out = file.parent / file.name.replace(f"_By{clean[by]}", f"_By{clean[to]}")
@@ -1164,6 +1169,8 @@ class RavenpyModel(HydrologicalModel):
             "q_sim": "q",
         }
 
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
                 ds = standardize_output(ds, spatial_info=self.hru["hru"], alt_names=alt_names)
