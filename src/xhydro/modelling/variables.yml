@@ -1,81 +1,69 @@
 coordinates:
-  # Dimensions
-  basin_id:
-    long_name: Basin ID
-    description: Unique identifier for each basin in the model.
-  subbasin_id:
-    long_name: Subbasin ID
-    description: Unique identifier for each subbasin in the model.
+  # Identifiers (Basin --> Reaches --> Computational Units)
   dowsub_id:
-    long_name: Downstream Subbasin ID
-    description: Unique identifier for the downstream subbasin in the model.
+    long_name: Downstream Basin ID
+    description: ID of the downstream subbasin in the model.
   station_id:
     long_name: Observation Station ID
-    description: Unique identifier for each observation station in the model.
-  hru_id:
-    long_name: HRU ID
-    description: Unique identifier for each Hydrological Response Unit (HRU) in the Raven model.
-  rhhu_id:
-    long_name: RHHU ID
-    description: Unique identifier for each Relatively Homogeneous Hydrological Unit (RHHU) in the HYDROTEL model.
+    description: ID of the observation stations.
+  subbasin_id:
+    long_name: Subbasin ID
+    description: Unique identifier representing a subbasin.
+  unit_id:
+    long_name_raven: HRU ID
+    long_name_hydrotel: RHHU ID
+    description_raven: Unique identifier representing each Hydrological Response Unit (HRU) in the Raven model.
+    description_hydrotel: Unique identifier representing each Relatively Homogeneous Hydrological Unit (RHHU) in the HYDROTEL model.
 
-  # Drainage area and coordinates
+  # Coordinates
   lon:
-    long_name: Longitude of the subbasin outlet
+    long_name: Longitude of the watershed outlet
     units: degrees_east
   lat:
-    long_name: Latitude of the subbasin outlet
+    long_name: Latitude of the watershed outlet
     units: degrees_north
   centroid_longitude:
-    long_name: Longitude of the centroid of the drainage area
+    long_name: Longitude of the centroid of the watershed
     units: degrees_east
   centroid_latitude:
-    long_name: Latitude of the centroid of the drainage area
+    long_name: Latitude of the centroid of the watershed
     units: degrees_north
-  drainage_area:
-    long_name: Drainage area
-    units: km2
-  elevation:
-    long_name: Mean elevation of the drainage area
-    units: m
-
   subbasin_centroid_longitude:
     long_name: Longitude of the centroid of the subbasin
     units: degrees_east
+    description: Longitude of the centroid of the immediate watershed of the river segment.
   subbasin_centroid_latitude:
     long_name: Latitude of the centroid of the subbasin
     units: degrees_north
-  subbasin_area:
+    description: Latitude of the centroid of the immediate watershed of the river segment.
+  unit_centroid_longitude:
+    long_name: Longitude of the centroid of the computational unit
+    units: degrees_east
+  unit_centroid_latitude:
+    long_name: Latitude of the centroid of the computational unit
+    units: degrees_north
+
+  # Other spatial attributes
+  drainage_area:
+    long_name: Drainage area of the watershed
+    units: km2
+  subbasin_drainage_area:
     long_name: Area of the subbasin
     units: km2
+    description: Area of the immediate watershed of the river segment.
+  unit_drainage_area:
+    long_name: Area of the computational unit
+    units: km2
+
+  elevation:
+    long_name: Mean elevation of the drainage area
+    units: m
   subbasin_elevation:
     long_name: Mean elevation of the subbasin
     units: m
-
-  hru_centroid_longitude:
-    long_name: Longitude of the centroid of the HRU
-    units: degrees_east
-  hru_centroid_latitude:
-    long_name: Latitude of the centroid of the HRU
-    units: degrees_north
-  hru_area:
-    long_name: Area of the HRU
-    units: km2
-  hru_elevation:
-    long_name: Mean elevation of the HRU
-    units: m
-
-  rhhu_centroid_longitude:
-    long_name: Longitude of the centroid of the RHHU
-    units: degrees_east
-  rhhu_centroid_latitude:
-    long_name: Latitude of the centroid of the RHHU
-    units: degrees_north
-  rhhu_area:
-    long_name: Area of the RHHU
-    units: km2
-  rhhu_elevation:
-    long_name: Mean elevation of the RHHU
+    description: Mean elevation of the immediate watershed of the river segment.
+  unit_elevation:
+    long_name: Mean elevation of the computational unit
     units: m
 
 # Variables

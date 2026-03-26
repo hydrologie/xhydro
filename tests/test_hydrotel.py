@@ -365,7 +365,8 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
 
-    def test_aggregate_sb(self, project_path):
+    @pytest.mark.parametrize("to", ["subbasin", "drainage_area"])
+    def test_aggregate_sb(self, project_path, to):
         self.create_project(project_path / "proj-for-sb")
 
         ht = Hydrotel(
@@ -377,16 +378,36 @@ class TestHydrotel:
 
         if hydrotel_executable != "command":
             ht.run()
-            ht.aggregate_outputs(by="rhhu", to="subbasin")
+            ht.aggregate_outputs(to=to, subset=["pluie", "neige"])
 
-        # files_true = rpm.get_outputs("ByDrainageArea", return_paths=True)
-        # files_calc = sorted(rpm.get_outputs("ByDrainageArea_v2", return_paths=True))
-        # files_true = sorted(list(set(files_true).difference(files_calc)))
+        files_calc = sorted(ht.get_outputs("BySubbasin" if to == "subbasin" else "ByDrainageArea", return_paths=True))
 
-        # for i in range(len(files_calc)):
-        #     ds_true = xr.open_dataset(files_true[i])
-        #     ds_calc = xr.open_dataset(files_calc[i])
-        #     xr.testing.assert_allclose(ds_true, ds_calc)
+        for i in range(len(files_calc)):
+            clean_to = "Subbasin" if to == "subbasin" else "DrainageArea"
+            ds_orig = xr.open_dataset(str(files_calc[i]).replace(f"_By{clean_to}", ""))
+            ds_calc = xr.open_dataset(files_calc[i])
+            v = [v for v in ds_calc.data_vars][0]
+            assert "unit_id" not in ds_calc.dims
+            assert not any(c.startswith("unit_") for c in ds_calc.coords)
+            np.testing.assert_allclose(ds_calc["drainage_area"].max(), ds_orig["unit_drainage_area"].sum(), rtol=1e-5)
+            if to == "drainage_area":
+                assert not any(c.startswith("subbasin_") for c in ds_calc.coords if c != "subbasin_id")
+                np.testing.assert_allclose(
+                    ds_calc[v].sel(subbasin_id="121"),
+                    ds_orig[v]
+                    .where(ds_orig["unit_id"].isin(["121", "122", "123", "124", "125"]))
+                    .weighted(ds_orig["unit_drainage_area"])
+                    .mean("unit_id"),
+                )
+            else:
+                np.testing.assert_allclose(ds_calc["subbasin_drainage_area"].sum(), ds_orig["unit_drainage_area"].sum())
+                np.testing.assert_allclose(
+                    ds_calc[v].weighted(ds_calc["subbasin_drainage_area"]).mean(), ds_orig[v].weighted(ds_orig["unit_drainage_area"]).mean()
+                )
+                np.testing.assert_allclose(
+                    ds_calc[v].sel(subbasin_id="121"),
+                    ds_orig[v].where(ds_orig["subbasin_id"] == "121").weighted(ds_orig["unit_drainage_area"]).mean("unit_id"),
+                )
 
     # Note that if using the actual executable, this test is quite slow (~2-4 minutes), because HYDROTEL needs to recompute/convert
     # the geomorphological hydrograph at the new time step.

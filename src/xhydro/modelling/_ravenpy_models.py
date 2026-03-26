@@ -717,16 +717,17 @@ class RavenpyModel(HydrologicalModel):
                     kwargs.setdefault("data_vars", "minimal")
                     return xr.open_mfdataset(matching_files, **kwargs)
 
-    def aggregate_outputs(  # noqa: C901
-        self, by: Literal["hru", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
+    def aggregate_outputs(
+        self, by: Literal["hru", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
     ) -> None:
         r"""
         Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
 
         Parameters
         ----------
-        by : {"hru", "subbasin"}
+        by : {"hru", "unit", "subbasin"}
             The spatial unit to aggregate from.
+            "unit" is the generic term for "hru".
         to : {"subbasin", "drainage_area"}
             The spatial unit to aggregate to.
         subset : list[str] | None
@@ -734,6 +735,14 @@ class RavenpyModel(HydrologicalModel):
             The strings should match the names produced by the Raven model, typically found under ":CustomOutput" in the .rvi file.
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        None
+            The aggregated outputs will be saved as new NetCDF files in the output directory, with a name pattern
+            following what is produced by the Raven model (e.g. "{run_name}_variable}_By{aggregation}.nc").
+            Aggregation will be 'ByHRU', 'BySubbasin', or 'ByDrainageArea', depending on the 'to' parameter.
+            If a file with the same name already exists, a new file will be saved with a "_v{n}" suffix.
 
         Notes
         -----
@@ -750,21 +759,16 @@ class RavenpyModel(HydrologicalModel):
             - HRU_Area: The area of the HRUs, in units consistent with the area of the subbasins.
         - to == "drainage_area":
             - DowSubId: The ID of the downstream subbasin for each HRU.
-                        This variable is standard in the RavenPy HRU files, but determining the upstream subbasins from it can be very slow.
-            - UpSubId: The ID(s) of the upstream subbasin(s) for each HRU. If multiple, should be separated by a comma and no spaces (e.g. "1,2,3").
-                       This variable is not standard, but if present, it will be used for a much faster aggregation to drainage areas.
         """
-        if to.lower() == "subbasin" and by.lower() != "hru":
-            raise ValueError("Invalid aggregation levels.")
-
         clean = {
             "hru": "HRU",
+            "unit": "HRU",
             "subbasin": "Subbasin",
             "drainage_area": "DrainageArea",
         }
 
         # Get the files to aggregate
-        files = self.get_outputs(output=f"_By{by}", return_paths=True)
+        files = self.get_outputs(output=f"_By{clean[by]}", return_paths=True)
         if subset is not None:
             files = [file for file in files if any(s in file.name for s in subset)]
         if len(files) == 0:
@@ -1122,7 +1126,7 @@ class RavenpyModel(HydrologicalModel):
                 for v in data_type
             ]
 
-    def standardize_outputs(self, files: list[str] | None = None, **kwargs):  # noqa: C901
+    def standardize_outputs(self, files: list[str] | None = None, **kwargs):
         r"""
         Standardize the outputs of the simulation to be more consistent with CF conventions.
 
@@ -1152,20 +1156,20 @@ class RavenpyModel(HydrologicalModel):
             # Dimensions
             "basin_name": "subbasin_id",
             "SBID": "subbasin_id",
-            "HRU_ID": "hru_id",
+            "HRU_ID": "unit_id",
             # HRU properties
             "SubId": "subbasin_id",
             "DowSubId": "dowsub_id",
             "DrainArea": "drainage_area",
-            "BasArea": "subbasin_area",
+            "BasArea": "subbasin_drainage_area",
             "MeanElev": "subbasin_elevation",
             "Obs_NM": "station_id",
             "centroid_x": "subbasin_centroid_longitude",
             "centroid_y": "subbasin_centroid_latitude",
-            "HRU_CenX": "hru_centroid_longitude",
-            "HRU_CenY": "hru_centroid_latitude",
-            "HRU_E_mean": "hru_elevation",
-            "HRU_Area": "hru_area",
+            "HRU_CenX": "unit_centroid_longitude",
+            "HRU_CenY": "unit_centroid_latitude",
+            "HRU_E_mean": "unit_elevation",
+            "HRU_Area": "unit_drainage_area",
             # Lumped models
             "area": "drainage_area",
             "elevation": "elevation",
@@ -1179,13 +1183,13 @@ class RavenpyModel(HydrologicalModel):
         kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
-                ds = standardize_output(ds, spatial_info=self.hru["hru"], alt_names=alt_names)
-
                 # Global attributes are already pretty good, but make the Raven version explicit
                 # Since the executable used might differ from raven-hydro, we trust the dataset's history
                 ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
                 if run is not None:
                     ds.attrs["RavenPy_version"] = ravenpy.__version__
+
+                ds = standardize_output(ds, spatial_info=self.hru["hru"], alt_names=alt_names)
 
                 # Save the file
                 ds.to_netcdf(file.parent / f"{file.stem}_tmp.nc")

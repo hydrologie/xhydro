@@ -16,7 +16,7 @@ with Path(Path(__file__).parent / "variables.yml").open() as f:
     VARIABLES = yaml.safe_load(f)
 
 
-def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: dict[str, str] | None = None) -> xr.Dataset:
+def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: dict[str, str] | None = None) -> xr.Dataset:  # noqa: C901
     """
     Standardize the output dataset by renaming dimensions and variables, adding relevant coordinates, and correcting attributes.
 
@@ -36,15 +36,13 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
     """
     if alt_names is not None:
         ds = ds.rename({k: v for k, v in alt_names.items() if k in ds})
-        spatial_info = (
-            spatial_info.rename(columns={k: v for k, v in alt_names.items() if k in spatial_info.columns}) if spatial_info is not None else None
-        )
+        if spatial_info is not None:
+            spatial_info = spatial_info.rename(columns={k: v for k, v in alt_names.items() if k in spatial_info.columns})
 
-    # Step 1: Standardize the spatial dimensions
+    # Standardize the spatial dimensions
     ordered_dims = [
         "subbasin_id",
-        "hru_id",
-        "rhhu_id",
+        "unit_id",
     ]
     original_dim = [ds[d].dims[0] for d in ordered_dims if d in ds]
     original_dim = original_dim[0] if len(original_dim) > 0 else "not_applicable"
@@ -64,28 +62,45 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
     # without the prefix has been added. This new 'basin_fullname' is not required.
     ds = ds.drop_vars("basin_fullname", errors="ignore")
 
+    # Datasets are exactly the same between Subbasin and Basin levels, so we need to make an educated guess
+    is_subbasin = any("Subbasin" in ds[v].attrs.get("long_name", "") for v in ds.data_vars) or any(v in ds.data_vars for v in ["apport_lateral"])
+    controlled_spatial = None
+    if spatial_dim is not None:
+        controlled_spatial = (
+            "ComputationalUnit" if spatial_dim != "subbasin_id" else spatial_dim.replace("_id", "").capitalize() if is_subbasin else "DrainageArea"
+        )
+
+    # Ensure that all coordinates ending with "_id" are of type string
+    for c in [cc for cc in ds.coords if cc.endswith("_id")]:
+        ds[c] = ds[c].astype(str)
+    if spatial_info is not None:
+        for c in [cc for cc in spatial_info.columns if cc.endswith("_id")]:
+            spatial_info[c] = spatial_info[c].astype(str)
+
     # Add relevant coordinates if available.
     if spatial_dim is not None and spatial_info is not None:
-        ds[spatial_dim] = ds[spatial_dim].astype(str)
         df = spatial_info.drop_duplicates(spatial_dim).set_index(spatial_dim)
 
         columns = [c for c in list(VARIABLES["coordinates"].keys()) if c in df.columns]
 
         if spatial_dim == "subbasin_id":
-            columns = [c for c in columns if not any(s in c for s in ["hru", "rhhu"])]
+            if is_subbasin is False:
+                columns = [c for c in columns if not any(c.startswith(s) for s in ["unit", "subbasin"])]
+            else:
+                columns = [c for c in columns if not any(c.startswith(s) for s in ["unit"])]
 
-            # Assess whether the dataset contains subbasin-level or drainage-area-level information
-            if "ByDrainageArea" in ds[[v for v in ds.data_vars if spatial_dim in ds[v].dims][0]].attrs.get("long_name", "") or any(
-                any(s in v for s in ["q_", "debit"]) for v in ds.data_vars
-            ):
-                columns = [c for c in columns if not any(s in c for s in ["subbasin"])]
-
+        model = "raven" if "Raven_version" in ds.attrs else "hydrotel" if "HYDROTEL_version" in ds.attrs else "unknown"
         for col in columns:
-            coord = xr.DataArray(df[col], dims=[spatial_dim], coords={spatial_dim: df.index}, attrs=VARIABLES["coordinates"][col])
-            # Special handling
-            if "_id" in col:
+            attrs = {
+                attr: VARIABLES["coordinates"][col].get(f"{attr}_{model.lower()}", VARIABLES["coordinates"][col].get(attr, "unknown"))
+                for attr in ["description", "long_name"]
+            }
+            coord = xr.DataArray(df[col], dims=[spatial_dim], coords={spatial_dim: df.index}, attrs=attrs)
+
+            # Special cases
+            if col.endswith("_id"):
                 coord = coord.astype(str)
-            if "area" in col and "Raven" in ds.attrs.get("history", ""):
+            if "area" in col and model == "raven":
                 coord.attrs["units"] = "m2"
                 coord = convert_units_to(coord, "km2")
 
@@ -93,7 +108,11 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
             ds = ds.assign_coords({col: coord})
 
         # Also correct the attributes of the spatial dimension
-        ds[spatial_dim].attrs = VARIABLES["coordinates"][spatial_dim]
+        attrs = {
+            attr: VARIABLES["coordinates"][spatial_dim].get(f"{attr}_{model.lower()}", VARIABLES["coordinates"][spatial_dim].get(attr, "unknown"))
+            for attr in ["description", "long_name"]
+        }
+        ds[spatial_dim].attrs = attrs
 
         # If the dataset has a spatial dimension, add the "timeseries_id" cf_role attribute to it.
         ds = ds.squeeze()
@@ -101,18 +120,22 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
             ds[spatial_dim].attrs["cf_role"] = "timeseries_id"
 
     # Manage the other variables
-    vars = [v for v in ds.data_vars if v in VARIABLES["variables"]]
-    for v in vars:
-        if ds[v].attrs.get("units", "unknown") != VARIABLES["variables"][v].get("canonical_units", "unknown"):
-            ds[v] = convert_units_to(ds[v], VARIABLES["variables"][v]["canonical_units"])
-        ds[v].attrs.update({k: v for k, v in VARIABLES["variables"][v].items() if k != "canonical_units"})
+    controlled_vars = [v for v in ds.data_vars if v in VARIABLES["variables"]]
+    for v in ds.data_vars:
+        if v in controlled_vars:
+            if ds[v].attrs.get("units", "unknown") != VARIABLES["variables"][v].get("canonical_units", "unknown"):
+                ds[v] = convert_units_to(ds[v], VARIABLES["variables"][v]["canonical_units"])
+            ds[v].attrs.update({k: v for k, v in VARIABLES["variables"][v].items() if k != "canonical_units"})
+        ds[v].attrs["long_name"] = ds[v].attrs.get("long_name", "").split(" By")[0]
+        if controlled_spatial is not None and spatial_dim in ds[v].dims:
+            ds[v].attrs["aggregation_level"] = controlled_spatial
 
     # Since we squeezed the dataset and renamed the spatial dimension, it is preferable to clean the chunking information.
     # Default chunking provided by the hydrological models is often not optimal anyway.
     preferred_chunks = xs.io.estimate_chunks(ds, dims=ds.dims, target_mb=100)
     if "time" in preferred_chunks and len(ds["time"]) > 3:
         time_div = 365 if "D" in xr.infer_freq(ds["time"]) else 720 if "H" in xr.infer_freq(ds["time"]) else 1
-        preferred_chunks["time"] = np.min((int(np.round(preferred_chunks["time"] / time_div) * time_div), len(ds["time"])))
+        preferred_chunks["time"] = np.min([np.max([int(np.round(preferred_chunks["time"] / time_div) * time_div), time_div]), len(ds["time"])])
 
     for v in ds.data_vars:
         preferred = {d: preferred_chunks[d] for d in ds[v].dims}
@@ -125,7 +148,7 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
 
 
 def aggregate_output(  # noqa: C901
-    ds: xr.Dataset, by: Literal["hru", "rhhu", "subbasin"], to: Literal["subbasin", "drainage_area"]
+    ds: xr.Dataset, by: Literal["hru", "rhhu", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"]
 ) -> xr.Dataset:
     """
     Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
@@ -134,8 +157,9 @@ def aggregate_output(  # noqa: C901
     ----------
     ds : xr.Dataset
         The dataset to aggregate. The 'standardize_outputs' method must have been called on this dataset beforehand.
-    by : {"hru", "rhhu", "subbasin"}
+    by : {"hru", "rhhu", "unit", "subbasin"}
         The spatial unit to aggregate from.
+        "unit" is the generic term for either "hru" or "rhhu", depending on the hydrological model used.
     to : {"subbasin", "drainage_area"}
         The spatial unit to aggregate to.
 
@@ -144,55 +168,37 @@ def aggregate_output(  # noqa: C901
     xr.Dataset
         The aggregated dataset.
     """
-    if to.lower() == by.lower():
+    if by.lower() == to.lower():
         raise ValueError("Invalid aggregation levels.")
+    if by in ["hru", "rhhu"]:
+        by = "unit"
+    to_dim = f"{to}_id" if to != "drainage_area" else "subbasin_id"
 
     # Load the coordinates
     [ds[c].load() for c in ds.coords]
 
-    info = {
-        "hru": {
-            "clean": "HRU",
-            "dim": "hru_id",
-            "area_var": "hru_area",
-        },
-        "rhhu": {
-            "clean": "RHHU",
-            "dim": "rhhu_id",
-            "area_var": "rhhu_area",
-        },
-        "subbasin": {
-            "clean": "Subbasin",
-            "dim": "subbasin_id",
-            "area_var": "subbasin_area",
-        },
-        "drainage_area": {
-            "clean": "DrainageArea",
-            "dim": "subbasin_id",
-            "area_var": "drainage_area",
-        },
-    }
+    # Prepare the chunking information for the output dataset, based on the input
+    chunks_out = None
+    if ds.chunks is not None:
+        chunks_out = {d.replace(f"{by}_id", f"{to_dim}"): ds.chunks[d][0] for d in ds.dims if d in ds.chunks}
 
     if "subbasin_id" not in ds.coords:
         raise ValueError("The `standardize_outputs` method must be called before using the `aggregate_outputs` method.")
 
-    if by in ["hru", "rhhu"]:
-        # Even if going from computational units to drainage area, it is much more simple to first aggregate to subbasins
-        ds_agg = ds.groupby("subbasin_id").map(lambda x: x.weighted(x[info[by]["area_var"]]).mean(dim=info[by]["dim"]))
+    ds_agg = None
+    # Computational Unit --> Subbasin
+    # Even if going from computational units to drainage area, it is much more simple to first aggregate to subbasins
+    if by == "unit":
+        ds_agg = ds.groupby("subbasin_id").map(lambda x: x.weighted(ds["unit_drainage_area"]).mean(dim="unit_id"))
 
         # Re-add the coordinates and attributes that were lost during the aggregation
-        ds_for_coords = ds.swap_dims({info[by]["dim"]: "subbasin_id"}).drop_duplicates("subbasin_id")
-        ds_for_coords = ds_for_coords.drop_vars(
-            [c for c in ds_for_coords.coords if (by.lower() in c) or ((c in ds_agg.coords) and c != "subbasin_id")]
-        )
+        ds_for_coords = ds.swap_dims({"unit_id": "subbasin_id"}).drop_duplicates("subbasin_id")
+        ds_for_coords = ds_for_coords.drop_vars([c for c in ds_for_coords.coords if ("unit" in c) or ((c in ds_agg.coords) and c != "subbasin_id")])
         ds_agg = ds_agg.assign_coords({c: ds_for_coords[c] for c in ds_for_coords.coords if not c.startswith(by.lower()) and c not in ds_agg.coords})
 
     if to == "drainage_area":
-        if by in ["hru", "rhhu"]:
+        if ds_agg is not None:
             # Take into account the intermediate aggregation to subbasins
-            by_clean = info[by]["clean"]
-            by = "subbasin"
-            info[by]["clean"] = by_clean
             ds = ds_agg
 
         upsubid = xr.DataArray(
@@ -220,7 +226,7 @@ def aggregate_output(  # noqa: C901
         for sbid in ds["subbasin_id"]:
             subset_agg = (
                 ds.sel(**{"subbasin_id": str(ds["upsubid"].sel(**{"subbasin_id": sbid}).values).split(",")})
-                .weighted(ds["subbasin_area"])
+                .weighted(ds["subbasin_drainage_area"])
                 .mean(dim="subbasin_id")
             )
             for v in ds.data_vars:
@@ -228,21 +234,24 @@ def aggregate_output(  # noqa: C901
 
         # Remove the coordinates and attributes that are no longer relevant after the aggregation
         ds_agg = ds_agg.drop_vars("upsubid")
-        ds_agg = ds_agg.drop_vars(
-            [c for c in ds_agg.coords if any(c.startswith(prefix) for prefix in ["hru", "rhhu", "subbasin"]) and c != "subbasin_id"]
-        )
+        ds_agg = ds_agg.drop_vars([c for c in ds_agg.coords if any(c.startswith(prefix) for prefix in ["unit", "subbasin"] if c != to_dim)])
 
     for v in ds_agg.data_vars:
-        ds_agg[v].attrs["long_name"] = ds[v].attrs.get("long_name", "").replace(f"By{info[by]['clean']}", f"By{info[to]['clean']}")
-        ds_agg[v].attrs["history"] = f"{dt.datetime.now().isoformat()}: Aggregated from {info[by]['clean']} to {info[to]['clean']} level."
+        ds_agg[v].attrs["aggregation_level"] = "".join([w.capitalize() for w in to.split("_")])
+        ds_agg[v].attrs["history"] = (
+            ds_agg[v].attrs.get("history", "")
+            + f"{dt.datetime.now().isoformat()}: Aggregated from {by.capitalize()} to {''.join([w.capitalize() for w in to.split('_')])} level."
+        )
 
     try:
-        ds_agg = ds_agg.sortby(ds_agg[info[to]["dim"]].astype(int))
+        ds_agg = ds_agg.sortby(ds_agg[f"{to_dim}"].astype(int))
     except TypeError:
-        ds_agg = ds_agg.sortby(ds_agg[info[to]["dim"]])
-    ds_agg = ds_agg.transpose("time", info[to]["dim"], ...)
+        ds_agg = ds_agg.sortby(ds_agg[f"{to_dim}"])
+    ds_agg = ds_agg.transpose("time", f"{to_dim}", ...)
 
     # Clean the chunking information after the aggregation
+    if chunks_out is not None:
+        ds_agg = ds_agg.chunk(chunks_out)
     for v in ds_agg.data_vars:
         ds_agg[v].encoding.pop("chunks", None)
         ds_agg[v].encoding.pop("preferred_chunks", None)

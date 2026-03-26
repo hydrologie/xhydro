@@ -15,7 +15,7 @@ import pandas as pd
 import xarray as xr
 
 from ._hm import HydrologicalModel
-from ._model_utils import standardize_output
+from ._model_utils import aggregate_output, standardize_output
 
 
 __all__ = ["Hydrotel"]
@@ -246,7 +246,7 @@ class Hydrotel(HydrologicalModel):
             self.standardize_outputs()
 
         if return_streamflow:
-            return self.get_output("q")
+            return self.get_outputs("q")
 
     def get_inputs(self, subset_time: bool = False, return_config=False, **kwargs) -> xr.Dataset | tuple[xr.Dataset, dict]:
         r"""
@@ -364,7 +364,7 @@ class Hydrotel(HydrologicalModel):
             return outputs
         if output == "q":
             output = "debit_aval"
-        matching_files = list(Path(outputs).glob(f"{output}*.nc", case_sensitive=False))
+        matching_files = list(Path(outputs).glob(f"*{output}*.nc", case_sensitive=False))
 
         if return_paths:
             return matching_files
@@ -378,15 +378,13 @@ class Hydrotel(HydrologicalModel):
             return xr.open_mfdataset(matching_files, **kwargs)
 
     def aggregate_outputs(  # noqa: C901
-        self, by: Literal["rhhu", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
+        self, to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
     ) -> None:
         r"""
         Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
 
         Parameters
         ----------
-        by : {"rhhu", "subbasin"}
-            The spatial unit to aggregate from.
         to : {"subbasin", "drainage_area"}
             The spatial unit to aggregate to.
         subset : list[str] | None
@@ -395,57 +393,70 @@ class Hydrotel(HydrologicalModel):
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
+        Returns
+        -------
+        None
+            The aggregated outputs will be saved as new NetCDF files in the output directory, with a name pattern
+            roughly following what is produced by HYDROTEL (e.g. "variable}_By{aggregation}.nc").
+            Aggregation will be 'BySubbasin' or 'ByDrainageArea', depending on the 'to' parameter.
+
         Notes
         -----
-        This method expects that relevant spatial information has been provided to the RavenPy model, either through the initial configuration or
-        through the `update_data` method. Furthermore, that spatial information should be consistent with ravenpy.extractors.BasinMakerExtractor
-        expectations, as well as the Data Specifications of Basin Maker (https://hydrology.uwaterloo.ca/basinmaker/) and the outputs of
-        BasinMaker's `Generate_HRUs` function. In particular, the following variables should be present in the HRU file:
-
-        - Always:
-            - SubId: The ID of the subbasins.
-            - BasArea: The area of the subbasins.
-        - by == "hru":
-            - HRU_ID: The ID of the HRUs.
-            - HRU_Area: The area of the HRUs, in units consistent with the area of the subbasins.
-        - to == "drainage_area":
-            - DowSubId: The ID of the downstream subbasin for each HRU.
-                        This variable is standard in the RavenPy HRU files, but determining the upstream subbasins from it can be very slow.
-            - UpSubId: The ID(s) of the upstream subbasin(s) for each HRU. If multiple, should be separated by a comma and no spaces (e.g. "1,2,3").
-                       This variable is not standard, but if present, it will be used for a much faster aggregation to drainage areas.
+        Unlike Raven, HYDROTEL always produces output files at the RHHU level, which is the finest spatial unit in the model.
+        Therefore, unlike its Raven variant, this method does not need a 'by' parameter to specify the spatial unit of the input files.
+        Furthermore, this method expects that the 'standardize_outputs' method has been called beforehand to ensure that the output
+        files are in a consistent format and contain the necessary spatial information for the aggregation.
         """
-        if to.lower() == "subbasin" and by.lower() != "hru":
-            raise ValueError("Invalid aggregation levels.")
+        clean = {
+            "subbasin": "Subbasin",
+            "drainage_area": "DrainageArea",
+        }
 
-        # clean = {
-        #     "hru": "HRU",
-        #     "subbasin": "Subbasin",
-        #     "drainage_area": "DrainageArea",
-        # }
+        # Get the files to aggregate
+        files = self.get_outputs(output="*", return_paths=True)
+        files = [file for file in files if not any(s in file.name.lower() for s in ["debit", "apport_lateral.nc"])]
 
-        # # Get the files to aggregate
-        # files = self.get_outputs(output=f"_By{by}", return_paths=True)
-        # if subset is not None:
-        #     files = [file for file in files if any(s in file.name for s in subset)]
-        # if len(files) == 0:
-        #     raise ValueError(f"No output files matching '{self.run_name}_*_By{clean[by]}*.nc' were found.")
+        if subset is not None:
+            files = [file for file in files if any(s in file.name for s in subset)]
+        if len(files) == 0:
+            raise ValueError("No output files matching the specified subset were found in the output directory.")
 
-        # kwargs = deepcopy(kwargs)
-        # kwargs.setdefault("chunks", {})
-        # for file in files:
-        #     with xr.open_dataset(file, **kwargs) as ds:
-        #         ds_agg = aggregate_output(ds, by=by, to=to)
+        kwargs = deepcopy(kwargs)
+        kwargs.setdefault("chunks", {})
+        for file in files:
+            with xr.open_dataset(file, **kwargs) as ds:
+                ds_agg = aggregate_output(ds, by="unit", to=to)
 
-        #         file_out = file.parent / file.name.replace(f"_By{clean[by]}", f"_By{clean[to]}")
-        #         if file_out.exists():
-        #             warnings.warn(
-        #                 f"The file {file_out} already exists.",
-        #                 stacklevel=2,
-        #             )
-        #             files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
-        #             file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
+                file_out = file.parent / f"{file.stem}_By{clean[to]}.nc"
+                if file_out.exists():
+                    warnings.warn(
+                        f"The file {file_out} already exists.",
+                        stacklevel=2,
+                    )
+                    files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
+                    file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
 
-        #         ds_agg.to_netcdf(file_out)
+                ds_agg.to_netcdf(file_out)
+
+        # There is only one subbasin-level output
+        if to == "basin":
+            lateral = [f for f in self.get_outputs("apport_lateral", return_paths=True) if "uhrh" not in f.name.lower()]
+
+            if len(lateral) == 1:
+                file = lateral[0]
+                with xr.open_dataset(file, **kwargs) as ds:
+                    ds_agg = aggregate_output(ds, by="subbasin", to=to)
+
+                    file_out = file.parent / f"{file.stem}_By{clean[to]}.nc"
+                    if file_out.exists():
+                        warnings.warn(
+                            f"The file {file_out} already exists.",
+                            stacklevel=2,
+                        )
+                        files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
+                        file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
+
+                    ds_agg.to_netcdf(file_out)
 
     def standardize_outputs(self, files: list[str] | None = None, **kwargs):
         r"""
@@ -487,9 +498,8 @@ class Hydrotel(HydrologicalModel):
 
         alt_names = {
             # Dimensions
-            # "basin_name": "subbasin_id",
             "idtroncon": "subbasin_id",
-            "iduhrh": "rhhu_id",
+            "iduhrh": "unit_id",
             # Variables
             "debit_aval": "q",
         }
@@ -498,8 +508,6 @@ class Hydrotel(HydrologicalModel):
         kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
-                ds = standardize_output(ds, spatial_info=self.rhhu, alt_names=alt_names)
-
                 # Adjust global attributes
                 if "initial_simulation_path" in ds.attrs:
                     del ds.attrs["initial_simulation_path"]
@@ -509,6 +517,8 @@ class Hydrotel(HydrologicalModel):
                 else:
                     ds.attrs["HYDROTEL_version"] = "unspecified"
                 ds.attrs["HYDROTEL_config_version"] = self.simulation_config["SIMULATION HYDROTEL VERSION"]
+
+                ds = standardize_output(ds, spatial_info=self.rhhu, alt_names=alt_names)
 
                 # Save the file
                 ds.to_netcdf(file.parent / f"{file.stem}_tmp.nc")
@@ -528,26 +538,26 @@ class Hydrotel(HydrologicalModel):
         """
         df = pd.DataFrame(
             columns=[
-                "rhhu_id",
+                "unit_id",
                 "subbasin_id",
                 "dowsub_id",
                 "drainage_area",
                 "lon",
                 "lat",
-                "subbasin_area",
+                "subbasin_drainage_area",
                 "subbasin_elevation",
                 "station_id",
-                "rhhu_centroid_longitude",
-                "rhhu_centroid_latitude",
-                "rhhu_elevation",
-                "rhhu_area",
+                "unit_centroid_longitude",
+                "unit_centroid_latitude",
+                "unit_elevation",
+                "unit_drainage_area",
             ]
         )
 
         # Get the properties of the RHHUs
         uhrh = pd.read_csv(self.project_dir / "physitel" / "uhrh.csv", delimiter=";", header=1)
         uhrh = uhrh[["UHRH ID", " ALTITUDE MOYENNE (m)", " SUPERFICIE (km2)", " LONGITUDE", " LATITUDE"]]
-        uhrh.columns = ["rhhu_id", "rhhu_elevation", "rhhu_area", "rhhu_centroid_longitude", "rhhu_centroid_latitude"]
+        uhrh.columns = ["unit_id", "unit_elevation", "unit_drainage_area", "unit_centroid_longitude", "unit_centroid_latitude"]
         df = pd.concat([df, uhrh], axis=0, ignore_index=True)
 
         # Get the properties of the subbasins
@@ -601,13 +611,14 @@ class Hydrotel(HydrologicalModel):
             search = df_sb[df_sb["nodes_up"].apply(lambda x, row=row: row["node_down"] in x)]
             df_sb.at[i, "dowsub_id"] = search["subbasin_id"].values[0] if len(search) > 0 else "-1"
 
-            # Add the area and elevation of the subbasin from the uhrh dataframe based on the rhhu_id
-            df_sb.at[i, "subbasin_area"] = df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"].sum()
+            # Add the area and elevation of the subbasin from the rhhu dataframe based on the unit_id
+            df_sb.at[i, "subbasin_drainage_area"] = df[df["unit_id"].astype(str).isin(row["rhhus"])]["unit_drainage_area"].sum()
             df_sb.at[i, "subbasin_elevation"] = np.round(
                 (
-                    df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_elevation"] * df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"]
+                    df[df["unit_id"].astype(str).isin(row["rhhus"])]["unit_elevation"]
+                    * df[df["unit_id"].astype(str).isin(row["rhhus"])]["unit_drainage_area"]
                 ).sum()
-                / df[df["rhhu_id"].astype(str).isin(row["rhhus"])]["rhhu_area"].sum(),
+                / df[df["unit_id"].astype(str).isin(row["rhhus"])]["unit_drainage_area"].sum(),
                 6,
             )
 
@@ -615,8 +626,8 @@ class Hydrotel(HydrologicalModel):
             df_sb.at[i, "drainage_area"] = drain[drain["ID"].astype(str) == row["subbasin_id"]][" Superficie [km2]"].values[0]
 
             # Add the coordinates of the outlet of the subbasin
-            df_sb.at[i, "lon"] = gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.x.values[0]
-            df_sb.at[i, "lat"] = gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.y.values[0]
+            df_sb.at[i, "lon"] = np.round(gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.x.values[0], 6)
+            df_sb.at[i, "lat"] = np.round(gdf_nodes[gdf_nodes["node_id"] == row["node_down"]].geometry.y.values[0], 6)
 
         # Add the station_id from the stats.txt file if available
         if (self.simulation_dir / "stats.txt").is_file():
@@ -633,8 +644,8 @@ class Hydrotel(HydrologicalModel):
 
         # Merge the subbasin information with the RHHU information
         for _, row in df_sb.iterrows():
-            for col in ["subbasin_id", "dowsub_id", "lon", "lat", "drainage_area", "subbasin_area", "subbasin_elevation", "station_id"]:
-                df.loc[df["rhhu_id"].astype(str).isin(row["rhhus"]), col] = row[col]
+            for col in ["subbasin_id", "dowsub_id", "lon", "lat", "drainage_area", "subbasin_drainage_area", "subbasin_elevation", "station_id"]:
+                df.loc[df["unit_id"].astype(str).isin(row["rhhus"]), col] = row[col]
 
         self.rhhu = df
 
