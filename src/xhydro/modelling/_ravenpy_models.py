@@ -704,7 +704,10 @@ class RavenpyModel(HydrologicalModel):
         if output == "path":
             return Path(outputs.files["hydrograph"].parent)
         elif output == "q":
-            return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
+            if return_paths:
+                return [outputs.files["hydrograph"]]
+            else:
+                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
         else:
             matching_files = list(Path(outputs.files["hydrograph"].parent).glob(f"{self.run_name}_*{output}*.nc", case_sensitive=False))
             if return_paths:
@@ -776,9 +779,10 @@ class RavenpyModel(HydrologicalModel):
 
         kwargs = deepcopy(kwargs)
         kwargs.setdefault("chunks", {})
+        weights = None
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
-                ds_agg = aggregate_output(ds, by=by, to=to)
+                ds_agg, weights = aggregate_output(ds, by=by, to=to, weights=weights)
 
                 file_out = file.parent / file.name.replace(f"_By{clean[by]}", f"_By{clean[to]}")
                 if file_out.exists():

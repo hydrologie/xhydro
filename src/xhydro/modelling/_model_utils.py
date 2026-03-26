@@ -148,8 +148,8 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
 
 
 def aggregate_output(  # noqa: C901
-    ds: xr.Dataset, by: Literal["hru", "rhhu", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"]
-) -> xr.Dataset:
+    ds: xr.Dataset, by: Literal["hru", "rhhu", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"], weights: xr.DataArray | None = None
+) -> tuple[xr.Dataset, xr.DataArray]:
     """
     Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
 
@@ -162,11 +162,15 @@ def aggregate_output(  # noqa: C901
         "unit" is the generic term for either "hru" or "rhhu", depending on the hydrological model used.
     to : {"subbasin", "drainage_area"}
         The spatial unit to aggregate to.
+    weights : xr.DataArray, optional
+        The weights to use for the aggregation. If None, the method will compute them based on the drainage area of the units.
 
     Returns
     -------
     xr.Dataset
         The aggregated dataset.
+    xr.DataArray
+        The weights used for the aggregation.
     """
     if by.lower() == to.lower():
         raise ValueError("Invalid aggregation levels.")
@@ -185,56 +189,40 @@ def aggregate_output(  # noqa: C901
     if "subbasin_id" not in ds.coords:
         raise ValueError("The `standardize_outputs` method must be called before using the `aggregate_outputs` method.")
 
-    ds_agg = None
-    # Computational Unit --> Subbasin
-    # Even if going from computational units to drainage area, it is much more simple to first aggregate to subbasins
-    if by == "unit":
-        ds_agg = ds.groupby("subbasin_id").map(lambda x: x.weighted(ds["unit_drainage_area"]).mean(dim="unit_id"))
+    # Prepare the weights
+    new_dim = ds["subbasin_id"].swap_dims({f"{by}_id": "subbasin_id"}).drop_duplicates("subbasin_id").rename({"subbasin_id": "sbid"})
+    if weights is None:
+        if to == "subbasin":
+            weights = ds["subbasin_id"].expand_dims({"sbid": new_dim})
+            weights = xr.where(weights == weights["sbid"], ds["unit_drainage_area"].expand_dims({"sbid": new_dim}), 0)
 
-        # Re-add the coordinates and attributes that were lost during the aggregation
-        ds_for_coords = ds.swap_dims({"unit_id": "subbasin_id"}).drop_duplicates("subbasin_id")
-        ds_for_coords = ds_for_coords.drop_vars([c for c in ds_for_coords.coords if ("unit" in c) or ((c in ds_agg.coords) and c != "subbasin_id")])
-        ds_agg = ds_agg.assign_coords({c: ds_for_coords[c] for c in ds_for_coords.coords if not c.startswith(by.lower()) and c not in ds_agg.coords})
-
-    if to == "drainage_area":
-        if ds_agg is not None:
-            # Take into account the intermediate aggregation to subbasins
-            ds = ds_agg
-
-        upsubid = xr.DataArray(
-            data=ds["subbasin_id"].values.astype(str),
-            coords={c: ds[c] for c in ds.coords if "subbasin_id" in ds[c].dims},
-            dims=ds["subbasin_id"].dims,
-        )
-        upsubid = upsubid.assign_coords({"status": xr.zeros_like(upsubid, dtype=int)}).astype("<U1000")
-
-        # Head subbasins
-        upsubid["status"] = xr.where(~ds["subbasin_id"].isin(ds["dowsub_id"]), 1, upsubid["status"])
-
-        # Recursively find the upstream subbasins for each subbasin, starting from the head subbasins and moving downstream
-        while upsubid["status"].min() != 2:
-            for idx in upsubid["subbasin_id"].where(upsubid["status"] == 1, drop=True):
-                if idx.values not in (upsubid["dowsub_id"].sel(subbasin_id=upsubid["subbasin_id"].where(upsubid["status"] <= 1, drop=True)).values):
-                    upsubid.loc[upsubid["subbasin_id"] == upsubid["dowsub_id"].sel(subbasin_id=idx)] += f",{upsubid.sel(subbasin_id=idx).values}"
-                    upsubid["status"] = xr.where(upsubid["subbasin_id"] == idx, 2, upsubid["status"])
-                    upsubid["status"] = xr.where(upsubid["subbasin_id"] == upsubid["dowsub_id"].sel(subbasin_id=idx), 1, upsubid["status"])
-        upsubid = upsubid.drop_vars("status")
-        ds = ds.assign_coords({"upsubid": upsubid})
-
-        ds_agg = xr.zeros_like(ds)
-        ds_agg = ds_agg.transpose("subbasin_id", ...)
-        for sbid in ds["subbasin_id"]:
-            subset_agg = (
-                ds.sel(**{"subbasin_id": str(ds["upsubid"].sel(**{"subbasin_id": sbid}).values).split(",")})
-                .weighted(ds["subbasin_drainage_area"])
-                .mean(dim="subbasin_id")
+        elif to == "drainage_area":
+            weights = xr.zeros_like(ds[f"{by}_id"]).expand_dims({"sbid": new_dim}).astype(float)
+            weights = xr.where(
+                weights["sbid"] == ds["subbasin_id"].expand_dims({"sbid": new_dim}), ds[f"{by}_drainage_area"].expand_dims({"sbid": new_dim}), weights
             )
-            for v in ds.data_vars:
-                ds_agg[v].loc[ds_agg["subbasin_id"] == sbid] = subset_agg[v]
 
-        # Remove the coordinates and attributes that are no longer relevant after the aggregation
-        ds_agg = ds_agg.drop_vars("upsubid")
-        ds_agg = ds_agg.drop_vars([c for c in ds_agg.coords if any(c.startswith(prefix) for prefix in ["unit", "subbasin"] if c != to_dim)])
+            # Head subbasins
+            status = xr.where(~new_dim["sbid"].isin(ds["dowsub_id"]), 1, 0)
+            # Recursively find the upstream subbasins for each subbasin, starting from the head subbasins and moving downstream
+            while status.min() != 2:
+                for idx in status["sbid"].where(status == 1, drop=True):
+                    if idx.values not in (status["dowsub_id"].sel(sbid=status["sbid"].where(status <= 1, drop=True)).values):
+                        weights.loc[(weights["sbid"] == status["dowsub_id"].sel(sbid=idx))] += weights.sel(sbid=idx.values).values
+                        status = xr.where(status["sbid"] == idx, 2, status)
+                        status = xr.where(status["sbid"] == status["dowsub_id"].sel(sbid=idx), 1, status)
+
+    # Perform the aggregation
+    ds_agg = ds.expand_dims({"sbid": new_dim}).weighted(weights).mean(dim=f"{by}_id")
+    ds_agg = ds_agg.rename({"sbid": "subbasin_id"})
+
+    # Re-add the coordinates and attributes that were lost during the aggregation
+    ds_for_coords = ds.swap_dims({f"{by}_id": "subbasin_id"}).drop_duplicates("subbasin_id")
+    prefixes_to_drop = ["unit", "subbasin"] if to == "drainage_area" else ["unit"]
+    ds_for_coords = ds_for_coords.drop_vars(
+        [c for c in ds_for_coords.coords if any(prefix in c for prefix in prefixes_to_drop if c != "subbasin_id")]
+    )
+    ds_agg = ds_agg.assign_coords({c: ds_for_coords[c] for c in ds_for_coords.coords if not c.startswith(by.lower()) and c not in ds_agg.coords})
 
     for v in ds_agg.data_vars:
         ds_agg[v].attrs["aggregation_level"] = "".join([w.capitalize() for w in to.split("_")])
@@ -257,4 +245,4 @@ def aggregate_output(  # noqa: C901
         ds_agg[v].encoding.pop("preferred_chunks", None)
         ds_agg[v].encoding.pop("chunksizes", None)
 
-    return ds_agg
+    return ds_agg, weights

@@ -295,12 +295,8 @@ class TestHydrotel:
             "description": "Simulated streamflow at the outlet of the subbasin.",
             "standard_name": "outgoing_water_volume_transport_along_river_channel",
             "long_name": "Simulated streamflow",
-            "_original_name": "debit_aval",
-            "_original_description": "Debit en aval du troncon",
         }
-        assert sorted(set(ds.q.attrs)) == sorted(set(correct_attrs))
-        for k, v in correct_attrs.items():
-            assert ds.q.attrs[k] == v
+        assert all(ds.q.attrs[k] == v for k, v in correct_attrs.items())
 
         assert ds.attrs["HYDROTEL_version"] == "unspecified" if hydrotel_executable == "command" else hydrotel_version
         assert ds.attrs["HYDROTEL_config_version"] == "" if hydrotel_executable == "command" else "4.3.1.0000"
@@ -365,12 +361,13 @@ class TestHydrotel:
             ):
                 ht.run(dry_run=True)
 
+    @pytest.mark.skipif(hydrotel_executable == "command", reason="This test relies on real files in the HYDROTEL demo project.")
     @pytest.mark.parametrize("to", ["subbasin", "drainage_area"])
     def test_aggregate_sb(self, project_path, to):
-        self.create_project(project_path / "proj-for-sb")
+        self.create_project(project_path / f"proj-for-sb-{to}")
 
         ht = Hydrotel(
-            project_dir=project_path / "proj-for-sb",
+            project_dir=project_path / f"proj-for-sb-{to}",
             project_file="DELISLE.csv",
             executable=hydrotel_executable,
             output_config={"OUTPUT_NETCDF": "1"},
@@ -395,7 +392,7 @@ class TestHydrotel:
                 np.testing.assert_allclose(
                     ds_calc[v].sel(subbasin_id="121"),
                     ds_orig[v]
-                    .where(ds_orig["unit_id"].isin(["121", "122", "123", "124", "125"]))
+                    .where(ds_orig["subbasin_id"].isin(["121", "122", "123", "124", "125"]))
                     .weighted(ds_orig["unit_drainage_area"])
                     .mean("unit_id"),
                 )

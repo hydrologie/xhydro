@@ -423,9 +423,10 @@ class Hydrotel(HydrologicalModel):
 
         kwargs = deepcopy(kwargs)
         kwargs.setdefault("chunks", {})
+        weights = None
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
-                ds_agg = aggregate_output(ds, by="unit", to=to)
+                ds_agg, weights = aggregate_output(ds, by="unit", to=to, weights=weights)
 
                 file_out = file.parent / f"{file.stem}_By{clean[to]}.nc"
                 if file_out.exists():
@@ -439,13 +440,15 @@ class Hydrotel(HydrologicalModel):
                 ds_agg.to_netcdf(file_out)
 
         # There is only one subbasin-level output
-        if to == "basin":
-            lateral = [f for f in self.get_outputs("apport_lateral", return_paths=True) if "uhrh" not in f.name.lower()]
+        if to == "drainage_area":
+            files = [f for f in self.get_outputs("apport_lateral", return_paths=True) if "uhrh" not in f.name.lower()]
+            if subset is not None:
+                files = [file for file in files if any(s in file.name for s in subset)]
 
-            if len(lateral) == 1:
-                file = lateral[0]
+            if len(files) == 1:
+                file = files[0]
                 with xr.open_dataset(file, **kwargs) as ds:
-                    ds_agg = aggregate_output(ds, by="subbasin", to=to)
+                    ds_agg, _ = aggregate_output(ds, by="subbasin", to=to)
 
                     file_out = file.parent / f"{file.stem}_By{clean[to]}.nc"
                     if file_out.exists():
