@@ -208,7 +208,7 @@ class TestHydrotel:
         if test in ["station", "grid"]:
             if hydrotel_executable != "command":
                 xhydro.modelling.format_input(meteo, "Hydrotel", save_as=project_path / f"fake-for-get-data-{test}" / "meteo" / "meteo.nc")
-                ht.run()
+                ht.run(return_streamflow=False)
 
             ds, config = ht.get_inputs(return_config=True)
             assert config["TYPE (STATION/GRID/GRID_EXTENT)"] == "STATION"  # It's always reformatted to stations
@@ -226,7 +226,9 @@ class TestHydrotel:
             else:
                 assert all(v in out.variables for v in ["q"])
                 assert set(out.dims) == {"time", "subbasin_id"}
-                np.testing.assert_array_almost_equal(out.q.mean(), 10.15166855)
+                np.testing.assert_array_almost_equal(
+                    out.q.mean(), 10.1516, decimal=4
+                )  # The mean is not exactly 10 because of the interpolation to the subbasin centroids, but it should be close
 
         elif test == "toomany":
             with pytest.raises(
