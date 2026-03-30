@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 from dotenv import load_dotenv
@@ -42,8 +43,54 @@ class TestHydrotel:
         if hydrotel_demo is None:
             xhydro.testing.utils.fake_hydrotel_project(project_path, **kwargs)
         else:
+            output = pd.Series(
+                {
+                    "TRONCONS": "tous",
+                    "TRONCONS_MOYENNES_PONDEREES": 0,
+                    "TMIN": 0,
+                    "TMAX": 0,
+                    "TMIN_JOUR": 0,
+                    "TMAX_JOUR": 0,
+                    "PLUIE": 0,
+                    "NEIGE": 0,
+                    "APPORT": 0,
+                    "COUVERT_NIVAL": 0,
+                    "HAUTEUR_NEIGE": 0,
+                    "ALBEDO_NEIGE": 0,
+                    "APPORT_GLACIER": 0,
+                    "EAU_GLACIER": 0,
+                    "PROFONDEUR_GEL": 0,
+                    "ETP": 0,
+                    "ETR1": 0,
+                    "ETR2": 0,
+                    "ETR3": 0,
+                    "ETR_TOTAL": 0,
+                    "PRODUCTION_BASE": 0,
+                    "PRODUCTION_HYPO": 0,
+                    "PRODUCTION_SURF": 0,
+                    "Q12": 0,
+                    "Q23": 0,
+                    "Q23_SOMME_ANNUELLE": 0,
+                    "QRECHARGE": 0,
+                    "THETA1": 0,
+                    "THETA2": 0,
+                    "THETA3": 0,
+                    "APPORT_LATERAL": 0,
+                    "APPORT_LATERAL_UHRH": 0,
+                    "ECOULEMENT_SURF": 0,
+                    "ECOULEMENT_HYPO": 0,
+                    "ECOULEMENT_BASE": 0,
+                    "DEBITS_AMONT": 0,
+                    "DEBITS_AVAL": 1,
+                    "DEBITS_AVAL_MOY7J_MIN": 0,
+                    "HAUTEUR_AVAL": 0,
+                    "OUTPUT_NETCDF": 1,
+                }
+            )
+
             shutil.copytree(hydrotel_demo, project_path)
             shutil.rmtree(project_path / "simulation" / "simulation" / "resultat", ignore_errors=True)
+            output.to_csv(project_path / "simulation" / "simulation" / "output.csv", sep=";", header=False)
             if replace_meteo is not None:
                 for f in (project_path / "meteo").glob("*"):
                     f.unlink()
@@ -97,7 +144,7 @@ class TestHydrotel:
             executable=hydrotel_executable,
             project_config={"PROJET HYDROTEL VERSION": "2.1.0"},
             simulation_config={"SIMULATION HYDROTEL VERSION": "1.0.5"},
-            output_config={"TMAX_JOUR": "1", "OUTPUT_NETCDF": "1"},
+            output_config={"TMAX_JOUR": "1"},
         )
 
         ht = hydrological_model(
@@ -157,7 +204,6 @@ class TestHydrotel:
             project_file="DELISLE.csv",
             executable=hydrotel_executable,
             simulation_config=simulation_config,
-            output_config={"OUTPUT_NETCDF": "1"},
         )
         if test in ["station", "grid"]:
             if hydrotel_executable != "command":
@@ -242,7 +288,6 @@ class TestHydrotel:
             project_file="DELISLE.csv",
             executable=hydrotel_executable,
             simulation_config=simulation_config,
-            output_config={"OUTPUT_NETCDF": "1"},
         )
         assert ht.simulation_config["DATE DEBUT"] == f"{date_debut} 00:00"
         assert ht.simulation_config["DATE FIN"] == f"{date_fin} 00:00"
@@ -271,7 +316,6 @@ class TestHydrotel:
             project_dir=project_path / "fake-for-standard",
             project_file="DELISLE.csv",
             executable=hydrotel_executable,
-            output_config={"OUTPUT_NETCDF": "1"},
         )
 
         if hydrotel_executable != "command":
@@ -369,13 +413,18 @@ class TestHydrotel:
         ht = Hydrotel(
             project_dir=project_path / f"proj-for-sb-{to}",
             project_file="DELISLE.csv",
+            output_config={
+                "PLUIE": "1",
+                "APPORT_LATERAL": "1",
+                "APPORT_LATERAL_UHRH": "1",
+                "NEIGE": "1",
+            },
             executable=hydrotel_executable,
-            output_config={"OUTPUT_NETCDF": "1"},
         )
 
         if hydrotel_executable != "command":
             ht.run()
-            ht.aggregate_outputs(to=to, subset=["pluie", "neige"])
+            ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
 
         files_calc = sorted(ht.get_outputs("BySubbasin" if to == "subbasin" else "ByDrainageArea", return_paths=True))
 
@@ -384,17 +433,18 @@ class TestHydrotel:
             ds_orig = xr.open_dataset(str(files_calc[i]).replace(f"_By{clean_to}", ""))
             ds_calc = xr.open_dataset(files_calc[i])
             v = [v for v in ds_calc.data_vars][0]
+            prefix = "subbasin" if v == "apport_lateral" else "unit"
             assert "unit_id" not in ds_calc.dims
-            assert not any(c.startswith("unit_") for c in ds_calc.coords)
-            np.testing.assert_allclose(ds_calc["drainage_area"].max(), ds_orig["unit_drainage_area"].sum(), rtol=1e-5)
+            assert not any(c.startswith(f"{prefix}_") for c in ds_calc.coords if c != "subbasin_id")
+            np.testing.assert_allclose(ds_calc["drainage_area"].max(), ds_orig[f"{prefix}_drainage_area"].sum(), rtol=1e-5)
             if to == "drainage_area":
                 assert not any(c.startswith("subbasin_") for c in ds_calc.coords if c != "subbasin_id")
                 np.testing.assert_allclose(
                     ds_calc[v].sel(subbasin_id="121"),
                     ds_orig[v]
                     .where(ds_orig["subbasin_id"].isin(["121", "122", "123", "124", "125"]))
-                    .weighted(ds_orig["unit_drainage_area"])
-                    .mean("unit_id"),
+                    .weighted(ds_orig[f"{prefix}_drainage_area"])
+                    .mean(f"{prefix}_id"),
                 )
             else:
                 np.testing.assert_allclose(ds_calc["subbasin_drainage_area"].sum(), ds_orig["unit_drainage_area"].sum())
@@ -455,7 +505,6 @@ class TestHydrotel:
                 "LECTURE ETAT RUISSELEMENT SURFACE": "",
                 "LECTURE ETAT ACHEMINEMENT RIVIERE": "",
             },
-            output_config={"OUTPUT_NETCDF": "1"},
         )
         assert ht.simulation_config["DATE DEBUT"] == "2020-01-01 00:00"
         assert ht.simulation_config["DATE FIN"] == "2020-02-01 00:00"
