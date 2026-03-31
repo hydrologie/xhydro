@@ -314,11 +314,11 @@ msgstr "Indicateurs non fréquenciels"
 #: ../../notebooks/use_case.ipynb:4370 ../../notebooks/use_case.ipynb:7001
 msgid ""
 "For more information on this section and available options, consult the "
-"`Climate change analysis notebook <climate_change.ipynb>`__."
+"`Climate change analysis notebook <pavics_notebooks/climate_change.ipynb>`__."
 msgstr ""
 "Pour plus d'informations sur cette section et les options disponibles, "
 "consultez le `Notebook d'analyse de l'impact des changements climatiques "
-"<climate_change.ipynb>`__."
+"<pavics_notebooks/climate_change.ipynb>`__."
 
 #: ../../notebooks/use_case.ipynb:4382
 msgid ""
