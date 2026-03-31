@@ -702,7 +702,8 @@ class RavenpyModel(HydrologicalModel):
             if return_paths:
                 return [outputs.files["hydrograph"]]
             else:
-                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
+                with xr.open_dataset(outputs.files["hydrograph"], **kwargs) as ds:
+                    return ds[["q"]]
         else:
             matching_files = list(Path(outputs.files["hydrograph"].parent).glob(f"{self.run_name}_*{output}*.nc", case_sensitive=False))
             if return_paths:
@@ -714,7 +715,8 @@ class RavenpyModel(HydrologicalModel):
                     kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")
                     kwargs.setdefault("data_vars", "minimal")
-                    return xr.open_mfdataset(matching_files, **kwargs)
+                    with xr.open_mfdataset(matching_files, **kwargs) as ds:
+                        return ds
 
     def aggregate_outputs(
         self, by: Literal["hru", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
