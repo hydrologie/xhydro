@@ -348,6 +348,12 @@ class RavenpyModel(HydrologicalModel):
         If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance and saved
         in a 'weights' subdirectory of the project folder, under the name 'meteo-name_vs_hru-name.txt'.
         """
+        if run is None:
+            raise RuntimeError(
+                "RavenPy is not installed or not properly configured. The RavenpyModel.update_data method cannot be used without it."
+                f" Original error: {ravenpy_err_msg}"
+            )
+
         if (any(opt is not None for opt in [output_subbasins, minimum_reservoir_area]) and hru is None) or (
             any(opt is not None for opt in [data_type, alt_names_meteo, meteo_station_properties]) and meteo_file is None
         ):
@@ -451,6 +457,11 @@ class RavenpyModel(HydrologicalModel):
                     "Meteorological data and/or observed streamflow data were not provided. The .rvt file will not be updated.", stacklevel=2
                 )
             else:
+                if run is None:
+                    raise RuntimeError(
+                        "RavenPy is not installed or not properly configured. The rvt file cannot currently be updated without it."
+                        f" Original error: {ravenpy_err_msg}"
+                    )
                 # Backup the existing .rvt file
                 shutil.copy(
                     self.workdir / f"{self.run_name}.rvt",
@@ -694,7 +705,7 @@ class RavenpyModel(HydrologicalModel):
         list[Path]
             The path to the output file(s) if return_path is True.
         """
-        outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
+        outputs = (self.workdir / "output").glob(f"{self.run_name}_*{output}*.nc")
 
         if output == "path":
             return Path(outputs.files["hydrograph"].parent)
