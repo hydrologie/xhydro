@@ -108,7 +108,6 @@ dependencies = [
   "matplotlib",
   "numpy >=1.25",
   "odc-stac",
-  "packaging",
   "pandas >=2.2",
   "planetary-computer",
   "pooch >=1.8.0",
