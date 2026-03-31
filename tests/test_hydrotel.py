@@ -218,7 +218,7 @@ class TestHydrotel:
             np.testing.assert_array_equal(ds.tasmin, 0)
             np.testing.assert_array_equal(ds.tasmax, 1)
 
-            out = ht.get_streamflow()
+            out = ht.get_outputs("q")
             if hydrotel_executable == "command":
                 assert all(v in out.variables for v in ["debit_aval"])
                 assert set(out.dims) == {"time", "troncon"}
@@ -307,7 +307,7 @@ class TestHydrotel:
             assert ds.time.max().dt.strftime("%Y-%m-%d").item() == "2021-12-30"
 
         if hydrotel_executable != "command":
-            out = ht.get_streamflow()
+            out = ht.get_outputs("q")
             np.testing.assert_array_equal(out.time.min().dt.strftime("%Y-%m-%d").item(), date_debut)
             np.testing.assert_array_equal(out.time.max().dt.strftime("%Y-%m-%d").item(), "2021-05-30")  # The end date in Hydrotel is exclusive
 
@@ -327,7 +327,7 @@ class TestHydrotel:
             with ht.get_streamflow() as ds_tmp:
                 ds_orig = deepcopy(ds_tmp)
             ht._standardise_outputs()
-        ds = ht.get_streamflow()
+        ds = ht.get_outputs("q")
 
         if ds_orig is not None:
             # To make sure the original dataset was not modified prior to standardisation
@@ -424,9 +424,8 @@ class TestHydrotel:
             executable=hydrotel_executable,
         )
 
-        if hydrotel_executable != "command":
-            ht.run(return_streamflow=False)
-            ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
+        ht.run(return_streamflow=False)
+        ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
 
         files_calc = sorted(ht.get_outputs("BySubbasin" if to == "subbasin" else "ByDrainageArea", return_paths=True))
 
@@ -457,6 +456,11 @@ class TestHydrotel:
                     ds_calc[v].sel(subbasin_id="121"),
                     ds_orig[v].where(ds_orig["subbasin_id"] == "121").weighted(ds_orig["unit_drainage_area"]).mean("unit_id"),
                 )
+
+        with pytest.warns(UserWarning, match="already exists"):
+            ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
+        files_v2 = sorted(ht.get_outputs("BySubbasin*v2" if to == "subbasin" else "ByDrainageArea*v2", return_paths=True))
+        assert len(files_v2) == len(files_calc)
 
     # Note that if using the actual executable, this test is quite slow (~2-4 minutes), because HYDROTEL needs to recompute/convert
     # the geomorphological hydrograph at the new time step.

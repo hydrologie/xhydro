@@ -77,7 +77,7 @@ class TestRavenpyModels:
             decimal=5,
         )
 
-        qsim2 = rpm.get_streamflow()
+        qsim2 = rpm.get_outputs("q")
         assert qsim.equals(qsim2)
 
         met = rpm.get_inputs()
@@ -235,7 +235,7 @@ class TestRavenpyModels:
             global_parameter=global_parameter,
         )
         rpm.run(return_streamflow=False)
-        filename = str(rpm.get_streamflow("path"))
+        filename = str(rpm.get_outputs("q", return_path=True))
         shutil.move(filename, filename.replace(".nc", "a.nc"))
         ds1 = xr.open_dataset(filename.replace(".nc", "a.nc"))[["q"]]
 
