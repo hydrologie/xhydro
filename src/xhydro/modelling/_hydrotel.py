@@ -491,8 +491,14 @@ class Hydrotel(HydrologicalModel):
         stdout = "HYDROTEL version unspecified"
         if len(files) != 0:
             if self.rhhu is None:
-                # Get the RHHU information to add relevant coordinates to the output files if possible.
-                self.get_watershed_properties()
+                try:
+                    # Get the RHHU information to add relevant coordinates to the output files if possible.
+                    self.get_watershed_properties()
+                except pd.errors.EmptyDataError:
+                    warnings.warn(
+                        "The RHHU properties could not be retrieved from the input files.",
+                        stacklevel=2,
+                    )
 
             # Get the HYDROTEL version
             if "hydrotel" in self.executable.lower() and Path(self.executable).is_file():

@@ -326,7 +326,8 @@ class TestHydrotel:
         else:
             with ht.get_streamflow() as ds_tmp:
                 ds_orig = deepcopy(ds_tmp)
-            ht._standardise_outputs()
+            with pytest.warns(UserWarning, match="The RHHU properties could not be retrieved"):
+                ht.standardize_outputs()
         ds = ht.get_outputs("q")
 
         if ds_orig is not None:
@@ -335,7 +336,7 @@ class TestHydrotel:
             assert set(ds_orig.dims) == {"time", "troncon"}
 
         assert list(ds.data_vars) == ["q"]
-        assert set(ds.dims) == {"time", "subbasin_id"}
+        assert set(ds.dims) == {"time", "subbasin_id"} if hydrotel_executable != "command" else {"time"}
         correct_attrs = {
             "units": "m3 s-1",
             "description": "Simulated streamflow at the outlet of the subbasin.",
