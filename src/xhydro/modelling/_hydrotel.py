@@ -163,6 +163,7 @@ class Hydrotel(HydrologicalModel):
         *,
         run_options: list[str] | None = None,
         dry_run: bool = False,
+        overwrite: bool = False,
         standardize: bool = True,
         return_streamflow: bool = True,
     ) -> str | xr.Dataset:
@@ -180,6 +181,8 @@ class Hydrotel(HydrologicalModel):
             Call the executable without arguments to see the full list of available options.
         dry_run : bool
             If True, returns the command to run the simulation without actually running it.
+        overwrite : bool
+            If True, overwrite the output files if they already exist. Default is False.
         standardize : bool
             If True, standardize the output files to ensure they are in a consistent format. Default is True.
         return_streamflow : bool
@@ -233,6 +236,9 @@ class Hydrotel(HydrologicalModel):
 
         if dry_run:
             return " ".join(call)
+
+        if not overwrite and any(self.get_outputs(output="*", return_paths=True)):
+            raise FileExistsError("Output files already exist. Use 'overwrite=True' to overwrite them.")
 
         # Run the simulation
         subprocess.run(  # noqa: S603
@@ -371,7 +377,8 @@ class Hydrotel(HydrologicalModel):
             kwargs = deepcopy(kwargs)
             kwargs.setdefault("combine", "by_coords")
             kwargs.setdefault("data_vars", "minimal")
-            return xr.open_mfdataset(matching_files, **kwargs)
+            with xr.open_mfdataset(matching_files, **kwargs) as ds:
+                return ds
 
     def aggregate_outputs(  # noqa: C901
         self, to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs

@@ -23,25 +23,29 @@ coordinates:
     long_name: Latitude of the watershed outlet
     units: degrees_north
   centroid_longitude:
-    long_name: Longitude of the centroid of the watershed
+    long_name: Longitude of the watershed centroid
     units: degrees_east
   centroid_latitude:
-    long_name: Latitude of the centroid of the watershed
+    long_name: Latitude of the watershed centroid
     units: degrees_north
   subbasin_centroid_longitude:
-    long_name: Longitude of the centroid of the subbasin
+    long_name: Longitude of the subbasin centroid
     units: degrees_east
-    description: Longitude of the centroid of the immediate watershed of the river segment.
+    description: Centroid longitude of the immediate watershed of the river segment.
   subbasin_centroid_latitude:
-    long_name: Latitude of the centroid of the subbasin
+    long_name: Latitude of the subbasin centroid
     units: degrees_north
-    description: Latitude of the centroid of the immediate watershed of the river segment.
+    description: Centroid latitude of the immediate watershed of the river segment.
   unit_centroid_longitude:
-    long_name: Longitude of the centroid of the computational unit
+    long_name: Longitude of the computational unit centroid
     units: degrees_east
+    description_raven: Centroid longitude of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Centroid longitude of the computational unit (RHHU) in the HYDROTEL model.
   unit_centroid_latitude:
-    long_name: Latitude of the centroid of the computational unit
+    long_name: Latitude of the computational unit centroid
     units: degrees_north
+    description_raven: Centroid latitude of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Centroid latitude of the computational unit (RHHU) in the HYDROTEL model.
 
   # Other spatial attributes
   drainage_area:
@@ -54,6 +58,8 @@ coordinates:
   unit_drainage_area:
     long_name: Area of the computational unit
     units: km2
+    description_raven: Area of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Area of the computational unit (RHHU) in the HYDROTEL model.
 
   elevation:
     long_name: Mean elevation of the drainage area
@@ -65,6 +71,9 @@ coordinates:
   unit_elevation:
     long_name: Mean elevation of the computational unit
     units: m
+    description_raven: Mean elevation of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Mean elevation of the computational unit (RHHU) in the HYDROTEL model.
+
 
 # Variables
 variables:
