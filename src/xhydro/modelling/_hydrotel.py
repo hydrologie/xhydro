@@ -278,8 +278,6 @@ class Hydrotel(HydrologicalModel):
         else:
             raise ValueError("You must specify either 'FICHIER GRILLE METEO' or 'FICHIER STATIONS METEO' in the simulation configuration file.")
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         ds = xr.open_dataset(
             self.project_dir / weather_file,
             **kwargs,
@@ -328,8 +326,7 @@ class Hydrotel(HydrologicalModel):
             FutureWarning,
             stacklevel=2,
         )
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
+
         return xr.open_dataset(
             self.simulation_dir / "resultat" / "debit_aval.nc",
             **kwargs,
@@ -372,7 +369,6 @@ class Hydrotel(HydrologicalModel):
             raise ValueError(f"No output file matching '{output}' was found in the output directory.")
         else:
             kwargs = deepcopy(kwargs)
-            kwargs.setdefault("chunks", {})
             kwargs.setdefault("combine", "by_coords")
             kwargs.setdefault("data_vars", "minimal")
             return xr.open_mfdataset(matching_files, **kwargs)
@@ -421,8 +417,6 @@ class Hydrotel(HydrologicalModel):
         if len(files) == 0:
             raise ValueError("No output files matching the specified subset were found in the output directory.")
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         weights = None
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
@@ -507,8 +501,6 @@ class Hydrotel(HydrologicalModel):
             "debit_aval": "q",
         }
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
                 # Adjust global attributes

@@ -196,12 +196,12 @@ class TestRavenpyModels:
         }
 
         rpm = xhm.hydrological_model(model_config)
-        rpm.run()
+        rpm.run(standardize=False, return_streamflow=False)
 
         # Try to run the model again
         with pytest.raises(FileExistsError):
-            rpm.run()
-        rpm.run(overwrite=True)
+            rpm.run(standardize=False, return_streamflow=False)
+        rpm.run(overwrite=True, standardize=False, return_streamflow=False)
 
         # Try to overwrite the model again
         with pytest.raises(FileExistsError):
@@ -209,11 +209,11 @@ class TestRavenpyModels:
         rpm.create_rv(overwrite=True)
 
         # Through RavenpyModel, both should work
-        RavenpyModel(**model_config, overwrite=True).run(overwrite=True)
-        RavenpyModel(**model_config, overwrite=False).run(overwrite=True)
-        RavenpyModel(**model_config, overwrite=False).run(overwrite=True)
+        RavenpyModel(**model_config, overwrite=True).run(overwrite=True, standardize=False, return_streamflow=False)
+        RavenpyModel(**model_config, overwrite=False).run(overwrite=True, standardize=False, return_streamflow=False)
+        RavenpyModel(**model_config, overwrite=False).run(overwrite=True, standardize=False, return_streamflow=False)
         with pytest.raises(FileExistsError):
-            RavenpyModel(**model_config, overwrite=False).run(overwrite=False)
+            RavenpyModel(**model_config, overwrite=False).run(overwrite=False, standardize=False, return_streamflow=False)
 
     def test_executable(self, deveraux):
         model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
@@ -234,7 +234,7 @@ class TestRavenpyModels:
             evaporation=self.evaporation,
             global_parameter=global_parameter,
         )
-        rpm.run()
+        rpm.run(return_streamflow=False)
         filename = str(rpm.get_streamflow("path"))
         shutil.move(filename, filename.replace(".nc", "a.nc"))
         ds1 = xr.open_dataset(filename.replace(".nc", "a.nc"))[["q"]]
@@ -244,7 +244,7 @@ class TestRavenpyModels:
 
         with pytest.raises(ValueError, match="The executable command"):
             rpm.executable = "malicious_command"
-            rpm.run()
+            rpm.run(standardize=False, return_streamflow=False)
         rpm.executable = path
         ds2 = rpm.run()
 
@@ -266,7 +266,7 @@ class TestRavenpyModels:
                 evaporation=self.evaporation,
             )
 
-            rpm.run()
+            rpm.run(standardize=False, return_streamflow=False)
 
     def test_mult_stations(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
@@ -404,7 +404,7 @@ class TestRavenpyModels:
             cfg2 = cfg.copy()
             cfg2["meteo_file"] = tmp_path / "test_bad.nc"
             with pytest.raises(ValueError, match="Could not determine the type of meteorological data"):
-                qsim = RavenpyModel(
+                RavenpyModel(
                     model_name="GR4JCN",
                     parameters=parameters,
                     hru=hru,
@@ -417,7 +417,7 @@ class TestRavenpyModels:
                     global_parameter=global_parameter,
                     overwrite=True,
                     **cfg2,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
 
         qsim = RavenpyModel(
             model_name="GR4JCN",
@@ -660,7 +660,7 @@ class TestDistributedRavenpy:
 
         if output_sub == "fail":
             with pytest.raises(ValueError, match="parameter must be either"):
-                qsim = RavenpyModel(
+                RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
                     hru=df,
@@ -671,7 +671,7 @@ class TestDistributedRavenpy:
                     output_subbasins=output_sub,
                     Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
         else:
             if output_sub is None:
                 df.to_file(tmp_path / "hru.gpkg")
@@ -747,7 +747,7 @@ class TestDistributedRavenpy:
                     output_subbasins=output_sub,
                     Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
 
             qobs = qobs.rename({"abc": "basin_id"})
             qobs["subbasin_id"] = qobs["basin_id"]
@@ -766,7 +766,7 @@ class TestDistributedRavenpy:
                     output_subbasins=output_sub,
                     Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
         # Bad initialisation order
         elif output_sub == "fail2":
             with pytest.raises(ValueError, match=", but no observed streamflow data is provided."):
@@ -1074,7 +1074,7 @@ class TestDistributedRavenpy:
             rvh=True,
         )
 
-        rpm.run(overwrite=True)
+        rpm.run(overwrite=True, return_streamflow=False)
         rpm.aggregate_outputs(by=agg.lower().split("_")[1], to="drainage_area")
 
         files_true = rpm.get_outputs("ByDrainageArea", return_paths=True)

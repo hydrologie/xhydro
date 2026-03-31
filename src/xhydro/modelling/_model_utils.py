@@ -39,36 +39,43 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
         if spatial_info is not None:
             spatial_info = spatial_info.rename(columns={k: v for k, v in alt_names.items() if k in spatial_info.columns})
 
-    # Standardize the spatial dimensions
-    ordered_dims = [
-        "subbasin_id",
-        "unit_id",
-    ]
-    original_dim = [ds[d].dims[0] for d in ordered_dims if d in ds]
-    original_dim = original_dim[0] if len(original_dim) > 0 else "not_applicable"
-
-    # Find the correct spatial dimension
-    spatial_dim = [d for d in ordered_dims if d in ds]
-    if len(spatial_dim) >= 1:
-        # Use the first value in the standard dictionary that is present in the dataset.
-        spatial_dim = next(o for o in ordered_dims if o in ds)
-    else:
+    ds = ds.squeeze()
+    if len(set(ds.dims).difference({"time"})) == 0:
         spatial_dim = None
+        controlled_spatial = None
+    else:
+        # Standardize the spatial dimensions
+        ordered_dims = [
+            "subbasin_id",
+            "unit_id",
+        ]
+        original_dim = [ds[d].dims[0] for d in ordered_dims if d in ds]
+        original_dim = original_dim[0] if len(original_dim) > 0 else "not_applicable"
 
-    if spatial_dim is not None and spatial_dim != original_dim:
-        ds = ds.swap_dims({original_dim: spatial_dim}).drop_vars(original_dim, errors="ignore")
+        # Find the correct spatial dimension
+        spatial_dim = [d for d in ordered_dims if d in ds]
+        if len(spatial_dim) > 1:
+            raise ValueError("The dataset has multiple spatial dimensions.")
+        elif len(spatial_dim) == 1:
+            spatial_dim = spatial_dim[0]
+        else:
+            raise ValueError(
+                "The dataset has a spatial dimension that is not recognized. Please provide an `alt_names` "
+                "dictionary to rename it to a standard name."
+            )
+
+        if spatial_dim != original_dim:
+            ds = ds.swap_dims({original_dim: spatial_dim}).drop_vars(original_dim, errors="ignore")
+
+        # Datasets are exactly the same between Subbasin and Basin levels, so we need to make an educated guess
+        is_subbasin = any("Subbasin" in ds[v].attrs.get("long_name", "") for v in ds.data_vars) or any(v in ds.data_vars for v in ["apport_lateral"])
+        controlled_spatial = (
+            "ComputationalUnit" if spatial_dim != "subbasin_id" else spatial_dim.replace("_id", "").capitalize() if is_subbasin else "DrainageArea"
+        )
 
     # Since Raven v4.1, 'basin_name' starting with 'sub_' has been renamed to 'basin_fullname', while a new 'basin_name' variable
     # without the prefix has been added. This new 'basin_fullname' is not required.
     ds = ds.drop_vars("basin_fullname", errors="ignore")
-
-    # Datasets are exactly the same between Subbasin and Basin levels, so we need to make an educated guess
-    is_subbasin = any("Subbasin" in ds[v].attrs.get("long_name", "") for v in ds.data_vars) or any(v in ds.data_vars for v in ["apport_lateral"])
-    controlled_spatial = None
-    if spatial_dim is not None:
-        controlled_spatial = (
-            "ComputationalUnit" if spatial_dim != "subbasin_id" else spatial_dim.replace("_id", "").capitalize() if is_subbasin else "DrainageArea"
-        )
 
     # Ensure that all coordinates ending with "_id" are of type string
     for c in [cc for cc in ds.coords if cc.endswith("_id")]:
@@ -78,6 +85,7 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
             spatial_info[c] = spatial_info[c].astype(str)
 
     # Add relevant coordinates if available.
+    model = "raven" if "Raven_version" in ds.attrs else "hydrotel" if "HYDROTEL_version" in ds.attrs else "unknown"
     if spatial_dim is not None and spatial_info is not None:
         df = spatial_info.drop_duplicates(spatial_dim).set_index(spatial_dim)
 
@@ -89,12 +97,12 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
             else:
                 columns = [c for c in columns if not any(c.startswith(s) for s in ["unit"])]
 
-        model = "raven" if "Raven_version" in ds.attrs else "hydrotel" if "HYDROTEL_version" in ds.attrs else "unknown"
         for col in columns:
             attrs = {
                 attr: VARIABLES["coordinates"][col].get(f"{attr}_{model.lower()}", VARIABLES["coordinates"][col].get(attr, "unknown"))
-                for attr in ["description", "long_name"]
+                for attr in ["description", "long_name", "units"]
             }
+            attrs = {k: v for k, v in attrs.items() if v != "unknown"}
             coord = xr.DataArray(df[col], dims=[spatial_dim], coords={spatial_dim: df.index}, attrs=attrs)
 
             # Special cases
@@ -110,14 +118,22 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
         # Also correct the attributes of the spatial dimension
         attrs = {
             attr: VARIABLES["coordinates"][spatial_dim].get(f"{attr}_{model.lower()}", VARIABLES["coordinates"][spatial_dim].get(attr, "unknown"))
-            for attr in ["description", "long_name"]
+            for attr in ["description", "long_name", "units"]
         }
+        attrs = {k: v for k, v in attrs.items() if v != "unknown"}
         ds[spatial_dim].attrs = attrs
+        ds[spatial_dim].attrs["cf_role"] = "timeseries_id"
 
-        # If the dataset has a spatial dimension, add the "timeseries_id" cf_role attribute to it.
-        ds = ds.squeeze()
-        if spatial_dim in ds.dims:
-            ds[spatial_dim].attrs["cf_role"] = "timeseries_id"
+    elif spatial_dim is None and spatial_info is not None and len(spatial_info) == 1:
+        columns = [c for c in ["elevation", "drainage_area", "centroid_longitude", "centroid_latitude"] if c in spatial_info.columns]
+        for col in columns:
+            attrs = {
+                attr: VARIABLES["coordinates"][col].get(f"{attr}_{model.lower()}", VARIABLES["coordinates"][col].get(attr, "unknown"))
+                for attr in ["description", "long_name", "units"]
+            }
+            attrs = {k: v for k, v in attrs.items() if v != "unknown"}
+            coord = xr.DataArray(spatial_info[col].iloc[0], attrs=attrs)
+            ds = ds.assign_coords({col: coord})
 
     # Manage the other variables
     controlled_vars = [v for v in ds.data_vars if v in VARIABLES["variables"]]

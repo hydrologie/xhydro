@@ -620,8 +620,6 @@ class RavenpyModel(HydrologicalModel):
             lines = f.readlines()
         all_files = {line.split(":FileNameNC")[1].replace("\n", "").replace(" ", "") for line in lines if ":FileNameNC" in line}
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         ds = xr.open_mfdataset(*list(all_files), **kwargs)
 
         if subset_time:
@@ -663,8 +661,7 @@ class RavenpyModel(HydrologicalModel):
             FutureWarning,
             stacklevel=2,
         )
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
+
         if output == "path":
             return self.get_outputs("q", return_paths=True)[0]
         else:
@@ -699,8 +696,6 @@ class RavenpyModel(HydrologicalModel):
         """
         outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         if output == "path":
             return Path(outputs.files["hydrograph"].parent)
         elif output == "q":
@@ -716,6 +711,7 @@ class RavenpyModel(HydrologicalModel):
                 if len(matching_files) == 0:
                     raise ValueError(f"No output files matching '{self.run_name}_*{output}*.nc' were found.")
                 else:
+                    kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")
                     kwargs.setdefault("data_vars", "minimal")
                     return xr.open_mfdataset(matching_files, **kwargs)
@@ -777,8 +773,6 @@ class RavenpyModel(HydrologicalModel):
         if len(files) == 0:
             raise ValueError(f"No output files matching '{self.run_name}_*_By{clean[by]}*.nc' were found.")
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         weights = None
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
@@ -1183,10 +1177,9 @@ class RavenpyModel(HydrologicalModel):
             "q_sim": "q",
         }
 
-        kwargs = deepcopy(kwargs)
-        kwargs.setdefault("chunks", {})
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
+                [ds[c].load() for c in ds.coords]
                 # Global attributes are already pretty good, but make the Raven version explicit
                 # Since the executable used might differ from raven-hydro, we trust the dataset's history
                 ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]

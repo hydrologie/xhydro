@@ -321,7 +321,7 @@ class TestHydrotel:
         )
 
         if hydrotel_executable != "command":
-            ht.run()
+            ht.run(return_streamflow=False)
             ds_orig = None
         else:
             with ht.get_streamflow() as ds_tmp:
@@ -425,7 +425,7 @@ class TestHydrotel:
         )
 
         if hydrotel_executable != "command":
-            ht.run()
+            ht.run(return_streamflow=False)
             ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
 
         files_calc = sorted(ht.get_outputs("BySubbasin" if to == "subbasin" else "ByDrainageArea", return_paths=True))
@@ -516,8 +516,7 @@ class TestHydrotel:
 
         if hydrotel_executable != "command":
             shutil.rmtree(project_path / "fake-for-subdaily" / "etats", ignore_errors=True)
-            ht.run()
-            out = ht.get_streamflow()
+            out = ht.run()
             assert xr.infer_freq(out.time) == "3h"
             assert out.time.min().dt.strftime("%Y-%m-%d %H:%M").item() == "2020-01-01 00:00"
             assert out.time.max().dt.strftime("%Y-%m-%d %H:%M").item() == "2020-01-31 21:00"
