@@ -218,7 +218,7 @@ class TestHydrotel:
             np.testing.assert_array_equal(ds.tasmin, 0)
             np.testing.assert_array_equal(ds.tasmax, 1)
 
-            out = ht.get_outputs("q")
+            out = ht.get_outputs("debit_aval")
             if hydrotel_executable == "command":
                 assert all(v in out.variables for v in ["debit_aval"])
                 assert set(out.dims) == {"time", "troncon"}
@@ -324,7 +324,7 @@ class TestHydrotel:
             ht.run(return_streamflow=False)
             ds_orig = None
         else:
-            with ht.get_streamflow() as ds_tmp:
+            with ht.get_outputs("debit_aval") as ds_tmp:
                 ds_orig = deepcopy(ds_tmp)
             with pytest.warns(UserWarning, match="The RHHU properties could not be retrieved"):
                 ht.standardize_outputs()
