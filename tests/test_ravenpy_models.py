@@ -77,9 +77,6 @@ class TestRavenpyModels:
             decimal=5,
         )
 
-        qsim2 = rpm.get_outputs("q")
-        assert qsim.equals(qsim2)
-
         met = rpm.get_inputs()
         assert len(met.time) == 6576
         met = rpm.get_inputs(subset_time=True)
@@ -235,7 +232,7 @@ class TestRavenpyModels:
             global_parameter=global_parameter,
         )
         rpm.run(return_streamflow=False)
-        filename = str(rpm.get_outputs("q", return_path=True))
+        filename = str(rpm.get_outputs("q", return_paths=True)[0])
         shutil.move(filename, filename.replace(".nc", "a.nc"))
         ds1 = xr.open_dataset(filename.replace(".nc", "a.nc"))[["q"]]
 

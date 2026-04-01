@@ -705,18 +705,20 @@ class RavenpyModel(HydrologicalModel):
         list[Path]
             The path to the output file(s) if return_path is True.
         """
-        outputs = (self.workdir / "output").glob(f"{self.run_name}_*{output}*.nc")
+        outdir = self.workdir / "output"
 
         if output == "path":
-            return Path(outputs.files["hydrograph"].parent)
-        elif output == "q":
+            return outdir
+
+        if output == "q":
+            file = list(outdir.glob(f"{self.run_name}_*Hydrographs*.nc"))
             if return_paths:
-                return [outputs.files["hydrograph"]]
+                return file
             else:
-                with xr.open_dataset(outputs.files["hydrograph"], **kwargs) as ds:
+                with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            matching_files = list(Path(outputs.files["hydrograph"].parent).glob(f"{self.run_name}_*{output}*.nc", case_sensitive=False))
+            matching_files = list(outdir.glob(f"{self.run_name}_*{output}*.nc"))
             if return_paths:
                 return matching_files
             else:

@@ -338,7 +338,7 @@ class Hydrotel(HydrologicalModel):
             **kwargs,
         )
 
-    def get_outputs(self, output: str, return_paths: bool = False, **kwargs) -> xr.Dataset:
+    def get_outputs(self, output: str, return_paths: bool = False, **kwargs) -> xr.Dataset | Path | list[Path]:
         r"""
         Get the outputs of the simulation.
 
@@ -362,23 +362,31 @@ class Hydrotel(HydrologicalModel):
         list[Path]
             The path to the output file(s) if return_path is True.
         """
-        outputs = self.simulation_dir / "resultat"
-        if output == "path":
-            return outputs
-        if output == "q":
-            output = "debit_aval"
-        matching_files = list(Path(outputs).glob(f"*{output}*.nc", case_sensitive=False))
+        outdir = self.simulation_dir / "resultat"
 
-        if return_paths:
-            return matching_files
-        if len(matching_files) == 0:
-            raise ValueError(f"No output file matching '{output}' was found in the output directory.")
+        if output == "path":
+            return outdir
+
+        if output == "q":
+            file = list(outdir.glob("*debit_aval*.nc"))
+            if return_paths:
+                return file
+            else:
+                with xr.open_dataset(file[0], **kwargs) as ds:
+                    return ds[["q"]]
         else:
-            kwargs = deepcopy(kwargs)
-            kwargs.setdefault("combine", "by_coords")
-            kwargs.setdefault("data_vars", "minimal")
-            with xr.open_mfdataset(matching_files, **kwargs) as ds:
-                return ds
+            matching_files = list(outdir.glob(f"*{output}*.nc"))
+            if return_paths:
+                return matching_files
+            else:
+                if len(matching_files) == 0:
+                    raise ValueError(f"No output files matching '*{output}*.nc' were found.")
+                else:
+                    kwargs = deepcopy(kwargs)
+                    kwargs.setdefault("combine", "by_coords")
+                    kwargs.setdefault("data_vars", "minimal")
+                    with xr.open_mfdataset(matching_files, **kwargs) as ds:
+                        return ds
 
     def aggregate_outputs(  # noqa: C901
         self, to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
@@ -417,7 +425,10 @@ class Hydrotel(HydrologicalModel):
 
         # Get the files to aggregate
         files = self.get_outputs(output="*", return_paths=True)
-        files = [file for file in files if not any(s in file.name.lower() for s in ["debit", "apport_lateral.nc"])]
+        files = [file for file in files if not any(s in file.name for s in ["BySubbasin", "ByDrainageArea"])]
+        files = [
+            file for file in files if not ((any(s in file.name.lower() for s in ["debit", "apport_lateral"])) and ("uhrh" not in file.name.lower()))
+        ]
 
         if subset is not None:
             files = [file for file in files if any(s in file.name for s in subset)]
@@ -443,6 +454,7 @@ class Hydrotel(HydrologicalModel):
         # There is only one subbasin-level output
         if to == "drainage_area":
             files = [f for f in self.get_outputs("apport_lateral", return_paths=True) if "uhrh" not in f.name.lower()]
+            files = [file for file in files if not any(s in file.name for s in ["BySubbasin", "ByDrainageArea"])]
             if subset is not None:
                 files = [file for file in files if any(s in file.name for s in subset)]
 
