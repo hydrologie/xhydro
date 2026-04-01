@@ -25,6 +25,7 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
+* `raven-hydro` has been added as an explicit dependency in `conda` installation configurations. (:pull:`423`).
 * A `_model_utils.py` module has been added to the `xhydro.modelling` subpackage to hold utility functions common to all hydrological models. (:pull:`417`).
   * `standardize_outputs` and `aggregate_outputs` functions have been added to this module.
 * The HYDROTEL notebook now uses the same mechanism as the tests to load the executable and demo project paths from environment variables. (:pull:`417`).
