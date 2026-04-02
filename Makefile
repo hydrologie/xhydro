@@ -96,7 +96,7 @@ test-notebooks-lax-onlyextremes: ## run tests exclusively on the Julia notebook
 	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks/extreme_value_analysis.ipynb
 
 test-notebooks-lax-noextremes: ## run tests on notebooks but don't be so strict about outputs
-	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb'
+	pytest --no-cov --nbval-lax --rootdir=tests/ docs/notebooks --ignore='docs/notebooks/extreme_value_analysis.ipynb' --ignore='docs/notebooks/hydrological_modelling_hydrotel.ipynb'
 
 test-all: install-tox ## run tests on every Python version with tox
 	python -m tox

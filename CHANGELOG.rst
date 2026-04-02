@@ -9,11 +9,14 @@ Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* No changes.
+* All hydrological model outputs will now have standard dimensions and coordinates. (:pull:`417`).
+    * For distributed models, the spatial dimension will either be `subbasin_id` or `unit_id` depending resolution.
+    * All outputs will now include ID, elevation, drainage area, and longitude and latitude coordinates when available, at the relevant scale(s).
+* An `aggregate_outputs` method has been added to the hydrological model classes to facilitate the aggregation of outputs to different spatial scales. (:pull:`417`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* No changes.
+* The `get_streamflow` method of the hydrological model classes has been renamed to `get_outputs`. (:pull:`417`).
 
 Bug fixes
 ^^^^^^^^^
@@ -23,6 +26,9 @@ Internal changes
 ^^^^^^^^^^^^^^^^
 * A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
 * `raven-hydro` has been added as an explicit dependency in `conda` installation configurations. (:pull:`423`).
+* A `_model_utils.py` module has been added to the `xhydro.modelling` subpackage to hold utility functions common to all hydrological models. (:pull:`417`).
+  * `standardize_outputs` and `aggregate_outputs` functions have been added to this module.
+* The HYDROTEL notebook now uses the same mechanism as the tests to load the executable and demo project paths from environment variables. (:pull:`417`).
 
 v0.7.1 (2026-03-03)
 -------------------
