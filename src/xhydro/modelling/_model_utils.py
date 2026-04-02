@@ -160,6 +160,12 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
         ds[v].encoding.pop("chunks", None)
         ds[v].encoding["preferred_chunks"] = preferred
 
+        # Also fix a few more things in the encoding
+        ds[v].encoding["zlib"] = True
+        ds[v].encoding["complevel"] = 6
+        ds[v] = ds[v].astype("float32")
+        ds[v].encoding["dtype"] = "float32"
+
     return ds
 
 
