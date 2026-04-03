@@ -62,10 +62,10 @@ repos:
     rev: v2.14
     hooks:
       - id: vulture
-#  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v1.18.2
-#    hooks:
-#      - id: mypy
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.18.2
+  #   hooks:
+  #     - id: mypy
   - repo: https://github.com/numpy/numpydoc
     rev: v1.10.0
     hooks:
