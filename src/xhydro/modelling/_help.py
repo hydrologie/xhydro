@@ -54,7 +54,7 @@ class HELP(HydrologicalModel):
     end_date : str, optional
         Calibration end date.
     frequency : str, optional
-        Frequency of output data : month, season, year, all. If None, default is season.
+        Frequency of output data : month, season, year, month&year, all. If None, default is season.
     graph_outputs : int, optional
         Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
     """
@@ -101,7 +101,7 @@ class HELP(HydrologicalModel):
         end_date : str, optional
             Calibration end date.
         frequency : str, optional
-            Frequency of output data : month, season, year, all. If None, default is season.
+            Frequency of output data : month, season, year, month&year, all. If None, default is season.
         graph_outputs : int, optional
             Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
@@ -129,8 +129,12 @@ class HELP(HydrologicalModel):
             self.param_dict = param_base_dict
 
         if parameters_base is None and parameters is not None:
+            parameters_base = [1, 1, 1, 0, 1]
+            parameters_base_names = ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil", "sfrad"]
+            param_base_dict = dict(zip(parameters_base_names, parameters_base, strict=True))
             param_dict = dict(zip(parameters_names, parameters, strict=True))
-            self.param_dict = param_dict
+            # Fusion of the two dict, with priority to calibration parameters when present
+            self.param_dict = param_base_dict | param_dict
 
         if parameters_base is not None and parameters is not None:
             param_base_dict = dict(zip(parameters_base_names, parameters_base, strict=True))
@@ -198,6 +202,13 @@ class HELP(HydrologicalModel):
         grid_data["thick1"][grid_data["thick1"] < 100] = 100
         grid_data["thick1"][grid_data["context"] == 0] = 0
         grid_data["run"][grid_data["context"] == 0] = 0
+        # grid_data["slope1"] = grid_data["slope1"]/10
+        # grid_data["slope2"] = grid_data["slope2"]/10
+        # grid_data["slope3"] = grid_data["slope3"]/10
+        grid_data["CN"][grid_data["geol"] == 5] = 95
+        grid_data["LAI"][grid_data["LAI"] == 1] = 3
+        grid_data["LAI"][grid_data["LAI"] == 0] = 3
+        grid_data["LAI"][grid_data["context"] == 0] = 0
 
         self.param_grid = [elem for elem in list(self.param_dict.keys()) if elem not in ["sf_edepth", "sf_ulai", "sf_cn", "tfsoil"]]
 
@@ -339,6 +350,7 @@ class HELP(HydrologicalModel):
                 data_month[varname] = var
 
             data_month.columns = ["year", "month", "trim", "station", "precip", "runoff", "aet", "gwr", "subrun1", "subrun2", "perco"]
+            data_month = data_month.rename(columns={"rechg": "gwr"})
 
             # enregistrement en csv
             output_dir = self.project_dir / "Results"
@@ -398,24 +410,8 @@ class HELP(HydrologicalModel):
         if not self.output_dir.is_dir():
             raise ValueError("The project output folder does not exist.")
 
-        list_output_files_stations_tot = [str(f) for f in self.output_dir.iterdir() if f.is_file()]
-
-        list_output_files_stations = [file for file in list_output_files_stations_tot if file.endswith("monthly.csv")]
-
-        # list_stations_interm = [list_output_files_stations[i].split("\\")[-1] for i in range(len(list_output_files_stations))]
-        # list_stations = [list_stations_interm[i].split("_")[0] for i in range(len(list_stations_interm))]
-
         # Create variables that will be in the netcdf file
-        # Times
-        columns_to_read = ["year", "month"]
-        dates = pd.read_csv(
-            Path(self.output_dir, str(list_output_files_stations[1])),
-            delimiter=",",
-            usecols=columns_to_read,
-        )
-        times = [datetime(dates["year"][d], dates["month"][d], 1).strftime("%Y-%m-%d") for d in range(len(dates.index))]
         # Qobs et Qsim
-        # Get scatter figures
 
         obs_qtot = pd.read_csv(Path(self.output_dir, "observed_flow.csv"))
         obs_qbase = pd.read_csv(Path(self.output_dir, "eckhardt_baseflow.csv"))
@@ -478,15 +474,13 @@ class HELP(HydrologicalModel):
             years_an = list(dict.fromkeys(resul_sim.year))
 
             # Computing simulated total and base river flow.
-            if frequency == "year" or frequency == "all":
+            if frequency in ("year", "month&year", "all"):
                 yearly_qflow = pd.DataFrame(index=years_an, columns=["qtot_sim"])
                 yearly_qflow.index.name = "year"
 
                 for y in years_an:
                     subset_sim = resul_sim[resul_sim["year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["subrun2"]) + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
@@ -495,7 +489,6 @@ class HELP(HydrologicalModel):
 
                     qtotobs_totalite.append(np.sum(obs_qtot[obs_qtot["year"] == y][stat]))
                     qbaseobs_totalite.append(np.sum(obs_qbase[obs_qbase["year"] == y][stat]))
-
                     year_list.append(y)
                     stat_list.append(stat)
                     temps_list.append(y)
@@ -507,9 +500,7 @@ class HELP(HydrologicalModel):
 
                 for y in trimestres_an:
                     subset_sim = resul_sim[resul_sim["trim_year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["subrun2"]) + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
@@ -524,15 +515,13 @@ class HELP(HydrologicalModel):
                     year_list.append(y.split("_")[1])
                     frequen_list.append("season")
 
-            if frequency == "month" or frequency == "all":
+            if frequency in ("month", "month&year", "all"):
                 yearly_qflow = pd.DataFrame(index=mois_an, columns=["qtot_sim"])
                 yearly_qflow.index.name = "month_year"
 
                 for y in mois_an:
                     subset_sim = resul_sim[resul_sim["month_year"] == y]
-                    somme_qtot = np.sum(
-                        np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["subrun2"]) + np.sum(subset_sim["gwr"])
-                    )
+                    somme_qtot = np.sum(np.sum(subset_sim["runoff"]) + np.sum(subset_sim["subrun1"]) + np.sum(subset_sim["gwr"]))
 
                     somme_qbase = np.sum(np.sum(subset_sim["gwr"]))
 
@@ -541,7 +530,6 @@ class HELP(HydrologicalModel):
 
                     qtotobs_totalite.append(np.sum(obs_qtot[obs_qtot["month_year"] == y][stat]))
                     qbaseobs_totalite.append(np.sum(obs_qbase[obs_qbase["month_year"] == y][stat]))
-
                     temps_list.append(y)
                     stat_list.append(stat)
                     temps1_list.append(y.split("_")[0])
@@ -556,7 +544,7 @@ class HELP(HydrologicalModel):
         qflow_sim_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbasesim_totalite_double = [qbasesim_totalite[a] * 2 for a in range(len(qbasesim_totalite))]
+        qbasesim_totalite_double = [(qbasesim_totalite[a] * 2) for a in range(len(qbasesim_totalite))]
 
         qflow_sim_unique = pd.DataFrame()
         qflow_sim_unique["q"] = np.concatenate((qtotsim_totalite, qbasesim_totalite_double), axis=None)
@@ -572,7 +560,7 @@ class HELP(HydrologicalModel):
         qflow_obs_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbaseobs_totalite_double = [qbaseobs_totalite[a] * 2 for a in range(len(qbaseobs_totalite))]
+        qbaseobs_totalite_double = [(qbaseobs_totalite[a] * 2) for a in range(len(qbaseobs_totalite))]
 
         qflow_obs_unique = pd.DataFrame()
         qflow_obs_unique["q"] = np.concatenate((qtotobs_totalite, qbaseobs_totalite_double), axis=None)
@@ -588,6 +576,11 @@ class HELP(HydrologicalModel):
             qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] * 5
             qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] * 3.3
             qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] * 1.7
+        if frequency == "month&year":
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 4
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] * 1
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] * 4
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] * 1
 
         # Afficher les kge et rmse avec les poids
         qsim = qflow_sim_unique["q"]
@@ -636,67 +629,91 @@ class HELP(HydrologicalModel):
                 )
 
         self.create_raster("precip")
-        self.create_raster("recharge")
+        self.create_raster("gwr")
+        self.create_raster("runoff")
+        self.create_raster("evapo")
 
+        self.create_netcdf(qflow_obs_unique=qflow_obs_unique, qflow_sim_unique=qflow_sim_unique, suffix="month", frequency="month")
+        self.create_netcdf(qflow_obs_unique=qflow_obs_unique, qflow_sim_unique=qflow_sim_unique, suffix="", frequency=self.frequency)
+
+    def create_netcdf(
+        # numpydoc ignore=EX01,SA01,ES01
+        self,
+        qflow_obs_unique,
+        qflow_sim_unique,
+        suffix: str or None,
+        frequency: str,
+    ):
+        """
+        Create the qobs and qsim netcdf files.
+
+        Parameters
+        ----------
+        qflow_obs_unique : pd.DataFrame
+            Dataframe of observed flow (base and total flow).
+        qflow_sim_unique : pd.DataFrame
+            Dataframe of simulated flow (base and total flow).
+        suffix : str
+            Tag the netcdf file to differentiate it form other netcdf files.
+        frequency : str, optional
+            Frequency of output data : month, season, year, month&year, all. If None, default is season.
+        """
+        output_dir = self.output_dir
         # Build Netcdf file with the two variables qobs ad qsim
         # Write out data to a new netCDF file with some attributes
-        netcdf_obs_path = Path(output_dir, "qobs_netcdf.nc")
-
+        netcdf_obs_path = Path(output_dir, f"qobs{suffix}_netcdf.nc")
         # sys.exit()
         self.netcdf_obs_path = netcdf_obs_path
         filename = netcdf_file(netcdf_obs_path, "w")
-
-        # times=[]
-        # for a in qflow_obs_unique.index:
-        #     if qflow_obs_unique.loc[a,'frequen']=="year":
-        #         year_unique=list(set(qflow_obs_unique[qflow_obs_unique.loc[a,'frequen']=="year"]["temps_list"]))
-        #         times.append(datetime.strptime(str(year_unique[a]), "%Y"))
-        #     if qflow_obs_unique.loc[a,'frequen']=="season":
-        #         year_unique=qflow_obs_unique.loc[a,"temps_list"].split("_")[1]
-        #         trim_unique=qflow_obs_unique.loc[a,"temps_list"].split("_")[0]
-        #         times.append(datetime.strptime(year_unique, "%Y") + timedelta(days=int(trim_unique)*91.25))
-        #     if qflow_obs_unique.loc[a,'frequen']=="month":
-        #         year_unique=qflow_obs_unique.loc[a,"temps_list"].split("_")[1]
-        #         trim_unique=qflow_obs_unique.loc[a,"temps_list"].split("_")[0]
-        #         times.append(datetime.strptime(year_unique, "%Y") + timedelta(days=int(trim_unique)*30.42))
 
         if frequency == "all":
             subsety_year = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]
             subsety_season = qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]
             subsety_month = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]
             times = []
-
             year_unique = list(set(subsety_year["temps_list"]))
             times.append([datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))])
-
             yeartrim_unique = list(set(subsety_season["temps_list"]))
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
             times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 91.25) for a in range(len(yeartrim_unique))])
-
             yeartrim_unique = list(set(subsety_month["temps_list"]))
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
             times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))])
-
             times = np.concatenate(times)
-
+        if frequency == "month&year":
+            subsety_year = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]
+            subsety_month = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]
+            times = []
+            year_unique = list(set(subsety_year["temps_list"]))
+            times.append([datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))])
+            yeartrim_unique = list(set(subsety_month["temps_list"]))
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))])
+            times = np.concatenate(times)
         if frequency == "year":
+            qflow_sim_unique = qflow_sim_unique[qflow_sim_unique["frequen"] == frequency]
+            qflow_obs_unique = qflow_obs_unique[qflow_obs_unique["frequen"] == frequency]
             year_unique = list(set(qflow_obs_unique["temps_list"]))
             times = [datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))]
         if frequency == "season":
+            qflow_sim_unique = qflow_sim_unique[qflow_sim_unique["frequen"] == frequency]
+            qflow_obs_unique = qflow_obs_unique[qflow_obs_unique["frequen"] == frequency]
             yeartrim_unique = list(set(qflow_obs_unique["temps_list"]))
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
             times = [datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 91.25) for a in range(len(yeartrim_unique))]
         if frequency == "month":
+            qflow_sim_unique = qflow_sim_unique[qflow_sim_unique["frequen"] == frequency]
+            qflow_obs_unique = qflow_obs_unique[qflow_obs_unique["frequen"] == frequency]
             yeartrim_unique = list(set(qflow_obs_unique["temps_list"]))
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
             times = [datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))]
 
         stations_unique = list(set(qflow_obs_unique["station"]))
-
         # Dimensions
         filename.createDimension("time", len(times))
         filename.createDimension("station", len(stations_unique))
@@ -722,15 +739,12 @@ class HELP(HydrologicalModel):
         filename.close()
 
         # Write out data to a new netCDF file with some attributes
-        # netcdf_sim_path = Path(output_dir, f"qsim_netcdf_{self.timestamp}.nc")
-        netcdf_sim_path = Path(output_dir, "qsim_netcdf.nc")
-
+        # netcdf_sim_path = Path(output_dir, f"qsim{suffix}_netcdf_{self.timestamp}.nc")
+        netcdf_sim_path = Path(output_dir, f"qsim{suffix}_netcdf.nc")
         # if os.path.exists(netcdf_sim_path):
         #    os.remove(netcdf_sim_path)
-
         self.netcdf_sim_path = netcdf_sim_path
         filename = netcdf_file(netcdf_sim_path, "w")
-
         # Dimensions
         filename.createDimension("time", len(times))
         filename.createDimension("station", len(stations_unique))
@@ -745,7 +759,6 @@ class HELP(HydrologicalModel):
         time.units = "days since 1970-01-01 0:0:0"
         station.units = "stations names (no unit)"
         streamflow.units = "mm/month"
-
         # Populate the variables with data
         time[:] = time_day
         station[:] = stations_unique
@@ -755,8 +768,6 @@ class HELP(HydrologicalModel):
             streamflow[stat, :] = subset["q"]
 
         filename.close()
-
-        return
 
     def plot_streamflow_scatter_color(  # noqa: C901
         # numpydoc ignore=EX01,SA01,ES01,C901
@@ -773,7 +784,7 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         frequency : str, optional
-            Frequency of output data : month, season, year, all. If None, default is season.
+            Frequency of output data : month, season, year, month&year, all. If None, default is season.
         sim_qflow : pd.DataFrame
             Dataframe of simulated flow (base and total flow).
         obs_qflow : pd.DataFrame
@@ -790,6 +801,9 @@ class HELP(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 2
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
@@ -1085,7 +1099,7 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         frequency : str, optional
-            Frequency of output data : month, season, year, all. If None, default is season.
+            Frequency of output data : month, season, year, month&year, all. If None, default is season.
         sim_qflow : pd.DataFrame
             Dataframe of simulated flow (base and total flow).
         obs_qflow : pd.DataFrame
@@ -1102,6 +1116,9 @@ class HELP(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 3
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
@@ -1356,7 +1373,7 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         frequency : str, optional
-            Frequency of output data : month, season, year, all. If None, default is season.
+            Frequency of output data : month, season, year, month&year, all. If None, default is season.
         sim_qflow : pd.DataFrame
             Dataframe of simulated flow (base and total flow).
         obs_qflow : pd.DataFrame
@@ -1374,6 +1391,9 @@ class HELP(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 3
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
@@ -1582,9 +1602,9 @@ class HELP(HydrologicalModel):
         Parameters
         ----------
         variable : str
-            Set variable for the raster : precip or rechg.
+            Set variable for the raster : precip or gwr.
         """
-        columns_to_read = ["cid", "lat_dd", "lon_dd", "rechg", "precip"]
+        columns_to_read = ["cid", "lat_dd", "lon_dd", "rechg", "precip", "runoff", "evapo"]
 
         gwr_an_spat = pd.read_csv(
             Path(self.output_dir, "gwr_annuel_spat.csv"),
@@ -1592,7 +1612,7 @@ class HELP(HydrologicalModel):
             usecols=columns_to_read,
         )
 
-        df = gwr_an_spat.rename(columns={"lon_dd": "lon", "lat_dd": "lat"})
+        df = gwr_an_spat.rename(columns={"lon_dd": "lon", "lat_dd": "lat", "rechg": "gwr"})
         pixel_size = 1000  # 1000 m taille des mailles du modèle
 
         # 1. Définir les CRS
@@ -1627,12 +1647,21 @@ class HELP(HydrologicalModel):
                 ix = int((row["x"] - min_x) // pixel_size)
                 iy = int((max_y - row["y"]) // pixel_size)
                 raster[iy, ix] = row["precip"]
-
-        if variable == "recharge":
+        if variable == "runoff":
             for _, row in df.iterrows():
                 ix = int((row["x"] - min_x) // pixel_size)
                 iy = int((max_y - row["y"]) // pixel_size)
-                raster[iy, ix] = row["rechg"]
+                raster[iy, ix] = row["runoff"]
+        if variable == "evapo":
+            for _, row in df.iterrows():
+                ix = int((row["x"] - min_x) // pixel_size)
+                iy = int((max_y - row["y"]) // pixel_size)
+                raster[iy, ix] = row["evapo"]
+        if variable == "gwr":
+            for _, row in df.iterrows():
+                ix = int((row["x"] - min_x) // pixel_size)
+                iy = int((max_y - row["y"]) // pixel_size)
+                raster[iy, ix] = row["gwr"]
 
         # 7. Définir la transformation géographique
 

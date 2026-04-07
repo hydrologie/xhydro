@@ -53,7 +53,7 @@ class Hydrobudget(HydrologicalModel):
     end_date : str, optional
         Calibration end date.
     frequency : str, optional
-        Frequency of output data : month, season, year, all. If None, default is season.
+        Frequency of output data : month, season, year, month&year, all. If None, default is season.
     graph_outputs : int, optional
         Level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
     """
@@ -98,7 +98,7 @@ class Hydrobudget(HydrologicalModel):
         end_date : str, optional
             Calibration end date.
         frequency : str, optional
-            frequency of output data : month, season, year, all. If None, default is season.
+            frequency of output data : month, season, year, month$year, all. If None, default is season.
         graph_outputs : int, optional
             level of diversity in graph outputs : 0 = no graph, 1 = 1:1 obs sim graph, 2 = all graphs.
         """
@@ -108,7 +108,6 @@ class Hydrobudget(HydrologicalModel):
         end_date = end_date or None
 
         self.project_dir = Path(project_dir)
-        print(self.project_dir)
         if not self.project_dir.is_dir():
             raise ValueError("The project folder does not exist.")
 
@@ -281,7 +280,7 @@ class Hydrobudget(HydrologicalModel):
             years_an = list(dict.fromkeys(resul_sim.year))
 
             # Computing simulated total and base river flow.
-            if frequency == "year" or frequency == "all":
+            if frequency in ("year", "month&year", "all"):
                 yearly_qflow = pd.DataFrame(index=years_an, columns=["qtot_sim"])
                 yearly_qflow.index.name = "year"
 
@@ -301,7 +300,7 @@ class Hydrobudget(HydrologicalModel):
                     temps_list.append(y)
                     frequen_list.append("year")
 
-            if frequency == "season" or frequency == "all":
+            if frequency in ("season", "all"):
                 yearly_qflow = pd.DataFrame(index=trimestres_an, columns=["qtot_sim"])
                 yearly_qflow.index.name = "trim_year"
 
@@ -322,7 +321,7 @@ class Hydrobudget(HydrologicalModel):
                     year_list.append(y.split("_")[1])
                     frequen_list.append("season")
 
-            if frequency == "month" or frequency == "all":
+            if frequency in ("month", "month&year", "all"):
                 yearly_qflow = pd.DataFrame(index=mois_an, columns=["qtot_sim"])
                 yearly_qflow.index.name = "month_year"
 
@@ -351,7 +350,7 @@ class Hydrobudget(HydrologicalModel):
         qflow_sim_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbasesim_totalite_double = [qbasesim_totalite[a] * 2 for a in range(len(qbasesim_totalite))]
+        qbasesim_totalite_double = [(qbasesim_totalite[a] * 2) for a in range(len(qbasesim_totalite))]
 
         qflow_sim_unique = pd.DataFrame()
         qflow_sim_unique["q"] = np.concatenate((qtotsim_totalite, qbasesim_totalite_double), axis=None)
@@ -367,7 +366,7 @@ class Hydrobudget(HydrologicalModel):
         qflow_obs_an["frequen"] = frequen_list
 
         # doubler le poids des débits de base pour réhausser leur importance dans la calibration
-        qbaseobs_totalite_double = [qbaseobs_totalite[a] * 2 for a in range(len(qbaseobs_totalite))]
+        qbaseobs_totalite_double = [(qbaseobs_totalite[a] * 2) for a in range(len(qbaseobs_totalite))]
 
         qflow_obs_unique = pd.DataFrame()
         qflow_obs_unique["q"] = np.concatenate((qtotobs_totalite, qbaseobs_totalite_double), axis=None)
@@ -383,7 +382,11 @@ class Hydrobudget(HydrologicalModel):
             qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] * 5
             qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "season"]["q"] * 3.3
             qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] * 1.7
-
+        if frequency == "month&year":
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "year"]["q"] * 4
+            qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] = qflow_sim_unique[qflow_sim_unique["frequen"] == "month"]["q"] * 1
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]["q"] * 4
+            qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]["q"] * 1
         # Afficher les kge et rmse avec les poids
         qsim = qflow_sim_unique["q"]
         qobs = qflow_obs_unique["q"]
@@ -453,6 +456,17 @@ class Hydrobudget(HydrologicalModel):
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
             times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 91.25) for a in range(len(yeartrim_unique))])
+            yeartrim_unique = list(set(subsety_month["temps_list"]))
+            year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
+            trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
+            times.append([datetime.strptime(year_unique[a], "%Y") + timedelta(days=int(trim_unique[a]) * 30.42) for a in range(len(yeartrim_unique))])
+            times = np.concatenate(times)
+        if frequency == "month&year":
+            subsety_year = qflow_obs_unique[qflow_obs_unique["frequen"] == "year"]
+            subsety_month = qflow_obs_unique[qflow_obs_unique["frequen"] == "month"]
+            times = []
+            year_unique = list(set(subsety_year["temps_list"]))
+            times.append([datetime.strptime(str(year_unique[a]), "%Y") for a in range(len(year_unique))])
             yeartrim_unique = list(set(subsety_month["temps_list"]))
             year_unique = [yeartrim_unique[a].split("_")[1] for a in range(len(yeartrim_unique))]
             trim_unique = [yeartrim_unique[a].split("_")[0] for a in range(len(yeartrim_unique))]
@@ -591,6 +605,9 @@ class Hydrobudget(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 2
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
@@ -892,6 +909,9 @@ class Hydrobudget(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 2
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
@@ -1153,6 +1173,9 @@ class Hydrobudget(HydrologicalModel):
         if frequency == "all":
             fin_decompte = 3
             freq = ["year", "season", "month"]
+        if frequency == "month&year":
+            fin_decompte = 2
+            freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
             freq = ["year"]
