@@ -22,6 +22,7 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
+* `raven-hydro` has been added as an explicit dependency in `conda` installation configurations. (:pull:`423`).
 
 v0.7.1 (2026-03-03)
 -------------------
