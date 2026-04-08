@@ -1117,7 +1117,7 @@ class HELP(HydrologicalModel):
             fin_decompte = 3
             freq = ["year", "season", "month"]
         if frequency == "month&year":
-            fin_decompte = 3
+            fin_decompte = 2
             freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
@@ -1392,7 +1392,7 @@ class HELP(HydrologicalModel):
             fin_decompte = 3
             freq = ["year", "season", "month"]
         if frequency == "month&year":
-            fin_decompte = 3
+            fin_decompte = 2
             freq = ["year", "month"]
         if frequency == "year":
             fin_decompte = 1
