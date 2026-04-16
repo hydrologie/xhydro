@@ -15,6 +15,7 @@ jobs:
   dependabot-auto-approve:
     name: Auto-approve and auto-merge safe Dependabot updates
     runs-on: ubuntu-latest
+    environment: automation
     if: >
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       contains(github.event.pull_request.labels.*.name, 'dependencies')

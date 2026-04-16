@@ -27,11 +27,11 @@ repos:
         args: [ '--branch', 'main' ]
       - id: trailing-whitespace
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.3
+    rev: v0.24.4
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
         args: [ '--config-file=.yamllint.yaml' ]
@@ -47,7 +47,7 @@ repos:
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.10
     hooks:
       - id: ruff-check
         args: [ '--fix', '--show-fixes' ]
@@ -59,7 +59,7 @@ repos:
         additional_dependencies: [ 'flake8-rst-docstrings==0.4.0' ]
         args: [ '--config=.flake8' ]
   - repo: https://github.com/jendrikseipp/vulture
-    rev: v2.14
+    rev: v2.16
     hooks:
       - id: vulture
 #  - repo: https://github.com/pre-commit/mirrors-mypy
@@ -72,25 +72,25 @@ repos:
       - id: numpydoc-validation
         exclude: 'tests|docs/conf.py'
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         additional_dependencies: [ 'tomli' ]
         args: [ '--toml=pyproject.toml' ]
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.2
+    rev: 0.9.1
     hooks:
       - id: nbstripout
         files: '.ipynb'
         exclude: "docs/notebooks/extreme_value_analysis.ipynb"
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.36.0
+    rev: 0.37.1
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.19.0
+    rev: v1.24.1
     hooks:
       - id: zizmor
         args: [ '--config=.zizmor.yml' ]

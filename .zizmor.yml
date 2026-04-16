@@ -5,3 +5,7 @@ rules:
       - label-on-approval.yml:3
       - first-pull-request.yml:3
       - workflow-warning.yml:3
+  superfluous-actions:
+    ignore:
+      - label-on-approval.yml:72
+      - label-on-approval.yml:91
