@@ -50,7 +50,7 @@ jobs:
         python-version: [ "3.13" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -62,24 +62,24 @@ jobs:
 
       - name: Generate App Token
         id: token_generator
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
 
       - name: Checkout Repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token_generator.outputs.token }}
 
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg_private_key: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
@@ -104,7 +104,7 @@ jobs:
           echo "new_version=$(bump-my-version show current_version)"
 
       - name: Push Changes
-        uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa # v1.0.0
+        uses: ad-m/github-push-action@4cc74773234f74829a8c21bc4d69dd4be9cfa599 # v1.1.0
         with:
           branch: ${{ github.ref }}
           force: false
