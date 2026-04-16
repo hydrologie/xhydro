@@ -1,4 +1,4 @@
-name: "Bump Patch Version"
+name: "Bump Version"
 
 on:
   push:
@@ -40,8 +40,9 @@ permissions:
 
 jobs:
   bump_patch_version:
-    name: Bumpversion Patch
+    name: Bumpversion build/patch version
     runs-on: ubuntu-latest
+    environment: automation
     permissions:
       actions: read
     strategy:
