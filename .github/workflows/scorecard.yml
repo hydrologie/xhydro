@@ -1,3 +1,5 @@
+# This workflow requires a dedicated environment to ensure that credentials are safely accessed ("automation").
+
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
@@ -24,6 +26,7 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    environment: automation
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write

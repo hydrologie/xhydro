@@ -17,12 +17,16 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* No changes.
+* Fixed a misconfigured `envlist` setting in `tox.toml`. (:pull:`426`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
 * A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
 * `raven-hydro` has been added as an explicit dependency in `conda` installation configurations. (:pull:`423`).
+* Updated the cookiecutter template to the latest commit. (:pull:`426`):
+    * Updated the `zizmor`` workflow security checks to ignore some superfluous actions, addresses some minor workflow security issues.
+    * Updated several development dependency versions.
+    * Updated `pre-commit` hooks.
 
 v0.7.1 (2026-03-03)
 -------------------
