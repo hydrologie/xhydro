@@ -667,7 +667,7 @@ msgid ""
 "the `Raven documentation <https://raven.uwaterloo.ca/Downloads.html>`__."
 msgstr ""
 "Des informations sur l'utilisation de la commande ``:CustomOutput`` peuvent "
-"être trouvées dans la `documentation de Raven "<https://raven.uwaterloo.ca/Downloads.html>`__."
+"être trouvées dans la `documentation de Raven <https://raven.uwaterloo.ca/Downloads.html>`__."
 
 #: ../../notebooks/pavics_notebooks/hydrological_modelling_raven_distributed.ipynb:606
 msgid ""
