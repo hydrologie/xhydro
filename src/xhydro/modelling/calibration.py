@@ -279,7 +279,7 @@ class SpotSetup:
 
         # Run the model and return qsim, with model_config containing the
         # tested parameter set.
-        qsim = hydrological_model(self.model_config).run()
+        qsim = hydrological_model(self.model_config).run(overwrite=True)
 
         # Return the array of values from qsim for the objective function eval.
         return qsim["q"].values
@@ -512,7 +512,7 @@ def perform_calibration(
     model_config.update({"parameters": best_parameters})
 
     # ... which can be used to run the hydrological model and get the best Qsim.
-    qsim = hydrological_model(model_config).run()
+    qsim = hydrological_model(model_config).run(overwrite=True)
 
     # Return the best parameters, qsim and best objective function value.
     return best_parameters, qsim, bestobjf
