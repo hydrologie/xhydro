@@ -8,6 +8,7 @@ sphinx:
   configuration: docs/conf.py
   # fail_on_warning might generate hard to fix error, in this case it can be
   # disabled but this also means those errors will fail silently, choose wisely.
+  # FIXME: Set to `true` when xscen > 0.15.1 is released.
   fail_on_warning: false
 
 build:
