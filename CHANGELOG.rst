@@ -33,6 +33,7 @@ Internal changes
 * A `_model_utils.py` module has been added to the `xhydro.modelling` subpackage to hold utility functions common to all hydrological models. (:pull:`417`).
     * `standardize_outputs` and `aggregate_outputs` functions have been added to this module.
 * The HYDROTEL notebook now uses the same mechanism as the tests to load the executable and demo project paths from environment variables. (:pull:`417`).
+* Temporarily disabled the `fail_on_warning` setting in the Read the Docs configuration, until `xscen` is updated to `>0.15.1`. (:pull:`432`).
 
 v0.7.1 (2026-03-03)
 -------------------
