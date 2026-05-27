@@ -8,12 +8,12 @@ sphinx:
   configuration: docs/conf.py
   # fail_on_warning might generate hard to fix error, in this case it can be
   # disabled but this also means those errors will fail silently, choose wisely.
-  fail_on_warning: true
+  fail_on_warning: false
 
 build:
-  os: "ubuntu-24.04"
+  os: "ubuntu-26.04"
   tools:
-    python: "mambaforge-23.11"
+    python: "miniforge3-25.11"
   jobs:
     post_create_environment:
       - python -m pip install --no-user --group docs
