@@ -2,27 +2,26 @@
 Changelog
 =========
 
-..
-    Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
+Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * Fixed a memory explosion in `xhydro.modelling.aggregate_outputs` when processing large basins. Weights were previously computed as a dense boolean tensor; the aggregation now uses `xr.dot` with the `dim` parameter instead. (:pull:`434`).
+Bug fixes
+^^^^^^^^^
+* Fixed a memory explosion in `xhydro.modelling.aggregate_outputs` when processing large basins. Weights were previously computed as a dense boolean tensor; the aggregation now uses `xr.dot` with the `dim` parameter instead. (:pull:`434`).
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
 v0.8.0 (2026-05-27)
 -------------------
