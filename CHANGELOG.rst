@@ -2,27 +2,27 @@
 Changelog
 =========
 
-..
-    Unreleased
-    ----------
 
-    Contributors to this version: None.
+Unreleased
+----------
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Fixed the `xfail` condition in the tests. (:pull:`435`).
 
 v0.8.0 (2026-05-27)
 -------------------
