@@ -8,7 +8,9 @@ import pandas as pd
 import pooch
 import pytest
 import xarray as xr
+from packaging.version import Version
 from pystac_client.exceptions import APIError
+from requests.exceptions import HTTPError
 from shapely import Polygon
 
 import xhydro.gis as xhg
@@ -19,7 +21,7 @@ from xhydro.modelling import RavenpyModel
 try:
     import raven_hydro
     import ravenpy
-except ImportError:
+except (ImportError, RuntimeError):
     ravenpy = None
     raven_hydro = None
 
@@ -75,17 +77,13 @@ class TestRavenpyModels:
             decimal=5,
         )
 
-        qsim2 = rpm.get_streamflow()
-        assert qsim.equals(qsim2)
-
         met = rpm.get_inputs()
         assert len(met.time) == 6576
         met = rpm.get_inputs(subset_time=True)
         np.testing.assert_array_equal(met.time, qsim.time)
         assert all(var in met.variables for var in self.alt_names_meteo.values())
 
-    @pytest.mark.parametrize("backwards", [True, False])
-    def test_build_later(self, deveraux, backwards):
+    def test_build_later(self, deveraux):
         model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
         parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
         global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
@@ -96,41 +94,23 @@ class TestRavenpyModels:
         with pytest.raises(ValueError, match="The following required inputs are missing"):
             rpm_empty.create_rv()
 
-        if backwards:
-            # Test backward compatibility
-            with pytest.warns(FutureWarning):
-                rpm_empty.create_rv(
-                    model_name=model_name,
-                    parameters=parameters,
-                    hru=self.hru,
-                    start_date=self.start_date,
-                    end_date=self.end_date,
-                    meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
-                    data_type=self.data_type,
-                    alt_names_meteo=self.alt_names_meteo,
-                    meteo_station_properties=self.meteo_station_properties,
-                    rain_snow_fraction=self.rain_snow_fraction,  # Test that we can add kwargs
-                    evaporation=self.evaporation,
-                    global_parameter=global_parameter,
-                )
-        else:
-            rpm_empty.model_name = model_name
-            rpm_empty.parameters = parameters
-            rpm_empty.start_date = self.start_date
-            rpm_empty.end_date = self.end_date
-            rpm_empty.kwargs = {
-                "rain_snow_fraction": self.rain_snow_fraction,
-                "evaporation": self.evaporation,
-                "global_parameter": global_parameter,
-            }
-            rpm_empty.update_data(
-                hru=self.hru,
-                meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
-                data_type=self.data_type,
-                alt_names_meteo=self.alt_names_meteo,
-                meteo_station_properties=self.meteo_station_properties,
-            )
-            rpm_empty.create_rv()
+        rpm_empty.model_name = model_name
+        rpm_empty.parameters = parameters
+        rpm_empty.start_date = self.start_date
+        rpm_empty.end_date = self.end_date
+        rpm_empty.kwargs = {
+            "rain_snow_fraction": self.rain_snow_fraction,
+            "evaporation": self.evaporation,
+            "global_parameter": global_parameter,
+        }
+        rpm_empty.update_data(
+            hru=self.hru,
+            meteo_file=deveraux.fetch(self.riviere_rouge_meteo),
+            data_type=self.data_type,
+            alt_names_meteo=self.alt_names_meteo,
+            meteo_station_properties=self.meteo_station_properties,
+        )
+        rpm_empty.create_rv()
 
         assert rpm_empty.start_date == self.start_date
         assert rpm_empty.end_date == self.end_date
@@ -167,6 +147,12 @@ class TestRavenpyModels:
         reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
         strict=False,
         raises=APIError,
+    )
+    @pytest.mark.xfail(
+        reason="Test may fail with if the server is down.",
+        strict=False,
+        raises=HTTPError,
+        match="404 Client Error",
     )
     def test_ravenpy_from_funcs(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
@@ -207,25 +193,24 @@ class TestRavenpyModels:
         }
 
         rpm = xhm.hydrological_model(model_config)
-        rpm.run()
+        rpm.run(standardize=False, return_streamflow=False)
 
         # Try to run the model again
         with pytest.raises(FileExistsError):
-            rpm.run()
-        rpm.run(overwrite=True)
+            rpm.run(standardize=False, return_streamflow=False)
+        rpm.run(overwrite=True, standardize=False, return_streamflow=False)
 
         # Try to overwrite the model again
-        config2 = {k: v for k, v in model_config.items() if k in ["parameters", "start_date", "end_date"]}
         with pytest.raises(FileExistsError):
-            rpm.create_rv(**config2)
-        rpm.create_rv(overwrite=True, **config2)
+            rpm.create_rv()
+        rpm.create_rv(overwrite=True)
 
         # Through RavenpyModel, both should work
-        RavenpyModel(**model_config, overwrite=True).run(overwrite=True)
-        RavenpyModel(**model_config, overwrite=False).run(overwrite=True)
-        RavenpyModel(**model_config, overwrite=False).run(overwrite=True)
+        RavenpyModel(**model_config, overwrite=True).run(overwrite=True, standardize=False, return_streamflow=False)
+        RavenpyModel(**model_config, overwrite=False).run(overwrite=True, standardize=False, return_streamflow=False)
+        RavenpyModel(**model_config, overwrite=False).run(overwrite=True, standardize=False, return_streamflow=False)
         with pytest.raises(FileExistsError):
-            RavenpyModel(**model_config, overwrite=False).run(overwrite=False)
+            RavenpyModel(**model_config, overwrite=False).run(overwrite=False, standardize=False, return_streamflow=False)
 
     def test_executable(self, deveraux):
         model_name = "GR4JCN"  # RavenPy already tests all emulators, so we primarily need to check that our call works.
@@ -246,8 +231,8 @@ class TestRavenpyModels:
             evaporation=self.evaporation,
             global_parameter=global_parameter,
         )
-        rpm.run()
-        filename = str(rpm.get_streamflow("path"))
+        rpm.run(return_streamflow=False)
+        filename = str(rpm.get_outputs("q", return_paths=True)[0])
         shutil.move(filename, filename.replace(".nc", "a.nc"))
         ds1 = xr.open_dataset(filename.replace(".nc", "a.nc"))[["q"]]
 
@@ -256,7 +241,7 @@ class TestRavenpyModels:
 
         with pytest.raises(ValueError, match="The executable command"):
             rpm.executable = "malicious_command"
-            rpm.run()
+            rpm.run(standardize=False, return_streamflow=False)
         rpm.executable = path
         ds2 = rpm.run()
 
@@ -278,7 +263,7 @@ class TestRavenpyModels:
                 evaporation=self.evaporation,
             )
 
-            rpm.run()
+            rpm.run(standardize=False, return_streamflow=False)
 
     def test_mult_stations(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
@@ -302,7 +287,7 @@ class TestRavenpyModels:
             }
         )
         meteo["elevation"].attrs["units"] = "m"
-        meteo = xr.concat([meteo, meteo2], dim="station")
+        meteo = xr.concat([meteo, meteo2], dim="station", data_vars="all")
 
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
 
@@ -416,7 +401,7 @@ class TestRavenpyModels:
             cfg2 = cfg.copy()
             cfg2["meteo_file"] = tmp_path / "test_bad.nc"
             with pytest.raises(ValueError, match="Could not determine the type of meteorological data"):
-                qsim = RavenpyModel(
+                RavenpyModel(
                     model_name="GR4JCN",
                     parameters=parameters,
                     hru=hru,
@@ -429,7 +414,7 @@ class TestRavenpyModels:
                     global_parameter=global_parameter,
                     overwrite=True,
                     **cfg2,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
 
         qsim = RavenpyModel(
             model_name="GR4JCN",
@@ -635,7 +620,7 @@ class TestDistributedRavenpy:
         ds["orog"] = ds_fx["orog"]
         ds["pr"].attrs = {"units": "mm", "long_name": "precipitation"}
         ds = ds.drop_vars(["height", "prsn"])
-        ds = ds.isel(plev=0)
+        ds = ds.isel(plev=0).drop_vars("plev")
         meteo, cfg = xhm.format_input(ds, model="HBVEC")
         return meteo, cfg
 
@@ -672,7 +657,7 @@ class TestDistributedRavenpy:
 
         if output_sub == "fail":
             with pytest.raises(ValueError, match="parameter must be either"):
-                qsim = RavenpyModel(
+                RavenpyModel(
                     model_name="HBVEC",
                     parameters=self.parameters,
                     hru=df,
@@ -681,8 +666,9 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
         else:
             if output_sub is None:
                 df.to_file(tmp_path / "hru.gpkg")
@@ -697,6 +683,7 @@ class TestDistributedRavenpy:
                 workdir=tmp_path,
                 overwrite=True,
                 output_subbasins=output_sub,
+                Evaporation="PET_HARGREAVES",
                 **cfg | kwargs,
             ).run()
 
@@ -755,8 +742,9 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
 
             qobs = qobs.rename({"abc": "basin_id"})
             qobs["subbasin_id"] = qobs["basin_id"]
@@ -773,8 +761,9 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins=output_sub,
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
-                ).run()
+                ).run(standardize=False, return_streamflow=False)
         # Bad initialisation order
         elif output_sub == "fail2":
             with pytest.raises(ValueError, match=", but no observed streamflow data is provided."):
@@ -787,6 +776,7 @@ class TestDistributedRavenpy:
                     workdir=tmp_path,
                     overwrite=True,
                     output_subbasins="qobs",
+                    Evaporation="PET_HARGREAVES",
                     **cfg | kwargs,
                 )
 
@@ -816,6 +806,7 @@ class TestDistributedRavenpy:
                 workdir=tmp_path,
                 overwrite=True,
                 output_subbasins=output_sub,
+                Evaporation="PET_HARGREAVES",
                 **cfg | kwargs,
             ).run()
 
@@ -824,7 +815,8 @@ class TestDistributedRavenpy:
                 assert qsim["q"].shape == (277,)
             else:
                 assert len(qsim["q"].dims) == 2
-                np.testing.assert_array_equal(qsim["subbasin_id"].values, ["sub_13", "sub_17"])
+                prefix = "sub_" if "sub_" in qsim["subbasin_id"].values[0] else ""  # Raven 4.1+ has removed the prefix
+                np.testing.assert_array_equal(qsim["subbasin_id"].values, [f"{prefix}13", f"{prefix}17"])
 
     def test_hbvec_reservoirs(self, tmp_path, df, gridded_meteo):
         meteo, cfg = gridded_meteo
@@ -852,6 +844,7 @@ class TestDistributedRavenpy:
             workdir=tmp_path,
             overwrite=True,
             output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -867,6 +860,7 @@ class TestDistributedRavenpy:
             overwrite=True,
             output_subbasins="all",
             minimum_reservoir_area="20 m2",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -882,6 +876,7 @@ class TestDistributedRavenpy:
             overwrite=True,
             output_subbasins="all",
             minimum_reservoir_area="20 km2",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
 
@@ -920,6 +915,7 @@ class TestDistributedRavenpy:
             workdir=tmp_path,
             overwrite=True,
             output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
             **cfg | kwargs,
         )
         ds = rpm.run()
@@ -948,6 +944,141 @@ class TestDistributedRavenpy:
         )
 
         ds2 = rpm.run(overwrite=True)
-        np.testing.assert_array_equal(ds2["subbasin_id"].values, ["sub_13", "sub_17"])
+        prefix = "sub_" if "sub_" in ds2["subbasin_id"].values[0] else ""  # Raven 4.1+ has removed the prefix
+        np.testing.assert_array_equal(ds2["subbasin_id"].values, [f"{prefix}13", f"{prefix}17"])
 
         assert Path(rpm.workdir / "output" / "raven_PRECIP_Daily_Average_BySubbasin.nc").exists()
+
+    def test_aggregate_sb(self, tmp_path, gridded_meteo, df):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+
+        # Update the model
+        commands = []
+        for aggregation in ["BY_HRU", "BY_SUBBASIN"]:
+            commands.extend(
+                [
+                    f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
+                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
+                    f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
+                ]
+            )
+
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=commands,
+            rvt=True,
+            rvh=True,
+        )
+
+        rpm.run(overwrite=True, return_streamflow=False)
+        rpm.aggregate_outputs(by="hru", to="subbasin")
+
+        files_true = rpm.get_outputs("BySubbasin", return_paths=True)
+        files_calc = sorted(rpm.get_outputs("BySubbasin_v2", return_paths=True))
+        files_true = sorted(list(set(files_true).difference(files_calc)))
+
+        for i in range(len(files_calc)):
+            ds_true = xr.open_dataset(files_true[i])
+            ds_calc = xr.open_dataset(files_calc[i])
+            xr.testing.assert_allclose(ds_true, ds_calc)
+
+    @pytest.mark.skipif(ravenpy is None or Version(ravenpy.__version__) < Version("0.5.0"), reason="Requires RavenPy 0.5.0 or higher.")
+    @pytest.mark.parametrize("agg", ["BY_HRU", "BY_SUBBASIN"])
+    def test_aggregate_drainage(self, tmp_path, gridded_meteo, df, agg):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+
+        # Update the model
+        commands = []
+        for aggregation in [agg, "BY_DRAINAGE_AREA"]:
+            commands.extend(
+                [
+                    f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
+                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
+                    f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
+                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
+                    f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
+                ]
+            )
+
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=commands,
+            rvt=True,
+            rvh=True,
+        )
+
+        rpm.run(overwrite=True, return_streamflow=False)
+        rpm.aggregate_outputs(by=agg.lower().split("_")[1], to="drainage_area")
+
+        files_true = rpm.get_outputs("ByDrainageArea", return_paths=True)
+        files_calc = sorted(rpm.get_outputs("ByDrainageArea_v2", return_paths=True))
+        files_true = sorted(list(set(files_true).difference(files_calc)))
+
+        for i in range(len(files_calc)):
+            ds_true = xr.open_dataset(files_true[i])
+            ds_calc = xr.open_dataset(files_calc[i])
+            xr.testing.assert_allclose(ds_true, ds_calc)

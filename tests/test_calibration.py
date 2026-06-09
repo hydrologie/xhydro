@@ -15,7 +15,7 @@ from xhydro.modelling.obj_funcs import get_objective_function, transform_flows
 
 try:
     import ravenpy
-except ImportError:
+except (ImportError, RuntimeError):
     ravenpy = None
 
 

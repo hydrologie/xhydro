@@ -15,10 +15,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-import xscen as xs
-from packaging import version
 from xclim.core.units import convert_units_to
-from xscen.io import estimate_chunks, save_to_netcdf
 
 
 try:
@@ -34,6 +31,7 @@ except (ImportError, RuntimeError) as e:
     ravenpy_err_msg = e
 
 from ._hm import HydrologicalModel
+from ._model_utils import aggregate_output, standardize_output
 
 
 logger = logging.getLogger(__name__)
@@ -214,20 +212,6 @@ class RavenpyModel(HydrologicalModel):
         self,
         *,
         overwrite: bool = False,
-        parameters=None,
-        model_name=None,
-        hru=None,
-        meteo_file=None,
-        data_type=None,
-        start_date=None,
-        end_date=None,
-        alt_names_meteo=None,
-        meteo_station_properties=None,
-        qobs_file=None,
-        alt_name_flow="q",
-        minimum_reservoir_area=None,
-        output_subbasins=None,
-        **kwargs,
     ):
         r"""
         Write the RavenPy project files.
@@ -237,111 +221,11 @@ class RavenpyModel(HydrologicalModel):
         overwrite : bool
             If True, overwrite the existing project files. Default is False.
             Note that to prevent inconsistencies, all files containing the 'run_name' will be removed, including the output files.
-        parameters : None
-            Deprecated. Use the class attribute instead.
-        model_name : None
-            Deprecated. Use the class attribute instead.
-        hru : None
-            Deprecated. Use the 'update_data' method instead.
-        meteo_file : None
-            Deprecated. Use the 'update_data' method instead.
-        data_type : None
-            Deprecated. Use the 'update_data' method instead.
-        start_date : None
-            Deprecated. Use the class attribute instead.
-        end_date : None
-            Deprecated. Use the class attribute instead.
-        alt_names_meteo : None
-            Deprecated. Use the 'update_data' method instead.
-        meteo_station_properties : None
-            Deprecated. Use the 'update_data' method instead.
-        qobs_file : None
-            Deprecated. Use the 'update_data' method instead.
-        alt_name_flow : str
-            Deprecated. Use the 'update_data' method instead.
-        minimum_reservoir_area : None
-            Deprecated. Use the 'update_data' method instead.
-        output_subbasins : None
-            Deprecated. Use the 'update_data' method instead.
-        \*\*kwargs : dict
-            Deprecated. Instantiate the model with the them or pass them to the class attribute.
         """
         if run is None:
             raise RuntimeError(
                 "RavenPy is not installed or not properly configured. The RavenpyModel.create_rv method cannot be used without it."
                 f" Original error: {ravenpy_err_msg}"
-            )
-
-        if parameters is not None:
-            warnings.warn(
-                "The 'parameters' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'parameters' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.parameters = parameters
-        if model_name is not None:
-            warnings.warn(
-                "The 'model_name' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'model_name' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.model_name = model_name
-        if start_date is not None:
-            warnings.warn(
-                "The 'start_date' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'start_date' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.start_date = start_date
-        if end_date is not None:
-            warnings.warn(
-                "The 'end_date' parameter is deprecated and will be removed in a future version. "
-                "Please set the 'end_date' attribute directly on the RavenPy model instance.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.end_date = end_date
-        if len(kwargs) > 0:
-            warnings.warn(
-                "Kwargs in the 'create_rv' method are deprecated and will be removed in a future version. "
-                "Set them when first instantiating the RavenPy model, or later by setting the attributes in "
-                "a dictionary under the 'kwargs' attribute of the class.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.kwargs = kwargs
-        if any(
-            opt is not None
-            for opt in [
-                qobs_file,
-                alt_name_flow,
-                hru,
-                output_subbasins,
-                minimum_reservoir_area,
-                meteo_file,
-                data_type,
-                alt_names_meteo,
-                meteo_station_properties,
-            ]
-        ):
-            warnings.warn(
-                "Data-related parameters are deprecated and will be removed in a future version. Please use the 'update_data' method instead.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            self.update_data(
-                qobs_file=qobs_file,
-                alt_name_flow=alt_name_flow,
-                hru=hru,
-                output_subbasins=output_subbasins,
-                minimum_reservoir_area=minimum_reservoir_area,
-                meteo_file=meteo_file,
-                data_type=data_type,
-                alt_names_meteo=alt_names_meteo,
-                meteo_station_properties=meteo_station_properties,
             )
 
         required = [
@@ -464,6 +348,12 @@ class RavenpyModel(HydrologicalModel):
         If the meteorological data is gridded, new weights will be computed using the HRU file in the RavenpyModel instance and saved
         in a 'weights' subdirectory of the project folder, under the name 'meteo-name_vs_hru-name.txt'.
         """
+        if run is None:
+            raise RuntimeError(
+                "RavenPy is not installed or not properly configured. The RavenpyModel.update_data method cannot be used without it."
+                f" Original error: {ravenpy_err_msg}"
+            )
+
         if (any(opt is not None for opt in [output_subbasins, minimum_reservoir_area]) and hru is None) or (
             any(opt is not None for opt in [data_type, alt_names_meteo, meteo_station_properties]) and meteo_file is None
         ):
@@ -567,6 +457,11 @@ class RavenpyModel(HydrologicalModel):
                     "Meteorological data and/or observed streamflow data were not provided. The .rvt file will not be updated.", stacklevel=2
                 )
             else:
+                if run is None:
+                    raise RuntimeError(
+                        "RavenPy is not installed or not properly configured. The rvt file cannot currently be updated without it."
+                        f" Original error: {ravenpy_err_msg}"
+                    )
                 # Backup the existing .rvt file
                 shutil.copy(
                     self.workdir / f"{self.run_name}.rvt",
@@ -664,7 +559,7 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False) -> xr.Dataset:
+    def run(self, *, overwrite: bool = False, standardize: bool = True, return_streamflow: bool = True) -> xr.Dataset | None:
         """
         Run the Raven hydrological model and return simulated streamflow.
 
@@ -672,6 +567,10 @@ class RavenpyModel(HydrologicalModel):
         ----------
         overwrite : bool
             If True, overwrite the existing output files. Default is False.
+        standardize : bool
+            If True, standardize the output files to ensure they are in a consistent format. Default is True.
+        return_streamflow : bool
+            If True, return the simulated streamflow. Default is True.
 
         Returns
         -------
@@ -705,9 +604,11 @@ class RavenpyModel(HydrologicalModel):
                 stdin=subprocess.DEVNULL,
             )
 
-        self._standardise_outputs()
+        if standardize:
+            self.standardize_outputs()
 
-        return self.get_streamflow()
+        if return_streamflow:
+            return self.get_outputs("q")
 
     def get_inputs(self, subset_time: bool = False, **kwargs) -> xr.Dataset:
         r"""
@@ -766,15 +667,142 @@ class RavenpyModel(HydrologicalModel):
         Path
             The path to the streamflow file if output is set to "path".
         """
-        outputs = ravenpy.OutputReader(run_name=self.run_name, path=self.workdir / "output")
+        warnings.warn(
+            "The 'get_streamflow' method is deprecated and will be removed in a future version. Please use the 'get_outputs' method instead.",
+            FutureWarning,
+            stacklevel=2,
+        )
 
         if output == "path":
-            return Path(outputs.files["hydrograph"])
+            return self.get_outputs("q", return_paths=True)[0]
         else:
             if output == "q":
-                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)[["q"]]
+                return self.get_outputs("q")
             else:
-                return xr.open_dataset(outputs.files["hydrograph"], **kwargs)
+                return self.get_outputs("Hydrographs", **kwargs)
+
+    def get_outputs(self, output: str, return_paths: bool = False, **kwargs) -> xr.Dataset | Path | list[Path]:
+        r"""
+        Return the outputs of the Raven model.
+
+        Parameters
+        ----------
+        output : str
+            "path" to return the output directory.
+            "q" to only return the streamflow variable.
+            Alternatively, a string matching the name of the output file to return (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
+        return_paths : bool
+            If True, return the path to the output file(s) instead of the dataset. Default is False.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        xr.Dataset
+            The requested output variable.
+        Path
+            The path to the output directory if output is set to "path".
+        list[Path]
+            The path to the output file(s) if return_path is True.
+        """
+        outdir = self.workdir / "output"
+
+        if output == "path":
+            return outdir
+
+        if output == "q":
+            file = list(outdir.glob(f"{self.run_name}_*Hydrographs*.nc"))
+            if return_paths:
+                return file
+            else:
+                with xr.open_dataset(file[0], **kwargs) as ds:
+                    return ds[["q"]]
+        else:
+            matching_files = list(outdir.glob(f"{self.run_name}_*{output}*.nc"))
+            if return_paths:
+                return matching_files
+            else:
+                if len(matching_files) == 0:
+                    raise ValueError(f"No output files matching '{self.run_name}_*{output}*.nc' were found.")
+                else:
+                    kwargs = deepcopy(kwargs)
+                    kwargs.setdefault("combine", "by_coords")
+                    kwargs.setdefault("data_vars", "minimal")
+                    with xr.open_mfdataset(matching_files, **kwargs) as ds:
+                        return ds
+
+    def aggregate_outputs(
+        self, by: Literal["hru", "unit", "subbasin"], to: Literal["subbasin", "drainage_area"], subset: list[str] | None = None, **kwargs
+    ) -> None:
+        r"""
+        Aggregate the model outputs to a different spatial unit. See the Notes section for more details.
+
+        Parameters
+        ----------
+        by : {"hru", "unit", "subbasin"}
+            The spatial unit to aggregate from.
+            "unit" is the generic term for "hru".
+        to : {"subbasin", "drainage_area"}
+            The spatial unit to aggregate to.
+        subset : list[str] | None
+            The list of variables to aggregate. If None, all variables will be processed.
+            The strings should match the names produced by the Raven model, typically found under ":CustomOutput" in the .rvi file.
+        \*\*kwargs : dict
+            Keyword arguments to pass to :py:func:`xarray.open_dataset`.
+
+        Returns
+        -------
+        None
+            The aggregated outputs will be saved as new NetCDF files in the output directory, with a name pattern
+            following what is produced by the Raven model (e.g. "{run_name}_variable}_By{aggregation}.nc").
+            Aggregation will be 'ByHRU', 'BySubbasin', or 'ByDrainageArea', depending on the 'to' parameter.
+            If a file with the same name already exists, a new file will be saved with a "_v{n}" suffix.
+
+        Notes
+        -----
+        This method expects that relevant spatial information has been provided to the RavenPy model, either through the initial configuration or
+        through the `update_data` method. Furthermore, that spatial information should be consistent with ravenpy.extractors.BasinMakerExtractor
+        expectations, as well as the Data Specifications of Basin Maker (https://hydrology.uwaterloo.ca/basinmaker/) and the outputs of
+        BasinMaker's `Generate_HRUs` function. In particular, the following variables should be present in the HRU file:
+
+        - Always:
+            - SubId: The ID of the subbasins.
+            - BasArea: The area of the subbasins.
+        - by == "hru":
+            - HRU_ID: The ID of the HRUs.
+            - HRU_Area: The area of the HRUs, in units consistent with the area of the subbasins.
+        - to == "drainage_area":
+            - DowSubId: The ID of the downstream subbasin for each HRU.
+        """
+        clean = {
+            "hru": "HRU",
+            "unit": "HRU",
+            "subbasin": "Subbasin",
+            "drainage_area": "DrainageArea",
+        }
+
+        # Get the files to aggregate
+        files = self.get_outputs(output=f"_By{clean[by]}", return_paths=True)
+        if subset is not None:
+            files = [file for file in files if any(s in file.name for s in subset)]
+        if len(files) == 0:
+            raise ValueError(f"No output files matching '{self.run_name}_*_By{clean[by]}*.nc' were found.")
+
+        weights = None
+        for file in files:
+            with xr.open_dataset(file, **kwargs) as ds:
+                ds_agg, weights = aggregate_output(ds, by=by, to=to, weights=weights)
+
+                file_out = file.parent / file.name.replace(f"_By{clean[by]}", f"_By{clean[to]}")
+                if file_out.exists():
+                    warnings.warn(
+                        f"The file {file_out} already exists.",
+                        stacklevel=2,
+                    )
+                    files_exist = list(file_out.parent.glob(file_out.stem.replace("[", "[[]").replace("]_", "[]]_") + "*.nc"))
+                    file_out = Path(str(file_out).replace(".nc", f"_v{len(files_exist) + 1}.nc"))
+
+                ds_agg.to_netcdf(file_out)
 
     def _read_qobs(self, qobs_file: os.PathLike | str, alt_name_flow: str | None = "q") -> None:
         """Read the observed streamflow data from a NetCDF file and update the .qobs properties of the RavenPy model."""
@@ -783,7 +811,7 @@ class RavenpyModel(HydrologicalModel):
             "alt_name_flow": alt_name_flow,
         }
 
-        with xr.open_dataset(qobs_file) as ds_qobs:
+        with xr.open_dataset(qobs_file, chunks={}) as ds_qobs:
             ds_qobs = ds_qobs.squeeze()
 
             # Try to get the basin name or ID variable as a string
@@ -802,7 +830,7 @@ class RavenpyModel(HydrologicalModel):
             station_id = "station_id" if "station_id" in ds_qobs else None
 
             # If the dataset is a single time series, we can manage a missing basin_id
-            if basin_id is None and ds_qobs.dims.keys() == {"time"}:
+            if basin_id is None and ds_qobs.sizes.keys() == {"time"}:
                 self.qobs["basin_id"] = [1]
                 self.qobs["station_id"] = ["0"] if station_id is None else ds_qobs[station_id].astype(str).values.tolist()
             elif basin_id is None:
@@ -1011,9 +1039,9 @@ class RavenpyModel(HydrologicalModel):
         }
 
         # Get some properties from the meteorological file
-        with xr.open_dataset(self.meteo["file"]) as ds:
+        with xr.open_dataset(self.meteo["file"], chunks={}) as ds:
             # Station-based meteorological data (Hard-coding is fine here, since RavenPy only supports station data with a 'station_id' dimension)
-            if "station_id" in ds.dims or ds.dims.keys() == {"time"}:
+            if "station_id" in ds.dims or ds.sizes.keys() == {"time"}:
                 self.meteo["type"] = "station"
                 self.meteo["station_len"] = len(ds.station_id) if "station_id" in ds.dims else 1
 
@@ -1111,12 +1139,15 @@ class RavenpyModel(HydrologicalModel):
                 for v in data_type
             ]
 
-    def _standardise_outputs(self, **kwargs):
+    def standardize_outputs(self, files: list[str] | None = None, **kwargs):
         r"""
-        Standardise the outputs of the simulation to be more consistent with CF conventions.
+        Standardize the outputs of the simulation to be more consistent with CF conventions.
 
         Parameters
         ----------
+        files : list[str] | None
+            Names of the output files to standardize. If None, all output files will be standardized.
+            The strings can be part of the file name (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -1125,58 +1156,58 @@ class RavenpyModel(HydrologicalModel):
         Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
         a temporary file will be created and then renamed to overwrite the original file.
         """
-        filename = Path(self.get_streamflow(output="path", **kwargs))
+        if files is None:
+            patterns = [f"{self.run_name}_*.nc"]
+        else:
+            patterns = [f"{self.run_name}_*{file.replace('.nc', '')}*.nc" for file in files]
 
-        with self.get_streamflow(output="all", **kwargs) as ds:
-            ds = ds.rename({"q_sim": "q"})
-            ds["q"] = convert_units_to(ds["q"], "m3 s-1")
-            ds["q"].attrs.update(
-                {
-                    "standard_name": "water_volume_transport_in_river_channel",
-                    "cell_methods": "time: mean",
-                    "long_name": "Simulated streamflow",
-                    "description": "Simulated streamflow at the outlet of the subbasin.",
-                }
+        files = []
+        for pattern in patterns:
+            files.extend(self.get_outputs(output="path").glob(pattern))
+
+        alt_names = {
+            # Dimensions
+            "basin_name": "subbasin_id",
+            "SBID": "subbasin_id",
+            "HRU_ID": "unit_id",
+            # HRU properties
+            "SubId": "subbasin_id",
+            "DowSubId": "dowsub_id",
+            "DrainArea": "drainage_area",
+            "BasArea": "subbasin_drainage_area",
+            "MeanElev": "subbasin_elevation",
+            "Obs_NM": "station_id",
+            "centroid_x": "subbasin_centroid_longitude",
+            "centroid_y": "subbasin_centroid_latitude",
+            "HRU_CenX": "unit_centroid_longitude",
+            "HRU_CenY": "unit_centroid_latitude",
+            "HRU_E_mean": "unit_elevation",
+            "HRU_Area": "unit_drainage_area",
+            # Lumped models
+            "area": "drainage_area",
+            "elevation": "elevation",
+            "longitude": "centroid_longitude",
+            "latitude": "centroid_latitude",
+            # Variables
+            "q_sim": "q",
+        }
+
+        for file in files:
+            with xr.open_dataset(file, **kwargs) as ds:
+                [ds[c].load() for c in ds.coords]
+                # Global attributes are already pretty good, but make the Raven version explicit
+                # Since the executable used might differ from raven-hydro, we trust the dataset's history
+                ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
+                if run is not None:
+                    ds.attrs["RavenPy_version"] = ravenpy.__version__
+
+                ds = standardize_output(ds, spatial_info=self.hru["hru"], alt_names=alt_names)
+
+                # Save the file
+                ds.to_netcdf(file.parent / f"{file.stem}_tmp.nc")
+
+            # Remove the original file and rename the new one
+            file.unlink()
+            (file.parent / f"{file.stem}_tmp.nc").rename(
+                file,
             )
-
-            ds = ds.swap_dims({"nbasins": "basin_name"}).rename({"basin_name": "subbasin_id"})
-            ds = ds.squeeze()
-            if "subbasin_id" in ds.dims:
-                ds["subbasin_id"].attrs["cf_role"] = "timeseries_id"
-
-                # If the file is larger than 100 MB, rechunk it to ~25 MB chunks along the 'subbasin_id' dimension
-                ds_size_mb = ds["q"].size * 4 / 1024 / 1024
-                if ds_size_mb > 100:
-                    chunks = estimate_chunks(ds, dims=["subbasin_id"], target_mb=25)
-                    # FIXME: This is fixed in the latest version of xscen. Remove this workaround once we depend on it.
-                    if version.parse(xs.__version__) <= version.parse("0.13.1"):
-                        for k, v in chunks.items():
-                            if v == -1:
-                                chunks[k] = len(ds[k])
-                else:
-                    chunks = {k: len(ds[k]) for k in ds["q"].dims}
-
-            else:
-                # Since we squeezed the dataset and renamed basin_name, it is preferable to call xs.io.rechunk_for_saving
-                # anyway to clean chunk encoding.
-                chunks = {"time": len(ds.time)}
-
-            # Global attributes are already pretty good, but make the Raven version explicit
-            # Since the executable used might differ from raven-hydro, we trust the dataset's history
-            ds.attrs["Raven_version"] = ds.attrs.get("history", "Raven unknown").split("Raven ")[-1]
-            if run is not None:
-                ds.attrs["RavenPy_version"] = ravenpy.__version__
-
-            # Overwrite the file
-            save_to_netcdf(
-                ds,
-                filename.parent / "streamflow_tmp.nc",
-                rechunk=chunks,
-                netcdf_kwargs={"encoding": {"q": {"dtype": "float32", "zlib": True, "complevel": 1}}},
-            )
-
-        # Remove the original file and rename the new one
-        filename.unlink()
-        (filename.parent / "streamflow_tmp.nc").rename(
-            filename,
-        )

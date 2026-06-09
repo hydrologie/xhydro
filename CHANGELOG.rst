@@ -2,22 +2,129 @@
 Changelog
 =========
 
-v0.7.0 (unreleased)
+..
+    Unreleased
+    ----------
+
+    Contributors to this version: None.
+
+    New features and enhancements
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Breaking changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Bug fixes
+    ^^^^^^^^^
+    * No changes.
+
+    Internal changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+v0.8.0 (2026-05-27)
 -------------------
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`).
+
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event.(:pull:`370`).
+* All hydrological model outputs will now have standard dimensions and coordinates. (:pull:`417`).
+    * For distributed models, the spatial dimension will either be `subbasin_id` or `unit_id` depending resolution.
+    * All outputs will now include ID, elevation, drainage area, and longitude and latitude coordinates when available, at the relevant scale(s).
+* An `aggregate_outputs` method has been added to the hydrological model classes to facilitate the aggregation of outputs to different spatial scales. (:pull:`417`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The `get_streamflow` method of the hydrological model classes has been renamed to `get_outputs`. (:pull:`417`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a misconfigured `envlist` setting in `tox.toml`. (:pull:`426`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* A few notebooks have been moved to the `pavics_notebooks` directory to allow testing on PAVICS. (:pull:`414`).
+* `raven-hydro` has been added as an explicit dependency in `conda` installation configurations. (:pull:`423`).
+* Updated the cookiecutter template to the latest commit. (:pull:`426`):
+    * Updated the `zizmor`` workflow security checks to ignore some superfluous actions, addresses some minor workflow security issues.
+    * Updated several development dependency versions.
+    * Updated `pre-commit` hooks.
+* A `_model_utils.py` module has been added to the `xhydro.modelling` subpackage to hold utility functions common to all hydrological models. (:pull:`417`).
+    * `standardize_outputs` and `aggregate_outputs` functions have been added to this module.
+* The HYDROTEL notebook now uses the same mechanism as the tests to load the executable and demo project paths from environment variables. (:pull:`417`).
+* Temporarily disabled the `fail_on_warning` setting in the Read the Docs configuration, until `xscen` is updated to `>0.15.1`. (:pull:`432`).
+
+v0.7.1 (2026-03-03)
+-------------------
+
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Trevor James Smith (:user:`Zeitsperre`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added support for Python 3.14. (:pull:`410`).
+* Added support for the latest version of `xclim`, `xscen`, `xarray`, and `pandas`. (:pull:`410`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Due to the added support for `pandas` v3.0.0, the `leafmap` dependency has been made optional when installing `xhydro` through `pip`. (:pull:`410`).
+    * The dependency can be installed separately with `pip install xhydro[leafmap]`.
+    * This does not affect the `conda` installation, which still includes `leafmap` as a dependency.
+* Development dependencies are now installed via `pip` "dependency-group" entries (see: `PEP-735 <https://peps.python.org/pep-0735/>`_). Requires `pip >=25.2`. (:pull:`411`).
+    * New "optional-dependency" lists are now based on optional features (`julia`, `leafmap`, `raven`, `speedups`, `all`).
+* Depepndencies that are implicitly installed and should have been listed in the core package have been added (`clisops`, `matplotlib`, `packaging`, `scikit-learn`, `shapely`). (:pull:`411`).
+
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter template to the latest commit. (:pull:`411`):
+    * `pre-commit` tool has been replaced by `prek`.
+    * The project repository now requires Developer Certificate of Origin (DCO) in commit messages.
+    * `sphinx` has been pinned below v9.0 due to a false-positive warning raised in the French documentation build.
+    * The project now utilizes `deptry` to ensure that all necessary dependencies are listed in the core package.
+* `ruff` has been configured to temporarily ignore rule `D420` due to an error in its implementation in v0.15.4. (:pull:`411`.)
+
+v0.7.0 (2026-02-24)
+-------------------
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`), Julián Ospina (:user:`ospinajulian`), Ève Larose (:user:`e-larose`), Thomas-Charles Fortier Filion (:user:`TC-FF`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* The `xh.indicators.pmp.major_precipitation_events` function now supports specifying a minimum precipitation threshold to consider an event. (:pull:`370`).
+* New objective functions have been added to the calibration module. (:issue:`365`, :pull:`366`).
+* Added a new submodule `xhydro.indicators.signatures` to compute hydrological signatures. (:issue:`365`, :pull:`366`).
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* The migration from `stackstac` to `odc-stac` in `xhydro.gis` has led to changes in the results of `xhydro.gis.land_use_classification` and `xhydro.gis.surface_properties` due to differences in projection handling between the two libraries. (:pull:`403`).
+    * Our tests show that the differences are generally minor, but users should verify that their results remain consistent after the update.
+* The `Upstream Area (sq. km).` column in the output of `xh.gis.watershed_properties` has been renamed to `Upstream Area (sq. km)`. (:pull:`403`).
+* Features that were deprecated and planned to be removed in v0.7.0 have now been removed. This includes: (:pull:`408`).
+    * The `map` argument in `xh.gis.watershed_delineation` (now `m`).
+    * The `use_defaults` and `check_missing` arguments in the `Hydrotel` class.
+    * Most of the arguments in the `RavenpyModel.create_rv()` method, which are now expected to be given to the class itself or to the `update_data()` method.
+    * Streamflow is now always `q`.
+    * `return_period` is now the only accepted argument for return periods in the `xhfa` module, and the old `t`, `rp`, and `return_periods` arguments have been removed.
+    * `xhfa.regional.get_group_from_fit` has been renamed to `xhfa.regional.get_clusters` and the old function has been removed.
+    * `xhfa.regional.calculate_rp_from_afr` has been renamed to `xhfa.regional.calculate_return_period` and the old function has been removed.
+    * `xhfa.uncertainties.calc_q_iter` has been renamed to `xhfa.uncertainties.calculate_quantiles_over_boostraped_groups` and the old function has been removed.
 
 Bug fixes
 ^^^^^^^^^
 * The plotting positions calculated by `xhfa.local._plotting_positions` are now assigned as coordinates to ensure compatibility with `hvplot` when combined to `xarray >=2025.11.0`. (:pull:`373`).
 * Fixed a bug in `xh.indicators.pmp.spatial_average_storm_configurations` where certain instances were incorrectly assigned the string "x" and "y" instead of the expected value x and y. (:pull:`370`).
 * Corrected the titles in the documentation of the Inputs for the Probable Maximum flood (PMF). (:pull:`370`)
+* Added specific import for exactextract to prevent issues in the GIS modules if exactextract is prensent in the environment. (:pull:`381`)
 * The version detection logic in `xhydro.modelling._hydrotel` should now be more robust. (:pull:`388`).
 * Added a temporary workaround in `xhydro.modelling._hydrotel` to avoid `OverflowError` when chunks are automatically estimated as `-1` by `xscen.estimate_chunks`. (:pull:`388`).
     * Automated chunk estimation is also now skipped if the dataset is smaller than 100 MB.
+* `xh.modelling.format_input` now correctly handles subdaily meteorological data with Hydrotel. (:issue:`404`, :pull:`405`).
+* `xh.modelling.format_input` now correctly handles station-based meteorological data with Hydrotel. (:pull:`405`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -26,6 +133,12 @@ Internal changes
     * `pre-commit` hooks have been updated
     * Python 3.13 has been set in CI workflows (replacing `"3.x"`)
     * `tox` builds no longer require `python-coveralls` (abandoned) and CI workflows now exclusively use `coverallsapp/github-action`
+* Addressed multiple FutureWarnings coming from `xarray` and `pandas`. (:pull:`403`).
+* The backend used to load STAC data in `xhydro.gis` has been changed from `stackstac` to `odc-stac`. (:pull:`403`).
+    * This change addresses compatibility issues with new versions of `rasterio`.
+* Added an additional xfail condition to the tests calling `planetary_computer` to account for occasional server issues. (:pull:`403`).
+* Updated `test_hydrotel.py` to enable testing with the Hydrotel executable and demo project. (:pull:`405`).
+    * You need to create a `.env` file in the `tests` directory and add the three required environment variables (`HYDROTEL_EXECUTABLE`, `HYDROTEL_DEMO`, and `HYDROTEL_VERSION`).
 
 v0.6.1 (2025-10-22)
 -------------------
@@ -36,6 +149,7 @@ Bug fixes
 * Fixed a compatibility issue with `xarray >=2025.9.1`` in `xhfa.regional.fit_pca`. (:pull:`355`).
 * Fixed a bug where the process would hang indefinitely on Windows systems when calling hydrological models through command line arguments. (:pull:`358`, :pull:`363`).
 * The long_name and description attributes of the `q` variable in Hydrotel outputs have been slightly modified to match `RavenPy` outputs. (:pull:`358`).
+* Fixed a problem to get a regional tau4 instead of being local in order to compute sigma4 used in the computation of the Z score (:pull:`372`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -105,21 +219,21 @@ Contributors to this version: Thomas-Charles Fortier Filion (:user:`TC-FF`), Gab
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added a new module `xhydro.extreme_value_analysis` that wraps the `Extremes.jl` package for Julia. (:pull:`175`).
-  * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
-  * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
-  * You can use `pip install xhydro[julia]` to install the required dependencies.
+    * The module provides functions to fit extreme value distributions to data, compute return levels, and get uncertainty estimates.
+    * The module is designed to be optional and requires the user to have Julia installed with the `Extremes.jl` package, along with the `PyJuliaCall` package for Python.
+    * You can use `pip install xhydro[julia]` to install the required dependencies.
 * Multiple improvements to the documentation. (:pull:`274`, :pull:`279`, :pull:`293`).
 
 Bug fixes
 ^^^^^^^^^
 * Patched the outputs of `xh.optimal_interpolation.execute` to remove a superfluous `station` dimension and to ensure that the `time` dimension has coordinates. (:pull:`274`).
-  * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
+    * Note that this change does not fix the underlying issue with the code, which will be addressed in a future release.
 * Added attributes to variables instead of global attributes in `xh.extreme_value_analysis`. Modified dimension names and introduced a new dimension, `return_period`, to the results of `xh.extreme_value_analysis.return_level()`. (:pull:`283`).
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
 * The ``xh.cc.sampled_indicators`` function has been separated into two functions: ``xh.cc.weighted_random_sampling`` and ``xh.cc.sampled_indicators``. (:pull:`240`).
-  * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
+    * Many of the arguments and outputs have been renamed or reorganized. Since no one was using this function yet AFAIK, no backward compatibility has been maintained.
 * The default `use_defaults` argument of Hydrotel has been changed from 'True' to 'False'. (:pull:`233`).
 * Multiple functions in the `xhydro.frequency_analysis` and `xhydro.indicators.pmp` modules have been updated to require literal arguments instead of positional arguments. (:pull:`274`).
 

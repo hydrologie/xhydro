@@ -59,7 +59,6 @@ Any comments are welcome!
 """
 
 import os
-import warnings
 from copy import deepcopy
 
 # Import packages
@@ -102,21 +101,27 @@ class SpotSetup:
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
-            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_bias": Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
-            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "abs_volume_error": Absolute value of the volume_error metric
             - "agreement_index": Index of agreement
             - "correlation_coeff": Correlation coefficient
-            - "kge" : Kling Gupta Efficiency metric (2009 version)
-            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "high_flow_rel_error": High flow relative error
+            - "kge": Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+            - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+            - "lce": Least-squares combined efficiency
+            - "low_flow_rel_error": Low flow relative error
             - "mae": Mean Absolute Error metric
             - "mare": Mean Absolute Relative Error metric
-            - "mse" : Mean Square Error metric
+            - "mse": Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "r2" : r-squared, i.e. square of correlation_coeff.
-            - "rmse" : Root Mean Square Error
-            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-            - "rsr" : Ratio of RMSE to standard deviation.
+            - "persistence_index": Persistence index
+            - "r2": r-squared, i.e. square of correlation_coeff.
+            - "rmse": Root Mean Square Error
+            - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr": Ratio of RMSE to standard deviation.
+            - "volumetric_efficiency": Volumetric efficiency
 
     take_negative : bool
         Inidactor to take the negative of the objective function value in optimization to ensure convergence
@@ -176,21 +181,28 @@ class SpotSetup:
         obj_func : str
             The objective function used for calibrating. Can be any one of these:
 
-                - "abs_bias" : Absolute value of the "bias" metric
+                - "abs_bias": Absolute value of the "bias" metric
                 - "abs_pbias": Absolute value of the "pbias" metric
-                - "abs_volume_error" : Absolute value of the volume_error metric
+                - "abs_volume_error": Absolute value of the volume_error metric
                 - "agreement_index": Index of agreement
                 - "correlation_coeff": Correlation coefficient
-                - "kge" : Kling Gupta Efficiency metric (2009 version)
-                - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+                - "high_flow_rel_error": High flow relative error
+                - "kge": Kling Gupta Efficiency metric (2009 version)
+                - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+                - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+                - "lce": Least-squares combined efficiency
+                - "low_flow_rel_error": Low flow relative error
                 - "mae": Mean Absolute Error metric
                 - "mare": Mean Absolute Relative Error metric
-                - "mse" : Mean Square Error metric
+                - "mse": Mean Square Error metric
                 - "nse": Nash-Sutcliffe Efficiency metric
-                - "r2" : r-squared, i.e. square of correlation_coeff.
-                - "rmse" : Root Mean Square Error
-                - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-                - "rsr" : Ratio of RMSE to standard deviation.
+                - "persistence_index": Persistence index
+                - "r2": r-squared, i.e. square of correlation_coeff.
+                - "rmse": Root Mean Square Error
+                - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+                - "rsr": Ratio of RMSE to standard deviation.
+                - "volumetric_efficiency": Volumetric efficiency
+
         evaluations : int
             Maximum number of model evaluations (calibration budget) to perform before stopping the calibration process.
         algorithm : str
@@ -230,30 +242,12 @@ class SpotSetup:
         else:
             # FIXME: This should be more robust, and should be able to handle other names
             if isinstance(qobs, xr.Dataset):
-                if "streamflow" in qobs and "q" not in qobs:
-                    warnings.warn(
-                        "Default variable name has changed from 'streamflow' to 'q'. "
-                        "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
-                        FutureWarning,
-                        stacklevel=2,
-                    )
-                    da = qobs.streamflow
-                else:
-                    da = qobs.q
+                da = qobs.q
             elif isinstance(qobs, xr.DataArray):
                 da = qobs
             elif isinstance(qobs, os.PathLike):
                 with xr.open_dataset(qobs) as ds:
-                    if "streamflow" in ds and "q" not in ds:
-                        warnings.warn(
-                            "Default variable name has changed from 'streamflow' to 'q'. "
-                            "Supporting 'streamflow' is deprecated and will be removed in xHydro v0.7.0.",
-                            FutureWarning,
-                            stacklevel=2,
-                        )
-                        da = ds.streamflow
-                    else:
-                        da = ds.q
+                    da = ds.q
             else:
                 raise ValueError("qobs must be a NumPy array, xarray Dataset, xarray DataArray, or a path to a file.")
             da = da.squeeze()
@@ -285,7 +279,7 @@ class SpotSetup:
 
         # Run the model and return qsim, with model_config containing the
         # tested parameter set.
-        qsim = hydrological_model(self.model_config).run()
+        qsim = hydrological_model(self.model_config).run(overwrite=True)
 
         # Return the array of values from qsim for the objective function eval.
         return qsim["q"].values
@@ -376,21 +370,27 @@ def perform_calibration(
     obj_func : str
         The objective function used for calibrating. Can be any one of these:
 
-            - "abs_bias" : Absolute value of the "bias" metric
+            - "abs_bias": Absolute value of the "bias" metric
             - "abs_pbias": Absolute value of the "pbias" metric
-            - "abs_volume_error" : Absolute value of the volume_error metric
+            - "abs_volume_error": Absolute value of the volume_error metric
             - "agreement_index": Index of agreement
             - "correlation_coeff": Correlation coefficient
-            - "kge" : Kling Gupta Efficiency metric (2009 version)
-            - "kge_mod" : Kling Gupta Efficiency metric (2012 version)
+            - "high_flow_rel_error": High flow relative error
+            - "kge": Kling Gupta Efficiency metric (2009 version)
+            - "kge_mod": Kling Gupta Efficiency metric (2012 version)
+            - "kge_2021": Kling Gupta Efficiency metric (2021 version)
+            - "lce": Least-squares combined efficiency
+            - "low_flow_rel_error": Low flow relative error
             - "mae": Mean Absolute Error metric
             - "mare": Mean Absolute Relative Error metric
-            - "mse" : Mean Square Error metric
+            - "mse": Mean Square Error metric
             - "nse": Nash-Sutcliffe Efficiency metric
-            - "r2" : r-squared, i.e. square of correlation_coeff.
-            - "rmse" : Root Mean Square Error
-            - "rrmse" : Relative Root Mean Square Error (RMSE-to-mean ratio)
-            - "rsr" : Ratio of RMSE to standard deviation.
+            - "persistence_index": Persistence index
+            - "r2": r-squared, i.e. square of correlation_coeff.
+            - "rmse": Root Mean Square Error
+            - "rrmse": Relative Root Mean Square Error (RMSE-to-mean ratio)
+            - "rsr": Ratio of RMSE to standard deviation.
+            - "volumetric_efficiency": Volumetric efficiency
 
     bounds_high : np.array
         High bounds for the model parameters to be calibrated. SPOTPY will sample parameter sets from
@@ -512,7 +512,7 @@ def perform_calibration(
     model_config.update({"parameters": best_parameters})
 
     # ... which can be used to run the hydrological model and get the best Qsim.
-    qsim = hydrological_model(model_config).run()
+    qsim = hydrological_model(model_config).run(overwrite=True)
 
     # Return the best parameters, qsim and best objective function value.
     return best_parameters, qsim, bestobjf

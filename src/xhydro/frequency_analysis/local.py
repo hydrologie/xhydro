@@ -1,7 +1,6 @@
 """Local frequency analysis functions and utilities."""
 
 import datetime
-import warnings
 
 import numpy as np
 import statsmodels
@@ -74,7 +73,7 @@ def fit(
                     .assign_coords(scipy_dist=d)
                     .expand_dims("scipy_dist")
                 )
-            params = xr.concat(p, dim="scipy_dist")
+            params = xr.concat(p, dim="scipy_dist", join="outer")
 
             # Reorder dparams to match the order of the parameters across all distributions, since subsequent operations rely on this.
             p_order = sorted(set(params.dparams.values).difference(["loc", "scale"])) + [
@@ -108,7 +107,6 @@ def parametric_quantiles(
     p: xr.Dataset,
     return_period: float | list[float],
     mode: str = "max",
-    t: float | list[float] | None = None,
 ) -> xr.Dataset:
     """
     Compute quantiles from fitted distributions.
@@ -122,17 +120,12 @@ def parametric_quantiles(
         Return period(s) in years.
     mode : {'max', 'min'}
         Whether the return period is the probability of exceedance (max) or non-exceedance (min).
-    t :  float or list of float
-        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
 
     Returns
     -------
     xr.Dataset
         Dataset containing the quantiles of the distributions.
     """
-    if t is not None:
-        warnings.warn("The 't' parameter has been renamed to 'return_period' and will be removed in xhydro v0.7.0.", FutureWarning, stacklevel=2)
-        return_period = t
     distributions = list(p["scipy_dist"].values)
 
     return_period = np.atleast_1d(return_period)
