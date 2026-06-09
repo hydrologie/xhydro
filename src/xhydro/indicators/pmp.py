@@ -154,7 +154,7 @@ def precipitable_water(
     # Thickness of the pressure layers.
     zg1 = zg_corr.diff("plev", label="upper")
     zg2 = zg_corr.diff("plev", label="lower")
-    zg_moy = xr.concat([zg1, zg2], dim="variable").sum("variable") / 2
+    zg_moy = xr.concat([zg1, zg2], dim="variable", join="outer").sum("variable") / 2
 
     # Add the pressure layer below the lowest pressure level when the surface altitude is bewlow it (e.g., at  sea level).
     if add_pre_lay:

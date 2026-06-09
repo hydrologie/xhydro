@@ -1,0 +1,85 @@
+coordinates:
+  # Identifiers (Basin --> Reaches --> Computational Units)
+  dowsub_id:
+    long_name: Downstream Basin ID
+    description: ID of the downstream subbasin in the model.
+  station_id:
+    long_name: Observation Station ID
+    description: ID of the observation stations.
+  subbasin_id:
+    long_name: Subbasin ID
+    description: Unique identifier representing a subbasin.
+  unit_id:
+    long_name_raven: HRU ID
+    long_name_hydrotel: RHHU ID
+    description_raven: Unique identifier representing each Hydrological Response Unit (HRU) in the Raven model.
+    description_hydrotel: Unique identifier representing each Relatively Homogeneous Hydrological Unit (RHHU) in the HYDROTEL model.
+
+  # Coordinates
+  lon:
+    long_name: Longitude of the watershed outlet
+    units: degrees_east
+  lat:
+    long_name: Latitude of the watershed outlet
+    units: degrees_north
+  centroid_longitude:
+    long_name: Longitude of the watershed centroid
+    units: degrees_east
+  centroid_latitude:
+    long_name: Latitude of the watershed centroid
+    units: degrees_north
+  subbasin_centroid_longitude:
+    long_name: Longitude of the subbasin centroid
+    units: degrees_east
+    description: Centroid longitude of the immediate watershed of the river segment.
+  subbasin_centroid_latitude:
+    long_name: Latitude of the subbasin centroid
+    units: degrees_north
+    description: Centroid latitude of the immediate watershed of the river segment.
+  unit_centroid_longitude:
+    long_name: Longitude of the computational unit centroid
+    units: degrees_east
+    description_raven: Centroid longitude of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Centroid longitude of the computational unit (RHHU) in the HYDROTEL model.
+  unit_centroid_latitude:
+    long_name: Latitude of the computational unit centroid
+    units: degrees_north
+    description_raven: Centroid latitude of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Centroid latitude of the computational unit (RHHU) in the HYDROTEL model.
+
+  # Other spatial attributes
+  drainage_area:
+    long_name: Drainage area of the watershed
+    units: km2
+  subbasin_drainage_area:
+    long_name: Area of the subbasin
+    units: km2
+    description: Area of the immediate watershed of the river segment.
+  unit_drainage_area:
+    long_name: Area of the computational unit
+    units: km2
+    description_raven: Area of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Area of the computational unit (RHHU) in the HYDROTEL model.
+
+  elevation:
+    long_name: Mean elevation of the drainage area
+    units: m
+  subbasin_elevation:
+    long_name: Mean elevation of the subbasin
+    units: m
+    description: Mean elevation of the immediate watershed of the river segment.
+  unit_elevation:
+    long_name: Mean elevation of the computational unit
+    units: m
+    description_raven: Mean elevation of the computational unit (HRU) in the Raven model.
+    description_hydrotel: Mean elevation of the computational unit (RHHU) in the HYDROTEL model.
+
+
+# Variables
+variables:
+  q:
+    standard_name: outgoing_water_volume_transport_along_river_channel
+    long_name: Simulated streamflow
+    canonical_units: m3 s-1
+    description: Simulated streamflow at the outlet of the subbasin.
+    cell_methods: "time: mean"

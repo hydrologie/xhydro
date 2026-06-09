@@ -119,16 +119,6 @@ def get_yearly_op(  # noqa: C901
         if interpolate_na:
             ds[input_var] = ds[input_var].interpolate_na(dim="time", method="linear")
 
-    if input_var == "q" and "q" not in ds and "streamflow" in ds:
-        input_var = "streamflow"
-        warnings.warn(
-            "The default 'input_var' has changed from 'streamflow' to 'q' in order to be consistent with changes in xclim. "
-            "Support for 'streamflow' will be removed in xHydro v0.7.0. Please use 'input_var=\"streamflow\"' "
-            "or change the variable name in your dataset.",
-            FutureWarning,
-            stacklevel=2,
-        )
-
     # Add the variable to xclim to avoid raising an error
     if input_var not in xc.core.VARIABLES:
         attrs = {

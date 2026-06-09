@@ -566,11 +566,11 @@ def retrieve_data(
     station_count = len(observation_stations)  # Number of validation stations
 
     # Preallocate some matrices. The "selected" variables are those that correspond between obs and sim stations.
-    centroid_lat = np.empty(station_count) * np.nan
-    centroid_lon = np.empty(station_count) * np.nan
-    drainage_area = np.empty(station_count) * np.nan
-    selected_flow_obs = np.empty((time_range, station_count)) * np.nan
-    selected_flow_sim = np.empty((time_range, station_count)) * np.nan
+    centroid_lat = np.full(station_count, np.nan)
+    centroid_lon = np.full(station_count, np.nan)
+    drainage_area = np.full(station_count, np.nan)
+    selected_flow_obs = np.full((time_range, station_count), np.nan)
+    selected_flow_sim = np.full((time_range, station_count), np.nan)
 
     # Loop over all the observation stations and get the data from the correct simulation in the background field.
     for i in range(0, station_count):
@@ -588,11 +588,11 @@ def retrieve_data(
 
         # Get the flows from the Qsim file
         index_in_obs = np.where(qobs["station_id"] == cv_station_id)[0]
-        sup_obs = qobs["drainage_area"].values[index_in_obs]
+        sup_obs = qobs["drainage_area"].values[index_in_obs].squeeze()
         selected_flow_obs[:, i] = qobs["q"].isel(station=index_in_obs) / sup_obs
         drainage_area[i] = sup_obs
-        centroid_lon[i] = qobs["centroid_lon"][index_in_obs].values
-        centroid_lat[i] = qobs["centroid_lat"][index_in_obs].values
+        centroid_lon[i] = qobs["centroid_lon"][index_in_obs].values.squeeze()
+        centroid_lat[i] = qobs["centroid_lat"][index_in_obs].values.squeeze()
 
     # Log-streamflow transformation for the interpolation
     selected_flow_obs = np.log(selected_flow_obs)

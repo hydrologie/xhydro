@@ -1,4 +1,4 @@
-name: "Bump Patch Version"
+name: "Bump Version"
 
 on:
   push:
@@ -20,6 +20,7 @@ on:
       - CI/**/*.in
       - CI/**/*.py
       - CI/**/*.txt
+      - CITATION.cff
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.rst
       - Makefile
@@ -39,8 +40,9 @@ permissions:
 
 jobs:
   bump_patch_version:
-    name: Bumpversion Patch
+    name: Bumpversion build/patch version
     runs-on: ubuntu-latest
+    environment: automation
     permissions:
       actions: read
     strategy:
@@ -48,7 +50,7 @@ jobs:
         python-version: [ "3.13" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -60,24 +62,24 @@ jobs:
 
       - name: Generate App Token
         id: token_generator
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         with:
           app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
 
       - name: Checkout Repository
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
           token: ${{ steps.token_generator.outputs.token }}
 
       - name: Set up Python${{ matrix.python-version }}
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Import GPG Key
-        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg_private_key: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.HYDROLOGIE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
@@ -102,7 +104,7 @@ jobs:
           echo "new_version=$(bump-my-version show current_version)"
 
       - name: Push Changes
-        uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa # v1.0.0
+        uses: ad-m/github-push-action@4cc74773234f74829a8c21bc4d69dd4be9cfa599 # v1.1.0
         with:
           branch: ${{ github.ref }}
           force: false
