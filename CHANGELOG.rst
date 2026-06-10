@@ -2,27 +2,29 @@
 Changelog
 =========
 
-..
-    Unreleased
-    ----------
 
-    Contributors to this version: None.
+Unreleased
+----------
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Fixed the `xfail` condition in the tests. (:pull:`435`).
+* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows and development environment due to segfaults with the latest versions. (:pull:`435`).
+    * This issue does not seem to occur locally, so further investigation is needed to determine the root cause.
 
 v0.8.0 (2026-05-27)
 -------------------
