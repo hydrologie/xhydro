@@ -131,8 +131,8 @@ dependencies = [
 
 [project.optional-dependencies]
 julia = [
-  "juliacall >=0.9.35",
-  "juliapkg >=0.1.24"
+  "juliacall >=0.9.20",
+  "juliapkg >=0.1.15"
 ]
 # FIXME: Temporary fix until leafmap's dependency bqplot is updated to a version compatible with pandas >=3.0.0 (https://github.com/bqplot/bqplot/pull/1692)
 # The conda-forge version of bqplot is actually badly tagged and doesn't specify a minimum version, but this is fine since we never actually call bqplot ourselves.
