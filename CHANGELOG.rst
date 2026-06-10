@@ -2,11 +2,10 @@
 Changelog
 =========
 
-
 Unreleased
 ----------
 
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -18,7 +17,7 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* No changes.
+* Fixed a memory explosion in `xhydro.modelling.aggregate_outputs` when processing large basins. Weights were previously computed as a dense boolean tensor; the aggregation now uses `xr.dot` with the `dim` parameter instead. (:pull:`434`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^

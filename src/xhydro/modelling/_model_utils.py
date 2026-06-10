@@ -234,8 +234,21 @@ def aggregate_output(  # noqa: C901
                         status = xr.where(status["sbid"] == idx, 2, status)
                         status = xr.where(status["sbid"] == status["dowsub_id"].sel(sbid=idx), 1, status)
 
-    # Perform the aggregation
-    ds_agg = ds.expand_dims({"sbid": new_dim}).weighted(weights).mean(dim=f"{by}_id")
+    # Perform the aggregation using xr.dot to avoid materializing the
+    # (sbid, time, unit) intermediate that .weighted().mean() creates.
+    ds_vars = {}
+    for v in ds.data_vars:
+        if f"{by}_id" not in ds[v].dims:
+            ds_vars[v] = ds[v].expand_dims({"sbid": new_dim})
+            continue
+        x = ds[v]  # (time, unit) — do NOT expand; weights already carries sbid
+        num = xr.dot(weights, x.fillna(0.0), dim=f"{by}_id")
+        den = xr.dot(weights, x.notnull().astype(float), dim=f"{by}_id")
+        result = (num / den).where(den != 0)
+        result.attrs = ds[v].attrs.copy()
+        ds_vars[v] = result
+    ds_agg = xr.Dataset(ds_vars)
+    ds_agg.attrs = ds.attrs.copy()
     ds_agg = ds_agg.rename({"sbid": "subbasin_id"})
 
     # Re-add the coordinates and attributes that were lost during the aggregation
