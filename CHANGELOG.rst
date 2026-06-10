@@ -5,7 +5,7 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,7 +21,9 @@ Bug fixes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* No changes.
+* Fixed the `xfail` condition in the tests. (:pull:`435`).
+* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows and development environment due to segfaults with the latest versions. (:pull:`435`).
+    * This issue does not seem to occur locally, so further investigation is needed to determine the root cause.
 
 v0.8.0 (2026-05-27)
 -------------------

@@ -143,17 +143,7 @@ class TestRavenpyModels:
         xr.testing.assert_equal(ds1, ds2)
 
     @pytest.mark.online
-    @pytest.mark.xfail(
-        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-        strict=False,
-        raises=APIError,
-    )
-    @pytest.mark.xfail(
-        reason="Test may fail with if the server is down.",
-        strict=False,
-        raises=HTTPError,
-        match="404 Client Error",
-    )
+    @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
     def test_ravenpy_from_funcs(self, deveraux, tmp_path):
         meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
         meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")

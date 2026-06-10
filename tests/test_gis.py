@@ -210,17 +210,7 @@ class TestSurfaceProperties:
         return df
 
     @pytest.mark.online
-    @pytest.mark.xfail(
-        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-        strict=False,
-        raises=APIError,
-    )
-    @pytest.mark.xfail(
-        reason="Test may fail with if the server is down.",
-        strict=False,
-        raises=HTTPError,
-        match="404 Client Error",
-    )
+    @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
     def test_surface_properties(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
@@ -242,17 +232,7 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
-    @pytest.mark.xfail(
-        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-        strict=False,
-        raises=APIError,
-    )
-    @pytest.mark.xfail(
-        reason="Test may fail with if the server is down.",
-        strict=False,
-        raises=HTTPError,
-        match="404 Client Error",
-    )
+    @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
     def test_surface_properties_unique_id(self, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
         unique_id = "Station"
@@ -266,17 +246,7 @@ class TestSurfaceProperties:
         )
 
     @pytest.mark.online
-    @pytest.mark.xfail(
-        reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-        strict=False,
-        raises=APIError,
-    )
-    @pytest.mark.xfail(
-        reason="Test may fail with if the server is down.",
-        strict=False,
-        raises=HTTPError,
-        match="404 Client Error",
-    )
+    @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
     def test_surface_properties_xarray(self, surface_properties_data):
         unique_id = "Station"
 
@@ -296,17 +266,7 @@ class TestSurfaceProperties:
 
 
 @pytest.mark.online
-@pytest.mark.xfail(
-    reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-    strict=False,
-    raises=APIError,
-)
-@pytest.mark.xfail(
-    reason="Test may fail with if the server is down.",
-    strict=False,
-    raises=HTTPError,
-    match="404 Client Error",
-)
+@pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
 class TestLandClassification:
     gdf = xd.Query(
         **{
@@ -461,17 +421,7 @@ class TestLandClassification:
 
 
 @pytest.mark.online
-@pytest.mark.xfail(
-    reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.",
-    strict=False,
-    raises=APIError,
-)
-@pytest.mark.xfail(
-    reason="Test may fail with if the server is down.",
-    strict=False,
-    raises=HTTPError,
-    match="404 Client Error",
-)
+@pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
 class TestToRaven:
     @pytest.mark.parametrize("data", ["coord", "gdf", "file"])
     def test_coords(self, data, tmp_path):
