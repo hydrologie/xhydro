@@ -348,6 +348,7 @@ class Hydrotel(HydrologicalModel):
             "path" to return the output directory.
             Otherwise, the name of the output to retrieve, or "q" for the streamflow.
             This should match the name of the output file without the extension (e.g. "neige" for "neige.nc").
+            Wildcards can be used.
         return_paths : bool
             If True, return the path to the output file(s) instead of the dataset. Default is False.
         \*\*kwargs : dict
