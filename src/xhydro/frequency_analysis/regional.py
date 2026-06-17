@@ -1,6 +1,5 @@
 """
 Provides functions for performing regional frequency analysis on hydrological data.
-
 Key Functions:
 - cluster_indices: Get indices of elements with a specific cluster number.
 - get_groups_indices: Retrieve indices of groups from a clustering result.
@@ -8,51 +7,39 @@ Key Functions:
 - fit_pca: Perform Principal Component Analysis (PCA) on the input dataset.
 - moment_l_vector: Calculate L-moments for multiple datasets.
 - moment_l: Compute various L-moments and L-moment ratios for a given dataset.
-
 The module utilizes NumPy, pandas, scikit-learn, and xarray for efficient data manipulation and analysis.
-
 Example Usage:
     import xarray as xr
     from regional_frequency_analysis import fit_pca, moment_l_vector
-
     # Load your dataset
     ds = xr.open_dataset('your_data.nc')
-
     # Perform PCA
     data_pca, pca_obj = fit_pca(ds, n_components=3)
-
     # Calculate L-moments
     l_moments = moment_l_vector(ds.values)
-
 This module is designed for hydrologists and data scientists working with regional frequency analysis in water resources.
 """
-
 import math
 import warnings
 from collections.abc import Callable
 from typing import cast
-
 import numpy as np
 import pandas as pd
 import xarray as xr
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
 from xhydro import __version__
 from xhydro.utils import update_history
-
 
 def _cluster_indices(clust_num: int | np.ndarray, labels_array: int | np.ndarray) -> np.ndarray:
     """
     Get the indices of elements with a specific cluster number using NumPy.
-
     Parameters
     ----------
     clust_num : numpy.ndarray or int
         Cluster number to find indices for.
     labels_array : numpy.ndarray or int
         Array containing cluster labels.
-
     Returns
     -------
     numpy.ndarray
@@ -60,18 +47,15 @@ def _cluster_indices(clust_num: int | np.ndarray, labels_array: int | np.ndarray
     """
     return np.where(labels_array == clust_num)[0]
 
-
 def _get_clusters_indices(cluster: list, sample: xr.Dataset) -> list:
     """
     Get indices from a clustering result, excluding the cluster labeled -1.
-
     Parameters
     ----------
     cluster : list
         Clustering result with labels attribute.
     sample : xr.Dataset
         Data sample to fit the model.
-
     Returns
     -------
     list
@@ -80,11 +64,9 @@ def _get_clusters_indices(cluster: list, sample: xr.Dataset) -> list:
     grouped: list = [sample.index.to_numpy()[_cluster_indices(i, cluster.labels_)] for i in range(np.max(cluster.labels_) + 1)]
     return grouped
 
-
-def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
+def get_group_from_fit(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
     """
     Get indices of groups from a fit using the specified model and parameters.
-
     Parameters
     ----------
     model : callable
@@ -93,7 +75,29 @@ def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
         Parameters for the model.
     sample : xr.Dataset or xr.DataArray
         Data sample to fit the model.
+    Returns
+    -------
+    list :
+        List of indices for each non-excluded group.
+    """
+    warnings.warn("This function is deprecated and will be removed in xhydro v0.7.0. Use get_clusters instead.", FutureWarning, stacklevel=2)
+    return get_clusters(
+        model,
+        param,
+        sample,
+    )
 
+def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray) -> list:
+    """
+    Get indices of groups from a fit using the specified model and parameters.
+    Parameters
+    ----------
+    model : callable
+        Model class or instance with a fit method.
+    param : dict
+        Parameters for the model.
+    sample : xr.Dataset or xr.DataArray
+        Data sample to fit the model.
     Returns
     -------
     list :
@@ -102,27 +106,22 @@ def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
     sample = sample.to_dataframe(name="value").reset_index().pivot(index="Station", columns="components")
     return _get_clusters_indices(model(**param).fit(sample), sample)
 
-
 def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     r"""
     Perform Principal Component Analysis (PCA) on the input dataset.
-
     This function scales the input data, applies PCA transformation, and returns
     the transformed data along with the PCA object.
-
     Parameters
     ----------
     ds : xr.Dataset
         Input dataset to perform PCA on.
     \*\*kwargs : dict
         Additional keyword arguments to pass to the PCA constructor.
-
     Returns
     -------
     tuple: A tuple containing:
         - data_pca (xr.DataArray): PCA-transformed data with 'Station' and 'components' as coordinates.
         - obj_pca (sklearn.decomposition.PCA): Fitted PCA object.
-
     Notes
     -----
     - The input data is scaled before PCA is applied.
@@ -145,46 +144,36 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
             "components": list(range(pca.n_components_)),
         },
     )
-
     data_pca.attrs["long_name"] = "Fitted Scaled Data"
     data_pca.attrs["description"] = "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
     data_pca.attrs["fitted_variables"] = [v for v in ds.var()]
-
     return data_pca, obj_pca
-
 
 def _scale_data(ds: xr.Dataset) -> xr.Dataset:
     scalar = StandardScaler()
     df = ds.to_dataframe()
-
     scaled_data = pd.DataFrame(scalar.fit_transform(df))  # scaling the data
     scaled_data.columns = df.columns  # Sets columns name and index from original dataframe to scaled dataframe
     scaled_data.index = df.index
     return xr.Dataset(scaled_data)
 
-
 def _moment_l_vector(x_vec: np.array) -> list:
     return [_moment_l(x[~np.isnan(x)]) for x in x_vec]
-
 
 # L-moments calculation
 def _moment_l(x: np.array) -> list:
     """
     Calculate L-moments for a given dataset.
-
     This function computes various L-moments and L-moment ratios for a given array of data.
     It can return the results either as a list or as an OrderedDict.
-
     Parameters
     ----------
     x : list or array-like
         Input data for which to calculate L-moments.
-
     Returns
     -------
     list :
         Returns List in the order: [lambda1, lambda2, lambda3, tau, tau3, tau4]
-
     L-moments calculated:
     - lambda1: First L-moment (location)
     - lambda2: Second L-moment (scale)
@@ -192,38 +181,30 @@ def _moment_l(x: np.array) -> list:
     - tau: L-CV (Coefficient of L-Variation)
     - tau3: L-CS (L-skewness)
     - tau4: L-CK (L-kurtosis)
-
     Note:
     - NaN values are removed from the input data before calculations.
     - The input data is sorted in descending order for the calculations.
     """
     x = x[~np.isnan(x)]
-
     # Sorting the data in descending order
     x_sort = np.sort(x)
     x_sort = x_sort[::-1]
-
     n = np.size(x_sort)
     j = np.arange(1, n + 1)
-
     # ponderation of moments
     b0 = np.mean(x_sort)
     b1 = np.dot((n - j) / (n * (n - 1)), x_sort)
     b2 = np.dot((n - j) * (n - j - 1) / (n * (n - 1) * (n - 2)), x_sort)
     b3 = np.dot((n - j) * (n - j - 1) * (n - j - 2) / (n * (n - 1) * (n - 2) * (n - 3)), x_sort)
-
     # L-Moment
     lambda1 = b0
     lambda2 = 2 * b1 - b0
     lambda3 = 6 * b2 - 6 * b1 + b0
     lambda4 = 20 * b3 - 30 * b2 + 12 * b1 - b0
-
     tau = lambda2 / lambda1  # L_CV # tau2 dans Anctil, tau dans Hosking et al.
     tau3 = lambda3 / lambda2  # L_CS
     tau4 = lambda4 / lambda2  # L_CK
-
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
-
 
 def calc_h_z(
     ds_regions: xr.Dataset,
@@ -234,7 +215,6 @@ def calc_h_z(
 ) -> xr.Dataset:
     """
     Calculate heterogeneity measure H and Z-score for regional frequency analysis.
-
     Parameters
     ----------
     ds_regions : xr.Dataset
@@ -245,12 +225,10 @@ def calc_h_z(
         Kappa3 distribution object.
     seed : int, optional
         Random seed for reproducibility. Default is None.
-
     Returns
     -------
     xr.Dataset
         Dataset containing calculated H values and Z-scores for each region.
-
     Notes
     -----
     This function applies the heterogeneity measure and Z-score calculations
@@ -263,9 +241,7 @@ def calc_h_z(
     tau3 = ds_moments_regions.sel(lmom="tau3").load()
     tau4 = ds_moments_regions.sel(lmom="tau4").load()
     longeur = ds_regions.copy().count(dim="time").load()
-
     station_dim = ds_regions.cf.cf_roles["timeseries_id"][0]
-
     ds_h, ds_b4, ds_sigma4, ds_tau4_r = xr.apply_ufunc(
         _heterogeneite_et_score_z,
         kap,
@@ -285,12 +261,9 @@ def calc_h_z(
         output_core_dims=[[], [], [], []],
         vectorize=True,
     )
-    ds_tau4 = _calculate_gev_tau4(ds_regions.load(), ds_moments_regions.load())
-
+    ds_tau4 = _calculate_dist_tau4(ds_regions.load(), ds_moments_regions.load())
     z_score = (ds_tau4 - ds_tau4_r + ds_b4) / ds_sigma4
-
     z_score = _append_ds_vars_names(z_score, "_Z")
-
     ds_h = _append_ds_vars_names(ds_h, "_H")
     ds = _combine_h_z(xr.merge([z_score, ds_h]))
     description = (
@@ -302,17 +275,121 @@ def calc_h_z(
         ds[v].attrs["description"] = description
     return ds
 
-
-def _calculate_gev_tau4(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset) -> xr.Dataset:
+def _calculate_dist_tau4(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, distribution='gev') -> xr.Dataset:
     # H&W
-    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
-
-    k = _calc_k(lambda_r_2, lambda_r_3)
-
-    # Hosking et Wallis, eq. A53
-    tau4 = cast(xr.Dataset, (5 * (1 - 4**-k) - 10 * (1 - 3**-k) + 6 * (1 - 2**-k)) / (1 - 2**-k))
+    nR = ds_moments_regions.count(dim='id').isel(lmom=0)
+    nk = ds_regions.dropna(dim='id', how='all').count(dim='time')
+    lambda_k0 = ds_moments_regions.sel(lmom='l1').dropna(dim='id', how='all')
+    lambda_k1 = ds_moments_regions.sel(lmom='l2').dropna(dim='id', how='all')
+    lambda_k2 = ds_moments_regions.sel(lmom='l3').dropna(dim='id', how='all')
+    wk = (nk*nR)/(nk+nR)
+    L2 = (lambda_k1/lambda_k0)*wk
+    L3 = (lambda_k2/lambda_k0)*wk
+    lambdaR_1 = 1
+    lambdaR_2 = L2.sum(dim='id') / wk.sum(dim='id')
+    lambdaR_3 = L3.sum(dim='id') / wk.sum(dim='id')
+    tau4 = []
+    for distrib in distribution:
+        print(distrib)
+        if distrib == 'gev':    
+            #Calcul de "c"
+            c = (2/(3+(lambdaR_3/lambdaR_2))) - (np.log(2)/np.log(3)) 
+            # Hosking et Wallis, éq. A55 (approximation generalement acceptable)
+            k = 7.8590*c + 2.9554*(c**2)
+            #Calcul de tau4 (éq. A53 de H&W)
+            tau4_int = (5*(1-4**-k) - 10*(1-3**-k)+6*(1-2**-k)) / (1-2**-k)
+        elif distrib == 'glo':
+            t3_R = lambdaR_3/lambdaR_2
+            # Hosking et Wallis, éq. A64 
+            k = -t3_R
+            #Calcul de tau4 (éq. A63 de H&W)
+            tau4_int = (1+5*k**2)/6
+        elif distrib == 'gpa':
+            t3_R = lambdaR_3/lambdaR_2
+            # Hosking et Wallis, éq. A41
+            k = (1-3*t3_R) / (1+t3_R)
+            #Calcul de tau4 (éq. A39 de H&W)
+            tau4_int = ((1-k)*(2-k)) / ((3+k)*(4+k))
+        elif distrib == 'ln3':
+            t3_R = lambdaR_3/lambdaR_2  
+            # Coefficients pour l'approximation de k
+            E0 = 2.0466534
+            E1 = -3.6544371
+            E2 = 1.8396733
+            E3 = -0.20360244
+            F1 = -2.0182173
+            F2 = 1.2420401
+            F3 = -0.21741801
+            # Approximation du paramètre k
+            k = -t3_R * (E0 + E1 * t3_R**2 + E2 * t3_R**4 + E3 * t3_R**6) / (1 + F1 * t3_R**2 + F2 * t3_R**4 + F3 * t3_R**6)
+            
+            t4_0 = 1.2260172E-1
+            C0 = 1.8756590E-1
+            C1 = -2.5353147E-3
+            C2 = 2.6995102E-4
+            C3 = -1.8446680E-6
+            D1 = 8.2325617E-2
+            D2 = 4.2681448E-3
+            D3 = 1.1653690E-4
+            #Calcul de tau4
+            tau4_int = t4_0 + k**2 * (C0 + C1 * k**2 + C2 * k**4 + C3 * k**6) / (1 + D1 * k**2 + D2 * k**4 + D3 * k**6)
+        elif distrib == 'pe3' :  #Distribution Pearson3
+            from scipy.special import gamma
+            #Estimation des paramètres (H&W 1997)
+            t3_R=lambdaR_3/lambdaR_2
+            #Calcul de alpha
+            if abs(t3_R) >= (1/3) and abs(t3_R) < 1:
+                z = 1 - abs(t3_R)
+                alpha = (0.36067*z - 0.59567*z**2 + 0.25361*z**3) / (1 - 2.78861*z + 2.56096*z**2 - 0.77045*z**3)
+            else:
+                z = 3 * np.pi * t3_R**2
+                alpha = (1 + 0.2906*z) / (z + 0.1882*z**2 + 0.0442*z**3)
+            # Estimer pGamma, beta, xi
+            #À noter que pGamma ("paramètre Gamma") sert uniquement à déterminer l'intervalle de la distribution. alpha = 4 / pGamma**2
+            pGamma = 2 / np.sqrt(alpha) * np.sign(t3_R)
+            mu = lambdaR_1
+            sigma = lambdaR_2 * np.sqrt(np.pi) * np.sqrt(alpha) * gamma(alpha) / gamma(alpha + 0.5)
+            beta = 0.5 * sigma * abs(pGamma)
+            xi = mu - 2 * sigma / pGamma
+            # Handle overflow case
+            mask_nan = np.isnan(beta)
+            alpha = alpha.where(~mask_nan, lambdaR_1)
+            beta = beta.where(~mask_nan, np.sqrt(np.pi) * lambdaR_2)
+            xi = xi.where(~mask_nan)
+            pGamma = pGamma.where(~mask_nan, 0)
+            SMALL = 1e-6
+        
+            C0 = 0.12260172
+            C1=0.053730130
+            C2=0.043384378
+            C3=0.011101277
+            
+            D1=0.18324466
+            D2=0.20166036
+            
+            G1=2.1235833
+            G2=4.1670213
+            G3=3.1925299
+            
+            H1=9.0551443
+            H2=26.649995
+            H3=26.193668
+            
+            tau4_int = alpha/alpha*C0
+            mask_alpha_inf1 = alpha < 1
+            tau4_int = tau4_int.where(~mask_alpha_inf1, (((G3*alpha+G2)*alpha+G1)*alpha+1)/(((H3*alpha+H2)*alpha+H1)*alpha+1))
+            mask_alpha_supeg1 = alpha >= 1
+            tau4_int = tau4_int.where(~mask_alpha_inf1, (((C3*1/alpha+C2)*1/alpha+C1)*1/alpha+C0)/((D2*1/alpha+D1)*1/alpha+1))
+            mask_SMALL = abs(pGamma) < SMALL
+            tau4_int = tau4_int.where(~mask_SMALL, C0)
+        
+        else: 
+            print('Distribution non reconnue')
+        tau4_int = tau4_int.assign_coords(distrib=distrib)
+        tau4.append(tau4_int)
+    tau4 = xr.concat(tau4,dim="distrib")
+    tau4 = tau4.assign_coords(distrib=distribution)
     return tau4
-
 
 def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: np.ndarray, t4: np.ndarray, seed=None) -> tuple:
     # We remove nan or 0 length
@@ -322,15 +399,12 @@ def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: n
     t = t[bool_maks]
     t3 = t3[bool_maks]
     t4 = t4[bool_maks]
-
     # Hosking et Wallis, eq. 4.3
     tau_r = np.dot(n, t) / np.sum(n)
     tau3_r = np.dot(n, t3) / np.sum(n)
     tau4_r = np.dot(n, t4) / np.sum(n)
-
     # L-CVs ponderated standard deviation for the sample (eq. 4.4)
     v = np.sqrt(np.dot(n, (t - tau_r) ** 2) / np.sum(n))
-
     # Kappa distribution
     # Fit a kappa distribution to the region average L-moment ratios:
     try:
@@ -358,7 +432,6 @@ def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: n
         else:
             raise error
     n_sim = 500  # Number of "virtual regions" simulated
-
     def _calc_tsim(_kappa_param: dict, _length: float, _n_sim: int, _seed=seed) -> np.array:
         # For each station, we get n_sim vectors de same length than the observations
         rvs = kap.rvs(
@@ -369,32 +442,19 @@ def _heterogeneite_et_score_z(kap: Callable, n: np.ndarray, t: np.ndarray, t3: n
             size=(_n_sim, int(_length)),
             random_state=_seed,
         )
-
         return _momentl_optim(rvs)
-
     t_sim_tau4m = [_calc_tsim(kappa_param, length, n_sim) for length in n]
-
     t_sim = np.array([tt[3] for tt in t_sim_tau4m])  # Tau corresponds to the 3rd moment.
     tau4m = np.array([tt[5] for tt in t_sim_tau4m])  # Tau4 corresponds to the 5th term.
-
-    tau4m_r = np.dot(n, tau4m) / np.sum(n)
-
-    b4 = np.mean(tau4m_r - tau4_r)
-
-    sigma4 = np.sqrt((1 / (n_sim - 1)) * (np.sum((tau4m_r - tau4_r) ** 2) - (n_sim * b4 * b4)))
-
+    b4 = np.mean(tau4m - tau4_r)
+    sigma4 = np.sqrt((1 / (n_sim - 1)) * (np.sum((tau4m - tau4_r) ** 2) - (n_sim * b4 * b4)))
     # Calculating V
     tau_r_sim = np.dot(n, t_sim) / np.sum(n)
-
     v_sim = np.sqrt(np.dot(n, (t_sim - tau_r_sim) ** 2) / np.sum(n))
-
     mu_v = np.mean(v_sim)
     sigma_v = np.std(v_sim)
-
     h = (v - mu_v) / sigma_v
-
     return h, b4, sigma4, tau4_r
-
 
 # Calculating L-moments
 def _momentl_optim(x: np.array) -> list:
@@ -405,7 +465,6 @@ def _momentl_optim(x: np.array) -> list:
         x_sort = x_sort[::-1]
         n = np.size(x_sort)
         j = np.arange(1, n + 1)
-
         b0 = np.mean(x_sort)
         b1 = np.dot((n - j) / (n * (n - 1)), x_sort)
         b2 = np.dot((n - j) * (n - j - 1) / (n * (n - 1) * (n - 2)), x_sort)
@@ -416,7 +475,6 @@ def _momentl_optim(x: np.array) -> list:
     elif x.ndim == 2:
         x.sort()
         x_sort = np.fliplr(x)
-
         nn = np.shape(x_sort)
         j = np.repeat([np.arange(1, nn[1] + 1)], nn[0], axis=0)
         n = nn[1]
@@ -429,30 +487,24 @@ def _momentl_optim(x: np.array) -> list:
         )[0]
     else:
         raise NotImplementedError("Only 1d and 2d have been implemented")
-
     # Moment L
     lambda1 = b0
     lambda2 = 2 * b1 - b0
     lambda3 = 6 * b2 - 6 * b1 + b0
     lambda4 = 20 * b3 - 30 * b2 + 12 * b1 - b0
-
     tau = lambda2 / lambda1  # L_CV # tau2 in Anctil, tau dans Hosking et al.
     tau3 = lambda3 / lambda2  # L_CS
     tau4 = lambda4 / lambda2  # L_CK
-
     return [lambda1, lambda2, lambda3, tau, tau3, tau4]
-
 
 def _append_ds_vars_names(ds: xr.Dataset, suffix: str) -> xr.Dataset:
     for name in ds.data_vars:
         ds = ds.rename({name: name + suffix})
     return ds
 
-
 def mask_h_z(ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | None = 1.64) -> xr.DataArray:
     """
     Create a boolean mask based on heterogeneity measure H and Z-score thresholds.
-
     Parameters
     ----------
     ds : xr.Dataset
@@ -461,7 +513,6 @@ def mask_h_z(ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | No
         Threshold for the heterogeneity measure H. Default is 1.
     thresh_z : float, optional
         Threshold for the absolute Z-score. Default is 1.64.
-
     Returns
     -------
     xr.DataArray
@@ -479,7 +530,6 @@ def mask_h_z(ds: xr.Dataset, *, thresh_h: float | None = 1, thresh_z: float | No
         )
     return ds_out
 
-
 def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
     new_ds = xr.Dataset()
     for v in ds:
@@ -487,17 +537,16 @@ def _combine_h_z(ds: xr.Dataset) -> xr.Dataset:
             new_ds[str(v).removesuffix("_Z")] = xr.concat([ds[str(v).replace("_Z", "_H")], ds[v]], dim="crit").assign_coords(crit=["H", "Z"])
     return new_ds
 
-
-def calculate_return_period(
+def calculate_rp_from_afr(
     ds_regions: xr.Dataset,
     ds_moments_regions: xr.Dataset,
     *,
     return_period: np.array,
     l1: xr.DataArray | None = None,
+    rp: np.ndarray | None = None,
 ) -> xr.DataArray:
     """
-    Calculate return periods from the regional frequency analysis.
-
+    Calculate return periods from Annual Flow Regime (AFR) analysis.
     Parameters
     ----------
     ds_regions : xr.Dataset
@@ -509,12 +558,12 @@ def calculate_return_period(
     l1 : xr.DataArray, optional
         First L-moment (location) values. L-moment can be specified for ungauged catchments.
         If None, values are taken from ds_moments_regions.
-
+    rp : array-like, optional
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
     Returns
     -------
     xr.DataArray
         Calculated return periods for each region and specified return period.
-
     Notes
     -----
     This function calculates return periods using the Annual Flow Regime method.
@@ -522,6 +571,48 @@ def calculate_return_period(
     The function internally calls calculate_ic_from_AFR to compute the flood index.
     Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
     """
+    warnings.warn(
+        "This function is deprecated and will be removed in xhydro v0.7.0. Use calculate_return_period instead.", FutureWarning, stacklevel=2
+    )
+    return calculate_return_period(ds_regions, ds_moments_regions, return_period=return_period, l1=l1, rp=rp)
+
+def calculate_return_period(
+    ds_regions: xr.Dataset,
+    ds_moments_regions: xr.Dataset,
+    *,
+    return_period: np.array,
+    l1: xr.DataArray | None = None,
+    rp: np.ndarray | None = None,
+) -> xr.DataArray:
+    """
+    Calculate return periods from the regional frequency analysis.
+    Parameters
+    ----------
+    ds_regions : xr.Dataset
+        Dataset containing region flow data.
+    ds_moments_regions : xr.Dataset
+        Dataset containing L-moments for region data.
+    return_period : array-like
+        Return periods to calculate.
+    l1 : xr.DataArray, optional
+        First L-moment (location) values. L-moment can be specified for ungauged catchments.
+        If None, values are taken from ds_moments_regions.
+    rp : array-like, optional
+        Kept as an option for retrocompatibility, defaulting it to None when return_period exists.
+    Returns
+    -------
+    xr.DataArray
+        Calculated return periods for each region and specified return period.
+    Notes
+    -----
+    This function calculates return periods using the Annual Flow Regime method.
+    If l1 is not provided, it uses the first L-moment from ds_moments_regions.
+    The function internally calls calculate_ic_from_AFR to compute the flood index.
+    Equations are based on Hosking, J. R. M., & Wallis, J. R. (1997). Regional frequency analysis (p. 240).
+    """
+    if rp is not None:
+        warnings.warn("The 'rp' parameter has been renamed to 'return_period' and will be dropped in a future release.", FutureWarning, stacklevel=2)
+        return_period = rp
     if l1 is None:
         station_dim = ds_moments_regions.cf.cf_roles["timeseries_id"][0]
         l1 = ds_moments_regions.sel(lmom="l1").dropna(dim=station_dim, how="all")
@@ -533,46 +624,107 @@ def calculate_return_period(
         ds[v].attrs["units"] = ds_regions[v].attrs["units"]
     return ds
 
-
-def _calculate_ic_from_afr(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, return_period: list) -> xr.Dataset:
-    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
-
-    # alpha = location
-    # xi    = scale
-    # k = shape
-
-    k = _calc_k(lambda_r_2, lambda_r_3)
-
-    term = xr.apply_ufunc(_calc_gamma, (1 + k), vectorize=True)
-
-    # Hosking et Wallis, eq. A56. et Anctil et al. 1998, eq. 7 et 8.
-    alpha = (lambda_r_2 * k) / ((1 - (2**-k)) * term)
-    xi = lambda_r_1 + (alpha * (term - 1)) / k
-
+def _calculate_ic_from_afr(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset, return_period: list, distribution: str) -> xr.Dataset:
     # Calculating wanted return periods
     t = xr.DataArray(data=return_period, dims="return_period").assign_coords(return_period=return_period)
+    lambda_r_1, lambda_r_2, lambda_r_3 = _calc_lambda_r(ds_regions, ds_moments_regions)
+    if distribution == 'gev':
+      c = (2 / (3 + (lambda_r_3 / lambda_r_2))) - (np.log(2) / np.log(3))
+      # Hosking et Wallis, éq. A55 (generally acceptable approximation)
+      k = 7.8590 * c + 2.9554 * (c**2)
+      term = xr.apply_ufunc(_calc_gamma, (1 + k), vectorize=True)
+      # Hosking et Wallis, eq. A56. et Anctil et al. 1998, eq. 7 et 8.
+      alpha = (lambda_r_2 * k) / ((1 - (2**-k)) * term)
+      xi = lambda_r_1 + (alpha * (term - 1)) / k
+        
+      # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
+      q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** k) / k
 
-    # Hosking et Wallis, eq. A44 et Anctil et al. 1998, eq. 5.
-    q_rt = xi + alpha * (1 - (-np.log((t - 1) / t)) ** k) / k
+    elif distribution == 'glo':
+      t3_R = lambda_r_3/lambda_r_2
+      # Hosking et Wallis, éq. A64 
+      k = -t3_R
+      alpha = lambda_r_2 * np.sin(k*np.pi) / (k*np.pi)
+      xi = lambda_r_1 - alpha * ((1/k) - (np.pi / np.sin(k*np.pi)))
+      # Hosking et Wallis, eq. A59
+      q_rt = xi + alpha * (1 - (1/(t-1)) ** k) / k
+      
+      
+    elif distribution == 'gpa':
+      t3_R = lambda_r_3/lambda_r_2
+      # Hosking et Wallis, éq. A41
+      k = (1-3*t3_R) / (1+t3_R)
+      alpha = (1+k) * (2+k) * lambda_r_2
+      xi = lambda_r_1 - (2+k)*lambda_r_2
+      # Hosking et Wallis, eq. A34
+      q_rt = xi + alpha * (1-(1/t)**k)/k
 
+    elif distribution == 'ln3':
+      from scipy.special import erfinv
+      from scipy.special import erf
+      t3_R = lambda_r_3/lambda_r_2  
+      # Coefficients pour l'approximation de k
+      E0 = 2.0466534
+      E1 = -3.6544371
+      E2 = 1.8396733
+      E3 = -0.20360244
+      F1 = -2.0182173
+      F2 = 1.2420401
+      F3 = -0.21741801
+      def normal_cdf(X):
+        return 0.5 + 0.5 * erf(X / np.sqrt(2))
+      # Hosking et Wallis, éq. A74
+      k = -t3_R * (E0 + E1 * t3_R**2 + E2 * t3_R**4 + E3 * t3_R**6) / (1 + F1 * t3_R**2 + F2 * t3_R**4 + F3 * t3_R**6)
+      # Hosking et Wallis, éq. A75
+      alpha = lambda_r_2 * k * np.exp(-(k**2)/2) / (1 - 2 * normal_cdf(-k/np.sqrt(2)))
+      xi = lambda_r_1 - alpha * (1-np.exp((k**2)/2)) / k
+      #Calcul des quantiles
+      from scipy.special import erfinv
+      import numpy as np
+      def normal_inv(P):
+        return np.sqrt(2) * erfinv(2 * P - 1)
+      Z = normal_inv((t-1)/t)
+ 
+      # Hosking et Wallis, eq. A68
+      q_rt = xi + alpha * (1 - np.exp(-k * Z)) / k
+
+    elif distribution == 'pe3':
+      from scipy.special import gamma, gammaincinv, erfcinv
+      t3_R = lambda_r_3/lambda_r_2
+      #Calcul de alpha
+      if abs(t3_R) >= (1/3) and abs(t3_R) < 1:
+        z = 1 - abs(t3_R)
+        alpha = (0.36067*z - 0.59567*z**2 + 0.25361*z**3) / (1 - 2.78861*z + 2.56096*z**2 - 0.77045*z**3)
+      else:
+        z = 3 * np.pi * t3_R**2
+        alpha = (1 + 0.2906*z) / (z + 0.1882*z**2 + 0.0442*z**3)
+      # Estimer pGamma, beta, xi
+      #À noter que pGamma ("paramètre Gamma") sert uniquement à déterminer l'intervalle de la distribution. alpha = 4 / pGamma**2
+      pGamma = 2 / np.sqrt(alpha) * np.sign(t3_R)
+      mu = lambda_r_1
+      sigma = lambda_r_2 * np.sqrt(np.pi) * np.sqrt(alpha) * gamma(alpha) / gamma(alpha + 0.5)
+      beta = 0.5 * sigma * abs(pGamma)
+      xi = mu - 2 * sigma / pGamma
+      p=(t-1)/t
+      
+      # Hosking et Wallis, eq. A80, pGamma>0
+      q_rt = gammaincinv(alpha, (t-1)/t) * beta + xi
+      # Hosking et Wallis, eq. A80, pGamma<0
+      q_rt = q_rt.where(pGamma>0, -gammaincinv(alpha, 1 - (t-1)/t) * beta + xi)
     return q_rt
-
 
 def _calc_gamma(val):
     return math.gamma(val)
 
-
 def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
     """
     Remove regions from the dataset that have fewer than the threshold number of stations.
-
     Parameters
     ----------
     ds : xr.Dataset
         The input dataset containing regions and stations.
     thresh : int, optional
         The minimum number of stations required for a region to be kept. Default is 5.
-
     Returns
     -------
     xr.Dataset
@@ -584,50 +736,39 @@ def remove_small_regions(ds: xr.Dataset, *, thresh: int = 5) -> xr.Dataset:
             ds = ds.drop_sel(region_id=gr)
     return ds
 
-
 def _calc_k(lambda_r_2, lambda_r_3):
     # Hosking et Wallis, éq. A55
     c = (2 / (3 + (lambda_r_3 / lambda_r_2))) - (np.log(2) / np.log(3))
-
     # Hosking et Wallis, éq. A55 (generally acceptable approximation)
     k = 7.8590 * c + 2.9554 * (c**2)
     return k
 
-
 def _calc_lambda_r(ds_regions: xr.Dataset, ds_moments_regions: xr.Dataset) -> tuple[int, xr.Dataset, xr.Dataset]:
     station_dim = ds_regions.cf.cf_roles["timeseries_id"][0]
-
     nr = ds_moments_regions.count(dim=station_dim).isel(lmom=0)
     nk = ds_regions.dropna(dim=station_dim, how="all").count(dim="time")
     wk = (nk * nr) / (nk + nr)
-
     lambda_k0 = ds_moments_regions.sel(lmom="l1").dropna(dim=station_dim, how="all")
     lambda_k1 = ds_moments_regions.sel(lmom="l2").dropna(dim=station_dim, how="all")
     lambda_k2 = ds_moments_regions.sel(lmom="l3").dropna(dim=station_dim, how="all")
-
     l2 = (lambda_k1 / lambda_k0) * wk
     l3 = (lambda_k2 / lambda_k0) * wk
-
     lambda_r_1 = 1  # Anctil et al. 1998 (p.362)
     lambda_r_2 = l2.sum(dim=station_dim) / wk.sum(dim=station_dim)
     lambda_r_3 = l3.sum(dim=station_dim) / wk.sum(dim=station_dim)
     return lambda_r_1, lambda_r_2, lambda_r_3
 
-
 def calc_moments(ds: xr.Dataset) -> xr.Dataset:
     """
     Calculate L-moments for multiple stations.
-
     Parameters
     ----------
     ds : xr.Dataset
         A vector of stations, where each element is an array-like object containing the data for which to calculate L-moments.
-
     Returns
     -------
     xr.Dataset
         L-moment dataset with a new lmom dimension.
-
     Notes
     -----
     NaN values in each station are removed before calculating L-moments.
@@ -650,11 +791,9 @@ def calc_moments(ds: xr.Dataset) -> xr.Dataset:
         ds[v].attrs.pop("units", None)
     return ds
 
-
 def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
     """
     Group a dataset by a list of regions.
-
     Parameters
     ----------
     ds : xr.Dataset
@@ -662,7 +801,6 @@ def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
         The associated dimension must have a 'cf_role: timeseries_id' attribute.
     regions : list
         A list of regions to be used for grouping the dataset.
-
     Returns
     -------
     xr.Dataset
