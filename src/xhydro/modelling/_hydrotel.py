@@ -369,17 +369,13 @@ class Hydrotel(HydrologicalModel):
             return outdir
 
         if output == "q":
-            file = list(outdir.glob("*debit_aval*.nc"))
+            file = list(outdir.glob("debit_aval.nc"))
             if return_paths:
                 return file
             else:
                 with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            if not output.startswith("*"):
-                output = f"*{output}"
-            if not output.endswith("*"):
-                output = f"{output}*"
             matching_files = list(outdir.glob(f"{output}.nc"))
             if return_paths:
                 return matching_files

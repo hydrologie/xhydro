@@ -712,17 +712,13 @@ class RavenpyModel(HydrologicalModel):
             return outdir
 
         if output == "q":
-            file = list(outdir.glob(f"{self.run_name}_*Hydrographs*.nc"))
+            file = list(outdir.glob(f"{self.run_name}_Hydrographs.nc"))
             if return_paths:
                 return file
             else:
                 with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            if not output.startswith("*"):
-                output = f"*{output}"
-            if not output.endswith("*"):
-                output = f"{output}*"
             matching_files = list(outdir.glob(f"{self.run_name}_{output}.nc"))
             if return_paths:
                 return matching_files
@@ -787,7 +783,7 @@ class RavenpyModel(HydrologicalModel):
         }
 
         # Get the files to aggregate
-        files = self.get_outputs(output=f"_By{clean[by]}", return_paths=True)
+        files = self.get_outputs(output=f"*_By{clean[by]}", return_paths=True)
         if subset is not None:
             files = [file for file in files if any(s in file.name for s in subset)]
         if len(files) == 0:
