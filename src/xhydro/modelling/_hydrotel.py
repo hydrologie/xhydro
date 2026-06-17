@@ -375,12 +375,16 @@ class Hydrotel(HydrologicalModel):
                 with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            matching_files = list(outdir.glob(f"*{output}*.nc"))
+            if not output.startswith("*"):
+                output = f"*{output}"
+            if not output.endswith("*"):
+                output = f"{output}*"
+            matching_files = list(outdir.glob(f"{output}.nc"))
             if return_paths:
                 return matching_files
             else:
                 if len(matching_files) == 0:
-                    raise ValueError(f"No output files matching '*{output}*.nc' were found.")
+                    raise ValueError(f"No output files matching '{output}.nc' were found.")
                 else:
                     kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")
