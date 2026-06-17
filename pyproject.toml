@@ -317,7 +317,7 @@ override_SS05 = [
 ]
 
 [tool.pytest]
-min_version = "9.0"
+minversion = "9.0"
 addopts = [
   "-ra",
   "--color=yes",
