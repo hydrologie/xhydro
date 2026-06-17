@@ -13,7 +13,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* No changes.
+* Hidden wildcards are no longer forced in the `get_outputs` method of the hydrological model classes and are now only used if the user explicitly provides them. (:pull:`436`).
 
 Bug fixes
 ^^^^^^^^^
