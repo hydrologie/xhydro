@@ -390,7 +390,7 @@ class TestLandClassification:
             for var in ds_classification:
                 np.testing.assert_allclose(ds_classification[var], ds_expected[var], atol=0.0001)
 
-    @pytest.mark.parametrize("unique_id,", ["Station", None])
+    @pytest.mark.parametrize("unique_id", ["Station", None])
     def test_land_classification_plot(self, unique_id, monkeypatch):
         monkeypatch.setattr(plt, "show", lambda: None)
         xh.gis.land_use_plot(self.gdf, unique_id=unique_id, idx=0)

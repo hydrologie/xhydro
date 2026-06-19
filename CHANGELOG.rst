@@ -13,7 +13,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* No changes.
+* Hidden wildcards are no longer forced in the `get_outputs` method of the hydrological model classes and are now only used if the user explicitly provides them. (:pull:`436`).
 
 Bug fixes
 ^^^^^^^^^
@@ -22,8 +22,9 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Fixed the `xfail` condition in the tests. (:pull:`435`).
-* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows and development environment due to segfaults with the latest versions. (:pull:`435`).
+* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows due to segfaults with the latest versions. (:pull:`435`).
     * This issue does not seem to occur locally, so further investigation is needed to determine the root cause.
+* Added support for `pytest` 9.1.0 in the CI workflows. (:pull:`436`).
 
 v0.8.0 (2026-05-27)
 -------------------

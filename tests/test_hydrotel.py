@@ -428,7 +428,7 @@ class TestHydrotel:
         ht.run(return_streamflow=False)
         ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
 
-        files_calc = sorted(ht.get_outputs("BySubbasin" if to == "subbasin" else "ByDrainageArea", return_paths=True))
+        files_calc = sorted(ht.get_outputs("*BySubbasin" if to == "subbasin" else "*ByDrainageArea", return_paths=True))
 
         for i in range(len(files_calc)):
             clean_to = "Subbasin" if to == "subbasin" else "DrainageArea"
@@ -460,7 +460,7 @@ class TestHydrotel:
 
         with pytest.warns(UserWarning, match="already exists"):
             ht.aggregate_outputs(to=to, subset=["pluie", "neige", "apport_lateral"])
-        files_v2 = sorted(ht.get_outputs("BySubbasin*v2" if to == "subbasin" else "ByDrainageArea*v2", return_paths=True))
+        files_v2 = sorted(ht.get_outputs("*BySubbasin*v2" if to == "subbasin" else "*ByDrainageArea*v2", return_paths=True))
         assert len(files_v2) == len(files_calc)
 
     # Note that if using the actual executable, this test is quite slow (~2-4 minutes), because HYDROTEL needs to recompute/convert
