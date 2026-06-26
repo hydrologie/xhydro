@@ -204,9 +204,8 @@ jobs:
             python=${{ matrix.python-version }}
       - name: Install PyJuliaCall
         if: ${{ matrix.julia == true }}
-        # FIXME: pyjuliapkg 0.1.24 seems to cause segfaults on CI, but works locally. Pinning for now, but should investigate further.
         run: |
-          micromamba install -c conda-forge "pyjuliacall>=0.9.20,<0.9.35" "pyjuliapkg>=0.1.21,<0.1.24"
+          micromamba install -c conda-forge "pyjuliacall>=0.9.35" "pyjuliapkg>=0.1.24"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
@@ -331,9 +330,8 @@ jobs:
             python=${{ matrix.python-version }}
       - name: Install PyJuliaCall
         if: ${{ matrix.julia == true }}
-        # FIXME: pyjuliapkg 0.1.24 seems to cause segfaults on CI, but works locally. Pinning for now, but should investigate further.
         run: |
-          micromamba install -c conda-forge "pyjuliacall>=0.9.20,<0.9.35" "pyjuliapkg>=0.1.21,<0.1.24"
+          micromamba install -c conda-forge "pyjuliacall>=0.9.35" "pyjuliapkg>=0.1.24"
       - name: Install xHydro
         run: |
           python -m pip install --no-deps .
