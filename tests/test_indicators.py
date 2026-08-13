@@ -215,3 +215,205 @@ class TestGetYearlyOp:
                 op="max",
                 timeargs={"annual": {"date_bounds": ["06-01", "04-30"], "freq": "YS-DEC"}},
             )
+
+
+class TestSplitStreamflow:
+    k = 0.925
+
+    @staticmethod
+    def _reference(q, k, n_passes):
+        """
+        Compute the Lyne-Hollick baseflow of a 1D series with the recursion as published.
+
+        This is the independent ground truth for `split_streamflow`, which computes the same
+        thing through `scipy.signal.lfilter`. Keep it naive: rewriting it in terms of a
+        filtering library would make it a copy of the implementation under test, and it would
+        stop catching anything.
+        """
+        c = (1 + k) / 2
+        baseflow = np.asarray(q, dtype=float)
+        for i in range(n_passes):
+            x = baseflow[::-1] if i % 2 else baseflow
+            out = np.empty_like(x)
+            out[0] = x[0]
+            quickflow = 0.0
+            for n in range(1, len(x)):
+                quickflow = k * quickflow + c * (x[n] - x[n - 1])
+                out[n] = np.clip(x[n] - quickflow, 0.0, x[n])
+            baseflow = out[::-1] if i % 2 else out
+        return baseflow
+
+    @staticmethod
+    def _hydrograph(n_times=400):
+        """
+        Build a synthetic hydrograph: constant baseflow plus storms that rise sharply and recede slowly.
+
+        The rise/recession asymmetry is what makes the series distinguishable from its own
+        time-reverse. A constant or symmetric series cannot tell a correct forward-backward
+        filter apart from one that mixes up the two directions.
+        """
+        t = np.arange(n_times, dtype=float)
+        flow = np.full(n_times, 5.0)
+        for peak in (60, 180, 300):
+            flow = flow + 45.0 * np.exp(-((t - peak) ** 2) / 8.0)
+            flow = flow + 30.0 * np.exp(-np.maximum(t - peak, 0.0) / 40.0) * (t >= peak)
+        return flow
+
+    @pytest.fixture
+    def da(self):
+        return timeseries(self._hydrograph(), variable="q", start="2001-01-01", freq="D")
+
+    # Ground truth: the only tests that caught the sign and time-orientation bugs.
+    # n_passes must include an even value, since the backward pass is where they hid.
+    @pytest.mark.parametrize("n_passes", [1, 2, 3, 5])
+    def test_matches_reference(self, da, n_passes):
+        baseflow, _ = xh.indicators.split_streamflow(da, k=self.k, n_passes=n_passes)
+
+        np.testing.assert_allclose(baseflow, self._reference(da.values, self.k, n_passes), rtol=1e-10)
+
+    def test_first_timestep(self, da):
+        # The filter state is initialised so that quickflow[0] == 0, which leaves the first
+        # timestep as pure baseflow. Getting the sign wrong zeroes it out instead.
+        baseflow, runoff = xh.indicators.split_streamflow(da, k=self.k, n_passes=1)
+
+        np.testing.assert_allclose(baseflow[0], da[0])
+        np.testing.assert_allclose(runoff[0], 0.0, atol=1e-12)
+
+    @pytest.mark.parametrize("n_passes", [1, 3])
+    def test_partition_and_bounds(self, da, n_passes):
+        baseflow, runoff = xh.indicators.split_streamflow(da, k=self.k, n_passes=n_passes)
+
+        np.testing.assert_allclose(baseflow + runoff, da, rtol=1e-12)
+        assert (baseflow >= 0).all()
+        assert (baseflow <= da).all()
+        assert (runoff >= 0).all()
+
+    def test_steady_flow(self):
+        da = timeseries(np.full(100, 7.0), variable="q", start="2001-01-01", freq="D")
+
+        baseflow, runoff = xh.indicators.split_streamflow(da, k=self.k)
+
+        np.testing.assert_allclose(baseflow, 7.0)
+        np.testing.assert_allclose(runoff, 0.0, atol=1e-12)
+
+    def test_monotonic_in_passes(self, da):
+        # Each pass can only remove flow. Weak on its own, since the clip against the pass
+        # input enforces it structurally: test_matches_reference is what pins the values.
+        baseflows = [xh.indicators.split_streamflow(da, k=self.k, n_passes=n)[0] for n in (1, 3, 5)]
+
+        assert (baseflows[2] <= baseflows[1]).all()
+        assert (baseflows[1] <= baseflows[0]).all()
+
+    def test_preserves_structure(self, da):
+        # Time first, so the internal move of "time" to the last axis has to be undone.
+        da = da.expand_dims(station=["a", "b"]).transpose("time", "station")
+
+        baseflow, runoff = xh.indicators.split_streamflow(da, k=self.k)
+
+        assert baseflow.dims == da.dims
+        assert (baseflow.time == da.time).all()  # a reversed pass must not reverse the coord
+        assert baseflow.attrs["units"] == da.attrs["units"]
+        assert runoff.dims == da.dims
+
+    # The naming branches on units, so both branches need a case. "m^3 s-1", "m3/s" and
+    # "ft3 s-1" are discharges written differently, and the first two appear in this repo's own
+    # tests: comparing the unit string instead of its dimensionality names a discharge "mrrob".
+    # "kg m-2 s-1" and "kg m-2" only reach the depth branch through the hydro context.
+    _DISCHARGE = (("q_base", "q_runoff"), ("Baseflow", "Direct runoff"))
+    _DEPTH = (("mrrob", "mrros"), ("Subsurface runoff", "Surface runoff"))
+
+    @pytest.mark.parametrize(
+        "units,expected",
+        [
+            ("m3 s-1", _DISCHARGE),
+            ("m^3 s-1", _DISCHARGE),
+            ("m3/s", _DISCHARGE),
+            ("ft3 s-1", _DISCHARGE),
+            ("mm d-1", _DEPTH),
+            ("mm h-1", _DEPTH),
+            ("mm", _DEPTH),
+            ("kg m-2 s-1", _DEPTH),
+            ("kg m-2", _DEPTH),
+        ],
+    )
+    def test_attrs(self, da, units, expected):
+        names, long_names = expected
+        # A bare input would let a broken implementation pass, so give it the full set that a
+        # standardized `q` carries: the point is that standard_name is replaced, not copied.
+        da = da.rename("q").assign_attrs(
+            units=units,
+            long_name="Simulated streamflow",
+            standard_name="outgoing_water_volume_transport_along_river_channel",
+        )
+
+        baseflow, runoff = xh.indicators.split_streamflow(da, k=0.9, n_passes=5)
+
+        assert (baseflow.name, runoff.name) == names
+        assert (baseflow.attrs["long_name"], runoff.attrs["long_name"]) == long_names
+        for out in (baseflow, runoff):
+            # Each output is a fraction of the streamflow, so keeping the input's own standard
+            # name would assert that it still is the whole of it.
+            assert out.attrs["standard_name"] != da.attrs["standard_name"]
+            assert out.attrs["units"] == units
+            assert "k=0.9" in out.attrs["description"]
+            assert "n_passes=5" in out.attrs["description"]
+
+    @pytest.mark.parametrize(
+        "units,standard_names",
+        [
+            (
+                "m3 s-1",
+                (
+                    "outgoing_water_volume_transport_along_river_channel_due_to_baseflow",
+                    "outgoing_water_volume_transport_along_river_channel_due_to_surface_runoff",
+                ),
+            ),
+            ("mm d-1", ("subsurface_runoff_flux", "surface_runoff_flux")),
+        ],
+    )
+    def test_standard_names(self, da, units, standard_names):
+        baseflow, runoff = xh.indicators.split_streamflow(da.assign_attrs(units=units), k=self.k)
+
+        assert (baseflow.attrs["standard_name"], runoff.attrs["standard_name"]) == standard_names
+
+    def test_dtype(self, da):
+        # lfilter silently promotes float32 to float64 unless its coefficients are cast,
+        # which would contradict the output_dtypes declared to dask.
+        baseflow, _ = xh.indicators.split_streamflow(da.astype(np.float32), k=self.k)
+
+        assert baseflow.dtype == np.float32
+
+    def test_multidim(self, da):
+        flows = np.stack([self._hydrograph(), self._hydrograph()[::-1], np.full(400, 3.0)])
+        da = da.expand_dims(station=["a", "b", "c"]).copy(data=flows)
+
+        baseflow, _ = xh.indicators.split_streamflow(da, k=self.k)
+
+        for station in da.station.values:
+            alone, _ = xh.indicators.split_streamflow(da.sel(station=station), k=self.k)
+            np.testing.assert_allclose(baseflow.sel(station=station), alone, rtol=1e-12)
+
+    def test_dask(self, da):
+        flows = np.stack([self._hydrograph(), self._hydrograph()[::-1]])
+        da = da.expand_dims(station=["a", "b"]).copy(data=flows)
+
+        eager, _ = xh.indicators.split_streamflow(da, k=self.k)
+        lazy, _ = xh.indicators.split_streamflow(da.chunk({"station": 1, "time": -1}), k=self.k)
+
+        np.testing.assert_allclose(lazy.compute(), eager, rtol=1e-12)
+
+    def test_errors(self, da):
+        with pytest.raises(ValueError, match="`k` must be in"):
+            xh.indicators.split_streamflow(da, k=0.0)
+        with pytest.raises(ValueError, match="`k` must be in"):
+            xh.indicators.split_streamflow(da, k=1.0)
+        with pytest.raises(ValueError, match="`n_passes` must be >= 1"):
+            xh.indicators.split_streamflow(da, n_passes=0)
+        with pytest.raises(ValueError, match='must have a "time" dim'):
+            xh.indicators.split_streamflow(da.rename(time="date"))
+        with pytest.raises(ValueError, match="must have a `units` attribute"):
+            xh.indicators.split_streamflow(da.drop_attrs())
+        with pytest.raises(ValueError, match="must be a discharge"):
+            xh.indicators.split_streamflow(da.assign_attrs(units="degC"))
+        with pytest.raises(ValueError, match="must be a discharge"):
+            xh.indicators.split_streamflow(da.assign_attrs(units=""))

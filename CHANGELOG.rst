@@ -6,11 +6,11 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* No changes.
+* Added ``xh.indicators.split_streamflow`` to separate streamflow into baseflow and runoff using the Lyne-Hollick recursive digital filter.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
