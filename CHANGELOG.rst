@@ -11,6 +11,7 @@ Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoin
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Added ``xh.indicators.split_streamflow`` to separate streamflow into baseflow and runoff using the Lyne-Hollick recursive digital filter.
+* Added ``xh.indicators.major_flood_events`` to extract annual maximum flood events and classify them into seven types (snowmelt, mostly snowmelt with some rainfall, rain-on-snow, soil water excess and short/long rain, short rain, long rain) from a soil moisture threshold fitted over a reference period.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
