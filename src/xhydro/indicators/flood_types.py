@@ -27,7 +27,7 @@ FLOOD_TYPES = (
 
 def major_flood_events(
     *,
-    fldcapacity: xr.DataArray,
+    mrsosat: xr.DataArray,
     mrsol: xr.DataArray,
     prra: xr.DataArray,
     rivo: xr.DataArray,
@@ -47,13 +47,14 @@ def major_flood_events(
     of rainy days (``prra >= min_prec``) directly before it, up to
     ``max_days`` days in total. Each event is classified by
     comparing its total snowmelt, rainfall distribution and antecedent soil
-    wetness index (SWI, ``mrsol / fldcapacity``) against a per-basin soil
+    wetness index (SWI, ``mrsol / mrsosat``) against a per-basin soil
     moisture threshold fitted over ``reference_period``.
 
     Parameters
     ----------
-    fldcapacity : xr.DataArray
-        Soil field capacity (mm). Static (no time dependence needed).
+    mrsosat : xr.DataArray
+        Water the soil holds at saturation (mm), i.e. its porosity times its
+        depth. Static (no time dependence needed).
     mrsol : xr.DataArray
         Soil water content (mm).
     prra : xr.DataArray
@@ -127,11 +128,12 @@ def major_flood_events(
     is the exact single-changepoint solution of the PELT method [3]_ used in
     [2]_; deviations from [2]_ are flagged in the inline comments.
 
-    The SWI (``mrsol / fldcapacity``) deviates from both papers, which scale
-    soil moisture into [0, 1] (by its long-term range in [2]_, by the model
-    store's capacity in [1]_): with land-surface-model inputs it can exceed 1
-    where soil water tops field capacity, which is harmless when comparing
-    against a threshold fitted on the same index.
+    The SWI (``mrsol / mrsosat``) follows Tramblay et al. (2025) [1]_, which
+    scales soil moisture by the model store's capacity, so it stays within
+    [0, 1] as long as both inputs cover the same soil column. Tramblay et al.
+    (2022) [2]_ instead scales by soil moisture's long-term range; the per-cell
+    threshold absorbs that difference, since a positive rescaling of the index
+    carries the fitted threshold with it.
 
     References
     ----------
@@ -150,7 +152,7 @@ def major_flood_events(
     if mrros is None:
         _, mrros = split_streamflow(rivo)
 
-    antecedent_swi = (mrsol / fldcapacity).shift(time=1)
+    antecedent_swi = (mrsol / mrsosat).shift(time=1)
     # Tramblay et al. (2022) decluster with "5 + log(catchment area)" days between events: larger basins
     # integrate flow over longer times, so their events must be further apart. The paper gives neither
     # the log base nor the area unit; we read it as log10 of km2.
@@ -209,7 +211,7 @@ def _validate_inputs(variables: dict[str, xr.DataArray], drainage_area: xr.DataA
         raise ValueError('`rivo` must have a "time" dimension.')
     time = variables["rivo"].time
     for name, variable in variables.items():
-        if name in ("fldcapacity", "rivo"):
+        if name in ("mrsosat", "rivo"):
             continue
         if "time" not in variable.dims or not variable.time.equals(time):
             raise ValueError(f"`{name}` must share `rivo`'s time coordinate.")

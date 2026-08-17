@@ -23,6 +23,7 @@ Bug fixes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
+* Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
 * Fixed the `xfail` condition in the tests. (:pull:`435`).
 * Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows and development environment due to segfaults with the latest versions. (:pull:`435`).
     * This issue does not seem to occur locally, so further investigation is needed to determine the root cause.

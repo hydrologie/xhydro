@@ -83,3 +83,92 @@ variables:
     canonical_units: m3 s-1
     description: Simulated streamflow at the outlet of the subbasin.
     cell_methods: "time: mean"
+
+  mrsosat:
+    standard_name: soil_moisture_content_at_saturation
+    long_name: Capacity of soil to store water at saturation
+    canonical_units: mm
+    description: Water the soil column holds when saturated, that is its porosity times its depth.
+    cell_methods: "area: mean"
+
+  mrsol:
+    standard_name: mass_content_of_water_in_soil_layer
+    long_name: Total water content of soil layer
+    canonical_units: mm
+    description: Water content of the soil layer, in all phases including ice.
+    cell_methods: "area: mean time: mean"
+
+  prra:
+    long_name: Rainfall
+    canonical_units: mm
+    description: Rainfall over the subbasin.
+    cell_methods: "area: mean time: mean"
+
+  prras:
+    long_name: Rain on ground
+    canonical_units: mm
+    description: Rainfall over the subbasin, excluding rain intercepted by the vegetation canopy.
+    cell_methods: "area: mean time: mean"
+
+  snm:
+    long_name: Surface snow melt
+    canonical_units: mm
+    description: Snow melt at the surface of the subbasin.
+    cell_methods: "area: mean time: mean"
+
+  snw:
+    standard_name: surface_snow_amount
+    long_name: Surface snow amount
+    canonical_units: mm
+    description: Water equivalent of the snow lying on the ground over the subbasin, excluding snow held on the vegetation canopy.
+    cell_methods: "area: mean time: mean"
+
+  evspsbl:
+    long_name: Evaporation including sublimation and transpiration
+    canonical_units: mm
+    description: Water lost to the atmosphere over the subbasin by evaporation, sublimation and transpiration.
+    cell_methods: "area: mean time: mean"
+
+  evspsblpot:
+    long_name: Potential evapotranspiration
+    canonical_units: mm
+    description: Water the subbasin would lose to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
+    cell_methods: "area: mean time: mean"
+
+  rivo:
+    long_name: River discharge
+    canonical_units: mm
+    description: Streamflow at the outlet of the subbasin, expressed as a water depth over its drainage area.
+    cell_methods: "area: mean time: mean"
+
+  mrros:
+    long_name: Surface runoff
+    canonical_units: mm
+    description: Surface runoff leaving the subbasin, excluding drainage through the base of the soil model.
+    cell_methods: "area: mean time: mean"
+
+  mrrob:
+    long_name: Subsurface runoff
+    canonical_units: mm
+    description: Runoff draining through the base of the soil model of the subbasin.
+    cell_methods: "area: mean time: mean"
+
+  qgwr:
+    long_name: Groundwater recharge from soil layer
+    canonical_units: mm
+    description: Water draining from the soil layer of the subbasin into groundwater.
+    cell_methods: "area: mean time: mean"
+
+  q_base:
+    standard_name: outgoing_water_volume_transport_along_river_channel_due_to_baseflow
+    long_name: Baseflow
+    canonical_units: m3 s-1
+    description: Baseflow component of the streamflow at the outlet of the subbasin.
+    cell_methods: "time: mean"
+
+  q_runoff:
+    standard_name: outgoing_water_volume_transport_along_river_channel_due_to_surface_runoff
+    long_name: Direct runoff
+    canonical_units: m3 s-1
+    description: Direct runoff component of the streamflow at the outlet of the subbasin.
+    cell_methods: "time: mean"

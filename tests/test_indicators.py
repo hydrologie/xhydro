@@ -448,7 +448,7 @@ class TestMajorFloodEvents:
             return xr.DataArray(values, coords={"time": time}, dims="time", attrs={"units": "mm"})
 
         inputs = {
-            "fldcapacity": xr.DataArray(100.0, attrs={"units": "mm"}),
+            "mrsosat": xr.DataArray(100.0, attrs={"units": "mm"}),
             "mrsol": da(mrsol),
             "prra": da(np.zeros(time.size)),
             "rivo": da(rivo),
@@ -550,7 +550,7 @@ class TestMajorFloodEvents:
         assert out.prra_sum.item() == 12.0
         assert out.prra_max.item() == 5.0
         assert out.snm_sum.item() == 3.0
-        assert out.swi_antecedent.item() == 0.5  # mrsol 50 / fldcapacity 100 on the day before the window
+        assert out.swi_antecedent.item() == 0.5  # mrsol 50 / mrsosat 100 on the day before the window
         np.testing.assert_allclose(out.direct_streamflow_fraction.item(), 0.25)
 
     def test_mrros_default(self):
