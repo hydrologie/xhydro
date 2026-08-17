@@ -6,7 +6,6 @@ import numpy as np
 import numpy.typing as npt
 import scipy.stats
 import xarray as xr
-from pint.errors import DimensionalityError
 from xclim.core.units import convert_units_to, units2pint
 
 from .generic import split_streamflow
@@ -200,10 +199,8 @@ def _validate_inputs(variables: dict[str, xr.DataArray], drainage_area: xr.DataA
     mm = units2pint("mm")
     if bad := {name: variable.attrs["units"] for name, variable in variables.items() if not units2pint(variable).is_compatible_with(mm, "hydro")}:
         raise ValueError('All variable units must be convertible to "mm": {}.'.format(", ".join(f"{name}: {units}" for name, units in bad.items())))
-    try:
-        convert_units_to(drainage_area, "km2")
-    except DimensionalityError as err:
-        raise ValueError(f'`drainage_area` units must be convertible to "km2": is "{drainage_area.attrs["units"]}".') from err
+    if not units2pint(drainage_area).is_compatible_with(units2pint("km2")):
+        raise ValueError(f'`drainage_area` units must be convertible to "km2": is "{drainage_area.attrs["units"]}".')
     if "time" in drainage_area.dims:
         raise ValueError("`drainage_area` must not have a time dimension.")
 
