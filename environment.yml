@@ -14,7 +14,7 @@ dependencies:
   - matplotlib-base
   - numpy >=1.25
   - odc-stac
-  - pandas >=2.2
+  - pandas >=2.2, !=3.0.4  # FIXME: 3.0.4 causes segfaults. https://github.com/pandas-dev/pandas/issues/66086
   - planetary-computer
   - pooch >=1.8.0
   - pystac >=1.12.0

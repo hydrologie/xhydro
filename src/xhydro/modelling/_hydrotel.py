@@ -348,6 +348,7 @@ class Hydrotel(HydrologicalModel):
             "path" to return the output directory.
             Otherwise, the name of the output to retrieve, or "q" for the streamflow.
             This should match the name of the output file without the extension (e.g. "neige" for "neige.nc").
+            Wildcards can be used.
         return_paths : bool
             If True, return the path to the output file(s) instead of the dataset. Default is False.
         \*\*kwargs : dict
@@ -368,19 +369,19 @@ class Hydrotel(HydrologicalModel):
             return outdir
 
         if output == "q":
-            file = list(outdir.glob("*debit_aval*.nc"))
+            file = list(outdir.glob("debit_aval.nc"))
             if return_paths:
                 return file
             else:
                 with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            matching_files = list(outdir.glob(f"*{output}*.nc"))
+            matching_files = list(outdir.glob(f"{output}.nc"))
             if return_paths:
                 return matching_files
             else:
                 if len(matching_files) == 0:
-                    raise ValueError(f"No output files matching '*{output}*.nc' were found.")
+                    raise ValueError(f"No output files matching '{output}.nc' were found.")
                 else:
                     kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")

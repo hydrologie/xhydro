@@ -108,7 +108,7 @@ dependencies = [
   "matplotlib",
   "numpy >=1.25",
   "odc-stac",
-  "pandas >=2.2",
+  "pandas >=2.2, !=3.0.4", # FIXME: 3.0.4 causes segfaults. https://github.com/pandas-dev/pandas/issues/66086
   "planetary-computer",
   "pooch >=1.8.0",
   "pystac >=1.12.0",
@@ -165,7 +165,7 @@ all = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.8.0"
+current_version = "0.8.1"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -317,7 +317,7 @@ override_SS05 = [
 ]
 
 [tool.pytest]
-min_version = "9.0"
+minversion = "9.0"
 addopts = [
   "-ra",
   "--color=yes",

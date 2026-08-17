@@ -2,11 +2,10 @@
 Changelog
 =========
 
-
 Unreleased
 ----------
 
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
+Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -24,9 +23,30 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
+
+v0.8.1 (2026-06-29)
+-------------------
+
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Hidden wildcards are no longer forced in the `get_outputs` method of the hydrological model classes and are now only used if the user explicitly provides them. (:pull:`436`).
+
+Bug fixes
+^^^^^^^^^
+* Fixed a memory explosion in `xhydro.modelling.aggregate_outputs` when processing large basins. Weights were previously computed as a dense boolean tensor; the aggregation now uses `xr.dot` with the `dim` parameter instead. (:pull:`434`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
 * Fixed the `xfail` condition in the tests. (:pull:`435`).
-* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows and development environment due to segfaults with the latest versions. (:pull:`435`).
+* Pinned the `pyjuliapkg` and `pyjuliacall` dependencies in the CI workflows due to segfaults with the latest versions. (:pull:`435`).
     * This issue does not seem to occur locally, so further investigation is needed to determine the root cause.
+* Added support for `pytest` 9.1.0 in the CI workflows. (:pull:`436`).
 
 v0.8.0 (2026-05-27)
 -------------------

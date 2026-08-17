@@ -25,3 +25,4 @@ Contributors
 * Essi Parent `@essicolo <https://github.com/essicolo>`_
 * Renaud Jougla `@rjougla <https://github.com/rjougla>`_
 * Eve Larose <eve.larose.r@gmail.com> `@e-larose <https://github.com/e-larose>`_
+* Antoine Lefebvre-Brossard <antoinelb@protonmail.com> `@antoinelb <https://github.com/antoinelb>`_

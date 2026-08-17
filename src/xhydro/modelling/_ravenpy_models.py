@@ -691,6 +691,7 @@ class RavenpyModel(HydrologicalModel):
             "path" to return the output directory.
             "q" to only return the streamflow variable.
             Alternatively, a string matching the name of the output file to return (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
+            Wildcards can be used.
         return_paths : bool
             If True, return the path to the output file(s) instead of the dataset. Default is False.
         \*\*kwargs : dict
@@ -711,19 +712,19 @@ class RavenpyModel(HydrologicalModel):
             return outdir
 
         if output == "q":
-            file = list(outdir.glob(f"{self.run_name}_*Hydrographs*.nc"))
+            file = list(outdir.glob(f"{self.run_name}_Hydrographs.nc"))
             if return_paths:
                 return file
             else:
                 with xr.open_dataset(file[0], **kwargs) as ds:
                     return ds[["q"]]
         else:
-            matching_files = list(outdir.glob(f"{self.run_name}_*{output}*.nc"))
+            matching_files = list(outdir.glob(f"{self.run_name}_{output}.nc"))
             if return_paths:
                 return matching_files
             else:
                 if len(matching_files) == 0:
-                    raise ValueError(f"No output files matching '{self.run_name}_*{output}*.nc' were found.")
+                    raise ValueError(f"No output files matching '{self.run_name}_{output}.nc' were found.")
                 else:
                     kwargs = deepcopy(kwargs)
                     kwargs.setdefault("combine", "by_coords")
@@ -782,7 +783,7 @@ class RavenpyModel(HydrologicalModel):
         }
 
         # Get the files to aggregate
-        files = self.get_outputs(output=f"_By{clean[by]}", return_paths=True)
+        files = self.get_outputs(output=f"*_By{clean[by]}", return_paths=True)
         if subset is not None:
             files = [file for file in files if any(s in file.name for s in subset)]
         if len(files) == 0:
