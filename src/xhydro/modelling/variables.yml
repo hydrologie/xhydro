@@ -111,9 +111,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   snm:
+    standard_name: surface_snow_melt_flux
     long_name: Surface snow melt
-    canonical_units: mm
-    description: Snow melt at the surface of the subbasin.
+    canonical_units: mm d-1
+    description: Total surface snow melt rate
     cell_methods: "area: mean time: mean"
 
   snw:
