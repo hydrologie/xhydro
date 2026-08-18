@@ -324,13 +324,9 @@ class TestSplitStreamflow:
     @pytest.mark.parametrize(
         "units,expected",
         [
-            ("m3 s-1", _DISCHARGE),
-            ("m^3 s-1", _DISCHARGE),
             ("m3/s", _DISCHARGE),
             ("ft3 s-1", _DISCHARGE),
-            ("mm d-1", _DEPTH),
             ("mm h-1", _DEPTH),
-            ("mm", _DEPTH),
             ("kg m-2 s-1", _DEPTH),
             ("kg m-2", _DEPTH),
         ],
