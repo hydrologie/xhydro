@@ -276,10 +276,6 @@ def split_streamflow(
         raise ValueError(f"`k` must be in (0, 1): is {k}.")
     if n_passes < 1:
         raise ValueError(f"`n_passes` must be >= 1: is {n_passes}.")
-    if "time" not in da.dims:
-        raise ValueError(f'`da` must have a "time" dim: has {da.dims}.')
-    if "units" not in da.attrs:
-        raise ValueError("`da` must have a `units` attribute, which decides how the outputs are named.")
 
     units = units2pint(da)
     is_discharge = units.is_compatible_with(units2pint("m3 s-1"))
