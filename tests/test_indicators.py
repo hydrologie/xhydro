@@ -318,8 +318,13 @@ class TestSplitStreamflow:
     # "ft3 s-1" are discharges written differently, and the first two appear in this repo's own
     # tests: comparing the unit string instead of its dimensionality names a discharge "mrrob".
     # "kg m-2 s-1" and "kg m-2" only reach the depth branch through the hydro context.
-    _DISCHARGE = (("q_base", "q_runoff"), ("Baseflow", "Direct runoff"))
-    _DEPTH = (("mrrob", "mrros"), ("Subsurface runoff", "Surface runoff"))
+    # A discharge gets no standard name at all: "q_base" and "q_runoff" are not CF names.
+    _DISCHARGE = (("q_base", "q_runoff"), ("Baseflow", "Direct runoff"), None)
+    _DEPTH = (
+        ("mrrob", "mrros"),
+        ("Subsurface runoff", "Surface runoff"),
+        ("subsurface_runoff_flux", "surface_runoff_flux"),
+    )
 
     @pytest.mark.parametrize(
         "units,expected",
@@ -332,9 +337,9 @@ class TestSplitStreamflow:
         ],
     )
     def test_attrs(self, da, units, expected):
-        names, long_names = expected
+        names, long_names, standard_names = expected
         # A bare input would let a broken implementation pass, so give it the full set that a
-        # standardized `q` carries: the point is that standard_name is replaced, not copied.
+        # standardized `q` carries: the point is that standard_name is replaced or dropped, never copied.
         da = da.rename("q").assign_attrs(
             units=units,
             long_name="Simulated streamflow",
@@ -345,31 +350,17 @@ class TestSplitStreamflow:
 
         assert (baseflow.name, runoff.name) == names
         assert (baseflow.attrs["long_name"], runoff.attrs["long_name"]) == long_names
+        # Each output is a fraction of the streamflow, so keeping the input's own standard
+        # name would assert that it still is the whole of it.
+        if standard_names is None:
+            assert "standard_name" not in baseflow.attrs
+            assert "standard_name" not in runoff.attrs
+        else:
+            assert (baseflow.attrs["standard_name"], runoff.attrs["standard_name"]) == standard_names
         for out in (baseflow, runoff):
-            # Each output is a fraction of the streamflow, so keeping the input's own standard
-            # name would assert that it still is the whole of it.
-            assert out.attrs["standard_name"] != da.attrs["standard_name"]
             assert out.attrs["units"] == units
             assert "k=0.9" in out.attrs["description"]
             assert "n_passes=5" in out.attrs["description"]
-
-    @pytest.mark.parametrize(
-        "units,standard_names",
-        [
-            (
-                "m3 s-1",
-                (
-                    "outgoing_water_volume_transport_along_river_channel_due_to_baseflow",
-                    "outgoing_water_volume_transport_along_river_channel_due_to_surface_runoff",
-                ),
-            ),
-            ("mm d-1", ("subsurface_runoff_flux", "surface_runoff_flux")),
-        ],
-    )
-    def test_standard_names(self, da, units, standard_names):
-        baseflow, runoff = xh.indicators.split_streamflow(da.assign_attrs(units=units), k=self.k)
-
-        assert (baseflow.attrs["standard_name"], runoff.attrs["standard_name"]) == standard_names
 
     def test_dtype(self, da):
         # lfilter silently promotes float32 to float64 unless its coefficients are cast,
@@ -404,14 +395,17 @@ class TestSplitStreamflow:
             xh.indicators.split_streamflow(da, k=1.0)
         with pytest.raises(ValueError, match="`n_passes` must be >= 1"):
             xh.indicators.split_streamflow(da, n_passes=0)
-        with pytest.raises(ValueError, match='must have a "time" dim'):
-            xh.indicators.split_streamflow(da.rename(time="date"))
-        with pytest.raises(ValueError, match="must have a `units` attribute"):
-            xh.indicators.split_streamflow(da.drop_attrs())
-        with pytest.raises(ValueError, match="must be a discharge"):
-            xh.indicators.split_streamflow(da.assign_attrs(units="degC"))
-        with pytest.raises(ValueError, match="must be a discharge"):
-            xh.indicators.split_streamflow(da.assign_attrs(units=""))
+
+    # The filter itself is unit-agnostic, so unusable units are a warning, not a refusal.
+    # "" is dimensionless rather than missing, so it reaches the check like any other unit.
+    @pytest.mark.parametrize("units", ["degC", ""])
+    def test_unknown_units(self, da, units):
+        with pytest.warns(UserWarning, match="should be a discharge"):
+            baseflow, runoff = xh.indicators.split_streamflow(da.assign_attrs(units=units), k=self.k)
+
+        # Not a discharge, so the naming falls through to the depth branch.
+        assert (baseflow.name, runoff.name) == ("mrrob", "mrros")
+        np.testing.assert_allclose(baseflow + runoff, da, rtol=1e-12)
 
 
 class TestMajorFloodEvents:

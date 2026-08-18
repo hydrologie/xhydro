@@ -3,7 +3,6 @@
 import warnings
 
 import numpy as np
-import numpy.typing as npt
 import scipy.signal
 import xarray as xr
 import xclim as xc
@@ -280,11 +279,11 @@ def split_streamflow(
     units = units2pint(da)
     is_discharge = units.is_compatible_with(units2pint("m3 s-1"))
     if not is_discharge and not any(units.is_compatible_with(units2pint(u), "hydro") for u in ("mm", "mm h-1")):
-        raise ValueError(f'`da` must be a discharge ("m3 s-1") or a water depth ("mm", "mm h-1"): is "{da.attrs["units"]}".')
+        warnings.warn(f'`da` should be a discharge ("m3 s-1") or a water depth ("mm", "mm h-1"): is "{da.attrs["units"]}".', stacklevel=2)
 
     c = (1 + k) / 2
 
-    def _filter(total_flow: npt.NDArray) -> npt.NDArray:
+    def _filter(total_flow: np.ndarray) -> np.ndarray:
         # q[t] = k q[t-1] + c [Q[t] - Q[t-1]] which is a first order IIR filter
         # zi is set so q[0] = 0
         b = np.array([c, -c], dtype=total_flow.dtype)
@@ -314,6 +313,7 @@ def split_streamflow(
     # The input's own identity is overwritten below, not propagated: each output is a fraction
     # of the streamflow, so the inherited name and standard name would be false on both.
     inherited = dict(da.attrs)
+    inherited.pop("standard_name", None)
 
     filtered_with = f"the Lyne-Hollick filter (k={k}, n_passes={n_passes})"
 
@@ -322,11 +322,9 @@ def split_streamflow(
         base_name, runoff_name = "q_base", "q_runoff"
         base_attrs = {
             "long_name": "Baseflow",
-            "standard_name": "outgoing_water_volume_transport_along_river_channel_due_to_baseflow",
         }
         runoff_attrs = {
             "long_name": "Direct runoff",
-            "standard_name": "outgoing_water_volume_transport_along_river_channel_due_to_surface_runoff",
         }
     else:
         base_name, runoff_name = "mrrob", "mrros"

@@ -85,10 +85,9 @@ variables:
     cell_methods: "time: mean"
 
   mrsosat:
-    standard_name: soil_moisture_content_at_saturation
-    long_name: Capacity of soil to store water at saturation
+    long_name: Soil moisture content at saturation
     canonical_units: mm
-    description: Water the soil column holds when saturated, that is its porosity times its depth.
+    description: Water the soil column holds when saturated.
     cell_methods: "area: mean"
 
   mrsol:
@@ -99,15 +98,16 @@ variables:
     cell_methods: "area: mean time: mean"
 
   prra:
+    standard_name: rainfall_flux
     long_name: Rainfall
-    canonical_units: mm
-    description: Rainfall over the subbasin.
+    canonical_units: mm d-1
+    description: Liquid fraction of the total precipitation.
     cell_methods: "area: mean time: mean"
 
   prras:
-    long_name: Rain on ground
-    canonical_units: mm
-    description: Rainfall over the subbasin, excluding rain intercepted by the vegetation canopy.
+    long_name: Rain over the surface
+    canonical_units: mm d-1
+    description: Flux of water from the atmosphere reaching the surface as rain, excluding interception by the canopy or absorption by a snowpack.
     cell_methods: "area: mean time: mean"
 
   snm:
