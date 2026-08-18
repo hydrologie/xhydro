@@ -132,9 +132,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   evspsblpot:
+  standard_name: water_potential_evaporation_flux
     long_name: Potential evapotranspiration
     canonical_units: mm d-1
-    description: Water the subbasin would lose to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
+    description: Water that would be lost to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
     cell_methods: "area: mean time: mean"
 
   rivo:
