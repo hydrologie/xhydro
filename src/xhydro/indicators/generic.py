@@ -246,21 +246,15 @@ def split_streamflow(
     """
     Split the streamflow into baseflow and runoff using the Lyne-Hollick algorithm.
 
-    Reference: Lyne, V. D. and Hollick, M.: Stochastic time-variable rainfall
-    runoff modelling, Hydrology and Water Resources Symposium, in: Institute of
-    engineers Australia national conference, Barton, Australia, 79, 89–93,
-    1979.
-
     Parameters
     ----------
     da : xr.DataArray
-        Streamflow variable. A `units` attribute is required, as it decides how the outputs
-        are named: it must be a discharge ("m3 s-1") or a water depth ("mm", "mm h-1").
+        Streamflow variable.
     k : float, default: 0.925
-        Recursive filter parameter.
+        Recursive filter parameter. Must be between 0 and 1.
     n_passes : int, default: 3
         Number of passes of the algorithm to do, alternating forward and
-        backward.
+        backward. Must be greater than 1.
 
     Returns
     -------
@@ -270,6 +264,13 @@ def split_streamflow(
     xr.DataArray
         Runoff variable, named "q_runoff" if the streamflow is a discharge and
         "mrros" if it is a water depth.
+        
+    References
+    ----------
+    Lyne, V. D. and Hollick, M.: Stochastic time-variable rainfall
+    runoff modelling, Hydrology and Water Resources Symposium, in: Institute of
+    engineers Australia national conference, Barton, Australia, 79, 89–93,
+    1979.
     """
     if not 0.0 < k < 1.0:
         raise ValueError(f"`k` must be in (0, 1): is {k}.")
