@@ -264,7 +264,7 @@ def split_streamflow(
     xr.DataArray
         Runoff variable, named "q_runoff" if the streamflow is a discharge and
         "mrros" if it is a water depth.
-        
+
     References
     ----------
     Lyne, V. D. and Hollick, M.: Stochastic time-variable rainfall
