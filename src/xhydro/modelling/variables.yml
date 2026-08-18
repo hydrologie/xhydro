@@ -157,9 +157,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   qgwr:
+    standard_name: downward_liquid_water_mass_flux_into_groundwater
     long_name: Groundwater recharge from soil layer
     canonical_units: mm d-1
-    description: Water draining from the soil layer of the subbasin into groundwater.
+    description: Water draining from the soil layer into groundwater.
     cell_methods: "area: mean time: mean"
 
   q_base:
