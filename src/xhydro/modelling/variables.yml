@@ -121,7 +121,7 @@ variables:
     standard_name: surface_snow_amount
     long_name: Surface snow amount
     canonical_units: mm
-    description: Water equivalent of the snow lying on the ground over the subbasin, excluding snow held on the vegetation canopy.
+    description: Water equivalent of the snow lying on the ground, excluding snow held on the vegetation canopy.
     cell_methods: "area: mean time: mean"
 
   evspsbl:
