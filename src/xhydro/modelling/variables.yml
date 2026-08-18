@@ -145,9 +145,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   mrros:
+    standard_name: surface_runoff_flux
     long_name: Surface runoff
     canonical_units: mm d-1
-    description: Surface runoff leaving the subbasin, excluding drainage through the base of the soil model.
+    description: Surface runoff over land, excluding drainage through the base of the soil model.
     cell_methods: "area: mean time: mean"
 
   mrrob:
