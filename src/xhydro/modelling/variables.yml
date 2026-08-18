@@ -132,17 +132,17 @@ variables:
     cell_methods: "area: mean time: mean"
 
   evspsblpot:
-  standard_name: water_potential_evaporation_flux
+    standard_name: water_potential_evaporation_flux
     long_name: Potential evapotranspiration
     canonical_units: mm d-1
     description: Water that would be lost to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
     cell_methods: "area: mean time: mean"
 
   rivo:
+    standard_name: outgoing_water_volume_transport_along_river_channel
     long_name: River discharge
-    canonical_units: mm d-1
-    description: Streamflow at the outlet of the subbasin, expressed as a water depth per day over its drainage area.
-    cell_methods: "area: mean time: mean"
+    canonical_units: m3 s-1
+    description: Streamflow at the outlet of the subbasin.
 
   mrros:
     standard_name: surface_runoff_flux
@@ -166,14 +166,12 @@ variables:
     cell_methods: "area: mean time: mean"
 
   q_base:
-    standard_name: outgoing_water_volume_transport_along_river_channel_due_to_baseflow
     long_name: Baseflow
     canonical_units: m3 s-1
     description: Baseflow component of the streamflow at the outlet of the subbasin.
     cell_methods: "time: mean"
 
   q_runoff:
-    standard_name: outgoing_water_volume_transport_along_river_channel_due_to_surface_runoff
     long_name: Direct runoff
     canonical_units: m3 s-1
     description: Direct runoff component of the streamflow at the outlet of the subbasin.

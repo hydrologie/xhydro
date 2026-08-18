@@ -392,7 +392,7 @@ def _flood_inputs(*, correlated, end="2006-12-31"):
     return inputs, starts
 
 
-def _plant_flood_event(inputs, starts, *, rain, snow=None, peak=20.0):
+def _plant_flood_event(inputs, starts, *, rain, snow=None, mrsol=None, peak=20.0):
     """Plant the 2006 annual maximum at day-of-year 201, with `rain` (and `snow`) ending on the peak day."""
     p = starts[11] + 200
     rain = np.asarray(rain, dtype=float)
@@ -401,6 +401,9 @@ def _plant_flood_event(inputs, starts, *, rain, snow=None, peak=20.0):
     if snow is not None:
         snow = np.asarray(snow, dtype=float)
         inputs["snm"].values[p - snow.size + 1 : p + 1] = snow
+    if mrsol is not None:
+        # the whole 2006 lead-up, so the antecedent day is covered whatever the window
+        inputs["mrsol"].values[starts[11] : p + 1] = mrsol
     return p
 
 
@@ -412,67 +415,28 @@ class TestMajorFloodEvents:
     # 12 years of daily data; the last reference year leaves 2005 as a buffer
     # and 2006 as the year whose event each test engineers.
 
-    def test_indicators(self):
+    def test_date(self):
         inputs, starts = _flood_inputs(correlated=False)
-        # rain [0, 5, 5, 2]: the walk from the peak stops at the dry day, so the window is 3 days
-        _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2], snow=[0, 1, 1, 1])
-        inputs["mrros"] = (0.25 * inputs["rivo"]).assign_attrs(units="mm d-1")
+        peak = _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2])
 
-        out = xh.indicators.flood_types.major_flood_events(**inputs).sel(time=_EVENT_PERIOD)
-        assert out.rivo_peak.item() == 20.0
-        assert out.rivo_peak_doy.item() == 201
-        assert out.event_duration.item() == 3
-        assert out.prra_sum.item() == 12.0
-        assert out.prra_max.item() == 5.0
-        assert out.snm_sum.item() == 3.0
-        assert out.rivo_peak.attrs["units"] == "mm d-1"
-        assert (out.prra_sum.attrs["units"], out.prra_max.attrs["units"]) == ("mm", "mm d-1")
-        assert out.swi_antecedent.item() == 0.5  # mrsol 50 / mrsosat 100 on the day before the window
-        np.testing.assert_allclose(out.direct_streamflow_fraction.item(), 0.25)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
 
-    def test_max_days_caps_the_window(self):
-        inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[5] * 10)
-
-        out = xh.indicators.flood_types.major_flood_events(**inputs).sel(time=_EVENT_PERIOD)
-        assert out.event_duration.item() == 7
-
-    def test_mrros_default(self):
-        inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
-
-        from_none = xh.indicators.flood_types.major_flood_events(**inputs)
-        from_explicit = xh.indicators.flood_types.major_flood_events(**inputs, mrros=xh.indicators.split_streamflow(inputs["rivo"])[1])
-
-        xr.testing.assert_identical(from_none, from_explicit)
-
-    @pytest.mark.parametrize("units,scale", [("1", 100.0), ("%", 1.0)])
-    def test_normalized_mrsol(self, units, scale):
-        """Without `mrsosat`, `mrsol` is taken as the wetness index, and percent is rescaled to 0-1."""
-        inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
-        normalized = {**inputs, "mrsol": (inputs["mrsol"] / scale).assign_attrs(units=units)}
-        del normalized["mrsosat"]
-
-        out = xh.indicators.flood_types.major_flood_events(**normalized)
-        reference = xh.indicators.flood_types.major_flood_events(**inputs)
-
-        np.testing.assert_allclose(out.swi_antecedent.values, reference.swi_antecedent.values)
+        assert dates.name == "event_date"
+        assert dates.sel(time=_EVENT_PERIOD).values == inputs["rivo"].time.values[peak]
 
     def test_structure(self):
         inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
-        for name in ("mrsol", "prra", "rivo", "snm"):
-            inputs[name] = inputs[name].expand_dims(station=["a", "b"]).transpose("time", "station")
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2])
+        rivo = inputs["rivo"].expand_dims(station=["a", "b"]).transpose("time", "station")
 
-        out = xh.indicators.flood_types.major_flood_events(**inputs)
-        assert out.rivo_peak.dims == ("time", "station")
+        dates = xh.indicators.flood_types.major_flood_events(rivo=rivo)
+
+        assert dates.dims == ("time", "station")
         # December 2006 spills into a 13th period, truncated like the December-less 1995
-        assert out.time.size == 13
+        assert dates.time.size == 13
         # resample labels each period by its first day, which is a 1 December
-        assert out.time.dt.month.values.tolist() == [12] * 13
-        assert "swi_threshold" not in out
-        np.testing.assert_array_equal(out.rivo_peak.sel(station="a").values, out.rivo_peak.sel(station="b").values)
+        assert dates.time.dt.month.values.tolist() == [12] * 13
+        np.testing.assert_array_equal(dates.sel(station="a").values, dates.sel(station="b").values)
 
     @pytest.mark.parametrize(
         "freq,n_periods,months,event_period",
@@ -486,22 +450,20 @@ class TestMajorFloodEvents:
     def test_freq(self, freq, n_periods, months, event_period):
         """`freq` takes any resampling frequency, not just a yearly one."""
         inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
+        peak = _plant_flood_event(inputs, starts, rain=[2, 2, 2])
 
-        out = xh.indicators.flood_types.major_flood_events(**inputs, freq=freq)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"], freq=freq)
 
-        assert out.time.size == n_periods
-        assert sorted(set(out.time.dt.month.values.tolist())) == sorted(months)
-        assert out.rivo_peak.sel(time=event_period).item() == 20.0
+        assert dates.time.size == n_periods
+        assert sorted(set(dates.time.dt.month.values.tolist())) == sorted(months)
+        assert dates.sel(time=event_period).values == inputs["rivo"].time.values[peak]
 
     def test_dask(self):
         inputs, starts = _flood_inputs(correlated=False)
-        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
-        eager = xh.indicators.flood_types.major_flood_events(**inputs)
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2])
 
-        for name in ("mrsol", "prra", "rivo", "snm"):
-            inputs[name] = inputs[name].chunk({"time": -1})
-        lazy = xh.indicators.flood_types.major_flood_events(**inputs)
+        eager = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
+        lazy = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"].chunk({"time": -1}))
 
         xr.testing.assert_identical(eager, lazy.compute())
 
@@ -509,46 +471,28 @@ class TestMajorFloodEvents:
         """A period cut short by the end of the record still reports its peak, from a partial window."""
         inputs, _ = _flood_inputs(correlated=False, end="2006-06-30")
 
-        out = xh.indicators.flood_types.major_flood_events(**inputs)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
 
-        assert not out.rivo_peak.isnull().any()
-        assert out.rivo_peak.isel(time=-1).item() == 1.0  # the rainless baseline, no spike planted in 2006
+        assert not dates.isnull().any()
+        # no spike planted in 2006, so the rainless baseline peaks on the period's first day
+        assert dates.isel(time=-1).values == np.datetime64("2005-12-01")
 
     def test_missing_period(self):
-        """Only an entirely missing streamflow period gives NaN, which `classify_flood_events` turns into -1."""
+        """Only an entirely missing streamflow period has no date, which `classify_flood_events` turns into -1."""
         inputs, _ = _flood_inputs(correlated=False)
         time = inputs["rivo"].time
         gap = (time >= np.datetime64("1999-12-01")) & (time <= np.datetime64("2000-11-30"))
         inputs["rivo"] = inputs["rivo"].where(~gap)
 
-        out = xh.indicators.flood_types.major_flood_events(**inputs)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
 
-        assert out.rivo_peak.isnull().sum().item() == 1
-        assert np.isnan(out.rivo_peak.sel(time="1999-12-01").item())
-        flood_type = xh.indicators.flood_types.classify_flood_events(out, threshold=np.inf)
-        assert flood_type.sel(time="1999-12-01").item() == -1
+        assert dates.isnull().sum().item() == 1
+        assert dates.sel(time="1999-12-01").isnull().item()
 
     def test_errors(self):
         inputs, _ = _flood_inputs(correlated=False)
-        with pytest.raises(ValueError, match="missing"):
-            xh.indicators.flood_types.major_flood_events(**{**inputs, "prra": inputs["prra"].drop_attrs()})
-        with pytest.raises(ValueError, match='convertible to "mm d-1"'):
-            xh.indicators.flood_types.major_flood_events(**{**inputs, "prra": inputs["prra"].assign_attrs(units="K")})
-        with pytest.raises(ValueError, match="time coordinate"):
-            xh.indicators.flood_types.major_flood_events(**{**inputs, "snm": inputs["snm"].isel(time=slice(0, 100))})
-        with pytest.raises(ValueError, match="daily"):
-            weekly = {k: v.isel(time=slice(None, None, 7)) if "time" in v.dims else v for k, v in inputs.items()}
-            xh.indicators.flood_types.major_flood_events(**weekly)
-        with pytest.raises(ValueError, match="`max_days` must be >= 1"):
-            xh.indicators.flood_types.major_flood_events(**inputs, max_days=0)
-        with pytest.raises(ValueError, match="dimensionless"):
-            # a water depth needs `mrsosat` to be normalized
-            xh.indicators.flood_types.major_flood_events(**{k: v for k, v in inputs.items() if k != "mrsosat"})
-        with pytest.raises(ValueError, match="must be a 0-1 index"):
-            # dimensionless units alone do not make `mrsol` an index: the values must be in range
-            out_of_range = {k: v for k, v in inputs.items() if k != "mrsosat"}
-            out_of_range["mrsol"] = inputs["mrsol"].assign_attrs(units="1")
-            xh.indicators.flood_types.major_flood_events(**out_of_range)
+        with pytest.raises(ValueError, match='must have a "time" dimension'):
+            xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"].isel(time=0))
 
 
 class TestSoilMoistureThreshold:
@@ -638,67 +582,195 @@ class TestSoilMoistureThreshold:
 
 
 class TestClassifyFloodEvents:
-    @staticmethod
-    def _events(*, rain_sum, rain_max, melt_sum, swi, peak=20.0):
-        """Build a one-event Dataset holding only the fields the decision tree reads."""
-        values = {"prra_sum": rain_sum, "prra_max": rain_max, "snm_sum": melt_sum, "swi_antecedent": swi, "rivo_peak": peak}
-        return xr.Dataset({name: xr.DataArray([value], dims="time") for name, value in values.items()})
+    # the day of the event `_plant_flood_event` engineers, doy 201 of 2006
+    EVENT_DATE = "2006-07-20"
+
+    def test_indicators(self):
+        inputs, starts = _flood_inputs(correlated=False)
+        # rain [0, 5, 5, 2]: the walk from the peak stops at the dry day, so the window is 3 days
+        _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2], snow=[0, 1, 1, 1])
+        inputs["mrros"] = (0.25 * inputs["rivo"]).assign_attrs(units="mm d-1")
+
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
+        assert out.rivo_peak.item() == 20.0
+        assert out.rivo_peak_doy.item() == 201
+        assert out.event_duration.item() == 3
+        assert out.prra_sum.item() == 12.0
+        assert out.prra_max.item() == 5.0
+        assert out.snm_sum.item() == 3.0
+        assert out.rivo_peak.attrs["units"] == "mm d-1"
+        assert (out.prra_sum.attrs["units"], out.prra_max.attrs["units"]) == ("mm", "mm d-1")
+        assert out.swi_antecedent.item() == 0.5  # mrsol 50 / mrsosat 100 on the day before the window
+        np.testing.assert_allclose(out.direct_streamflow_fraction.item(), 0.25)
+
+    def test_max_days_caps_the_window(self):
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[5] * 10)
+
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
+
+        assert out.event_duration.item() == 7
+
+    def test_mrros_default(self):
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
+
+        from_none = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
+        from_explicit = xh.indicators.flood_types.classify_flood_events(
+            self.EVENT_DATE, threshold=0.5, **inputs, mrros=xh.indicators.split_streamflow(inputs["rivo"])[1]
+        )
+
+        xr.testing.assert_identical(from_none, from_explicit)
+
+    @pytest.mark.parametrize("units,scale", [("1", 100.0), ("%", 1.0)])
+    def test_normalized_mrsol(self, units, scale):
+        """Without `mrsosat`, `mrsol` is taken as the wetness index, and percent is rescaled to 0-1."""
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
+        normalized = {**inputs, "mrsol": (inputs["mrsol"] / scale).assign_attrs(units=units)}
+        del normalized["mrsosat"]
+
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **normalized)
+        reference = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
+
+        np.testing.assert_allclose(out.swi_antecedent.values, reference.swi_antecedent.values)
 
     @pytest.mark.parametrize(
-        "expected,rain_sum,rain_max,melt_sum,swi",
+        "expected,rain,snow,mrsol",
         [
-            (0, 3.0, 1.0, 15.0, 0.0),  # snowmelt: melt > 4x rain
-            (1, 3.0, 1.0, 9.0, 0.0),  # mostly snowmelt: melt > 2x rain
-            (2, 15.0, 5.0, 6.0, 0.0),  # rain-on-snow: melt > 0.25x rain
-            (3, 20.0, 18.0, 0.0, 0.9),  # soil water excess and short rain
-            (4, 20.0, 5.0, 0.0, 0.9),  # soil water excess and long rain
-            (5, 20.0, 18.0, 0.0, 0.1),  # short rain: one day holds > 75% of the rain
-            (6, 20.0, 5.0, 0.0, 0.1),  # long rain
+            (0, [5] * 4, [25] * 4, None),  # snowmelt: melt > 4x rain
+            (1, [5] * 4, [15] * 4, None),  # mostly snowmelt: melt > 2x rain
+            (2, [5] * 4, [5] * 4, None),  # rain-on-snow: melt > 0.25x rain
+            (3, [18, 2], None, 90.0),  # soil water excess and short rain
+            (4, [5] * 4, None, 90.0),  # soil water excess and long rain
+            (5, [18, 2], None, None),  # short rain: one day holds > 75% of the rain
+            (6, [5] * 4, None, None),  # long rain
         ],
     )
-    def test_types(self, expected, rain_sum, rain_max, melt_sum, swi):
-        events = self._events(rain_sum=rain_sum, rain_max=rain_max, melt_sum=melt_sum, swi=swi)
+    def test_types(self, expected, rain, snow, mrsol):
+        """Each branch of the decision tree, from the series the event is built on."""
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=rain, snow=snow, mrsol=mrsol)
 
-        out = xh.indicators.flood_types.classify_flood_events(events, threshold=0.5)
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
 
-        assert out.item() == expected
+        assert out.flood_type.item() == expected
+
+    def test_single_date(self):
+        """A single date drops the time axis, and takes a scalar DataArray as readily as a string."""
+        inputs, starts = _flood_inputs(correlated=False)
+        peak = _plant_flood_event(inputs, starts, rain=[2, 2, 2])
+
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
+        from_dataarray = xh.indicators.flood_types.classify_flood_events(inputs["rivo"].time[peak], threshold=0.5, **inputs)
+
+        assert "time" not in out.dims
+        assert out.time.values == inputs["rivo"].time.values[peak]
+        xr.testing.assert_identical(out, from_dataarray)
 
     def test_no_event(self):
-        """A period without a peak is the -1 sentinel, whatever the other fields hold."""
-        events = self._events(rain_sum=20.0, rain_max=5.0, melt_sum=0.0, swi=0.1, peak=np.nan)
+        """A missing date is the -1 sentinel, and all its indicators are NaN."""
+        inputs, _ = _flood_inputs(correlated=False)
+        time = inputs["rivo"].time
+        gap = (time >= np.datetime64("1999-12-01")) & (time <= np.datetime64("2000-11-30"))
+        inputs["rivo"] = inputs["rivo"].where(~gap)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
 
-        assert xh.indicators.flood_types.classify_flood_events(events, threshold=0.5).item() == -1
+        out = xh.indicators.flood_types.classify_flood_events(dates, threshold=0.5, **inputs)
+
+        missing = out.sel(time="1999-12-01")
+        assert missing.flood_type.item() == -1
+        assert np.isnan(missing.rivo_peak.item())
+        assert (out.flood_type != -1).sum().item() == out.time.size - 1
 
     def test_nan_swi_is_dry(self):
         """A missing antecedent SWI never exceeds the threshold, so it behaves like 0."""
-        events = self._events(rain_sum=20.0, rain_max=18.0, melt_sum=0.0, swi=np.nan)
+        inputs, _ = _flood_inputs(correlated=False)
 
-        assert xh.indicators.flood_types.classify_flood_events(events, threshold=0.5).item() == 5
+        # the record's first day has no day before it, so its antecedent SWI is NaN
+        first = xh.indicators.flood_types.classify_flood_events("1995-01-01", threshold=-1.0, **inputs)
+        later = xh.indicators.flood_types.classify_flood_events("1995-06-01", threshold=-1.0, **inputs)
+
+        assert np.isnan(first.swi_antecedent.item())
+        assert first.flood_type.item() == 6  # long rain, the dry branch
+        assert later.flood_type.item() == 4  # soil water excess and long rain, the wet branch
 
     def test_infinite_threshold_disables_soil_water_excess(self):
-        events = self._events(rain_sum=20.0, rain_max=5.0, melt_sum=0.0, swi=0.99)
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[5] * 4, mrsol=99.0)
 
-        assert xh.indicators.flood_types.classify_flood_events(events, threshold=np.inf).item() == 6
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=np.inf, **inputs)
+
+        assert out.flood_type.item() == 6
 
     def test_attrs(self):
-        events = self._events(rain_sum=20.0, rain_max=5.0, melt_sum=0.0, swi=0.1)
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[5] * 4)
 
-        out = xh.indicators.flood_types.classify_flood_events(events, threshold=0.5)
+        out = xh.indicators.flood_types.classify_flood_events(self.EVENT_DATE, threshold=0.5, **inputs)
 
-        assert out.dtype == np.int16
-        assert out.attrs["flag_values"] == [0, 1, 2, 3, 4, 5, 6]
-        assert len(out.attrs["flag_meanings"].split()) == 7
+        assert out.flood_type.dtype == np.int16
+        assert out.flood_type.attrs["flag_values"] == [0, 1, 2, 3, 4, 5, 6]
+        assert len(out.flood_type.attrs["flag_meanings"].split()) == 7
+
+    def test_structure(self):
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
+        for name in ("mrsol", "prra", "rivo", "snm"):
+            inputs[name] = inputs[name].expand_dims(station=["a", "b"]).transpose("time", "station")
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
+
+        out = xh.indicators.flood_types.classify_flood_events(dates, threshold=0.5, **inputs)
+
+        assert out.rivo_peak.dims == ("time", "station")
+        assert out.time.size == dates.time.size
+        np.testing.assert_array_equal(out.rivo_peak.sel(station="a").values, out.rivo_peak.sel(station="b").values)
+
+    def test_dask(self):
+        inputs, starts = _flood_inputs(correlated=False)
+        _plant_flood_event(inputs, starts, rain=[2, 2, 2], snow=[3, 3, 3])
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
+        eager = xh.indicators.flood_types.classify_flood_events(dates, threshold=0.5, **inputs)
+
+        for name in ("mrsol", "prra", "rivo", "snm"):
+            inputs[name] = inputs[name].chunk({"time": -1})
+        lazy = xh.indicators.flood_types.classify_flood_events(dates, threshold=0.5, **inputs)
+
+        xr.testing.assert_identical(eager, lazy.compute())
 
     def test_errors(self):
-        events = self._events(rain_sum=20.0, rain_max=5.0, melt_sum=0.0, swi=0.1)
+        inputs, _ = _flood_inputs(correlated=False)
+        classify = xh.indicators.flood_types.classify_flood_events
         with pytest.raises(ValueError, match="missing"):
-            xh.indicators.flood_types.classify_flood_events(events[["rivo_peak"]], threshold=0.5)
+            classify(self.EVENT_DATE, threshold=0.5, **{**inputs, "prra": inputs["prra"].drop_attrs()})
+        with pytest.raises(ValueError, match='convertible to "mm d-1"'):
+            classify(self.EVENT_DATE, threshold=0.5, **{**inputs, "prra": inputs["prra"].assign_attrs(units="K")})
+        with pytest.raises(ValueError, match="time coordinate"):
+            classify(self.EVENT_DATE, threshold=0.5, **{**inputs, "snm": inputs["snm"].isel(time=slice(0, 100))})
+        with pytest.raises(ValueError, match="daily"):
+            weekly = {k: v.isel(time=slice(None, None, 7)) if "time" in v.dims else v for k, v in inputs.items()}
+            classify(self.EVENT_DATE, threshold=0.5, **weekly)
+        with pytest.raises(ValueError, match="`max_days` must be >= 1"):
+            classify(self.EVENT_DATE, threshold=0.5, **inputs, max_days=0)
+        with pytest.raises(ValueError, match="dimensionless"):
+            # a water depth needs `mrsosat` to be normalized
+            classify(self.EVENT_DATE, threshold=0.5, **{k: v for k, v in inputs.items() if k != "mrsosat"})
+        with pytest.raises(ValueError, match="must be a 0-1 index"):
+            # dimensionless units alone do not make `mrsol` an index: the values must be in range
+            out_of_range = {k: v for k, v in inputs.items() if k != "mrsosat"}
+            out_of_range["mrsol"] = inputs["mrsol"].assign_attrs(units="1")
+            classify(self.EVENT_DATE, threshold=0.5, **out_of_range)
+        with pytest.raises(ValueError, match="matches 365 of them"):
+            classify("2006", threshold=0.5, **inputs)
+        with pytest.raises(ValueError, match="absent from"):
+            classify(xr.DataArray([np.datetime64("2050-01-01")], coords={"time": [0]}, dims="time"), threshold=0.5, **inputs)
+        with pytest.raises(ValueError, match='must carry its "time" coordinate'):
+            classify(xr.DataArray([np.datetime64("2006-07-20")], dims="time"), threshold=0.5, **inputs)
 
     def test_end_to_end(self):
         """The three functions chain on real series, and a wet-soil event picks up a soil-water-excess type."""
         inputs, starts = _flood_inputs(correlated=True)
-        _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2])
-        inputs["mrsol"].values[starts[11] :] = 95.0  # a wet soil going into the 2006 event
+        _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2], mrsol=95.0)
 
         threshold = xh.indicators.flood_types.soil_moisture_threshold(
             rivo=inputs["rivo"],
@@ -708,8 +780,8 @@ class TestClassifyFloodEvents:
             drainage_area=xr.DataArray(100.0, attrs={"units": "km2"}),
             period=["1995", "2004"],
         )
-        events = xh.indicators.flood_types.major_flood_events(**inputs)
-        flood_type = xh.indicators.flood_types.classify_flood_events(events, threshold=threshold)
+        dates = xh.indicators.flood_types.major_flood_events(rivo=inputs["rivo"])
+        out = xh.indicators.flood_types.classify_flood_events(dates, threshold=threshold, **inputs)
 
-        assert flood_type.sizes["time"] == events.sizes["time"]
-        assert flood_type.sel(time=_EVENT_PERIOD).item() == 4  # soil water excess and long rain
+        assert out.sizes["time"] == dates.sizes["time"]
+        assert out.flood_type.sel(time=_EVENT_PERIOD).item() == 4  # soil water excess and long rain
