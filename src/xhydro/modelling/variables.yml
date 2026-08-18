@@ -152,9 +152,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   mrrob:
+    standard_name: subsurface_runoff_flux
     long_name: Subsurface runoff
     canonical_units: mm d-1
-    description: Runoff draining through the base of the soil model of the subbasin.
+    description: Runoff draining through the base of the soil model.
     cell_methods: "area: mean time: mean"
 
   qgwr:
