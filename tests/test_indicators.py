@@ -227,9 +227,7 @@ class TestSplitStreamflow:
         Compute the Lyne-Hollick baseflow of a 1D series with the recursion as published.
 
         This is the independent ground truth for `split_streamflow`, which computes the same
-        thing through `scipy.signal.lfilter`. Keep it naive: rewriting it in terms of a
-        filtering library would make it a copy of the implementation under test, and it would
-        stop catching anything.
+        thing through `scipy.signal.lfilter`.
         """
         c = (1 + k) / 2
         baseflow = np.asarray(q, dtype=float)
