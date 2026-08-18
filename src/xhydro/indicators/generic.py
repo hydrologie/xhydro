@@ -259,10 +259,10 @@ def split_streamflow(
     -------
     xr.DataArray
         Baseflow variable, named "q_base" if the streamflow is a discharge and
-        "mrrob" if it is a water depth.
+        "mrrob" if it is a runoff rate.
     xr.DataArray
         Runoff variable, named "q_runoff" if the streamflow is a discharge and
-        "mrros" if it is a water depth.
+        "mrros" if it is a runoff rate.
 
     References
     ----------
@@ -278,8 +278,8 @@ def split_streamflow(
 
     units = units2pint(da)
     is_discharge = units.is_compatible_with(units2pint("m3 s-1"))
-    if not is_discharge and not any(units.is_compatible_with(units2pint(u), "hydro") for u in ("mm", "mm h-1")):
-        warnings.warn(f'`da` should be a discharge ("m3 s-1") or a water depth ("mm", "mm h-1"): is "{da.attrs["units"]}".', stacklevel=2)
+    if not is_discharge and not units.is_compatible_with(units2pint("mm d-1"), "hydro"):
+        warnings.warn(f'`da` should be a discharge ("m3 s-1") or a runoff rate ("mm d-1"): is "{da.attrs["units"]}".', stacklevel=2)
 
     c = (1 + k) / 2
 

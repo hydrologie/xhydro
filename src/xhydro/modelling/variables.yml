@@ -126,37 +126,37 @@ variables:
 
   evspsbl:
     long_name: Evaporation including sublimation and transpiration
-    canonical_units: mm
+    canonical_units: mm d-1
     description: Water lost to the atmosphere over the subbasin by evaporation, sublimation and transpiration.
     cell_methods: "area: mean time: mean"
 
   evspsblpot:
     long_name: Potential evapotranspiration
-    canonical_units: mm
+    canonical_units: mm d-1
     description: Water the subbasin would lose to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
     cell_methods: "area: mean time: mean"
 
   rivo:
     long_name: River discharge
-    canonical_units: mm
-    description: Streamflow at the outlet of the subbasin, expressed as a water depth over its drainage area.
+    canonical_units: mm d-1
+    description: Streamflow at the outlet of the subbasin, expressed as a water depth per day over its drainage area.
     cell_methods: "area: mean time: mean"
 
   mrros:
     long_name: Surface runoff
-    canonical_units: mm
+    canonical_units: mm d-1
     description: Surface runoff leaving the subbasin, excluding drainage through the base of the soil model.
     cell_methods: "area: mean time: mean"
 
   mrrob:
     long_name: Subsurface runoff
-    canonical_units: mm
+    canonical_units: mm d-1
     description: Runoff draining through the base of the soil model of the subbasin.
     cell_methods: "area: mean time: mean"
 
   qgwr:
     long_name: Groundwater recharge from soil layer
-    canonical_units: mm
+    canonical_units: mm d-1
     description: Water draining from the soil layer of the subbasin into groundwater.
     cell_methods: "area: mean time: mean"
 

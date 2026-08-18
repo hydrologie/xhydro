@@ -286,7 +286,7 @@ class TestSplitStreamflow:
     # The naming branches on units, so both branches need a case. "m^3 s-1", "m3/s" and
     # "ft3 s-1" are discharges written differently, and the first two appear in this repo's own
     # tests: comparing the unit string instead of its dimensionality names a discharge "mrrob".
-    # "kg m-2 s-1" and "kg m-2" only reach the depth branch through the hydro context.
+    # "kg m-2 s-1" only reaches the depth branch through the hydro context.
     # A discharge gets no standard name at all: "q_base" and "q_runoff" are not CF names.
     _DISCHARGE = (("q_base", "q_runoff"), ("Baseflow", "Direct runoff"), None)
     _DEPTH = (
@@ -302,7 +302,7 @@ class TestSplitStreamflow:
             ("ft3 s-1", _DISCHARGE),
             ("mm h-1", _DEPTH),
             ("kg m-2 s-1", _DEPTH),
-            ("kg m-2", _DEPTH),
+            ("mm d-1", _DEPTH),
         ],
     )
     def test_attrs(self, da, units, expected):
@@ -349,8 +349,9 @@ class TestSplitStreamflow:
             xh.indicators.split_streamflow(da, n_passes=0)
 
     # The filter itself is unit-agnostic, so unusable units are a warning, not a refusal.
-    # "" is dimensionless rather than missing, so it reaches the check like any other unit.
-    @pytest.mark.parametrize("units", ["degC", ""])
+    # "" is dimensionless rather than missing, so it reaches the check like any other unit,
+    # and "kg m-2" is a water depth rather than the rate the filter expects.
+    @pytest.mark.parametrize("units", ["degC", "", "kg m-2"])
     def test_unknown_units(self, da, units):
         with pytest.warns(UserWarning, match="should be a discharge"):
             baseflow, runoff = xh.indicators.split_streamflow(da.assign_attrs(units=units), k=self.k)
@@ -378,12 +379,12 @@ def _flood_inputs(*, correlated, end="2006-12-31"):
         if correlated:
             mrsol[bounds[i] : bounds[i + 1]] = 100.0 * (0.15 + 0.07 * i)
 
-    def da(values):
-        return xr.DataArray(values, coords={"time": time}, dims="time", attrs={"units": "mm"})
+    def da(values, units="mm d-1"):
+        return xr.DataArray(values, coords={"time": time}, dims="time", attrs={"units": units})
 
     inputs = {
         "mrsosat": xr.DataArray(100.0, attrs={"units": "mm"}),
-        "mrsol": da(mrsol),
+        "mrsol": da(mrsol, units="mm"),  # a stock, unlike the fluxes below
         "prra": da(np.zeros(time.size)),
         "rivo": da(rivo),
         "snm": da(np.zeros(time.size)),
@@ -415,7 +416,7 @@ class TestMajorFloodEvents:
         inputs, starts = _flood_inputs(correlated=False)
         # rain [0, 5, 5, 2]: the walk from the peak stops at the dry day, so the window is 3 days
         _plant_flood_event(inputs, starts, rain=[0, 5, 5, 2], snow=[0, 1, 1, 1])
-        inputs["mrros"] = (0.25 * inputs["rivo"]).assign_attrs(units="mm")
+        inputs["mrros"] = (0.25 * inputs["rivo"]).assign_attrs(units="mm d-1")
 
         out = xh.indicators.flood_types.major_flood_events(**inputs).sel(time=_EVENT_PERIOD)
         assert out.rivo_peak.item() == 20.0
@@ -424,6 +425,8 @@ class TestMajorFloodEvents:
         assert out.prra_sum.item() == 12.0
         assert out.prra_max.item() == 5.0
         assert out.snm_sum.item() == 3.0
+        assert out.rivo_peak.attrs["units"] == "mm d-1"
+        assert (out.prra_sum.attrs["units"], out.prra_max.attrs["units"]) == ("mm", "mm d-1")
         assert out.swi_antecedent.item() == 0.5  # mrsol 50 / mrsosat 100 on the day before the window
         np.testing.assert_allclose(out.direct_streamflow_fraction.item(), 0.25)
 
@@ -529,7 +532,7 @@ class TestMajorFloodEvents:
         inputs, _ = _flood_inputs(correlated=False)
         with pytest.raises(ValueError, match="missing"):
             xh.indicators.flood_types.major_flood_events(**{**inputs, "prra": inputs["prra"].drop_attrs()})
-        with pytest.raises(ValueError, match='convertible to "mm"'):
+        with pytest.raises(ValueError, match='convertible to "mm d-1"'):
             xh.indicators.flood_types.major_flood_events(**{**inputs, "prra": inputs["prra"].assign_attrs(units="K")})
         with pytest.raises(ValueError, match="time coordinate"):
             xh.indicators.flood_types.major_flood_events(**{**inputs, "snm": inputs["snm"].isel(time=slice(0, 100))})

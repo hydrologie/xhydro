@@ -38,9 +38,9 @@ def soil_moisture_threshold(
     Parameters
     ----------
     rivo : xr.DataArray
-        Streamflow, expressed as a water depth (mm).
+        Streamflow, expressed as a water depth per day (mm d-1).
     prra : xr.DataArray
-        Rainfall (mm).
+        Rainfall (mm d-1).
     mrsol : xr.DataArray
         Soil water content (mm) if ``mrsosat`` is given, otherwise the soil
         wetness index in [0, 1] directly, which must then be dimensionless.
@@ -59,7 +59,7 @@ def soil_moisture_threshold(
     max_days : int, default: 7
         Maximum number of days for an event.
     min_prec : float, default: 1
-        Minimum daily rainfall (mm) to extend an event backward from its peak.
+        Minimum daily rainfall (mm d-1) to extend an event backward from its peak.
 
     Returns
     -------
@@ -112,6 +112,10 @@ def soil_moisture_threshold(
     if mrsosat is not None:
         variables["mrsosat"] = mrsosat
     _validate_inputs(variables, drainage_area=drainage_area, normalized_mrsol=mrsosat is None)
+    # `min_prec` is compared to raw `prra` values, so the fluxes must all be on
+    # the same scale before any of them is read
+    rivo = convert_units_to(rivo, "mm d-1")
+    prra = convert_units_to(prra, "mm d-1")
 
     years = (
         cast(list[str], xscen.utils.standardize_periods(cast(list, period), multiple=False))
@@ -178,11 +182,11 @@ def major_flood_events(
     Parameters
     ----------
     rivo : xr.DataArray
-        Streamflow, expressed as a water depth (mm).
+        Streamflow, expressed as a water depth per day (mm d-1).
     prra : xr.DataArray
-        Rainfall (mm).
+        Rainfall (mm d-1).
     snm : xr.DataArray
-        Snowmelt (mm).
+        Snowmelt (mm d-1).
     mrsol : xr.DataArray
         Soil water content (mm) if ``mrsosat`` is given, otherwise the soil
         wetness index in [0, 1] directly, which must then be dimensionless.
@@ -192,7 +196,7 @@ def major_flood_events(
         normalized on the fly as ``mrsol / mrsosat``; if None, ``mrsol`` is
         taken to be normalized already.
     mrros : xr.DataArray | None, default: None
-        Surface runoff (mm). If None, it is derived from ``rivo`` with
+        Surface runoff (mm d-1). If None, it is derived from ``rivo`` with
         :py:func:`xhydro.indicators.split_streamflow`.
     freq : str, default: "YS-DEC"
         Resampling frequency delimiting the periods. The default runs years from
@@ -201,7 +205,7 @@ def major_flood_events(
     max_days : int, default: 7
         Maximum number of days for an event.
     min_prec : float, default: 1
-        Minimum daily rainfall (mm) to extend an event backward from its peak.
+        Minimum daily rainfall (mm d-1) to extend an event backward from its peak.
 
     Returns
     -------
@@ -238,9 +242,14 @@ def major_flood_events(
     if mrros is not None:
         variables["mrros"] = mrros
     _validate_inputs(variables, normalized_mrsol=mrsosat is None)
+    # `min_prec` is compared to raw `prra` values and `direct_streamflow_fraction`
+    # divides `mrros` by `rivo`, so the fluxes must all be on the same scale
+    rivo = convert_units_to(rivo, "mm d-1")
+    prra = convert_units_to(prra, "mm d-1")
+    snm = convert_units_to(snm, "mm d-1")
 
-    if mrros is None:
-        _, mrros = split_streamflow(rivo)
+    # `rivo` is already converted, so the derived runoff inherits "mm d-1"
+    mrros = convert_units_to(mrros, "mm d-1") if mrros is not None else split_streamflow(rivo)[1]
 
     antecedent_swi = _antecedent_swi(mrsol, mrsosat)
 
@@ -267,7 +276,7 @@ def major_flood_events(
         dask_gufunc_kwargs={"output_sizes": {"period": first.time.size}},
         kwargs={"max_days": max_days, "min_prec": min_prec, "bounds": bounds},
     )
-    return _build_output(outputs, rivo, prra, snm, time=first.time.values)
+    return _build_output(outputs, dims=rivo.dims, time=first.time.values)
 
 
 def classify_flood_events(events: xr.Dataset, *, threshold: xr.DataArray | float) -> xr.DataArray:
@@ -381,11 +390,17 @@ def _validate_inputs(
     if missing := [name for name, variable in named.items() if "units" not in variable.attrs]:
         raise ValueError("All variables must have units. These variables are missing them: {}.".format(", ".join(missing)))
 
-    # without `mrsosat`, `mrsol` is already a 0-1 index, so it is dimensionless rather than a water depth
-    depths = {name: variable for name, variable in variables.items() if not (normalized_mrsol and name == "mrsol")}
-    mm = units2pint("mm")
-    if bad := {name: variable.attrs["units"] for name, variable in depths.items() if not units2pint(variable).is_compatible_with(mm, "hydro")}:
-        raise ValueError('All variable units must be convertible to "mm": {}.'.format(", ".join(f"{name}: {units}" for name, units in bad.items())))
+    # `mrsol` and `mrsosat` are stocks (a water depth), every other variable is a
+    # flux (a water depth per unit of time); without `mrsosat`, `mrsol` is already
+    # a 0-1 index, so it is dimensionless rather than a water depth
+    stocks = {name: variable for name, variable in variables.items() if name in ("mrsol", "mrsosat") and not (normalized_mrsol and name == "mrsol")}
+    fluxes = {name: variable for name, variable in variables.items() if name not in ("mrsol", "mrsosat")}
+    for group, reference in ((fluxes, "mm d-1"), (stocks, "mm")):
+        pint_reference = units2pint(reference)
+        if bad := {name: v.attrs["units"] for name, v in group.items() if not units2pint(v).is_compatible_with(pint_reference, "hydro")}:
+            raise ValueError(
+                f'These variable units must be convertible to "{reference}": {", ".join(f"{name}: {units}" for name, units in bad.items())}.'
+            )
     if normalized_mrsol and "mrsol" in variables and not units2pint(variables["mrsol"]).dimensionless:
         raise ValueError(f'Without `mrsosat`, `mrsol` must be a dimensionless 0-1 index: is "{variables["mrsol"].attrs["units"]}".')
 
@@ -567,7 +582,7 @@ def _events_kernel(
     return (peak_q, peak_doy, duration, rain_sum, rain_max, melt_sum, swi, fraction)
 
 
-def _build_output(outputs: tuple[xr.DataArray, ...], rivo: xr.DataArray, prra: xr.DataArray, snm: xr.DataArray, *, time: npt.NDArray) -> xr.Dataset:
+def _build_output(outputs: tuple[xr.DataArray, ...], *, dims: tuple[str, ...], time: npt.NDArray) -> xr.Dataset:
     """Assemble the per-period output Dataset: period time axis and attributes."""
     names = (
         "rivo_peak",
@@ -583,16 +598,16 @@ def _build_output(outputs: tuple[xr.DataArray, ...], rivo: xr.DataArray, prra: x
     out = out.rename(period="time").assign_coords(time=time)
 
     attrs: dict[str, dict] = {
-        "rivo_peak": {"units": rivo.attrs["units"], "long_name": "Maximum streamflow of the period", "cell_methods": "time: maximum"},
+        "rivo_peak": {"units": "mm d-1", "long_name": "Maximum streamflow of the period", "cell_methods": "time: maximum"},
         "rivo_peak_doy": {"units": "1", "long_name": "Day of year of the maximum streamflow"},
         "event_duration": {
             "units": "d",
             "long_name": "Flood event duration",
             "description": "Length of the contiguous rain window ending at the period's streamflow peak.",
         },
-        "prra_sum": {"units": prra.attrs["units"], "long_name": "Total rainfall during the flood event", "cell_methods": "time: sum"},
-        "prra_max": {"units": prra.attrs["units"], "long_name": "Maximum daily rainfall during the flood event", "cell_methods": "time: maximum"},
-        "snm_sum": {"units": snm.attrs["units"], "long_name": "Total snowmelt during the flood event", "cell_methods": "time: sum"},
+        "prra_sum": {"units": "mm", "long_name": "Total rainfall during the flood event", "cell_methods": "time: sum"},
+        "prra_max": {"units": "mm d-1", "long_name": "Maximum daily rainfall during the flood event", "cell_methods": "time: maximum"},
+        "snm_sum": {"units": "mm", "long_name": "Total snowmelt during the flood event", "cell_methods": "time: sum"},
         "swi_antecedent": {
             "units": "1",
             "long_name": "Antecedent soil wetness index",
@@ -606,4 +621,4 @@ def _build_output(outputs: tuple[xr.DataArray, ...], rivo: xr.DataArray, prra: x
     }
     for name, variable_attrs in attrs.items():
         out[name].attrs = variable_attrs
-    return out.transpose(*rivo.dims)
+    return out.transpose(*dims)
