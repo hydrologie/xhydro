@@ -125,9 +125,10 @@ variables:
     cell_methods: "area: mean time: mean"
 
   evspsbl:
+    standard_name: water_evapotranspiration_flux
     long_name: Evaporation including sublimation and transpiration
     canonical_units: mm d-1
-    description: Water lost to the atmosphere over the subbasin by evaporation, sublimation and transpiration.
+    description: Water lost to the atmosphere by evaporation, sublimation and transpiration.
     cell_methods: "area: mean time: mean"
 
   evspsblpot:
