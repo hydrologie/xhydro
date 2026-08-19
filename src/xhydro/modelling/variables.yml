@@ -144,6 +144,13 @@ variables:
     canonical_units: m3 s-1
     description: Streamflow at the outlet of the subbasin.
 
+  mrro:
+    standard_name: runoff_flux
+    long_name: Total runoff
+    canonical_units: mm d-1
+    description: Total runoff, including drainage through the base of the soil model.
+    cell_methods: "area: mean time: mean"
+
   mrros:
     standard_name: surface_runoff_flux
     long_name: Surface runoff

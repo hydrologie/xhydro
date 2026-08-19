@@ -19,7 +19,7 @@ __all__ = ["classify_flood_events", "major_flood_events", "soil_moisture_thresho
 
 def soil_moisture_threshold(
     *,
-    rivo: xr.DataArray,
+    mrro: xr.DataArray,
     prra: xr.DataArray,
     mrsol: xr.DataArray,
     drainage_area: xr.DataArray,
@@ -38,7 +38,7 @@ def soil_moisture_threshold(
 
     Parameters
     ----------
-    rivo : xr.DataArray
+    mrro : xr.DataArray
         Streamflow, expressed as a water depth per day (mm d-1).
     prra : xr.DataArray
         Rainfall (mm d-1).
@@ -109,22 +109,22 @@ def soil_moisture_threshold(
     """
     if max_days < 1:
         raise ValueError(f"`max_days` must be >= 1: is {max_days}.")
-    variables = {"rivo": rivo, "prra": prra, "mrsol": mrsol}
+    variables = {"mrro": mrro, "prra": prra, "mrsol": mrsol}
     if mrsosat is not None:
         variables["mrsosat"] = mrsosat
     _validate_inputs(variables, drainage_area=drainage_area, normalized_mrsol=mrsosat is None)
     # `min_prec` is compared to raw `prra` values, so the fluxes must all be on
     # the same scale before any of them is read
-    rivo = cast(xr.DataArray, convert_units_to(rivo, "mm d-1"))
+    mrro = cast(xr.DataArray, convert_units_to(mrro, "mm d-1"))
     prra = cast(xr.DataArray, convert_units_to(prra, "mm d-1"))
 
     years = (
         cast(list[str], xscen.utils.standardize_periods(cast(list, period), multiple=False))
         if period is not None
-        else [str(int(rivo.time.dt.year.min())), str(int(rivo.time.dt.year.max()))]
+        else [str(int(mrro.time.dt.year.min())), str(int(mrro.time.dt.year.max()))]
     )
     reference = slice(years[0], years[1])
-    if rivo.sel(time=reference).time.size == 0:
+    if mrro.sel(time=reference).time.size == 0:
         raise ValueError(f"`period` {years} does not intersect the data's time range.")
 
     antecedent_swi = _antecedent_swi(mrsol, mrsosat)
@@ -136,7 +136,7 @@ def soil_moisture_threshold(
 
     threshold = xr.apply_ufunc(
         _threshold_kernel,
-        rivo.sel(time=reference),
+        mrro.sel(time=reference),
         prra.sel(time=reference),
         antecedent_swi.sel(time=reference),
         min_days,
@@ -156,7 +156,7 @@ def soil_moisture_threshold(
     return threshold.rename("swi_threshold")
 
 
-def major_flood_events(*, rivo: xr.DataArray, freq: str = "YS-DEC") -> xr.DataArray:
+def major_flood_events(*, mrro: xr.DataArray, freq: str = "YS-DEC") -> xr.DataArray:
     """
     Extract the date of the major flood event of each period.
 
@@ -170,7 +170,7 @@ def major_flood_events(*, rivo: xr.DataArray, freq: str = "YS-DEC") -> xr.DataAr
 
     Parameters
     ----------
-    rivo : xr.DataArray
+    mrro : xr.DataArray
         Streamflow. Only the ordering of its values matters here, so any unit will do.
     freq : str, default: "YS-DEC"
         Resampling frequency delimiting the periods. The default runs years from
@@ -185,23 +185,23 @@ def major_flood_events(*, rivo: xr.DataArray, freq: str = "YS-DEC") -> xr.DataAr
         NaT. Periods truncated by the start or end of the record are kept, so
         their peak is drawn from a partial window.
     """
-    if "time" not in rivo.dims:
-        raise ValueError('`rivo` must have a "time" dimension.')
+    if "time" not in mrro.dims:
+        raise ValueError('`mrro` must have a "time" dimension.')
 
     # `idxmax` gives NaT for an all-missing period, which
     # `classify_flood_events` reads back as "this period holds no event"
-    dates = rivo.resample(time=freq).map(lambda period: period.idxmax("time"))
+    dates = mrro.resample(time=freq).map(lambda period: period.idxmax("time"))
     dates.attrs = {
         "long_name": "Date of the major flood event",
         "description": "Date of the period's maximum streamflow; NaT where the period holds no streamflow.",
     }
-    return dates.rename("event_date").transpose(*rivo.dims)
+    return dates.rename("event_date").transpose(*mrro.dims)
 
 
 def classify_flood_events(
     dates: xr.DataArray | str | np.datetime64,
     *,
-    rivo: xr.DataArray,
+    mrro: xr.DataArray,
     prra: xr.DataArray,
     snm: xr.DataArray,
     mrsol: xr.DataArray,
@@ -227,7 +227,7 @@ def classify_flood_events(
         carry a "time" dimension and its coordinate, or a single date given as
         anything ``sel`` accepts: a string, a numpy or python datetime, a cftime
         object, or a scalar DataArray. A NaT date means there is no event.
-    rivo : xr.DataArray
+    mrro : xr.DataArray
         Streamflow, expressed as a water depth per day (mm d-1).
     prra : xr.DataArray
         Rainfall (mm d-1).
@@ -247,7 +247,7 @@ def classify_flood_events(
         normalized on the fly as ``mrsol / mrsosat``; if None, ``mrsol`` is
         taken to be normalized already.
     mrros : xr.DataArray | None, default: None
-        Surface runoff (mm d-1). If None, it is derived from ``rivo`` with
+        Surface runoff (mm d-1). If None, it is derived from ``mrro`` with
         :py:func:`xhydro.indicators.split_streamflow`.
     max_days : int, default: 7
         Maximum number of days for an event.
@@ -261,7 +261,7 @@ def classify_flood_events(
         a Dataset with no time dimension. An event whose date is missing gets
         NaN everywhere and a flood type of -1.
 
-        - ``rivo_peak``, ``rivo_peak_doy``: streamflow of the event day and its
+        - ``mrro_peak``, ``mrro_peak_doy``: streamflow of the event day and its
           calendar day of year.
         - ``event_duration``: length of the event window (days).
         - ``prra_sum``, ``prra_max``: total and maximum daily rainfall over the
@@ -303,20 +303,20 @@ def classify_flood_events(
     """
     if max_days < 1:
         raise ValueError(f"`max_days` must be >= 1: is {max_days}.")
-    variables = {"rivo": rivo, "prra": prra, "snm": snm, "mrsol": mrsol}
+    variables = {"mrro": mrro, "prra": prra, "snm": snm, "mrsol": mrsol}
     if mrsosat is not None:
         variables["mrsosat"] = mrsosat
     if mrros is not None:
         variables["mrros"] = mrros
     _validate_inputs(variables, normalized_mrsol=mrsosat is None)
     # `min_prec` is compared to raw `prra` values and `direct_streamflow_fraction`
-    # divides `mrros` by `rivo`, so the fluxes must all be on the same scale
-    rivo = cast(xr.DataArray, convert_units_to(rivo, "mm d-1"))
+    # divides `mrros` by `mrro`, so the fluxes must all be on the same scale
+    mrro = cast(xr.DataArray, convert_units_to(mrro, "mm d-1"))
     prra = cast(xr.DataArray, convert_units_to(prra, "mm d-1"))
     snm = cast(xr.DataArray, convert_units_to(snm, "mm d-1"))
 
-    # `rivo` is already converted, so the derived runoff inherits "mm d-1"
-    mrros = cast(xr.DataArray, convert_units_to(mrros, "mm d-1")) if mrros is not None else split_streamflow(rivo)[1]
+    # `mrro` is already converted, so the derived runoff inherits "mm d-1"
+    mrros = cast(xr.DataArray, convert_units_to(mrros, "mm d-1")) if mrros is not None else split_streamflow(mrro)[1]
 
     antecedent_swi = _antecedent_swi(mrsol, mrsosat)
 
@@ -324,7 +324,7 @@ def classify_flood_events(
     if scalar:
         # `sel` resolves strings, datetimes and cftime objects against the
         # record's own calendar
-        resolved = np.atleast_1d(rivo.time.sel(time=dates).values)
+        resolved = np.atleast_1d(mrro.time.sel(time=dates).values)
         if resolved.size != 1:
             raise ValueError(f"A single date must match a single day: `{dates}` matches {resolved.size} of them.")
         dates = xr.DataArray(resolved, coords={"time": resolved}, dims="time")
@@ -333,13 +333,13 @@ def classify_flood_events(
 
     outputs = xr.apply_ufunc(
         _events_kernel,
-        rivo,
+        mrro,
         prra,
         snm,
         mrros,
         antecedent_swi,
-        rivo.time.dt.dayofyear,
-        _peak_index(rivo.time, dates),
+        mrro.time.dt.dayofyear,
+        _peak_index(mrro.time, dates),
         input_core_dims=[["time"]] * 6 + [["event"]],
         output_core_dims=[["event"]] * 8,
         vectorize=True,
@@ -348,7 +348,7 @@ def classify_flood_events(
         dask_gufunc_kwargs={"output_sizes": {"event": dates.sizes["time"]}},
         kwargs={"max_days": max_days, "min_prec": min_prec},
     )
-    out = _build_output(outputs, dims=rivo.dims, time=dates.time.values)
+    out = _build_output(outputs, dims=mrro.dims, time=dates.time.values)
     out["flood_type"] = _flood_type(out, threshold)
     # a single date is a single event: the time axis carries no information the
     # caller does not already have
@@ -364,7 +364,7 @@ def _peak_index(time: xr.DataArray, dates: xr.DataArray) -> xr.DataArray:
     """
     index = time.get_index("time").get_indexer(np.ravel(dates.values))
     if (index[np.ravel(dates.notnull().values)] < 0).any():
-        raise ValueError("`dates` holds dates that are absent from `rivo`'s time coordinate.")
+        raise ValueError("`dates` holds dates that are absent from `mrro`'s time coordinate.")
     return xr.DataArray(index.reshape(dates.shape), coords=dates.coords, dims=dates.dims).rename(time="event")
 
 
@@ -392,10 +392,10 @@ def _flood_type(events: xr.Dataset, threshold: xr.DataArray | float) -> xr.DataA
         0,
         xr.where(snowmelt > 2 * rain_sum, 1, xr.where(snowmelt > 0.25 * rain_sum, 2, rain_type)),
     )
-    # `rivo_peak` is NaN exactly where the date held no usable event; the
+    # `mrro_peak` is NaN exactly where the date held no usable event; the
     # other variables are NaN in legitimate cases too, so keying the sentinel
     # on them would mislabel events
-    flood_type = flood_type.where(events["rivo_peak"].notnull(), -1).astype(np.int16)
+    flood_type = flood_type.where(events["mrro_peak"].notnull(), -1).astype(np.int16)
 
     flood_type.attrs = {
         "long_name": "Flood type",
@@ -403,7 +403,7 @@ def _flood_type(events: xr.Dataset, threshold: xr.DataArray | float) -> xr.DataA
         "flag_meanings": " ".join(flood_types),
         "description": "Type of the flood event; -1 where there is no event.",
     }
-    return flood_type.rename("flood_type").transpose(*events["rivo_peak"].dims)
+    return flood_type.rename("flood_type").transpose(*events["mrro_peak"].dims)
 
 
 def _antecedent_swi(mrsol: xr.DataArray, mrsosat: xr.DataArray | None) -> xr.DataArray:
@@ -454,14 +454,14 @@ def _validate_inputs(
         if "time" in drainage_area.dims:
             raise ValueError("`drainage_area` must not have a time dimension.")
 
-    if "time" not in variables["rivo"].dims:
-        raise ValueError('`rivo` must have a "time" dimension.')
-    time = variables["rivo"].time
+    if "time" not in variables["mrro"].dims:
+        raise ValueError('`mrro` must have a "time" dimension.')
+    time = variables["mrro"].time
     for name, variable in variables.items():
-        if name in ("mrsosat", "rivo"):
+        if name in ("mrsosat", "mrro"):
             continue
         if "time" not in variable.dims or not variable.time.equals(time):
-            raise ValueError(f"`{name}` must share `rivo`'s time coordinate.")
+            raise ValueError(f"`{name}` must share `mrro`'s time coordinate.")
     # declustering and event windows count time steps, so a step must be a day
     if xr.infer_freq(time) != "D":
         raise ValueError("All variables must have a daily time step.")
@@ -626,8 +626,8 @@ def _events_kernel(
 def _build_output(outputs: tuple[xr.DataArray, ...], *, dims: tuple[Hashable, ...], time: npt.NDArray) -> xr.Dataset:
     """Assemble the per-event output Dataset: time axis and attributes."""
     names = (
-        "rivo_peak",
-        "rivo_peak_doy",
+        "mrro_peak",
+        "mrro_peak_doy",
         "event_duration",
         "prra_sum",
         "prra_max",
@@ -639,8 +639,8 @@ def _build_output(outputs: tuple[xr.DataArray, ...], *, dims: tuple[Hashable, ..
     out = out.rename(event="time").assign_coords(time=time)
 
     attrs: dict[str, dict] = {
-        "rivo_peak": {"units": "mm d-1", "long_name": "Streamflow of the flood event"},
-        "rivo_peak_doy": {"units": "1", "long_name": "Day of year of the flood event"},
+        "mrro_peak": {"units": "mm d-1", "long_name": "Streamflow of the flood event"},
+        "mrro_peak_doy": {"units": "1", "long_name": "Day of year of the flood event"},
         "event_duration": {
             "units": "d",
             "long_name": "Flood event duration",
