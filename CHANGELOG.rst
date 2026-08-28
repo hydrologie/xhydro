@@ -5,7 +5,7 @@ Changelog
 ..  Unreleased
     ----------
 
-    Contributors to this version: Insert here.
+    Contributors to this version: Antoine Lafrance.
 
     New features and enhancements
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -21,7 +21,8 @@ Changelog
 
     Internal changes
     ^^^^^^^^^^^^^^^^
-    * N/A.
+    * Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``.
+    * Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk.
 
 v0.8.1 (2026-06-29)
 -------------------
@@ -505,3 +506,5 @@ Internal changes
 ------------------
 
 * First release on PyPI.
+
+
