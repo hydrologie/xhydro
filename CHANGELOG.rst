@@ -2,26 +2,30 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: Insert here.
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * N/A.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Python3.10 support has been dropped due to approaching end-of-life (EOL) date. (:pull:`448`).
 
-    Bug fixes
-    ^^^^^^^^^
-    * N/A.
+Bug fixes
+^^^^^^^^^
+* N/A.
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * N/A.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter templated. (:pull:`448`):
+    * Added guidelines on AI usage disclosures (`AI_POLICY.md` and `AGENTS.md`).
+    * Added `zizmor` hook for checking GitHub Actions security.
+    * GitHub Workflows Python requirements are now found under `.github` directory.
+    * `CI` folder has been renamed to `scripts`.
 
 v0.8.1 (2026-06-29)
 -------------------
