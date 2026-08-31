@@ -9,7 +9,7 @@ xHydro |logo| |logo-light| |logo-dark|
 +----------------------------+-----------------------------------------------------+
 | Open Source                | |license| |ossf-score|                              |
 +----------------------------+-----------------------------------------------------+
-| Coding Standards           | |ruff| |prek| |pre-commit-ci|                       |
+| Coding Standards           | |ruff| |prek| |pre-commit-ci| |zizmor|              |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build| |coveralls|                        |
 +----------------------------+-----------------------------------------------------+
@@ -56,7 +56,7 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
         :target: https://xhydro.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
-.. |license| image:: https://img.shields.io/pypi/l/xhydro
+.. |license| image:: https://img.shields.io/github/license/hydrologie/xHydro.svg
         :target: https://github.com/hydrologie/xhydro/blob/main/LICENSE
         :alt: License
 
@@ -106,3 +106,7 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
 .. |versions| image:: https://img.shields.io/pypi/pyversions/xhydro.svg
         :target: https://pypi.python.org/pypi/xhydro
         :alt: Supported Python Versions
+
+.. |zizmor| image:: https://img.shields.io/badge/%F0%9F%8C%88-zizmor-white?labelColor=white
+        :target: https://zizmor.sh/
+        :alt: zizmor

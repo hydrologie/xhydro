@@ -13,14 +13,15 @@
     - any-glob-to-any-file:
       - '.editorconfig'
       - '.flake8'
+      - '.github/*.in'
+      - '.github/*.txt'
+      - '.github/workflows/*'
       - '.pre-commit-config.yaml'
       - '.readthedocs.yml'
       - '.yamllint.yml'
-      - '.github/workflows/*'
       - 'docs/Makefile'
-      - 'tox.toml'
-      - 'CI/**/*'
       - 'Makefile'
+      - 'tox.toml'
 
 # label 'notebooks' all Jupyter notebooks
 'notebooks':
