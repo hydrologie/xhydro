@@ -98,7 +98,7 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
        $ python -m pip install --editable .
        $ prek install
 
-   This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone.
+   This installs ``xhydro`` in an "editable" state, meaning that changes to the code are immediately seen by the environment. To ensure a consistent coding style, `make dev` also installs the ``pre-commit`` hooks to your local clone. It also installs all the libraries necessary to run the ``Extremes.jl`` hooks of the ``extreme_value_analysis`` module.
 
    On commit, ``prek`` will run ``pre-commit`` checks that ensure code quality checks are passing, perform automatic fixes if possible, and warn of violations that require intervention. If your commit fails the checks initially, simply fix the errors, re-add the files, and re-commit.
 
@@ -238,8 +238,8 @@ AI Assistance Notice
     The following information has been adapted from AI assistance usage policies developed by `Avocado <https://avocado-framework.readthedocs.io/en/latest/guides/contributor/chapters/ai_policy.html>`_ and `ghostty <https://github.com/ghostty-org/ghostty/blob/main/AI_POLICY.md>`_
     with suggestions from software developers and maintainers at Ouranos Inc.
 
-What is AI Assistance ?
-~~~~~~~~~~~~~~~~~~~~~~~
+What is AI Assistance?
+~~~~~~~~~~~~~~~~~~~~~~
 
 Within the context of xHydro development, AI assistance constitutess any code, code snippets, configurations, documentation, or other programmatic assets produced, suggested, or significantly modified by an artificial intelligence model, tool, or service.
 
@@ -248,10 +248,10 @@ AI assistance can also include code that is heavily adapted from or influenced b
 Usage Disclosure
 ~~~~~~~~~~~~~~~~
 
-+If you are using any kind of AI assistance while contributing to xHydro, **this must be disclosed in the pull request**, along with the extent to which AI assistance was used (e.g. documentation, code generation, review comments).
-+Using AI to help draft responses is allowed only if the contributor meaningfully reviews, edits, and takes full responsibility for the content.
-+Submitting AI-generated replies without human verification or understanding is not permitted.
-+Misrepresenting AI-generated content as purely human-authored is considered a violation of the contribution guidelines.
+If you are using any kind of AI assistance while contributing to xHydro, **this must be disclosed in the pull request**, along with the extent to which AI assistance was used (e.g. documentation, code generation, review comments).
+Using AI to help draft responses is allowed only if the contributor meaningfully reviews, edits, and takes full responsibility for the content.
+Submitting AI-generated replies without human verification or understanding is not permitted.
+Misrepresenting AI-generated content as purely human-authored is considered a violation of the contribution guidelines.
 
 Some example disclosures:
 

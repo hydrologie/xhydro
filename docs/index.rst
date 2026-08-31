@@ -39,7 +39,7 @@ Navigation
    hydrologie/xHydro <https://github.com/hydrologie/xhydro>
 
 Useful links
-------------
+^^^^^^^^^^^^
 - `GitHub Repository <https://github.com/hydrologie/xhydro>`_
 - `PyPI <https://pypi.org/project/xhydro/>`_
 - `Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_
