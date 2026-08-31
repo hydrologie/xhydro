@@ -44,7 +44,7 @@ contact:
     given-names: 'Gabriel'
     email: 'rondeau-genesse.gabriel@ouranos.ca'
     orcid: "https://orcid.org/0000-0003-3389-9406"
-repository-code: "https://github.com/hydrologie/xHydro"
+repository-code: "https://github.com/hydrologie/xhydro"
 abstract: "Hydrological analysis library built with xarray."
 license: "Apache-2.0"
 version: "0.8.1"

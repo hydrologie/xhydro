@@ -35,6 +35,8 @@ jobs:
         with:
           app-id: ${{ secrets.HYDROLOGIE_HELPER_BOT_ID }}
           private-key: ${{ secrets.HYDROLOGIE_HELPER_BOT_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Fetch Dependabot metadata
         id: dependabot-metadata
