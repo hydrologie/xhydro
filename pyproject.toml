@@ -167,7 +167,7 @@ translate = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.8.1"
+current_version = "0.8.2-dev.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
