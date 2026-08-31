@@ -11,6 +11,13 @@ This page is a reminder for the **maintainers** on how to deploy. This section i
 
     It is important to be aware that any changes to files found within the ``src/xhydro`` folder (with the exception of ``src/xhydro/__init__.py``) will trigger the ``bump-version.yml`` workflow. Be careful not to commit changes to files in this folder when preparing a new release.
 
+.. note::
+
+    Before beginning, it is a good idea to practice `commit signing`_ at the very least for _tags_ and _releases_. This is a method of cryptographically signing your work to ensure that packages can verifiably be traced to a known and trusted developer.
+    Once a GPG key has been `created`_ and `added`_ to your GitHub profile, you can enable GPG signing for all commits by launching `$ git config --local/--global commit.gpgsign true` within a shell running in your local clone (or anywhere if `--global`).
+
+For creating tags and releases, we **strongly recommend** enabling the "release immutability" option in the repository settings. This prevents _tags_ and _releases_ from being modified of GitHub after they have been published.
+
 #. Create a new branch from `main` (e.g. `release-0.2.0`).
 #. Update the `CHANGELOG.rst` file to change the `Unreleased` section to the current date.
 #. Bump the version in your branch to the next version (e.g. `v0.1.0 -> v0.2.0`):
@@ -26,7 +33,7 @@ This page is a reminder for the **maintainers** on how to deploy. This section i
 
     .. code-block:: console
 
-        git tag v0.2.0
+        git tag -s/--sign "v0.2.0" -m "Release v0.2.0"
         git push --tags
 
    This will trigger a GitHub workflow to build the package and upload it to TestPyPI. At the same time, the GitHub workflow will create a draft release on GitHub. Assuming that the workflow passes, the final release can then be published on GitHub by finalizing the draft release.
@@ -41,10 +48,14 @@ This page is a reminder for the **maintainers** on how to deploy. This section i
 
    This will print the release notes (taken from the `CHANGELOG.rst` file) to your python console. Copy and paste them into the GitHub release description, keeping only the changes for the current version.
 
-#. Once the release is published, the `publish-pypi.yml` workflow will go into an `awaiting approval` mode on Github Actions. Only authorized users may approve this workflow (notifications will be sent) to trigger the upload to PyPI.
+#. Once the release is **published**, the `publish-pypi.yml` workflow will go into an `awaiting approval` mode on Github Actions. Only authorized users may approve this workflow (notifications will be sent) to trigger the upload to PyPI.
 
     .. warning::
 
-        Uploads to PyPI can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
+    Uploads to PyPI (and releases on GitHub if using release immutability) can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to GitHub and PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
 
 #. A new version of `xHydro` on PyPI will trigger the `regro-cf-autotick-bot` to open a pull request on the conda-forge feedstock. This will automatically update the feedstock with the new version of the package. The feedstock maintainers will need to review and merge the pull request.
+
+.. _`commit signing`: https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work
+.. _created: https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key
+.. _added: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
