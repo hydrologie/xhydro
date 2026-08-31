@@ -14,7 +14,7 @@ passenv = [
   "{[testenv]passenv}",
   "SKIP_NOTEBOOKS"
 ]
-setenv = [{replace = "ref", of = ["tool", "tox", "env_run_base", "setenv"]}, {"READTHEDOCS" = 1}]
+setenv = {"READTHEDOCS" = "1"}
 commands = [
   ["make", "build-docs"]
 ]
