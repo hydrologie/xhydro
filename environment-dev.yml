@@ -51,8 +51,8 @@ dependencies:
   - deptry >=0.25.1
   - flake8 >=7.3.0
   - flake8-rst-docstrings >=0.4.0
-  - flit >=3.12.0,<4.0
-  - flit-core >=3.12.0,<4.0
+  - flit >=3.11.0,<4.0  # flit >=3.12.0,<4.0 not available on conda-forge
+  - flit-core >=3.11.0,<4.0  # flit >=3.12.0,<4.0 not available on conda-forge
   - furo >=2025.12.19
   - ipykernel
   - ipython >=8.5.0
