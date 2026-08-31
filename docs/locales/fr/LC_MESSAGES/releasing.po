@@ -58,7 +58,7 @@ msgid ""
 "commit.gpgsign true` within a shell running in your local clone (or "
 "anywhere if `--global`)."
 msgstr ""
-"Avant de commencer, il est conseillé de s’entraîner à la « signature des commits »_, "
+"Avant de commencer, il est conseillé de s’entraîner à la `signature des commits`_, "
 "au moins pour les _tags_ et les _versions_. Il s’agit d’une méthode permettant de «"
 "signer cryptographiquement votre travail afin de garantir que les paquets puissent "
 "être attribués de manière vérifiable à un développeur connu et de confiance. Une fois qu’une clé GPG a "
@@ -139,20 +139,18 @@ msgstr ""
 "actuelle."
 
 #: ../../releasing.rst:51
-#, fuzzy
 msgid ""
 "Once the release is **published**, the `publish-pypi.yml` workflow will "
 "go into an `awaiting approval` mode on Github Actions. Only authorized "
 "users may approve this workflow (notifications will be sent) to trigger "
 "the upload to PyPI."
 msgstr ""
-"Une fois la version est **publiée**, le workflow `publish-pypi.yml`
+"Une fois la version est **publiée**, le workflow `publish-pypi.yml` "
 "passera en mode `awaiting approval` sur Github Actions. Seuls les "
 "utilisateurs autorisés pourront approuver ce workflow (des notifications "
 "seront envoyées) pour déclencher le téléchargement sur PyPI."
 
 #: ../../releasing.rst:55
-#, fuzzy
 msgid ""
 "Uploads to PyPI (and releases on GitHub if using release immutability) "
 "can **never** be overwritten. If you make a mistake, you will need to "
@@ -161,12 +159,13 @@ msgid ""
 "the package as broken, as well as yank the package (mark the version "
 "\"broken\") on PyPI."
 msgstr ""
-"Les téléchargements vers PyPI **ne peuvent jamais** être écrasés. Si vous"
-" faites une erreur, vous devrez augmenter la version et republier la "
-"librairie. Si la librairie téléchargée sur PyPI est défectueuse, vous "
-"devez modifier la version sur GitHub pour marquer la librairie comme "
-"défectueuse, ainsi que retirer cette version (marquer la version "
-"\"broken\") sur PyPI."
+"Les fichiers téléchargés sur PyPI (et les versions publiées sur GitHub "
+"si vous utilisez l’immuabilité des versions) ne peuvent jamais être "
+"remplacés. Si vous commettez une erreur, vous devrez augmenter le numéro "
+"de version et republier le paquet. Si le paquet téléchargé sur GitHub et "
+"PyPI est défectueux, vous devez modifier la version sur GitHub pour "
+"indiquer que le paquet est défectueux, ainsi que retirer le paquet (en "
+"marquant la version comme « défectueuse ») sur PyPI."
 
 #: ../../releasing.rst:57
 msgid ""
@@ -180,3 +179,15 @@ msgstr ""
 " mettra automatiquement à jour le dépôt avec la nouvelle version de la "
 "librairie. Les mainteneurs du dépôt devront examiner et fusionner la pull"
 " request."
+
+#: ../../releasing.rst:59
+msgid "commit signing"
+msgstr "signature des commits"
+
+#: ../../releasing.rst:60
+msgid "created"
+msgstr "créée"
+
+#: ../../releasing.rst:61
+msgid "added"
+msgstr "ajoutée"

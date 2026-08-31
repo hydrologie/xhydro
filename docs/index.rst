@@ -30,13 +30,15 @@ Navigation
 .. toctree::
    :maxdepth: 1
    :caption: All Modules
+   :hidden:
 
    apidoc/modules
 
 .. toctree::
    :caption: GitHub Repository
+   :hidden:
 
-   hydrologie/xHydro <https://github.com/hydrologie/xhydro>
+   hydrologie/xhydro <https://github.com/hydrologie/xhydro>
 
 Useful links
 ^^^^^^^^^^^^

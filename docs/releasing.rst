@@ -50,9 +50,9 @@ For creating tags and releases, we **strongly recommend** enabling the "release 
 
 #. Once the release is **published**, the `publish-pypi.yml` workflow will go into an `awaiting approval` mode on Github Actions. Only authorized users may approve this workflow (notifications will be sent) to trigger the upload to PyPI.
 
-    .. warning::
+   .. warning::
 
-        Uploads to PyPI (and releases on GitHub if using release immutability) can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to GitHub and PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
+       Uploads to PyPI (and releases on GitHub if using release immutability) can **never** be overwritten. If you make a mistake, you will need to bump the version and re-release the package. If the package uploaded to GitHub and PyPI is broken, you should modify the GitHub release to mark the package as broken, as well as yank the package (mark the version "broken") on PyPI.
 
 #. A new version of `xHydro` on PyPI will trigger the `regro-cf-autotick-bot` to open a pull request on the conda-forge feedstock. This will automatically update the feedstock with the new version of the package. The feedstock maintainers will need to review and merge the pull request.
 

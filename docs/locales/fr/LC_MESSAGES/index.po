@@ -61,10 +61,10 @@ msgid ""
 "repository. You can customize the watch function to notify you of new "
 "releases or more."
 msgstr ""
-" Pour rester au courant des changements apportés à `xHydro`, n’hésitez "
+"Pour rester au courant des changements apportés à `xHydro`, n’hésitez "
 "pas à « surveiller » le « Dépôt GitHub ». Vous pouvez personnaliser la "
-"fonction de surveillance pour recevoir des avis concernant les nouvelles «
-versions » ou d’autres informations."
+"fonction de surveillance pour recevoir des avis concernant les nouvelles « "
+"versions » ou d’autres informations."
 
 #: ../../index.rst:13
 msgid "Navigation"
