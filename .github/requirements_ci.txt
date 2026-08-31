@@ -176,13 +176,13 @@ filelock==3.25.2 \
     #   python-discovery
     #   tox
     #   virtualenv
-flit==3.12.0 \
-    --hash=sha256:1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740 \
-    --hash=sha256:2b4e7171dc22881fa6adc2dbf083e5ecc72520be3cd7587d2a803da94d6ef431
+flit==4.0.2 \
+    --hash=sha256:232bc4317279e8952eca9fb3f5e000d8395d693b39c105b99f619ce461e1da85 \
+    --hash=sha256:7b0b0038cd91a7f04e2e287d958dc5f25e68ffeed0b93e613bd50aec99a0d9ca
     # via -r requirements_ci.in
-flit-core==3.12.0 \
-    --hash=sha256:18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2 \
-    --hash=sha256:e7a0304069ea895172e3c7bb703292e992c5d1555dd1233ab7b5621b5b69e62c
+flit-core==4.0.2 \
+    --hash=sha256:8d80717e28d982b41594ed5b14d4e89fbc5bad55473fde27994a3101db18a94e \
+    --hash=sha256:b6929defd93884b584d7c87829e0e7b5c26ed6be17b0b873979019314aa841c8
     # via flit
 h11==0.16.0 \
     --hash=sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1 \
