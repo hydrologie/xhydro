@@ -5,7 +5,7 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Antoine Lafrance (:user:`Antoine-Lafrance`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -26,6 +26,8 @@ Internal changes
     * Added `zizmor` hook for checking GitHub Actions security.
     * GitHub Workflows Python requirements are now found under `.github` directory.
     * `CI` folder has been renamed to `scripts`.
+* Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``.
+* Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk.
 
 v0.8.1 (2026-06-29)
 -------------------
