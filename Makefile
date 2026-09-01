@@ -77,7 +77,7 @@ lint: install-lint ## check style
 	python -m numpydoc lint src/xhydro/**.py
 	python -m vulture src/xhydro tests
 	codespell src/xhydro tests docs
-	python -m deptry src
+	python -m deptry src/xhydro
 	python -m yamllint --config-file=.yamllint.yaml src/xhydro
 
 test: install-test ## run tests quickly with the default Python
@@ -116,7 +116,7 @@ initialize-translations: clean-docs autodoc ## initialize translations, includin
 	rm -fr docs/locales/fr/LC_MESSAGES/apidoc
 
 translate: install-translate ## run translator.py over the documentation
-	python CI/translator.py
+	python scripts/translator.py
 
 linkcheck: autodoc ## run checks over all external links found throughout the documentation
 	$(MAKE) -C docs linkcheck
@@ -131,9 +131,11 @@ endif
 docs: build-docs  ## open the built documentation in a web browser
 ifndef READTHEDOCS
 	$(BROWSER) docs/_build/html/en/html/index.html
+	$(BROWSER) docs/_build/html/fr/html/index.html
 endif
+
 servedocs: autodoc ## compile the docs while watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	$(MAKE) -C docs livehtml
 
 dist: clean ## builds source and wheel package
 	python -m flit build

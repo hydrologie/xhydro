@@ -19,73 +19,70 @@ jobs:
   comment-concerning-workflow-changes:
     name: Comment Concerning Workflow Changes
     runs-on: ubuntu-latest
-    if: |
-      (github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name)
+    if: github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     permissions:
       pull-requests: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           disable-sudo: true
           egress-policy: block
           allowed-endpoints: >
             api.github.com:443
 
-      - name: Manage Warning / Note Comments
+      - name: Create or Update Warning Comment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'approved') }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          WARNING_TEXT="This Pull Request modifies GitHub workflows and is coming from a fork."
-          NOTE_TEXT="Workflow changes in this Pull Request have been approved!"
+          set -euo pipefail
 
-          # Fetch existing comments
+          MARKER="<!-- workflow-changes-warning -->"
+
+          BODY=$(cat <<EOF
+          $MARKER
+
+          > [!WARNING]
+          > This pull request modifies GitHub Actions workflows and originates from a fork.
+          >
+          > Review the workflow changes carefully before approving or merging.
+          EOF
+          )
+
           COMMENTS=$(gh api repos/$REPO/issues/$PR_NUMBER/comments)
 
-          # Find warning comment ID
-          WARNING_COMMENT_ID=$(echo "$COMMENTS" | jq -r \
-            '.[] | select(.user.login=="github-actions[bot]") | select(.body | contains("'"$WARNING_TEXT"'")) | .id' | head -n 1)
+          mapfile -t IDS < <(
+            echo "$COMMENTS" |
+            jq -r '
+              .[]
+              | select(.body | contains("<!-- workflow-changes-warning -->"))
+              | .id
+            '
+          )
 
-          # Find note comment ID
-          NOTE_COMMENT_ID=$(echo "$COMMENTS" | jq -r \
-            '.[] | select(.user.login=="github-actions[bot]") | select(.body | contains("'"$NOTE_TEXT"'")) | .id' | head -n 1)
+          COMMENT_ID=""
 
-          if [ "$APPROVED" = "true" ]; then
-            BODY="> [!NOTE]
-          > Workflow changes in this Pull Request have been approved!"
+          if [ "${#IDS[@]}" -gt 0 ]; then
+            COMMENT_ID="${IDS[0]}"
 
-            if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
-              # Append to existing note comment
-              EXISTING=$(gh api repos/$REPO/issues/comments/$NOTE_COMMENT_ID --jq .body)
+            # Remove duplicate managed comments if they exist.
+            for id in "${IDS[@]:1}"; do
               gh api \
-                --method PATCH \
-                repos/$REPO/issues/comments/$NOTE_COMMENT_ID \
-                -f body="$EXISTING
-
-          $BODY"
-            else
-              # Create new note comment
-              gh pr comment "$PR_NUMBER" --body "$BODY"
-            fi
-
-            # Add reaction (hooray)
-            if [ -n "$NOTE_COMMENT_ID" ] && [ "$NOTE_COMMENT_ID" != "null" ]; then
-              gh api \
-                --method POST \
-                repos/$REPO/issues/comments/$NOTE_COMMENT_ID/reactions \
-                -f content='hooray' \
-                -H "Accept: application/vnd.github+json"
-            fi
-
-          else
-            BODY="> [!WARNING]
-          > This Pull Request modifies GitHub Workflows and is coming from a fork.
-          **It is very important for the reviewer to ensure that the workflow changes are appropriate.**"
-
-            if [ -z "$WARNING_COMMENT_ID" ] || [ "$WARNING_COMMENT_ID" = "null" ]; then
-              gh pr comment "$PR_NUMBER" --body "$BODY"
-            fi
+                --method DELETE \
+                repos/$REPO/issues/comments/$id
+            done
           fi
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api \
+              --method PATCH \
+              repos/$REPO/issues/comments/$COMMENT_ID \
+              -f body="$BODY"
+           else
+            gh api \
+              --method POST \
+              repos/$REPO/issues/$PR_NUMBER/comments \
+              -f body="$BODY"
+           fi

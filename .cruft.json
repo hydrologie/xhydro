@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-  "commit": "cb8b26cb78a428f6ce447a0ab1b08c0c171ad5aa",
+  "commit": "fb9ad7da9da9c2ac09187f9518a17e98727beeb5",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -12,7 +12,7 @@
       "project_slug": "xhydro",
       "project_short_description": "Hydrological analysis library built with xarray.",
       "pypi_username": "TC-FF",
-      "version": "0.8.1",
+      "version": "0.8.2-dev.0",
       "use_pytest": "y",
       "use_conda": "y",
       "make_docs": "y",
@@ -20,10 +20,22 @@
       "command_line_interface": "No command-line interface",
       "create_author_file": "y",
       "open_source_license": "Apache Software License 2.0",
+      "ai_tools_policy": "Standard",
       "generated_with_cruft": "y",
-      "__gh_slug": "https://github.com/hydrologie/xHydro",
+      "__gh_slug": "https://github.com/hydrologie/xhydro",
+      "_copy_without_render": [
+        ".github/workflows/auto-accept-ci-changes.yml",
+        ".github/workflows/cache-cleaner.yml",
+        ".github/workflows/codeql.yml",
+        ".github/workflows/dependency-review.yml",
+        ".github/workflows/label.yml",
+        ".github/workflows/publish-pypi.yml",
+        ".github/workflows/scorecard.yml",
+        ".github/workflows/tag-testpypi.yml",
+        ".github/workflows/workflow-warning.yml"
+      ],
       "_template": "https://github.com/Ouranosinc/cookiecutter-pypackage",
-      "_commit": "cb8b26cb78a428f6ce447a0ab1b08c0c171ad5aa"
+      "_commit": "fb9ad7da9da9c2ac09187f9518a17e98727beeb5"
     }
   },
   "directory": null

@@ -7,14 +7,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-04 11:46-0400\n"
+"POT-Creation-Date: 2026-08-31 14:14-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: ../../releasing.rst:3
 msgid "Releasing"
@@ -30,9 +30,9 @@ msgid ""
 "section is only relevant when producing a new point release for the "
 "package."
 msgstr ""
-"Cette page est un rappel pour les **mainteneurs** sur la façon de déployer. "
-"Cette section n'est pertinente que lors de la publication d'une nouvelle version mineure de la "
-"librairie."
+"Cette page est un rappel pour les **mainteneurs** sur la façon de "
+"déployer. Cette section n'est pertinente que lors de la publication d'une"
+" nouvelle version mineure de la librairie."
 
 #: ../../releasing.rst:12
 msgid ""
@@ -41,102 +41,153 @@ msgid ""
 "will trigger the ``bump-version.yml`` workflow. Be careful not to commit "
 "changes to files in this folder when preparing a new release."
 msgstr ""
-"Il est important de savoir que toute modification des fichiers situés dans le dossier "
-"``src/xhydro`` (à l'exception de ``src/xhydro/__init__.py``) déclenchera le workflow "
-"``bump-version.yml``. Faites attention à ne pas commettre de modifications dans ces fichiers "
+"Il est important de savoir que toute modification des fichiers situés "
+"dans le dossier ``src/xhydro`` (à l'exception de "
+"``src/xhydro/__init__.py``) déclenchera le workflow ``bump-version.yml``."
+" Faites attention à ne pas commettre de modifications dans ces fichiers "
 "lors de la préparation d'une nouvelle version."
 
-#: ../../releasing.rst:14
+#: ../../releasing.rst:16
+msgid ""
+"Before beginning, it is a good idea to practice `commit signing`_ at the "
+"very least for _tags_ and _releases_. This is a method of "
+"cryptographically signing your work to ensure that packages can "
+"verifiably be traced to a known and trusted developer. Once a GPG key has"
+" been `created`_ and `added`_ to your GitHub profile, you can enable GPG "
+"signing for all commits by launching `$ git config --local/--global "
+"commit.gpgsign true` within a shell running in your local clone (or "
+"anywhere if `--global`)."
+msgstr ""
+"Avant de commencer, il est conseillé de s’entraîner à la `signature des commits`_, "
+"au moins pour les _tags_ et les _versions_. Il s’agit d’une méthode permettant de «"
+"signer cryptographiquement votre travail afin de garantir que les paquets puissent "
+"être attribués de manière vérifiable à un développeur connu et de confiance. Une fois qu’une clé GPG a "
+"été `créée`_ et `ajoutée`_ à votre profil GitHub, vous pouvez activer la "
+"signature GPG pour tous les commits en exécutant `$ git config --local/--global "
+"commit.gpgsign true` dans un shell fonctionnant dans votre clone local (ou "
+"n’importe où si vous utilisez `--global`)."
+
+#: ../../releasing.rst:19
+msgid ""
+"For creating tags and releases, we **strongly recommend** enabling the "
+"\"release immutability\" option in the repository settings. This prevents"
+" _tags_ and _releases_ from being modified of GitHub after they have been"
+" published."
+msgstr ""
+"Pour la création de tags et de versions, nous **recommandons fortement** d’activer l’option "
+"\"immuabilité des versions\" dans les paramètres du dépôt. Cela empêche "
+"les _tags_ et les _versions_ d’être modifiées sur GitHub après leur "
+"publication."
+
+#: ../../releasing.rst:21
 msgid "Create a new branch from `main` (e.g. `release-0.2.0`)."
 msgstr "Créer une nouvelle branche depuis `main` (par exemple, `release-0.2.0`)."
 
-#: ../../releasing.rst:15
+#: ../../releasing.rst:22
 msgid ""
 "Update the `CHANGELOG.rst` file to change the `Unreleased` section to the"
 " current date."
 msgstr ""
-"Mettre à jour le fichier `CHANGELOG.rst` pour changer la section `Unreleased` à la "
-"date actuelle."
+"Mettre à jour le fichier `CHANGELOG.rst` pour changer la section "
+"`Unreleased` à la date actuelle."
 
-#: ../../releasing.rst:16
+#: ../../releasing.rst:23
 msgid ""
 "Bump the version in your branch to the next version (e.g. `v0.1.0 -> "
 "v0.2.0`):"
 msgstr ""
-"Augmenter la version dans votre branche à la version suivante (par exemple, `v0.1.0 -> "
-"v0.2.0`) :"
+"Augmenter la version dans votre branche à la version suivante (par "
+"exemple, `v0.1.0 -> v0.2.0`) :"
 
-#: ../../releasing.rst:24
+#: ../../releasing.rst:31
 msgid "Create a pull request from your branch to `main`."
 msgstr "Créer une pull request de votre branche vers `main`."
 
-#: ../../releasing.rst:25
+#: ../../releasing.rst:32
 msgid ""
 "Once the pull request is merged, create a new release on GitHub. On the "
 "`main` branch, run:"
 msgstr ""
-"Une fois la pull request fusionnée, créer une nouvelle version sur GitHub. Sur la "
-"branche `main`, exécutez :"
+"Une fois la pull request fusionnée, créer une nouvelle version sur "
+"GitHub. Sur la branche `main`, exécutez :"
 
-#: ../../releasing.rst:32
+#: ../../releasing.rst:39
 msgid ""
 "This will trigger a GitHub workflow to build the package and upload it to"
 " TestPyPI. At the same time, the GitHub workflow will create a draft "
 "release on GitHub. Assuming that the workflow passes, the final release "
 "can then be published on GitHub by finalizing the draft release."
 msgstr ""
-"Cela déclenchera un workflow GitHub pour construire la librairie et la télécharger sur "
-"TestPyPI. En même temps, le workflow GitHub créera une version brouillon sur GitHub. "
-"Si le workflow réussit, la version finale pourra être publiée sur GitHub en finalisant la version brouillon."
+"Cela déclenchera un workflow GitHub pour construire la librairie et la "
+"télécharger sur TestPyPI. En même temps, le workflow GitHub créera une "
+"version brouillon sur GitHub. Si le workflow réussit, la version finale "
+"pourra être publiée sur GitHub en finalisant la version brouillon."
 
-#: ../../releasing.rst:34
+#: ../../releasing.rst:41
 msgid "To generate the release notes, run:"
 msgstr "Pour générer les notes de version, exécutez :"
 
-#: ../../releasing.rst:42
+#: ../../releasing.rst:49
 msgid ""
 "This will print the release notes (taken from the `CHANGELOG.rst` file) "
 "to your python console. Copy and paste them into the GitHub release "
 "description, keeping only the changes for the current version."
 msgstr ""
 "Cela affichera les notes de version (tirées du fichier `CHANGELOG.rst`) "
-"dans votre console Python. Copiez-collez-les dans la description de la version sur GitHub, "
-"en ne conservant que les changements pour la version actuelle."
+"dans votre console Python. Copiez-collez-les dans la description de la "
+"version sur GitHub, en ne conservant que les changements pour la version "
+"actuelle."
 
-#: ../../releasing.rst:44
+#: ../../releasing.rst:51
 msgid ""
-"Once the release is published, the `publish-pypi.yml` workflow will go "
-"into an `awaiting approval` mode on Github Actions. Only authorized users"
-" may approve this workflow (notifications will be sent) to trigger the "
-"upload to PyPI."
+"Once the release is **published**, the `publish-pypi.yml` workflow will "
+"go into an `awaiting approval` mode on Github Actions. Only authorized "
+"users may approve this workflow (notifications will be sent) to trigger "
+"the upload to PyPI."
 msgstr ""
-"Une fois la version publiée, le workflow `publish-pypi.yml` passera "
-"en mode `awaiting approval` sur Github Actions. Seuls les utilisateurs autorisés "
-"pourront approuver ce workflow (des notifications seront envoyées) pour déclencher "
-"le téléchargement sur PyPI."
+"Une fois la version est **publiée**, le workflow `publish-pypi.yml` "
+"passera en mode `awaiting approval` sur Github Actions. Seuls les "
+"utilisateurs autorisés pourront approuver ce workflow (des notifications "
+"seront envoyées) pour déclencher le téléchargement sur PyPI."
 
-#: ../../releasing.rst:48
+#: ../../releasing.rst:55
 msgid ""
-"Uploads to PyPI can **never** be overwritten. If you make a mistake, you "
-"will need to bump the version and re-release the package. If the package "
-"uploaded to PyPI is broken, you should modify the GitHub release to mark "
+"Uploads to PyPI (and releases on GitHub if using release immutability) "
+"can **never** be overwritten. If you make a mistake, you will need to "
+"bump the version and re-release the package. If the package uploaded to "
+"GitHub and PyPI is broken, you should modify the GitHub release to mark "
 "the package as broken, as well as yank the package (mark the version "
 "\"broken\") on PyPI."
 msgstr ""
-"Les téléchargements vers PyPI **ne peuvent jamais** être écrasés. Si vous faites une erreur, "
-"vous devrez augmenter la version et republier la librairie. Si la librairie "
-"téléchargée sur PyPI est défectueuse, vous devez modifier la version sur GitHub pour marquer "
-"la librairie comme défectueuse, ainsi que retirer cette version (marquer la version "
-"\"broken\") sur PyPI."
+"Les fichiers téléchargés sur PyPI (et les versions publiées sur GitHub "
+"si vous utilisez l’immuabilité des versions) ne peuvent jamais être "
+"remplacés. Si vous commettez une erreur, vous devrez augmenter le numéro "
+"de version et republier le paquet. Si le paquet téléchargé sur GitHub et "
+"PyPI est défectueux, vous devez modifier la version sur GitHub pour "
+"indiquer que le paquet est défectueux, ainsi que retirer le paquet (en "
+"marquant la version comme « défectueuse ») sur PyPI."
 
-#: ../../releasing.rst:50
+#: ../../releasing.rst:57
 msgid ""
 "A new version of `xHydro` on PyPI will trigger the `regro-cf-autotick-"
 "bot` to open a pull request on the conda-forge feedstock. This will "
 "automatically update the feedstock with the new version of the package. "
 "The feedstock maintainers will need to review and merge the pull request."
 msgstr ""
-"Une nouvelle version de `xHydro` sur PyPI déclenchera le `regro-cf-autotick-"
-"bot` pour ouvrir une pull request sur le dépôt conda-forge. Cela mettra "
-"automatiquement à jour le dépôt avec la nouvelle version de la librairie. "
-"Les mainteneurs du dépôt devront examiner et fusionner la pull request."
+"Une nouvelle version de `xHydro` sur PyPI déclenchera le `regro-cf-"
+"autotick-bot` pour ouvrir une pull request sur le dépôt conda-forge. Cela"
+" mettra automatiquement à jour le dépôt avec la nouvelle version de la "
+"librairie. Les mainteneurs du dépôt devront examiner et fusionner la pull"
+" request."
+
+#: ../../releasing.rst:59
+msgid "commit signing"
+msgstr "signature des commits"
+
+#: ../../releasing.rst:60
+msgid "created"
+msgstr "créée"
+
+#: ../../releasing.rst:61
+msgid "added"
+msgstr "ajoutée"

@@ -2,27 +2,32 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: Antoine Lafrance (:user:`Antoine-Lafrance`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Antoine Lafrance (:user:`Antoine-Lafrance`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * N/A.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* Python3.10 support has been dropped due to approaching end-of-life (EOL) date. (:pull:`448`).
 
-    Bug fixes
-    ^^^^^^^^^
-    * N/A.
+Bug fixes
+^^^^^^^^^
+* N/A.
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``.
-    * Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated the cookiecutter templated. (:pull:`448`):
+    * Added guidelines on AI usage disclosures (`AI_POLICY.md` and `AGENTS.md`).
+    * Added `zizmor` hook for checking GitHub Actions security.
+    * GitHub Workflows Python requirements are now found under `.github` directory.
+    * `CI` folder has been renamed to `scripts`.
+* Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``.
+* Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk.
 
 v0.8.1 (2026-06-29)
 -------------------
