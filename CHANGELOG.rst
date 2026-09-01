@@ -511,5 +511,3 @@ Internal changes
 ------------------
 
 * First release on PyPI.
-
-
