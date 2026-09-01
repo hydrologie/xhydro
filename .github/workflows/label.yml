@@ -23,7 +23,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
         with:
           disable-sudo: true
           egress-policy: block
@@ -31,6 +31,6 @@ jobs:
             api.github.com:443
 
       - name: Label Pull Request
-        uses: actions/labeler@f27b608878404679385c85cfa523b85ccb86e213 # v6.1.0
+        uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
