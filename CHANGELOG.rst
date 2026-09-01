@@ -5,7 +5,7 @@ Changelog
 ..  Unreleased
     ----------
 
-    Contributors to this version: Antoine Lafrance.
+    Contributors to this version: Antoine Lafrance (:user:`Antoine-Lafrance`).
 
     New features and enhancements
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
