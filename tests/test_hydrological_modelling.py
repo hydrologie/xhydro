@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 from clisops.utils.dataset_utils import cf_convert_between_lon_frames
+from xclim.core.units import units2pint
 from xscen.testing import datablock_3d
 
 from xhydro.modelling import (
@@ -14,6 +15,7 @@ from xhydro.modelling import (
     get_hydrological_model_inputs,
     hydrological_model,
 )
+from xhydro.modelling._model_utils import VARIABLES
 from xhydro.modelling.hydrological_modelling import _detect_variable
 
 
@@ -631,3 +633,10 @@ class TestFormatInputs:
                 attributes={"standard_name": ".*precipitation.*"},
                 names=["pr"],
             )
+
+
+def test_variables_yml_canonical_units():
+    """`standardize_output` indexes `canonical_units` unconditionally, so a missing or unparsable one is a KeyError at runtime."""
+    for name, attrs in VARIABLES["variables"].items():
+        assert "canonical_units" in attrs, f"'{name}' is missing `canonical_units`."
+        units2pint(attrs["canonical_units"])

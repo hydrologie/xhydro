@@ -15,3 +15,4 @@ Modules
     extreme_value_analysis
     pavics_notebooks/pmp
     pavics_notebooks/climate_change
+    pavics_notebooks/flood_classification
