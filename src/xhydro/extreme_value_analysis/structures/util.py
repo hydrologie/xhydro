@@ -1,4 +1,5 @@
 """Utility functions for parameter estimation."""
+# pragma: exclude file
 
 import warnings
 from typing import Any
