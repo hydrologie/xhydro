@@ -11,7 +11,7 @@ New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458).
   * Added a `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
-  * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting. (:pull:`458).
+  * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
