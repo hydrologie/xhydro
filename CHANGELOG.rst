@@ -2,26 +2,28 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: Insert here.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`)
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458).
+  * Added a `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
+  * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting. (:pull:`458).
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * N/A.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* N/A.
 
-    Bug fixes
-    ^^^^^^^^^
-    * N/A.
+Bug fixes
+^^^^^^^^^
+* Better management of the "sub_" prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458).
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * N/A.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458).
 
 v0.8.1 (2026-06-29)
 -------------------
