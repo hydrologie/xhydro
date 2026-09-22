@@ -88,6 +88,7 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
 deps = {
     "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "1.0.5"},
     "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "1.13.2"},
+    "CSV": {"uuid": "336ed68f-0bac-5ca0-87d4-7b16caf5d00b", "version": "0.10.17"},
 }
 for dependency, info in deps.items():
     juliapkg.add(dependency, info["uuid"], version=info.get("version"))
