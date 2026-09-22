@@ -47,7 +47,7 @@ repos:
       - id: rst-inline-touching-normal
       - id: text-unicode-replacement-char
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.16.3
     hooks:
       - id: ruff-check
         args: [ '--fix', '--show-fixes' ]
@@ -63,7 +63,7 @@ repos:
     hooks:
       - id: vulture
 #  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v1.18.2
+#    rev: v2.3.0
 #    hooks:
 #      - id: mypy
   - repo: https://github.com/numpy/numpydoc
@@ -85,17 +85,17 @@ repos:
         exclude: "docs/notebooks/extreme_value_analysis.ipynb"
         args: [ '--keep-count', '--keep-output', '--drop-empty-cells', '--extra-keys=metadata.kernelspec' ]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.4
+    rev: 0.38.0
     hooks:
       - id: check-github-workflows
       - id: check-readthedocs
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.26.1
+    rev: v1.29.0
     hooks:
       - id: zizmor
         args: [ '--config=.zizmor.yml' ]
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.0
+    rev: v8.30.1
     hooks:
       - id: gitleaks
   - repo: meta

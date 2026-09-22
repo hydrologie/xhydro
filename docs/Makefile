@@ -18,3 +18,6 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+livehtml:
+	sphinx-autobuild --port 54345 --open-browser --delay 3 --re-ignore "$(BUILDDIR)|apidoc|Makefile|__pycache__" "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

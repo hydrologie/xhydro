@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-24 09:32-0400\n"
+"POT-Creation-Date: 2026-08-31 14:14-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,8 +76,9 @@ msgid "Coding Standards"
 msgstr "Normes de codage"
 
 #: ../../../README.rst:12
-msgid "|ruff| |prek| |pre-commit-ci|"
-msgstr "|ruff| |prek| |pre-commit-ci|"
+#, fuzzy
+msgid "|ruff| |prek| |pre-commit-ci| |zizmor|"
+msgstr "|ruff| |prek| |pre-commit-ci| |zizmor|"
 
 #: ../../../README.rst:98
 msgid "Ruff"
@@ -90,6 +91,10 @@ msgstr "prek"
 #: ../../../README.rst:86
 msgid "pre-commit.ci status"
 msgstr "État de pre-commit.ci"
+
+#: ../../../README.rst:110
+msgid "zizmor"
+msgstr "zizmor"
 
 #: ../../../README.rst:14
 msgid "Development Status"

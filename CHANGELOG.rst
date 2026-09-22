@@ -5,7 +5,7 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`)
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -15,7 +15,7 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
-* N/A.
+* Python3.10 support has been dropped due to approaching end-of-life (EOL) date. (:pull:`448`).
 
 Bug fixes
 ^^^^^^^^^
@@ -23,6 +23,11 @@ Bug fixes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
+* Updated the cookiecutter templated. (:pull:`448`):
+    * Added guidelines on AI usage disclosures (`AI_POLICY.md` and `AGENTS.md`).
+    * Added `zizmor` hook for checking GitHub Actions security.
+    * GitHub Workflows Python requirements are now found under `.github` directory.
+    * `CI` folder has been renamed to `scripts`.
 * Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458).
 
 v0.8.1 (2026-06-29)
