@@ -219,7 +219,7 @@ skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydro
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
 
 [tool.coverage.run]
-omit = ["tests/*.py"]
+omit = ["tests/*.py", "src/xhydro/extreme_value_analysis/"]
 relative_files = true
 
 [tool.deptry]
