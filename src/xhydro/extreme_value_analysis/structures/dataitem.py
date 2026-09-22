@@ -1,4 +1,5 @@
 """DataItem, Variable and VariableStd classes. Python equivalents to classes of the same names in Extremes.jl."""
+# pragma: exclude file
 
 
 class DataItem:
