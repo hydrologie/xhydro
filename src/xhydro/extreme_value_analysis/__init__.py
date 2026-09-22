@@ -1,4 +1,5 @@
 """Extreme value analysis analysis module."""
+# pragma: exclude file
 
 import warnings
 

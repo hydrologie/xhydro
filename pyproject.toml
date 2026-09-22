@@ -218,8 +218,14 @@ skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydro
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
 
+[tool.coverage.report]
+exclude_also = [
+  # 3. A pragma comment that excludes an entire file:
+  '\A(?s:.*# pragma: exclude file.*)\Z'
+]
+
 [tool.coverage.run]
-omit = ["tests/*.py", "src/xhydro/extreme_value_analysis/*.py", "src/xhydro/extreme_value_analysis/**/*.py"]
+omit = ["tests/*.py"]
 relative_files = true
 
 [tool.deptry]
