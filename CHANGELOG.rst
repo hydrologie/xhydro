@@ -23,10 +23,11 @@ Bug fixes
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-@@ -26,6 +28,7 @@ Internal changes
-* Added `zizmor` hook for checking GitHub Actions security.
-* GitHub Workflows Python requirements are now found under `.github` directory.
-* `CI` folder has been renamed to `scripts`.
+* Updated the cookiecutter templated. (:pull:`448`):
+    * Added guidelines on AI usage disclosures (`AI_POLICY.md` and `AGENTS.md`).
+    * Added `zizmor` hook for checking GitHub Actions security.
+    * GitHub Workflows Python requirements are now found under `.github` directory.
+    * `CI` folder has been renamed to `scripts`.
 * Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458`).
 
 v0.8.1 (2026-06-29)
