@@ -330,6 +330,39 @@ class TestRavenpyModels:
             decimal=5,
         )
 
+    @pytest.mark.parametrize("add_coords", [True, False])
+    def test_add_coords(self, add_coords, deveraux, tmp_path):
+        meteo = xr.open_dataset(deveraux.fetch(self.riviere_rouge_meteo))
+        meteo, cfg = xhm.format_input(meteo, model="GR4JCN", save_as=tmp_path / "test.nc")
+
+        parameters = [0.529, -3.396, 407.29, 1.072, 16.9, 0.947]
+        global_parameter = {"AVG_ANNUAL_SNOW": 30.00}
+        qsim = RavenpyModel(
+            model_name="GR4JCN",
+            parameters=parameters,
+            hru=self.hru,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            workdir=tmp_path,
+            meteo_station_properties=self.meteo_station_properties,
+            rain_snow_fraction=self.rain_snow_fraction,
+            evaporation=self.evaporation,
+            global_parameter=global_parameter,
+            Interpolation="INTERP_NEAREST_NEIGHBOR",
+            overwrite=True,
+            **cfg,
+        ).run(add_coords=add_coords)
+
+        if add_coords:
+            assert set(qsim.coords) == {"subbasin_id", "time", "elevation", "centroid_latitude", "centroid_longitude", "drainage_area"}
+            np.testing.assert_array_equal(qsim["elevation"].values, [250.5])
+            np.testing.assert_array_equal(qsim["centroid_latitude"].values, [46.0])
+            np.testing.assert_array_equal(qsim["centroid_longitude"].values, [-80.75])
+            np.testing.assert_array_equal(qsim["drainage_area"].values, [100.0])
+        else:
+            assert set(qsim.coords) == {"subbasin_id", "time"}
+        np.testing.assert_array_equal(qsim["subbasin_id"].values, ["1"])
+
     @pytest.mark.parametrize("input_type", ["gpd", "file", "dict"])
     def test_grid(self, deveraux, tmp_path, input_type):
         ds = xr.open_zarr(
@@ -966,22 +999,8 @@ class TestDistributedRavenpy:
             commands.extend(
                 [
                     f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
-                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
-                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
-                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
                     f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
                     f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
                     f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
                 ]
             )
@@ -1005,7 +1024,7 @@ class TestDistributedRavenpy:
             ds_calc = xr.open_dataset(files_calc[i])
             xr.testing.assert_allclose(ds_true, ds_calc)
 
-    @pytest.mark.skipif(ravenpy is None or Version(ravenpy.__version__) < Version("0.5.0"), reason="Requires RavenPy 0.5.0 or higher.")
+    @pytest.mark.skipif(raven_hydro is None or Version(raven_hydro.__version__) < Version("0.5.0"), reason="Requires Raven-Hydro 0.5.0 or higher.")
     @pytest.mark.parametrize("agg", ["BY_HRU", "BY_SUBBASIN"])
     def test_aggregate_drainage(self, tmp_path, gridded_meteo, df, agg):
         meteo, cfg = gridded_meteo
@@ -1034,22 +1053,8 @@ class TestDistributedRavenpy:
             commands.extend(
                 [
                     f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
-                    f":CustomOutput DAILY AVERAGE SNOWFALL {aggregation}",
-                    # f":CustomOutput DAILY AVERAGE PET {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.ATMOSPHERE {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY.And.ATMOSPHERE {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:CANOPY_SNOW.And.ATMOSPHERE {aggregation}",
-                    f":CustomOutput DAILY CUMULSUM SNOW {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM SNOW_LIQ {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:SNOW_LIQ.And.PONDED_WATER {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SURFACE_WATER {aggregation}",
                     f":CustomOutput DAILY CUMULSUM Between:SOIL[0].And.SOIL[1] {aggregation}",
                     f":CustomOutput DAILY CUMULSUM To:SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM Between:PONDED_WATER.And.SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY CUMULSUM SOIL[0] {aggregation}",
-                    # f":CustomOutput DAILY AVERAGE TEMP_MIN {aggregation}",
                     f":CustomOutput DAILY AVERAGE TEMP_MAX {aggregation}",
                 ]
             )
@@ -1072,3 +1077,159 @@ class TestDistributedRavenpy:
             ds_true = xr.open_dataset(files_true[i])
             ds_calc = xr.open_dataset(files_calc[i])
             xr.testing.assert_allclose(ds_true, ds_calc)
+
+    @pytest.mark.parametrize("add_coords", [True, False])
+    def test_add_coords(self, tmp_path, gridded_meteo, df, add_coords):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=tmp_path,
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+
+        # Update the model
+        commands = []
+        has_drainage_area = raven_hydro is not None and Version(raven_hydro.__version__) >= Version("0.5.0")
+        aggs = ["BY_HRU", "BY_SUBBASIN"] + (["BY_DRAINAGE_AREA"] if has_drainage_area else [])
+        for aggregation in aggs:
+            commands.extend(
+                [
+                    f":CustomOutput DAILY AVERAGE RAINFALL {aggregation}",
+                ]
+            )
+
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=commands,
+            rvt=True,
+            rvh=True,
+        )
+
+        rpm.run(overwrite=True, return_streamflow=False, add_coords=add_coords)
+        if has_drainage_area is False and add_coords:
+            rpm.aggregate_outputs(by="subbasin", to="drainage_area")
+
+        dsq = xr.open_dataset(rpm.get_outputs("q", return_paths=True)[0])
+        dshru = xr.open_dataset(rpm.get_outputs("*ByHRU", return_paths=True)[0])
+        dssb = xr.open_dataset(rpm.get_outputs("*BySubbasin", return_paths=True)[0])
+        dsd_files = rpm.get_outputs("*ByDrainageArea", return_paths=True)
+        if len(dsd_files) > 0:
+            dsd = xr.open_dataset(dsd_files[0])
+        else:
+            dsd = None
+
+        coords = {
+            "subbasin_id": ["3", "4", "5", "6", "7"],
+            "station_id": ["", "", "", "", ""],
+            "dowsub_id": ["-1", "3", "4", "5", "6"],
+            "drainage_area": [8.182245e04, 8.178685e04, 8.176016e04, 8.172931e04, 3.248000e01],
+            "subbasin_centroid_latitude": [45.46016301, 45.46844375, 45.48856814, 45.49160408, 45.53917951],
+            "subbasin_centroid_longitude": [-74.07964257, -74.10589548, -74.13467238, -74.19595017, -74.16368428],
+            "subbasin_elevation": [40.25193798, 49.51889169, 51.74741201, 23.53439537, 45.65855911],
+            "subbasin_drainage_area": [7.74, 11.91, 24.15, 13.81, 32.48],
+            "unit_elevation": [25.42917548, 105.69879518, 65.39534884, 46.98113208, 28.35443038],
+            "unit_centroid_latitude": [45.45377422, 45.47717484, 45.47055793, 45.4705059, 45.46227386],
+            "unit_centroid_longitude": [-74.0791687, -74.0774973, -74.08059417, -74.0838731, -74.08085915],
+            "unit_drainage_area": [4.73, 0.83, 0.86, 0.53, 0.79],
+            "unit_id": ["1", "2", "3", "4", "5"],
+        }
+
+        if add_coords:
+            assert set(dsq.coords) == {"drainage_area", "station_id", "time", "dowsub_id", "subbasin_id"}
+            if dsd is not None:
+                assert set(dsd.coords) == set(dsq.coords)
+            assert set(dssb.coords) == set(dsq.coords).union(
+                {"subbasin_centroid_latitude", "subbasin_centroid_longitude", "subbasin_elevation", "subbasin_drainage_area"}
+            )
+            assert set(dshru.coords) == set(dssb.coords).union(
+                {"unit_elevation", "unit_centroid_latitude", "unit_centroid_longitude", "unit_drainage_area", "unit_id"}
+            )
+        else:
+            assert set(dsq.coords) == set(dssb.coords) == {"time", "subbasin_id"}
+            if dsd is not None:
+                assert set(dsd.coords) == set(dsq.coords)
+            assert set(dshru.coords) == {"time", "unit_id"}
+        for ds in [dsq, dssb, dsd, dshru]:
+            if ds is None:
+                continue
+            for coord, values in coords.items():
+                if coord in ds.coords:
+                    da = ds[coord].isel({"subbasin_id" if "subbasin_id" in ds.dims else "unit_id": slice(0, 5)})
+                    if "unit_id" in ds.dims and "unit" not in coord:
+                        values = [values[0]] * 5  # The first 5 units are all in the first subbasin, so they should have the same value
+                    np.testing.assert_almost_equal(da.values, values) if isinstance(values[0], float) else np.testing.assert_array_equal(
+                        da.values, values
+                    )
+
+    def test_time_start(self, tmp_path, gridded_meteo, df):
+        meteo, cfg = gridded_meteo
+        meteo.to_netcdf(tmp_path / "test.nc")
+        cfg["meteo_file"] = str(tmp_path / "test.nc")
+
+        # Additional modifications to the model
+        kwargs = dict(global_parameter={"AVG_ANNUAL_RUNOFF": 500})
+
+        rpm = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=Path(tmp_path) / "r1",
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+        # Update the model
+        rpm.update_config(
+            rvi_dates=True,
+            rvi_commands=[":CustomOutput DAILY AVERAGE RAINFALL BY_HRU"],
+            rvt=True,
+            rvh=True,
+        )
+        rpm.run(overwrite=True, return_streamflow=False, time_as_starting=False)
+
+        dsq1 = xr.open_dataset(rpm.get_outputs("q", return_paths=True)[0])
+        dshru1 = xr.open_dataset(rpm.get_outputs("*ByHRU", return_paths=True)[0])
+
+        rpm2 = RavenpyModel(
+            model_name="HBVEC",
+            parameters=self.parameters,
+            hru=df,
+            start_date="2010-01-02",
+            end_date="2010-10-05",
+            workdir=Path(tmp_path) / "r2",
+            overwrite=True,
+            output_subbasins="all",
+            Evaporation="PET_HARGREAVES",
+            **cfg | kwargs,
+        )
+        # Update the model
+        rpm2.update_config(
+            rvi_dates=True,
+            rvi_commands=[":CustomOutput DAILY AVERAGE RAINFALL BY_HRU"],
+            rvt=True,
+            rvh=True,
+        )
+        rpm2.run(overwrite=True, return_streamflow=False, time_as_starting=True)
+
+        dsq2 = xr.open_dataset(rpm2.get_outputs("q", return_paths=True)[0])
+        dshru2 = xr.open_dataset(rpm2.get_outputs("*ByHRU", return_paths=True)[0])
+
+        np.testing.assert_allclose(dsq1["q"], dsq2["q"])
+        np.testing.assert_allclose(dsq1["q"].sel(time="2010-01-02"), dsq2["q"].sel(time="2010-01-01"))
+        np.testing.assert_allclose(dshru1["Average_RAINFALL"].sel(time="2010-05-24"), dshru2["Average_RAINFALL"].sel(time="2010-05-23"))

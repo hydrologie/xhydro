@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from xhydro.modelling._model_utils import aggregate_output
+from xhydro.modelling.utils import aggregate_output
 
 
 def make_unit_ds(with_nan: bool = False, chunked: bool = False) -> xr.Dataset:

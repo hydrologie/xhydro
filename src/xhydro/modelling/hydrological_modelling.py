@@ -196,6 +196,10 @@ def format_input(  # noqa: C901
 
     HYDROTEL requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax", "tasmin", "pr"].
     Raven requires the following variables: ["longitude", "latitude", "elevation", "time", "tasmax/tasmin" or "tas", "pr" or "prlp/prsn"].
+
+    The following time conventions are expected for the input datasets:
+        - HYDROTEL: period-starting if using daily inputs; period-ending if using subdaily inputs.
+        - Raven: period-starting.
     """
     ds = ds.copy()
     if model.lower() in ["blended", "gr4jcn", "hbvec", "hmets", "hypr", "mohyse", "sacsma", "raven"]:

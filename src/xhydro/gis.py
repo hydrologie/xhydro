@@ -1,6 +1,8 @@
 """Module to compute geospatial operations useful in hydrology."""
 
 from __future__ import annotations
+import importlib.util
+import logging
 import os
 import tempfile
 import urllib.request
@@ -9,14 +11,6 @@ from pathlib import Path
 from typing import Literal
 
 import cartopy.crs as ccrs
-
-
-try:  # In the case where exactextract is available, it needs to be imported here. If it's not installed, xvec will use another method
-    import exactextract  # noqa: F401
-except ImportError:
-    warnings.warn("The `exactextract` library is not present in the environment and will not be used.", stacklevel=2)
-import importlib.util
-
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,6 +29,15 @@ from tqdm.auto import tqdm
 from xrspatial import aspect, slope
 
 from xhydro.utils import update_history
+
+
+logger = logging.getLogger(__name__)
+
+
+try:  # In the case where exactextract is available, it needs to be imported here. If it's not installed, xvec will use another method
+    import exactextract  # noqa: F401
+except ImportError:
+    logger.info("The `exactextract` library is not present in the environment and will not be used.")
 
 
 HAS_LEAFMAP = bool(importlib.util.find_spec("leafmap"))

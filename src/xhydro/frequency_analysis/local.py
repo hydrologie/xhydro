@@ -145,6 +145,7 @@ def parametric_quantiles(
             dist_params = shape_params + ["loc", "scale"]
             da = p[v].sel(scipy_dist=[d], dparams=dist_params).squeeze("scipy_dist").transpose("dparams", ...)
             da.attrs["scipy_dist"] = d
+            da = da.chunk({"dparams": -1})
             qt = (
                 xclim.indices.stats.parametric_quantile(da, q=q)
                 .rename({"quantile": "return_period"})
