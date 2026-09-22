@@ -9,7 +9,7 @@ Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel R
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458).
+* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458`).
   * Added a `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
   * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
 
@@ -19,16 +19,15 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* Better management of the "sub_" prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458).
+* Better management of the "sub_" prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
-* Updated the cookiecutter templated. (:pull:`448`):
-    * Added guidelines on AI usage disclosures (`AI_POLICY.md` and `AGENTS.md`).
-    * Added `zizmor` hook for checking GitHub Actions security.
-    * GitHub Workflows Python requirements are now found under `.github` directory.
-    * `CI` folder has been renamed to `scripts`.
-* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458).
+@@ -26,6 +28,7 @@ Internal changes
+* Added `zizmor` hook for checking GitHub Actions security.
+* GitHub Workflows Python requirements are now found under `.github` directory.
+* `CI` folder has been renamed to `scripts`.
+* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458`).
 
 v0.8.1 (2026-06-29)
 -------------------
