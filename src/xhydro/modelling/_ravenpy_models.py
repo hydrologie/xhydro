@@ -31,7 +31,7 @@ except (ImportError, RuntimeError) as e:
     ravenpy_err_msg = e
 
 from ._hm import HydrologicalModel
-from ._model_utils import aggregate_output, standardize_output
+from .utils import aggregate_output, standardize_output
 
 
 logger = logging.getLogger(__name__)
@@ -559,18 +559,33 @@ class RavenpyModel(HydrologicalModel):
                 with (self.workdir / f"{self.run_name}.rvh").open("w") as file:
                     file.writelines(output_lines)
 
-    def run(self, *, overwrite: bool = False, standardize: bool = True, return_streamflow: bool = True) -> xr.Dataset | None:
+    def run(
+        self,
+        *,
+        overwrite: bool = False,
+        standardize: bool = True,
+        add_coords: bool = True,
+        time_as_starting: bool = False,
+        return_streamflow: bool = True,
+    ) -> xr.Dataset | None:
         """
         Run the Raven hydrological model and return simulated streamflow.
 
         Parameters
         ----------
         overwrite : bool
-            If True, overwrite the existing output files. Default is False.
+            If True, overwrite the existing output files.
         standardize : bool
-            If True, standardize the output files to ensure they are in a consistent format. Default is True.
+            If True, standardize the output files to ensure they are in a consistent format.
+        add_coords : bool
+            If True, add coordinates to the output dataset based on the HRU properties.
+            Requires 'standardize' to be True.
+        time_as_starting : bool
+            Raven outputs time coordinates as period-ending. If `time_as_start` is True, the time axis
+            will be modified to represent period-starting instead.
+            Requires 'standardize' to be True.
         return_streamflow : bool
-            If True, return the simulated streamflow. Default is True.
+            If True, return the simulated streamflow.
 
         Returns
         -------
@@ -605,7 +620,7 @@ class RavenpyModel(HydrologicalModel):
             )
 
         if standardize:
-            self.standardize_outputs()
+            self.standardize_outputs(add_coords=add_coords, time_as_starting=time_as_starting)
 
         if return_streamflow:
             return self.get_outputs("q")
@@ -1140,7 +1155,7 @@ class RavenpyModel(HydrologicalModel):
                 for v in data_type
             ]
 
-    def standardize_outputs(self, files: list[str] | None = None, **kwargs):
+    def standardize_outputs(self, files: list[str] | None = None, add_coords: bool = False, time_as_starting: bool = False, **kwargs):
         r"""
         Standardize the outputs of the simulation to be more consistent with CF conventions.
 
@@ -1149,6 +1164,10 @@ class RavenpyModel(HydrologicalModel):
         files : list[str] | None
             Names of the output files to standardize. If None, all output files will be standardized.
             The strings can be part of the file name (e.g. "Hydrographs", "Storage", "ByHRU", etc.).
+        add_coords : bool
+            If True, add coordinates to the output dataset based on the HRU properties.
+        time_as_starting : bool
+            If True, modify the time coordinates to represent period-starting instead of period-ending.
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -1193,6 +1212,13 @@ class RavenpyModel(HydrologicalModel):
             "q_sim": "q",
         }
 
+        if add_coords:
+            spatial_info = self.hru["hru"]
+            if spatial_info is None:
+                raise ValueError("The HRU properties must be defined before adding coordinates to the output files.")
+        else:
+            spatial_info = None
+
         for file in files:
             with xr.open_dataset(file, **kwargs) as ds:
                 [ds[c].load() for c in ds.coords]
@@ -1202,7 +1228,15 @@ class RavenpyModel(HydrologicalModel):
                 if run is not None:
                     ds.attrs["RavenPy_version"] = ravenpy.__version__
 
-                ds = standardize_output(ds, spatial_info=self.hru["hru"], alt_names=alt_names)
+                if time_as_starting:
+                    freq = xr.infer_freq(ds["time"])
+                    if freq is None:
+                        raise ValueError("Cannot infer the frequency of the time coordinate.")
+                    elif not freq[0].isdigit():
+                        freq = f"1{freq}"
+                    ds["time"] = ds["time"] - pd.Timedelta(freq)
+
+                ds = standardize_output(ds, spatial_info=spatial_info, alt_names=alt_names)
 
                 # Save the file
                 ds.to_netcdf(file.parent / f"{file.stem}_tmp.nc")

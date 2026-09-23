@@ -15,7 +15,7 @@ import pandas as pd
 import xarray as xr
 
 from ._hm import HydrologicalModel
-from ._model_utils import aggregate_output, standardize_output
+from .utils import aggregate_output, standardize_output
 
 
 __all__ = ["Hydrotel"]
@@ -165,6 +165,7 @@ class Hydrotel(HydrologicalModel):
         dry_run: bool = False,
         overwrite: bool = False,
         standardize: bool = True,
+        add_coords: bool = True,
         return_streamflow: bool = True,
     ) -> str | xr.Dataset:
         """
@@ -182,11 +183,14 @@ class Hydrotel(HydrologicalModel):
         dry_run : bool
             If True, returns the command to run the simulation without actually running it.
         overwrite : bool
-            If True, overwrite the output files if they already exist. Default is False.
+            If True, overwrite the output files if they already exist.
         standardize : bool
-            If True, standardize the output files to ensure they are in a consistent format. Default is True.
+            If True, standardize the output files to ensure they are in a consistent format.
+        add_coords : bool
+            If True, add the coordinates of the RHHUs to the output files, based on files in the HYDROTEL project folder.
+            Requires 'standardize' to be True.
         return_streamflow : bool
-            If True, return the simulated streamflow. Default is True.
+            If True, return the simulated streamflow.
 
         Returns
         -------
@@ -249,7 +253,7 @@ class Hydrotel(HydrologicalModel):
 
         # Standardize the outputs
         if standardize:
-            self.standardize_outputs()
+            self.standardize_outputs(add_coords=add_coords)
 
         if return_streamflow:
             return self.get_outputs("q")
@@ -475,7 +479,7 @@ class Hydrotel(HydrologicalModel):
 
                     ds_agg.to_netcdf(file_out)
 
-    def standardize_outputs(self, files: list[str] | None = None, **kwargs):
+    def standardize_outputs(self, files: list[str] | None = None, add_coords: bool = True, **kwargs):
         r"""
         Standardize the outputs of the simulation to be more consistent with CF conventions.
 
@@ -484,6 +488,8 @@ class Hydrotel(HydrologicalModel):
         files : list[str] | None
             Names of the output files to standardize. If None, all output files will be standardized.
             The strings can be part of the file name (e.g. "devil_aval", "neige", "debit*", etc.).
+        add_coords : bool
+            If True, add the coordinates of the RHHUs to the output files, based on files in the HYDROTEL project folder.
         \*\*kwargs : dict
             Keyword arguments to pass to :py:func:`xarray.open_dataset`.
 
@@ -491,6 +497,8 @@ class Hydrotel(HydrologicalModel):
         -----
         Be aware that since systems such as Windows do not allow to overwrite files that are currently open,
         a temporary file will be created and then renamed to overwrite the original file.
+
+        Outputs in HYDROTEL are period-starting.
         """
         if files is None:
             patterns = ["*.nc"]
@@ -503,7 +511,7 @@ class Hydrotel(HydrologicalModel):
 
         stdout = "HYDROTEL version unspecified"
         if len(files) != 0:
-            if self.rhhu is None:
+            if self.rhhu is None and add_coords:
                 try:
                     # Get the RHHU information to add relevant coordinates to the output files if possible.
                     self.get_watershed_properties()
