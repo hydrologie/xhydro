@@ -19,7 +19,7 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* Better management of the "sub_" prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
+* Better management of the `sub` prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
