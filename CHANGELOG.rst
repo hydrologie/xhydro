@@ -2,16 +2,37 @@
 Changelog
 =========
 
-Unreleased
-----------
+..  Unreleased
+    ----------
+
+    Contributors to this version: None.
+
+    New features and enhancements
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Breaking changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Bug fixes
+    ^^^^^^^^^
+    * No changes.
+
+    Internal changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+v0.9.0 (2026-09-24)
+-------------------
 
 Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458`):
-  * Added an `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
-  * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
+    * Added an `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
+    * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
