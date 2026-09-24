@@ -158,7 +158,7 @@ jobs:
         include: # Only run the latest Python version on push
           - os: 'ubuntu-latest'
             python-version: "3.14"
-            julia: true
+            julia: [ false ]  # true   # FIXME: Julia testing is currently disabled due to errors when importing Extremes.
     defaults:
       run:
         shell: bash -l {0}
@@ -284,7 +284,7 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest' ]
         python-version: [ "3.14" ]
-        julia: [ true, false ]
+        julia: [ false ]  # [ true, false ]  # FIXME: Julia testing is currently disabled due to errors when importing Extremes.
     defaults:
       run:
         shell: bash -l {0}

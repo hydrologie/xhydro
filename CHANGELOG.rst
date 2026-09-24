@@ -5,11 +5,13 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`).
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* No changes.
+* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458`):
+  * Added an `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
+  * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
@@ -17,7 +19,7 @@ Breaking changes
 
 Bug fixes
 ^^^^^^^^^
-* N/A.
+* Better management of the `sub` prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -26,6 +28,7 @@ Internal changes
     * Added `zizmor` hook for checking GitHub Actions security.
     * GitHub Workflows Python requirements are now found under `.github` directory.
     * `CI` folder has been renamed to `scripts`.
+* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458`).
 
 v0.8.1 (2026-06-29)
 -------------------
