@@ -1,0 +1,520 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Thomas-Charles Fortier Filion
+# This file is distributed under the same license as the xHydro package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: xHydro 0.8.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-18 14:27-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9
+msgid "Flood classification"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:11
+msgid ""
+"Not every flood is made the same way. A spring flood fed by melting snow,"
+" a summer flash flood from a single thunderstorm, and an autumn flood on "
+"ground that was already saturated are different processes, and they "
+"respond differently to a warming climate. ``xHydro`` provides functions "
+"to sort flood events into seven such classes, following the decision tree"
+" of `Tramblay et al. (2025) "
+"<https://doi.org/10.5194/hess-29-7023-2025>`__:"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:13
+msgid ""
+"``xh.indicators.split_streamflow`` separates streamflow into baseflow and"
+" direct runoff."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:14
+msgid ""
+"``xh.indicators.flood_types.soil_moisture_threshold`` fits the soil "
+"wetness above which antecedent conditions count as \"wet\"."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:15
+msgid ""
+"``xh.indicators.flood_types.major_flood_events`` gives the date of the "
+"largest flood of each period."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:16
+msgid ""
+"``xh.indicators.flood_types.classify_flood_events`` describes those "
+"events and sorts them into types."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:18
+msgid ""
+"This Notebook runs the whole chain on the distributed HBV-EC model built "
+"in the `distributed Raven Notebook "
+"<hydrological_modelling_raven_distributed.ipynb>`__, whose setup it "
+"reuses verbatim up to the model configuration."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:24
+msgid "WARNING"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:26
+msgid ""
+"The meteorological data shipped with ``xHydro``'s test suite covers **two"
+" years**. That is enough to demonstrate the functions, and this Notebook "
+"is honest about where the record is too short to say anything: a real "
+"flood-typology study needs several decades, since a single flood per year"
+" per subbasin is the unit of analysis."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:57
+msgid "Running the model"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:59
+msgid ""
+"The watershed, the meteorological data and the 21 HBV-EC parameters are "
+"exactly those of the `distributed Raven Notebook "
+"<hydrological_modelling_raven_distributed.ipynb>`__ — refer to it for the"
+" details of each step. Only the simulation period differs: we run the "
+"full extent of the available forcing rather than a single year."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:161
+msgid ""
+"Raven writes its streamflow to the hydrograph file, but the "
+"classification also needs rainfall, snowmelt and soil water. Those are "
+"state variables and internal fluxes, which Raven only writes when asked "
+"with a ``:CustomOutput`` command. We request them before the first run, "
+"so the model runs once:"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:163
+msgid "``RAINFALL`` — the liquid fraction of precipitation."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:164
+msgid "``SOIL[0]`` — the water stored in the top soil layer."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:165
+msgid ""
+"Four ``Between:`` fluxes carrying snowmelt. Each snow balance routes melt"
+" differently (HBV-EC sends it through ``SNOW_LIQ`` to ``PONDED_WATER``, "
+"other balances go straight from ``SNOW``), so requesting all four routes "
+"and summing them covers every configuration; the unused routes stay flat "
+"at zero."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:906
+msgid ""
+"The custom outputs come out per HRU, while the streamflow is per "
+"subbasin. ``aggregate_outputs`` accumulates the HRU values over "
+"everything upstream of each subbasin outlet, which is the footprint the "
+"streamflow at that outlet integrates."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:1686
+msgid "Building the inputs"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:1688
+msgid ""
+"The flood-type functions take five variables, and are strict about units:"
+" the fluxes (``rivo``, ``prra``, ``snm``) must be convertible to ``mm "
+"d-1``, and the stocks (``mrsol``, ``mrsosat``) to ``mm``. Three "
+"conversions are needed to get there."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:1690
+msgid ""
+"**Streamflow as a water depth.** ``rivo`` is the streamflow spread over "
+"the drainage area, so that flow and rainfall share a unit and can be "
+"compared. ``xHydro`` already attaches ``drainage_area`` in km² as a "
+"coordinate, and 1 m³ s⁻¹ over 1 km² for one day is 86.4 mm."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:1692
+msgid ""
+"**Snowmelt from cumulative fluxes.** Raven's ``Between:`` fluxes "
+"accumulate since the start of the run, so they must be differenced to "
+"recover a daily rate. ``RAINFALL`` and ``SOIL[0]``, despite the "
+"``CumulSum_`` prefix they inherit from the command, are already daily "
+"values."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:1694
+msgid ""
+"**A common time axis.** Differencing drops the first day, so every "
+"variable is aligned on the shorter axis. The functions require all inputs"
+" to share ``rivo``'s exact daily time coordinate."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:2424
+msgid "Soil water at saturation"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:2426
+msgid ""
+"The classification does not use the soil water content directly, but the "
+"**soil wetness index** — the water in the top soil layer divided by what "
+"that layer holds when saturated. The functions do that division for us if"
+" we hand them the capacity as ``mrsosat``."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:2428
+msgid ""
+"For an HBV-EC model, that capacity is the porosity of the top soil class "
+"times the thickness of the first layer of the soil profile. Both are "
+"written in the ``.rvp`` file Raven ran with, so we read them from there "
+"rather than reproducing the parameter list by hand."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3085
+msgid "INFO"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3087
+msgid ""
+"The Notebook forces a single soil profile on every HRU, so the capacity "
+"is one number for the whole watershed. A model with several soil profiles"
+" has a different capacity per HRU, which must be aggregated to the "
+"drainage area the same way the other variables were."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3089
+msgid ""
+"If your model does not expose its storage capacity at all, you can "
+"instead normalise the soil water yourself — for instance by its own long-"
+"term range — and pass the result as a dimensionless ``mrsol`` in [0, 1], "
+"leaving ``mrsosat`` as ``None``. The fitted threshold absorbs a positive "
+"rescaling of the index, so the classification is unchanged."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3105
+msgid "Separating baseflow from direct runoff"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3107
+msgid ""
+"A flood is the direct-runoff part of the hydrograph riding on top of the "
+"slower baseflow. ``split_streamflow`` separates the two with the Lyne-"
+"Hollick recursive digital filter, alternating forward and backward passes"
+" over the series."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3109
+msgid ""
+"This matters for the classification because one of the event descriptors,"
+" ``direct_streamflow_fraction``, is the share of the peak-day flow that "
+"is direct runoff. ``classify_flood_events`` computes it from this filter "
+"unless you supply your own surface runoff."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3863
+msgid "The soil moisture threshold"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3865
+msgid ""
+"Two of the seven flood types describe floods on ground that was already "
+"wet. Deciding what \"wet\" means is not a fixed number: it is the soil "
+"wetness above which floods stop growing with antecedent wetness, and it "
+"differs from one subbasin to the next."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:3867
+msgid ""
+"``soil_moisture_threshold`` fits it over a reference period, following "
+"`Tramblay et al. (2022) <https://doi.org/10.1038/s41598-022-23725-5>`__. "
+"It keeps every day whose flow exceeds the 10th percentile, declusters "
+"them into independent events, and — if at least 10 events survive and "
+"antecedent wetness correlates with peak flow — fits an exponential curve "
+"and takes the changepoint of that curve as the threshold. When either "
+"gate fails, it returns ``inf``, which simply disables the two soil-water-"
+"excess types."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4584
+msgid ""
+"Four subbasins out of 47 get a finite threshold; the rest come back as "
+"``inf``, and the reason is worth seeing rather than treating as a "
+"failure. The gate that fails is the correlation, not the event count: "
+"declustering leaves comfortably more than the minimum of 10 events. "
+"Plotting the soil wetness shows what happened."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4653
+msgid "Two things are visible, and both are about the record being short."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4655
+msgid ""
+"The soil store starts **empty** and takes roughly five months to fill: "
+"that is the model warming up, not hydrology. A study would discard those "
+"months — the reference analysis this Notebook follows drops three years "
+"of warm-up — but with a two-year record there is nothing left to drop."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4657
+msgid ""
+"After it fills, the wetness sits pinned at saturation. A variable with "
+"almost no variance cannot correlate with peak flow, so the fit correctly "
+"declines to produce a threshold nearly everywhere. A longer, better-spun-"
+"up simulation of a less permanently saturated watershed is what this "
+"function expects."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4669
+msgid "Extracting the flood events"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4671
+msgid ""
+"``major_flood_events`` returns the date of the largest flood of each "
+"period, and nothing else. Describing that flood is the next function's "
+"job, which keeps the two questions apart: locating the peak only needs "
+"streamflow."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:4673
+msgid ""
+"The ``freq`` argument sets the periods. The default ``\"YS-DEC\"`` runs "
+"years from 1 December to 30 November, so a winter is never split across "
+"two years. With two years of data that gives only three events per "
+"subbasin — enough to show what the function returns, not enough to "
+"analyse."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:5537
+msgid ""
+"Switching to ``\"QS-DEC\"`` gives one event per season instead, which is "
+"what the rest of this Notebook uses: nine periods across 47 subbasins is "
+"enough to draw a map. The first and last periods are truncated by the "
+"ends of the record, so their peak is drawn from a partial window."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6405
+msgid "Describing and classifying the events"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6407
+msgid ""
+"``classify_flood_events`` builds an event around each date — the peak day"
+" plus the run of rainy days directly before it, up to seven days in total"
+" — and summarizes rainfall, snowmelt and antecedent wetness over that "
+"window. It then walks a decision tree over those descriptors, in order. "
+"Let ``S`` be the event's total snowmelt and ``R`` its total rainfall:"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6410
+msgid "#"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6410
+msgid "Type"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6410
+msgid "Criterion"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6412
+msgid "0"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6412
+msgid "snowmelt"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6412
+msgid "``S > 4 R``"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6414
+msgid "1"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6414
+msgid "mostly snowmelt with some rainfall"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6414
+msgid "``S > 2 R``"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6416
+msgid "2"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6416
+msgid "rain-on-snow"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6416
+msgid "``S > 0.25 R``"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6418
+msgid "3"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6418
+msgid "soil water excess and short rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6418
+#, python-format
+msgid "wet soil, and one day carried more than 75 % of the rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6420
+msgid "4"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6420
+msgid "soil water excess and long rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6420
+msgid "wet soil"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6422
+msgid "5"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6422
+msgid "short rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6422
+#, python-format
+msgid "one day carried more than 75 % of the rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6424
+msgid "6"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6424
+msgid "long rain"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6424
+msgid "otherwise"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6427
+msgid ""
+"\"Wet soil\" means the antecedent wetness exceeded the threshold. The "
+"returned Dataset carries the descriptors and the type as ``flood_type``, "
+"an integer code; the names live in its ``flag_meanings`` attribute, so "
+"read them from there rather than writing them out."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:6429
+msgid ""
+"A single date works in place of the whole array, which is how you "
+"classify one flood you picked yourself."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:7490
+msgid ""
+"Here is one such event: the spring 2011 flood in the first subbasin, with"
+" its window shaded and the rainfall that defined it."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:7492
+msgid ""
+"``classify_flood_events`` also takes a single date in place of the whole "
+"array, which is how you describe one flood you picked yourself. It "
+"returns the same descriptors, on a Dataset with no time axis."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:8272
+msgid ""
+"Five of the seven types appear. The two snowmelt types are absent because"
+" this model's seasonal peak flows are driven by rain even in spring, and "
+"the two soil-water-excess types are confined to the four subbasins whose "
+"threshold came back finite."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:8274
+msgid ""
+"``threshold`` is an ordinary argument, so you can pass a value of your "
+"own to see what those two types would capture across the whole watershed."
+" Below, \"wet\" is taken to be any wetness above the median."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:8456
+msgid "Where each type dominates"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:8458
+msgid ""
+"The point of classifying floods per subbasin is to see the spatial "
+"pattern: which parts of the watershed flood from snow, which from storms,"
+" which from saturated ground. The map below gives, for each type, the "
+"share of a subbasin's events that fall in it."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9004
+msgid ""
+"The same idea applied to the descriptors rather than the types: the "
+"average conditions under which each subbasin floods. Each panel carries "
+"its own colour scale, since the units differ."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9059
+msgid "Going further"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9061
+msgid ""
+"The natural next step, and the reason these classes are computed at all, "
+"is to ask how their frequency changes over time: run the same chain on a "
+"multi-decadal climate projection, take one flood per year, and test the "
+"trend in each type's frequency. That analysis needs decades of data and "
+"trend statistics that ``xHydro`` does not provide, so it is left out of "
+"this Notebook."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9064
+msgid "References"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9066
+msgid ""
+"Lyne, V. D. and Hollick, M. (1979). Stochastic time-variable rainfall "
+"runoff modelling. *Hydrology and Water Resources Symposium*, Institute of"
+" Engineers Australia, 89-93."
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9067
+msgid ""
+"Tramblay, Y., Villarini, G., Saidi, M. E., Massari, C., & Stein, L. "
+"(2022). Classification of flood-generating processes in Africa. "
+"*Scientific Reports*, 12, 18920. "
+"https://doi.org/10.1038/s41598-022-23725-5"
+msgstr ""
+
+#: ../../notebooks/pavics_notebooks/flood_classification.ipynb:9068
+msgid ""
+"Tramblay, Y., Thirel, G., Strohmenger, L., Evin, G., Corre, L., Heraut, "
+"L., & Sauquet, E. (2025). Evolution of flood generating processes under "
+"climate change in France. *Hydrology and Earth System Sciences*, 29, "
+"7023-7039. https://doi.org/10.5194/hess-29-7023-2025"
+msgstr ""

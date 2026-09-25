@@ -2,9 +2,11 @@
 
 import warnings
 
+import numpy as np
+import scipy.signal
 import xarray as xr
 import xclim as xc
-from xclim.core.units import rate2amount
+from xclim.core.units import rate2amount, units2pint
 
 # Special imports from xscen
 from xscen import compute_indicators
@@ -15,6 +17,7 @@ __all__ = [
     "compute_indicators",
     "compute_volume",
     "get_yearly_op",
+    "split_streamflow",
 ]
 
 
@@ -231,3 +234,114 @@ def get_yearly_op(  # noqa: C901
     out = clean_up(out, common_attrs_only=ind_dict)
 
     return out
+
+
+def split_streamflow(
+    da: xr.DataArray,
+    *,
+    k: float = 0.925,
+    n_passes: int = 3,
+) -> tuple[xr.DataArray, xr.DataArray]:
+    """
+    Split the streamflow into baseflow and runoff using the Lyne-Hollick algorithm.
+
+    Parameters
+    ----------
+    da : xr.DataArray
+        Streamflow variable.
+    k : float, default: 0.925
+        Recursive filter parameter. Must be between 0 and 1.
+    n_passes : int, default: 3
+        Number of passes of the algorithm to do, alternating forward and
+        backward. Must be greater than 1.
+
+    Returns
+    -------
+    xr.DataArray
+        Baseflow variable, named "q_base" if the streamflow is a discharge and
+        "mrrob" if it is a runoff rate.
+    xr.DataArray
+        Runoff variable, named "q_runoff" if the streamflow is a discharge and
+        "mrros" if it is a runoff rate.
+
+    References
+    ----------
+    Lyne, V. D. and Hollick, M.: Stochastic time-variable rainfall
+    runoff modelling, Hydrology and Water Resources Symposium, in: Institute of
+    engineers Australia national conference, Barton, Australia, 79, 89–93,
+    1979.
+    """
+    if not 0.0 < k < 1.0:
+        raise ValueError(f"`k` must be in (0, 1): is {k}.")
+    if n_passes < 1:
+        raise ValueError(f"`n_passes` must be >= 1: is {n_passes}.")
+
+    units = units2pint(da)
+    is_discharge = units.is_compatible_with(units2pint("m3 s-1"))
+    if not is_discharge and not units.is_compatible_with(units2pint("mm d-1"), "hydro"):
+        warnings.warn(f'`da` should be a discharge ("m3 s-1") or a runoff rate ("mm d-1"): is "{da.attrs["units"]}".', stacklevel=2)
+
+    c = (1 + k) / 2
+
+    def _filter(total_flow: np.ndarray) -> np.ndarray:
+        # q[t] = k q[t-1] + c [Q[t] - Q[t-1]] which is a first order IIR filter
+        # zi is set so q[0] = 0
+        b = np.array([c, -c], dtype=total_flow.dtype)
+        a = np.array([1.0, -k], dtype=total_flow.dtype)
+        baseflow = total_flow
+        for i in range(n_passes):
+            if i % 2 == 1:  # backward pass
+                baseflow = baseflow[..., ::-1]
+            runoff, _ = scipy.signal.lfilter(b, a, baseflow, axis=-1, zi=-b[0] * baseflow[..., :1])
+            baseflow = np.clip(baseflow - runoff, 0.0, baseflow)
+            if i % 2 == 1:  # backward pass
+                baseflow = baseflow[..., ::-1]
+        return baseflow
+
+    baseflow = xr.apply_ufunc(
+        _filter,
+        da,
+        input_core_dims=[["time"]],
+        output_core_dims=[["time"]],
+        dask="parallelized",
+        output_dtypes=[da.dtype],
+        keep_attrs=True,
+    ).transpose(*da.dims)
+
+    runoff = da - baseflow
+
+    # The input's own identity is overwritten below, not propagated: each output is a fraction
+    # of the streamflow, so the inherited name and standard name would be false on both.
+    inherited = dict(da.attrs)
+    inherited.pop("standard_name", None)
+
+    filtered_with = f"the Lyne-Hollick filter (k={k}, n_passes={n_passes})"
+
+    if is_discharge:
+        # not standard names
+        base_name, runoff_name = "q_base", "q_runoff"
+        base_attrs = {
+            "long_name": "Baseflow",
+        }
+        runoff_attrs = {
+            "long_name": "Direct runoff",
+        }
+    else:
+        base_name, runoff_name = "mrrob", "mrros"
+        base_attrs = {"long_name": "Subsurface runoff", "standard_name": "subsurface_runoff_flux"}
+        runoff_attrs = {"long_name": "Surface runoff", "standard_name": "surface_runoff_flux"}
+
+    baseflow = baseflow.rename(base_name)
+    baseflow.attrs = {
+        **inherited,
+        **base_attrs,
+        "description": f"Baseflow component of the streamflow, separated with {filtered_with}.",
+    }
+    runoff = runoff.rename(runoff_name)
+    runoff.attrs = {
+        **inherited,
+        **runoff_attrs,
+        "description": f"Direct runoff component of the streamflow, obtained by subtracting the baseflow separated with {filtered_with}.",
+    }
+
+    return baseflow, runoff

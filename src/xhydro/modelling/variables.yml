@@ -83,3 +83,103 @@ variables:
     canonical_units: m3 s-1
     description: Simulated streamflow at the outlet of the subbasin.
     cell_methods: "time: mean"
+
+  mrsosat:
+    long_name: Soil moisture content at saturation
+    canonical_units: mm
+    description: Water the soil column holds when saturated.
+    cell_methods: "area: mean"
+
+  mrsol:
+    standard_name: mass_content_of_water_in_soil_layer
+    long_name: Total water content of soil layer
+    canonical_units: mm
+    description: Water content of the soil layer, in all phases including ice.
+    cell_methods: "area: mean time: mean"
+
+  prra:
+    standard_name: rainfall_flux
+    long_name: Rainfall
+    canonical_units: mm d-1
+    description: Liquid fraction of the total precipitation.
+    cell_methods: "area: mean time: mean"
+
+  prras:
+    long_name: Rain over the surface
+    canonical_units: mm d-1
+    description: Flux of water from the atmosphere reaching the surface as rain, excluding interception by the canopy or absorption by a snowpack.
+    cell_methods: "area: mean time: mean"
+
+  snm:
+    standard_name: surface_snow_melt_flux
+    long_name: Surface snow melt
+    canonical_units: mm d-1
+    description: Total surface snow melt rate
+    cell_methods: "area: mean time: mean"
+
+  snw:
+    standard_name: surface_snow_amount
+    long_name: Surface snow amount
+    canonical_units: mm
+    description: Water equivalent of the snow lying on the ground, excluding snow held on the vegetation canopy.
+    cell_methods: "area: mean time: mean"
+
+  evspsbl:
+    standard_name: water_evapotranspiration_flux
+    long_name: Evaporation including sublimation and transpiration
+    canonical_units: mm d-1
+    description: Water lost to the atmosphere by evaporation, sublimation and transpiration.
+    cell_methods: "area: mean time: mean"
+
+  evspsblpot:
+    standard_name: water_potential_evaporation_flux
+    long_name: Potential evapotranspiration
+    canonical_units: mm d-1
+    description: Water that would be lost to the atmosphere by evaporation, sublimation and transpiration were water not limiting.
+    cell_methods: "area: mean time: mean"
+
+  rivo:
+    standard_name: outgoing_water_volume_transport_along_river_channel
+    long_name: River discharge
+    canonical_units: m3 s-1
+    description: Streamflow at the outlet of the subbasin.
+
+  mrro:
+    standard_name: runoff_flux
+    long_name: Total runoff
+    canonical_units: mm d-1
+    description: Total runoff, including drainage through the base of the soil model.
+    cell_methods: "area: mean time: mean"
+
+  mrros:
+    standard_name: surface_runoff_flux
+    long_name: Surface runoff
+    canonical_units: mm d-1
+    description: Surface runoff over land, excluding drainage through the base of the soil model.
+    cell_methods: "area: mean time: mean"
+
+  mrrob:
+    standard_name: subsurface_runoff_flux
+    long_name: Subsurface runoff
+    canonical_units: mm d-1
+    description: Runoff draining through the base of the soil model.
+    cell_methods: "area: mean time: mean"
+
+  qgwr:
+    standard_name: downward_liquid_water_mass_flux_into_groundwater
+    long_name: Groundwater recharge from soil layer
+    canonical_units: mm d-1
+    description: Water draining from the soil layer into groundwater.
+    cell_methods: "area: mean time: mean"
+
+  q_base:
+    long_name: Baseflow
+    canonical_units: m3 s-1
+    description: Baseflow component of the streamflow at the outlet of the subbasin.
+    cell_methods: "time: mean"
+
+  q_runoff:
+    long_name: Direct runoff
+    canonical_units: m3 s-1
+    description: Direct runoff component of the streamflow at the outlet of the subbasin.
+    cell_methods: "time: mean"

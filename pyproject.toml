@@ -212,8 +212,8 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty"
-skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
+ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty,trough"
+skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/pavics_notebooks/flood_classification.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]

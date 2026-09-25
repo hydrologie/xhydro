@@ -2,26 +2,30 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: None.
+Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Added ``xh.indicators.split_streamflow`` to separate streamflow into baseflow and runoff using the Lyne-Hollick recursive digital filter.
+* Added ``xh.indicators.flood_types.major_flood_events`` to extract the date of the major flood event (maximum streamflow) of each period, on a configurable resampling frequency that defaults to the December-to-November year.
+* Added ``xh.indicators.flood_types.soil_moisture_threshold`` to fit the soil moisture threshold separating wet from dry antecedent conditions over a reference period, from soil water content given either as a water depth or as an already-normalized 0-1 index.
+* Added ``xh.indicators.flood_types.classify_flood_events`` to describe a flood event from its date, or from the dates of ``xh.indicators.flood_types.major_flood_events``, and classify it into one of seven types (snowmelt, mostly snowmelt with some rainfall, rain-on-snow, soil water excess and short/long rain, short rain, long rain).
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* No changes.
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.flood_types.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
+* Added a ``Flood classification`` notebook to the documentation.
 
 v0.9.0 (2026-09-24)
 -------------------
