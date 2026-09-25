@@ -15,8 +15,8 @@ from xhydro.modelling import (
     get_hydrological_model_inputs,
     hydrological_model,
 )
-from xhydro.modelling.utils import VARIABLES
 from xhydro.modelling.hydrological_modelling import _detect_variable
+from xhydro.modelling.utils import VARIABLES
 
 
 class TestHydrologicalModelling:
