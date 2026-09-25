@@ -5,7 +5,7 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Antoine Lefebvre-Brossard (:user:`antoinelb`).
+Contributors to this version: Antoine Lefebvre-Brossard (:user:`antoinelb`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,11 +16,35 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
+* No changes.
+
+Bug fixes
+^^^^^^^^^
+* No changes.
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.flood_types.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
+* Added a ``Flood classification`` notebook to the documentation, which runs the flood-type functions on the distributed Raven model of the ``Hydrological modelling - Raven (distributed)`` notebook.
+
+v0.9.0 (2026-09-24)
+-------------------
+
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458`):
+    * Added an `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
+    * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
+
+Breaking changes
+^^^^^^^^^^^^^^^^
 * Python3.10 support has been dropped due to approaching end-of-life (EOL) date. (:pull:`448`).
 
 Bug fixes
 ^^^^^^^^^
-* N/A.
+* Better management of the `sub` prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -29,8 +53,7 @@ Internal changes
     * Added `zizmor` hook for checking GitHub Actions security.
     * GitHub Workflows Python requirements are now found under `.github` directory.
     * `CI` folder has been renamed to `scripts`.
-* Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.flood_types.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
-* Added a ``Flood classification`` notebook to the documentation, which runs the flood-type functions on the distributed Raven model of the ``Hydrological modelling - Raven (distributed)`` notebook.
+* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458`).
 
 v0.8.1 (2026-06-29)
 -------------------

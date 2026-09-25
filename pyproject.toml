@@ -56,7 +56,7 @@ dependencies = [
   "scikit-learn",
   "scipy >=1.12.0",
   "shapely >=2.0",
-  "spotpy >=1.6.2", # FIXME: spotpy 1.6.2 on conda-forge, currently 1.6.7 on PyPI. Also, missing components on conda-forge cause pip to not detect its version, which causes pip to reinstall it.
+  "spotpy >=1.6.2",
   "statsmodels >=0.14.0",
   "tqdm",
   "xarray >=2023.11.0",
@@ -167,7 +167,7 @@ translate = [
 [tool]
 
 [tool.bumpversion]
-current_version = "0.8.2-dev.0"
+current_version = "0.9.0"
 commit = true
 commit_args = "--no-verify"
 tag = false
@@ -217,6 +217,12 @@ skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydro
 
 [tool.coverage.paths]
 source = ["src/xhydro/", "*/site-packages/xhydro/"]
+
+[tool.coverage.report]
+exclude_also = [
+  # 3. A pragma comment that excludes an entire file:
+  '\A(?s:.*# pragma: exclude file.*)\Z'
+]
 
 [tool.coverage.run]
 omit = ["tests/*.py"]
