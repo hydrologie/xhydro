@@ -25,7 +25,7 @@ Bug fixes
 Internal changes
 ^^^^^^^^^^^^^^^^
 * Added the hydrological variables used by ``xh.indicators.split_streamflow``, ``xh.indicators.flood_types.major_flood_events`` and the flood-type analysis to ``xhydro/modelling/variables.yml``, so that standardized model outputs carry the units and metadata they expect.
-* Added a ``Flood classification`` notebook to the documentation, which runs the flood-type functions on the distributed Raven model of the ``Hydrological modelling - Raven (distributed)`` notebook.
+* Added a ``Flood classification`` notebook to the documentation.
 
 v0.9.0 (2026-09-24)
 -------------------
