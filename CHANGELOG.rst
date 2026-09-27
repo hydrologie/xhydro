@@ -18,6 +18,7 @@ Breaking changes
 Bug fixes
 ^^^^^^^^^
 * ``xhydro.extreme_value_analysis.julia_import`` now configures the JuliaCall environment defaults before importing ``juliacall``, reducing the risk of segfaults. (:pull:`447`).
+* ``xhydro.extreme_value_analysis.julia_import`` now resolves the Julia dependencies before importing ``juliacall``, which fixes errors when importing ``Extremes`` on a fresh Julia environment. (:pull:`447`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
