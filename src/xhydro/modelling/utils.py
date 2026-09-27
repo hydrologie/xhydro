@@ -16,6 +16,9 @@ with Path(Path(__file__).parent / "variables.yml").open() as f:
     VARIABLES = yaml.safe_load(f)
 
 
+__all__ = ["aggregate_output", "standardize_output"]
+
+
 def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: dict[str, str] | None = None) -> xr.Dataset:  # noqa: C901
     """
     Standardize the output dataset by renaming dimensions and variables, adding relevant coordinates, and correcting attributes.
@@ -83,6 +86,11 @@ def standardize_output(ds, spatial_info: pd.DataFrame | None = None, alt_names: 
     if spatial_info is not None:
         for c in [cc for cc in spatial_info.columns if cc.endswith("_id")]:
             spatial_info[c] = spatial_info[c].astype(str)
+    # Raven subbasins have changed their naming convention. Ensure that it is always a string of integers, without the "sub_" prefix.
+    if "subbasin_id" in ds:
+        sb0 = ds["subbasin_id"].values[0] if len(ds["subbasin_id"].dims) > 0 else str(ds["subbasin_id"].values)
+        if sb0.startswith("sub_"):
+            ds["subbasin_id"] = ds["subbasin_id"].str.replace("sub_", "", regex=False).astype(int).astype(str)
 
     # Add relevant coordinates if available.
     model = "raven" if "Raven_version" in ds.attrs else "hydrotel" if "HYDROTEL_version" in ds.attrs else "unknown"

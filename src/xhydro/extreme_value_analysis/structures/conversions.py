@@ -1,4 +1,5 @@
 """Conversion functions between Julia and Python objects."""
+# pragma: exclude file
 
 import numpy as np
 

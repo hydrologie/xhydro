@@ -1,4 +1,5 @@
 """Load and install Julia dependencies into python environment."""
+# pragma: exclude file
 
 import contextlib
 import io

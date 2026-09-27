@@ -1,4 +1,5 @@
 """Parameter estimation functions for the extreme value analysis module."""
+# pragma: exclude file
 
 from __future__ import annotations
 import warnings

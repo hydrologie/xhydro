@@ -5,7 +5,7 @@ Changelog
 Unreleased
 ----------
 
-Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Antoine Lafrance (:user:`Antoine-Lafrance`).
+Contributors to this version: Antoine Lafrance (:user:`Antoine-Lafrance`).
 
 New features and enhancements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -13,11 +13,34 @@ New features and enhancements
 
 Breaking changes
 ^^^^^^^^^^^^^^^^
+* No changes.
+
+Bug fixes
+^^^^^^^^^
+* ``xhydro.extreme_value_analysis.julia_import`` now configures the JuliaCall environment defaults before importing ``juliacall``, reducing the risk of segfaults. (:pull:`447`).
+
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``. (:pull:`447`).
+
+v0.9.0 (2026-09-24)
+-------------------
+
+Contributors to this version: Trevor James Smith (:user:`Zeitsperre`), Gabriel Rondeau-Genesse (:user:`RondeauG`).
+
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Minor tweaks to the `run` method of the hydrological model classes. (:pull:`458`):
+    * Added an `add_coords` argument to control whether coordinates should be automatically added to the model outputs.
+    * Added a `time_as_starting` argument to RavenpyModel to control whether the output time should be modified from period-ending (Raven convention) to period-starting.
+
+Breaking changes
+^^^^^^^^^^^^^^^^
 * Python3.10 support has been dropped due to approaching end-of-life (EOL) date. (:pull:`448`).
 
 Bug fixes
 ^^^^^^^^^
-* N/A.
+* Better management of the `sub` prefix sometimes appearing in the `subbasin_id` coordinate, depending on the Raven version. (:pull:`458`).
 
 Internal changes
 ^^^^^^^^^^^^^^^^
@@ -26,8 +49,7 @@ Internal changes
     * Added `zizmor` hook for checking GitHub Actions security.
     * GitHub Workflows Python requirements are now found under `.github` directory.
     * `CI` folder has been renamed to `scripts`.
-* Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``.
-* Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk.
+* Changed the warning message for the absence of the `exactextract` library to an INFO log message. (:pull:`458`).
 
 v0.8.1 (2026-06-29)
 -------------------
