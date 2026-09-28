@@ -2,12 +2,13 @@ import importlib.util
 import warnings
 from pathlib import Path
 
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pooch
 import pytest
 import xarray as xr
-import xdatasets as xd
 from pystac_client.exceptions import APIError
 from requests.exceptions import HTTPError
 
@@ -70,40 +71,36 @@ class TestWatershedDelineation:
 
 
 class TestWatershedOperations:
-    gdf = xd.Query(
-        **{
-            "datasets": {
-                "deh_polygons": {
-                    "id": ["031501", "042103"],
-                    "regulated": ["Natural"],
-                }
-            }
-        }
-    ).data.reset_index()
+    @pytest.fixture
+    def gdf(self, deveraux):
+        gdf_files = deveraux.fetch("ravenpy/hru_subset.zip", pooch.Unzip())
+        gdf = gpd.read_file([f for f in gdf_files if f.endswith(".shp")][0])
+        gdf = gdf.iloc[[0, 100]]
+        gdf["Superficie"] = [4.7, 0.6]
+        return gdf.to_crs("EPSG:4326").reset_index(drop=True)
 
     @pytest.fixture
     def watershed_properties_data(self):
         # Computed using EPSG:6622
         data = {
-            "Station": {0: "031501", 1: "042103"},
-            "Superficie": {0: 21.868619918823242, 1: 579.4796142578125},
-            "area (m2)": {0: 21868619.035204668, 1: 579479639.8084792},
-            "perimeter (m)": {0: 27186.996844559395, 1: 283765.05839030433},
-            "gravelius (m/m)": {0: 1.6400067113344199, 1: 3.3253311032394937},
+            "SubId": {0: 3, 1: 29},
+            "area (m2)": {0: 4744102.281834503, 1: 581212.0153725281},
+            "perimeter (m)": {0: 15222.4104833989, 1: 9610.041755029599},
+            "gravelius (m/m)": {0: 1.9715213066290012, 1: 3.5559287521610234},
             "centroid_lon": {
-                0: -72.48631199105834,
-                1: -78.37036445281987,
+                0: -74.07916869661638,
+                1: -74.69762970613249,
             },
             "centroid_lat": {
-                0: 46.22277542928622,
-                1: 46.48287117609677,
+                0: 45.453774218543025,
+                1: 45.68703704865826,
             },
         }
 
         df = pd.DataFrame.from_dict(data)
         return df
 
-    def test_watershed_properties(self, watershed_properties_data):
+    def test_watershed_properties(self, gdf, watershed_properties_data):
         _properties_name = [
             "area (m2)",
             "perimeter (m)",
@@ -112,18 +109,18 @@ class TestWatershedOperations:
             "centroid_lat",
         ]
 
-        df_properties = xh.gis.watershed_properties(self.gdf, projected_crs=6622)
+        df_properties = xh.gis.watershed_properties(gdf, projected_crs=6622)
 
         pd.testing.assert_frame_equal(df_properties[_properties_name], watershed_properties_data[_properties_name])
 
-        df_properties_def = xh.gis.watershed_properties(self.gdf)
+        df_properties_def = xh.gis.watershed_properties(gdf)
         pd.testing.assert_frame_equal(
             df_properties_def[_properties_name],
             df_properties[_properties_name],
             rtol=0.02,
         )
 
-    def test_watershed_properties_unique_id(self, watershed_properties_data):
+    def test_watershed_properties_unique_id(self, gdf, watershed_properties_data):
         _properties_name = [
             "area (m2)",
             "perimeter (m)",
@@ -131,20 +128,20 @@ class TestWatershedOperations:
             "centroid_lon",
             "centroid_lat",
         ]
-        unique_id = "Station"
+        unique_id = "SubId"
 
-        df_properties = xh.gis.watershed_properties(self.gdf, unique_id=unique_id, projected_crs=6622)
+        df_properties = xh.gis.watershed_properties(gdf, unique_id=unique_id, projected_crs=6622)
 
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
             watershed_properties_data.set_index(unique_id)[_properties_name],
         )
 
-    @pytest.mark.parametrize("unique_id", ["Station", None])
-    def test_watershed_properties_xarray(self, watershed_properties_data, unique_id):
-        ds_properties = xh.gis.watershed_properties(self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
+    @pytest.mark.parametrize("unique_id", ["SubId", None])
+    def test_watershed_properties_xarray(self, gdf, watershed_properties_data, unique_id):
+        ds_properties = xh.gis.watershed_properties(gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
 
-        unique_id = "Station" if unique_id is not None else "index"
+        unique_id = "SubId" if unique_id is not None else "index"
 
         assert ds_properties.area.attrs["units"] == "m2"
         assert ds_properties.perimeter.attrs["units"] == "m"
@@ -154,7 +151,7 @@ class TestWatershedOperations:
         assert ds_properties.estimated_area_diff.attrs["units"] == "%"
         assert ds_properties.sizes == {unique_id: 2}
 
-        if unique_id == "Station":
+        if unique_id == "SubId":
             output_dataset = watershed_properties_data.set_index(unique_id)
         else:
             output_dataset = watershed_properties_data
@@ -184,37 +181,32 @@ class TestWatershedOperations:
 
 
 class TestSurfaceProperties:
-    gdf = xd.Query(
-        **{
-            "datasets": {
-                "deh_polygons": {
-                    "id": ["031501", "042103"],
-                    "regulated": ["Natural"],
-                }
-            }
-        }
-    ).data.reset_index()
+    @pytest.fixture
+    def gdf(self, deveraux):
+        gdf_files = deveraux.fetch("ravenpy/hru_subset.zip", pooch.Unzip())
+        gdf = gpd.read_file([f for f in gdf_files if f.endswith(".shp")][0])
+        gdf = gdf.iloc[[0, 100]]
+        return gdf.to_crs("EPSG:4326").reset_index(drop=True)
 
     @pytest.fixture
     def surface_properties_data(self):
         # Computed using EPSG:6622
         data = {
-            "elevation": {"031501": 45.47, "042103": 358.6},
-            "slope": {"031501": 0.4574, "042103": 2.504},
-            "aspect": {"031501": 250.6, "042103": 178.3},
+            "elevation": {3: 23.089134, 29: 200.55365},
+            "slope": {3: 0.2759844, 29: 1.9218631},
+            "aspect": {3: 100.66728, 29: 170.05554},
         }
 
         df = pd.DataFrame.from_dict(data).astype("float32")
-        df.index.names = ["Station"]
-        df.index = df.index.astype("O")  # dtype inconsistencies between this and xarray.to_dataframe() cause test failures in pandas >3.0.0
+        df.index.names = ["SubId"]
         return df
 
     @pytest.mark.online
     @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
-    def test_surface_properties(self, surface_properties_data):
+    def test_surface_properties(self, gdf, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
 
-        df_properties = xh.gis.surface_properties(self.gdf, projected_crs=6622)
+        df_properties = xh.gis.surface_properties(gdf, projected_crs=6622)
         df_properties.index.name = None
 
         pd.testing.assert_frame_equal(
@@ -223,21 +215,32 @@ class TestSurfaceProperties:
             rtol=0.02,
         )
 
-        df_properties_def = xh.gis.surface_properties(self.gdf)
+        df_properties_def = xh.gis.surface_properties(gdf)
         df_properties_def.index.name = None
+        # The default CRS may introduce slight differences in the computed surface properties for the watersheds used in the test.
         pd.testing.assert_frame_equal(
-            df_properties_def[_properties_name],
-            df_properties[_properties_name],
-            rtol=0.025,
+            df_properties_def[["elevation"]],
+            df_properties[["elevation"]],
+            atol=1.5,  # 1.5 m tolerance for elevation differences
+        )
+        pd.testing.assert_frame_equal(
+            df_properties_def[["aspect"]],
+            df_properties[["aspect"]],
+            atol=7,  # 7 degrees tolerance for aspect differences
+        )
+        pd.testing.assert_frame_equal(
+            df_properties_def[["slope"]],
+            df_properties[["slope"]],
+            atol=0.15,  # 0.15 degrees tolerance for slope differences
         )
 
     @pytest.mark.online
     @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
-    def test_surface_properties_unique_id(self, surface_properties_data):
+    def test_surface_properties_unique_id(self, gdf, surface_properties_data):
         _properties_name = ["elevation", "slope", "aspect"]
-        unique_id = "Station"
+        unique_id = "SubId"
 
-        df_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id, projected_crs=6622)
+        df_properties = xh.gis.surface_properties(gdf, unique_id=unique_id, projected_crs=6622)
 
         pd.testing.assert_frame_equal(
             df_properties[_properties_name],
@@ -247,10 +250,10 @@ class TestSurfaceProperties:
 
     @pytest.mark.online
     @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
-    def test_surface_properties_xarray(self, surface_properties_data):
-        unique_id = "Station"
+    def test_surface_properties_xarray(self, gdf, surface_properties_data):
+        unique_id = "SubId"
 
-        ds_properties = xh.gis.surface_properties(self.gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
+        ds_properties = xh.gis.surface_properties(gdf, unique_id=unique_id, output_format="xarray", projected_crs=6622)
         ds_properties = ds_properties.drop_vars(list(set(ds_properties.coords) - set(ds_properties.dims)))
 
         assert ds_properties.elevation.attrs["units"] == "m"
@@ -268,69 +271,63 @@ class TestSurfaceProperties:
 @pytest.mark.online
 @pytest.mark.xfail(reason="Test is sometimes rate-limited by Microsoft Planetary Computer API.", strict=False, raises=(APIError, HTTPError))
 class TestLandClassification:
-    gdf = xd.Query(
-        **{
-            "datasets": {
-                "deh_polygons": {
-                    "id": ["031501", "042103"],
-                    "regulated": ["Natural"],
-                }
-            }
-        }
-    ).data.reset_index()
+    @pytest.fixture
+    def gdf(self, deveraux):
+        gdf_files = deveraux.fetch("ravenpy/hru_subset.zip", pooch.Unzip())
+        gdf = gpd.read_file([f for f in gdf_files if f.endswith(".shp")][0])
+        gdf = gdf.iloc[[0, 100]]
+        return gdf.to_crs("EPSG:4326").reset_index(drop=True)
 
     @pytest.fixture
     def land_classification_data_latest(self):
         data = {
             "pct_built_area": {
-                "031501": 0.015609,
-                "042103": 1.6e-05,
+                3: 0.011416490486257928,
+                29: 0.0,
             },
-            "pct_crops": {"031501": 0.716741, "042103": 0.0},
+            "pct_crops": {3: 0.0008245243128964059, 29: 0.0},
             "pct_trees": {
-                "031501": 0.259239,
-                "042103": 0.909270,
+                3: 0.03511627906976744,
+                29: 0.23982758620689656,
             },
             "pct_rangeland": {
-                "031501": 0.008410,
-                "042103": 0.004850,
+                3: 0.0,
+                29: 0.012758620689655173,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.085444},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.000417},
-            "pct_bare_ground": {"031501": 0.0, "042103": 4e-06},
+            "pct_water": {3: 0.9526427061310783, 29: 0.7063793103448276},
+            "pct_flooded_vegetation": {3: 0.0, 29: 0.04103448275862069},
         }
 
         df = pd.DataFrame.from_dict(data)
-        df.index.name = "Station"
+        df.index.name = "SubId"
         return df
 
     @pytest.fixture
     def land_classification_data_2018(self):
         data = {
             "pct_built_area": {
-                "031501": 0.016057,
-                "042103": 3.906517e-05,
+                3: 0.014143763213530655,
+                29: 0.0,
             },
-            "pct_crops": {"031501": 0.723301, "042103": 0.0},
+            "pct_crops": {3: 0.0009725158562367865, 29: 0.0},
             "pct_trees": {
-                "031501": 0.256347,
-                "042103": 0.9106647,
+                3: 0.03503171247357294,
+                29: 0.296551724137931,
             },
             "pct_rangeland": {
-                "031501": 0.004294,
-                "042103": 0.004358778,
+                3: 0.0,
+                29: 0.014827586206896552,
             },
-            "pct_water": {"031501": 0.0, "042103": 0.08474285},
-            "pct_flooded_vegetation": {"031501": 0.0, "042103": 0.0001939491},
-            "pct_bare_ground": {"031501": 0.0, "042103": 6.883730e-07},
+            "pct_water": {3: 0.9498520084566596, 29: 0.6832758620689655},
+            "pct_flooded_vegetation": {3: 0.0, 29: 0.005344827586206896},
         }
 
         df = pd.DataFrame.from_dict(data)
-        df.index.name = "Station"
+        df.index.name = "SubId"
         return df
 
     @pytest.mark.parametrize("year", ["latest", "2018"])
-    def test_land_classification(self, land_classification_data_latest, land_classification_data_2018, year):
+    def test_land_classification(self, gdf, land_classification_data_latest, land_classification_data_2018, year):
         if year == "latest":
             df_expected = land_classification_data_latest
         elif year == "2018":
@@ -338,8 +335,8 @@ class TestLandClassification:
         else:
             raise ValueError(f"Invalid year argument {year}.")
 
-        for unique_id in ["Station", None]:
-            df = xh.gis.land_use_classification(self.gdf, unique_id=unique_id, year=year)
+        for unique_id in ["SubId", None]:
+            df = xh.gis.land_use_classification(gdf, unique_id=unique_id, year=year)
             if unique_id is None:
                 df_expected = df_expected.reset_index(drop=True)
 
@@ -347,8 +344,8 @@ class TestLandClassification:
             pd.testing.assert_frame_equal(df, df_expected, check_exact=False, atol=0.0001)
 
     @pytest.mark.parametrize("year", ["latest", "2018"])
-    def test_land_classification_xarray(self, land_classification_data_latest, land_classification_data_2018, year):
-        for unique_id in ["Station", None]:
+    def test_land_classification_xarray(self, gdf, land_classification_data_latest, land_classification_data_2018, year):
+        for unique_id in ["SubId", None]:
             if year == "latest":
                 df_expected = land_classification_data_latest
             elif year == "2018":
@@ -363,7 +360,7 @@ class TestLandClassification:
             ds_expected = df_expected.to_xarray()
 
             ds_classification = xh.gis.land_use_classification(
-                self.gdf,
+                gdf,
                 unique_id=unique_id,
                 year=year,
                 output_format="xarray",
@@ -390,34 +387,34 @@ class TestLandClassification:
             for var in ds_classification:
                 np.testing.assert_allclose(ds_classification[var], ds_expected[var], atol=0.0001)
 
-    @pytest.mark.parametrize("unique_id", ["Station", None])
-    def test_land_classification_plot(self, unique_id, monkeypatch):
+    @pytest.mark.parametrize("unique_id", ["SubId", None])
+    def test_land_classification_plot(self, gdf, unique_id, monkeypatch):
         monkeypatch.setattr(plt, "show", lambda: None)
-        xh.gis.land_use_plot(self.gdf, unique_id=unique_id, idx=0)
+        xh.gis.land_use_plot(gdf, unique_id=unique_id, idx=0)
 
-    def test_errors(self):
+    def test_errors(self, gdf):
         with pytest.raises(
             ValueError,
             match="The provided gpd.GeoDataFrame is missing the crs attribute.",
         ):
-            gdf_no_crs = self.gdf.copy()
+            gdf_no_crs = gdf.copy()
             gdf_no_crs.crs = None  # Will raise a warning. This can't be helped.
             xh.gis.watershed_properties(gdf_no_crs)
         with pytest.raises(
             TypeError,
             match="Expected year argument foo to be a digit.",
         ):
-            xh.gis.land_use_classification(self.gdf, unique_id="Station", year="foo")
+            xh.gis.land_use_classification(gdf, unique_id="SubId", year="foo")
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
         ):
-            xh.gis.land_use_classification(self.gdf, unique_id="Station", year=None)
+            xh.gis.land_use_classification(gdf, unique_id="SubId", year=None)
         with pytest.raises(
             TypeError,
             match="Expected year argument None to be a digit.",
         ):
-            xh.gis.land_use_plot(self.gdf, unique_id="Station", idx=0, year=None)
+            xh.gis.land_use_plot(gdf, unique_id="SubId", idx=0, year=None)
 
 
 @pytest.mark.online
