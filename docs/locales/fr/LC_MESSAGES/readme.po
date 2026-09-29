@@ -76,7 +76,6 @@ msgid "Coding Standards"
 msgstr "Normes de codage"
 
 #: ../../../README.rst:12
-#, fuzzy
 msgid "|ruff| |prek| |pre-commit-ci| |zizmor|"
 msgstr "|ruff| |prek| |pre-commit-ci| |zizmor|"
 

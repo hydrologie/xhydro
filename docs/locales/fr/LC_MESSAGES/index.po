@@ -2,12 +2,11 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-31 14:31-0400\n"
+"POT-Creation-Date: 2026-09-29 13:55-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +16,6 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../index.rst:15
-#, fuzzy
 msgid "Table of Contents"
 msgstr "Table des matières"
 
@@ -25,11 +23,11 @@ msgstr "Table des matières"
 msgid "All Modules"
 msgstr "Tous les modules"
 
-#: ../../index.rst:36
-msgid "hydrologie/xHydro"
-msgstr "hydrologie/xHydro"
+#: ../../index.rst:37
+msgid "hydrologie/xhydro"
+msgstr "hydrologie/xhydro"
 
-#: ../../index.rst:36
+#: ../../index.rst:37
 msgid "GitHub Repository"
 msgstr "Dépôt GitHub"
 
@@ -52,8 +50,8 @@ msgid ""
 "<https://github.com/hydrologie/xhydro>`_."
 msgstr ""
 "Si vous rencontrez des erreurs ou des problèmes avec `xHydro`, n’hésitez "
-"pas à nous en faire part! Ouvrez un ticket sur le « dépôt principal GitHub "
-"<https://github.com/hydrologie/xhydro>`_."
+"pas à nous en faire part! Ouvrez un ticket sur le dépôt principal "
+"GitHub <https://github.com/hydrologie/xhydro>`_."
 
 #: ../../index.rst:10
 msgid ""
@@ -61,27 +59,27 @@ msgid ""
 "repository. You can customize the watch function to notify you of new "
 "releases or more."
 msgstr ""
-"Pour rester au courant des changements apportés à `xHydro`, n’hésitez "
-"pas à « surveiller » le « Dépôt GitHub ». Vous pouvez personnaliser la "
-"fonction de surveillance pour recevoir des avis concernant les nouvelles « "
-"versions » ou d’autres informations."
+"Pour rester au courant des changements apportés à `xHydro`, n’hésitez pas"
+" à « surveiller » le dépôt GitHub. Vous pouvez personnaliser la "
+"fonction de surveillance pour recevoir des avis concernant les nouvelles "
+"versions ou d’autres informations."
 
 #: ../../index.rst:13
 msgid "Navigation"
 msgstr "Navigation"
 
-#: ../../index.rst:42
+#: ../../index.rst:44
 msgid "Useful links"
 msgstr "Liens utiles"
 
-#: ../../index.rst:43
+#: ../../index.rst:45
 msgid "`GitHub Repository <https://github.com/hydrologie/xhydro>`_"
 msgstr "`Dépôt GitHub <https://github.com/hydrologie/xhydro>`_"
 
-#: ../../index.rst:44
+#: ../../index.rst:46
 msgid "`PyPI <https://pypi.org/project/xhydro/>`_"
 msgstr "`PyPI <https://pypi.org/project/xhydro/>`_"
 
-#: ../../index.rst:45
+#: ../../index.rst:47
 msgid "`Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_"
 msgstr "`Conda-Forge <https://anaconda.org/conda-forge/xhydro>`_"
