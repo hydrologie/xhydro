@@ -6,14 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-18 13:22-0400\n"
+"POT-Creation-Date: 2026-09-29 13:55-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:9
 msgid "Regional frequency analyses"
@@ -37,24 +37,17 @@ msgstr ""
 
 #: ../../notebooks/regional_frequency_analysis.ipynb:38
 msgid ""
-"For this example, we will use the same dataset of hydrometric gauges "
-"covering parts of southern Quebec, ensuring continuity with the previous "
-"analysis while expanding to a regional scale. However, as regional "
-"analyses rely on having access to multiple sources of data, we will "
-"extract streamflow for 15 stations."
+"For this example, we will use a dataset of 15 hydrometric gauges covering"
+" parts of southern Quebec."
 msgstr ""
-"Dans cet exemple, nous utiliserons le même jeu de données de stations "
-"hydrométriques couvrant une partie du sud du Québec, assurant la "
-"continuité avec l'analyse précédente tout en s'étendant à une échelle "
-"régionale. Cependant, comme les analyses régionales nécessitent l'accès à"
-" plusieurs sources de données, nous allons extraire les débits pour 15 "
-"stations."
+"Pour cet exemple, nous utiliserons un jeu de données de 15 stations hydrométriques "
+"couvrant une partie du sud du Québec."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:96
+#: ../../notebooks/regional_frequency_analysis.ipynb:84
 msgid "Explanatory variables"
 msgstr "Variables explicatives"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:98
+#: ../../notebooks/regional_frequency_analysis.ipynb:86
 msgid ""
 "In regional frequency analyses, explanatory variables are used to help "
 "explain the spatial variation in hydrological extremes across different "
@@ -74,32 +67,30 @@ msgstr ""
 "les événements extrêmes, ce qui permet d'obtenir des prédictions "
 "régionales plus précises."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:101
-msgid "a) Extraction of watershed characteristics using ``xhydro.gis``"
-msgstr ""
-"a) Extraction des caractéristiques des bassins versants à l’aide de "
-"``xhydro.gis``"
+#: ../../notebooks/regional_frequency_analysis.ipynb:89
+msgid "a) Extraction of watershed characteristics"
+msgstr "a) Extraction des caractéristiques du bassin versant"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:103
+#: ../../notebooks/regional_frequency_analysis.ipynb:91
 msgid ""
-"In this example, we'll use catchment properties as our primary "
-"explanatory variables. However, other variables, such as climatological "
-"averages or land use data, can also be incorporated depending on the "
-"analysis requirements. For detailed steps on how to extract and work with"
-" these data, refer to the `GIS operations <gis.ipynb>`__ notebook."
+"In this example, we'll use pre-computed catchment properties as our "
+"primary explanatory variables. However, other variables, such as "
+"climatological averages or land use data, can also be incorporated "
+"depending on the analysis requirements. For detailed steps on how to "
+"extract and work with these data, refer to the `GIS operations "
+"<gis.ipynb>`__ notebook."
 msgstr ""
-"Dans cet exemple, nous utiliserons les propriétés des bassins versants "
-"comme variables explicatives principales. Cependant, d'autres variables, "
-"telles que les moyennes climatiques ou les données d'utilisation des "
-"terres, peuvent également être intégrées en fonction des exigences de "
-"l'analyse. Pour les étapes détaillées sur comment extraire et travailler "
-"avec ces données, consultez le Notebook `Opérations SIG <gis.ipynb>`__."
+"Dans cet exemple, nous utiliserons des propriétés de bassin versant pré-calculées "
+"comme nos principales variables explicatives. Cependant, d'autres variables, telles "
+"que les moyennes climatologiques ou les données sur l'utilisation des terres, peuvent "
+"également être intégrées en fonction des exigences de l'analyse. Pour des étapes détaillées "
+"quant à la façon d'extraire et de travailler avec ces données, consultez le notebook `Opérations SIG <gis.ipynb>`__."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:140
+#: ../../notebooks/regional_frequency_analysis.ipynb:117
 msgid "b) Principal component analysis"
 msgstr "b) Analyse en composantes principales"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:142
+#: ../../notebooks/regional_frequency_analysis.ipynb:119
 msgid ""
 "After acquiring the explanatory variables, the next step is to process "
 "them using Principal Component Analysis (PCA) to reduce the "
@@ -117,7 +108,7 @@ msgstr ""
 "plupart des variations dans les données. Cela est réalisé en utilisant la"
 " fonction ``xhydro.frequency_analysis.regional.fit_pca``."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:172
+#: ../../notebooks/regional_frequency_analysis.ipynb:149
 msgid ""
 "The results show that the correlation between the components is close to "
 "0, indicating that the first three components are sufficiently "
@@ -133,36 +124,35 @@ msgstr ""
 "capturent la majorité de la variation des variables explicatives, sans "
 "chevauchement ou multicolinéarité significative."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:195
+#: ../../notebooks/regional_frequency_analysis.ipynb:172
 msgid "c) Clustering"
 msgstr "c) Clustering (regroupement)"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:197
+#: ../../notebooks/regional_frequency_analysis.ipynb:174
 msgid ""
 "The results from the PCA can be used to group the stations into clusters "
 "based on their similarities in the principal components. Clustering helps"
 " identify regions with similar characteristics, enabling more targeted "
 "and accurate regional frequency analyses. This step is accomplished using"
-" ``xhydro.frequency_analysis.regional.get_clusters``, which "
-"supports clustering methods from ``sklearn.cluster``. In this example, we"
-" will use ``AgglomerativeClustering`` to form 3 clusters based on the PCA"
-" results."
+" ``xhydro.frequency_analysis.regional.get_clusters``, which supports "
+"clustering methods from ``sklearn.cluster``. In this example, we will use"
+" ``AgglomerativeClustering`` to form 3 clusters based on the PCA results."
 msgstr ""
 "Les résultats de l'ACP peuvent être utilisés pour regrouper les stations "
 "en clusters en fonction de leurs similarités dans les composantes "
 "principales. Le clustering aide à identifier des régions avec des "
 "caractéristiques similaires, permettant des analyses fréquentielles "
 "régionales plus ciblées et précises. Cette étape est réalisée en "
-"utilisant ``xhydro.frequency_analysis.regional.get_clusters``, qui "
-"prend en charge les méthodes de clustering de ``sklearn.cluster``. Dans "
-"cet exemple, nous utiliserons ``AgglomerativeClustering`` pour former 3 "
+"utilisant ``xhydro.frequency_analysis.regional.get_clusters``, qui prend "
+"en charge les méthodes de clustering de ``sklearn.cluster``. Dans cet "
+"exemple, nous utiliserons ``AgglomerativeClustering`` pour former 3 "
 "clusters en fonction des résultats de l'ACP."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:243
+#: ../../notebooks/regional_frequency_analysis.ipynb:223
 msgid "Regional Frequency Analysis"
 msgstr "Analyse fréquentielle régionale"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:245
+#: ../../notebooks/regional_frequency_analysis.ipynb:225
 msgid ""
 "**Hosking and Wallis** introduced a method for regional frequency "
 "analysis based on L-moments, which are particularly useful for analyzing "
@@ -174,7 +164,7 @@ msgstr ""
 "particulièrement utiles pour l'analyse des événements extrêmes à travers "
 "différentes régions. Voici un aperçu des principaux concepts :"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:247
+#: ../../notebooks/regional_frequency_analysis.ipynb:227
 msgid ""
 "**L-Moments**: L-moments are statistical measures that are derived from "
 "linear combinations of order statistics. They offer a more robust "
@@ -193,7 +183,7 @@ msgstr ""
 "des valeurs extrêmes, car ils fournissent des estimations plus stables et"
 " fiables."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:249
+#: ../../notebooks/regional_frequency_analysis.ipynb:229
 msgid ""
 "**Regional Frequency Analysis**: This technique involves pooling data "
 "from multiple sites or regions to estimate the frequency distribution of "
@@ -214,7 +204,7 @@ msgstr ""
 "l'ajustement d'une distribution fréquentielle régionale et l'évaluation "
 "de sa capacité à capturer les caractéristiques des données."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:252
+#: ../../notebooks/regional_frequency_analysis.ipynb:232
 msgid ""
 "**Regional L-Moments**: These are L-moments calculated from pooled data "
 "across multiple sites within a region. By applying regional L-moments, we"
@@ -233,7 +223,7 @@ msgstr ""
 "événements extrêmes, en particulier lorsque des données de plusieurs "
 "sites sont disponibles."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:254
+#: ../../notebooks/regional_frequency_analysis.ipynb:234
 msgid ""
 "Let's start by calculating the L-moments for each station using "
 "``xhydro.frequency_analysis.regional.calc_moments``."
@@ -241,7 +231,7 @@ msgstr ""
 "Commençons par calculer les L-moments pour chaque station en utilisant "
 "``xhydro.frequency_analysis.regional.calc_moments``."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:284
+#: ../../notebooks/regional_frequency_analysis.ipynb:264
 msgid ""
 "To perform regional frequency analysis, we need to reshape our datasets "
 "of annual maximums and L-moments based on the groupings identified by the"
@@ -252,17 +242,17 @@ msgid ""
 "organizes the data according to the cluster assignments and prepares it "
 "for further analysis."
 msgstr ""
-"Pour effectuer une analyse fréquentielle régionale, nous devons "
-"remodeler nos jeux de données de maximums annuels et de "
-"L-moments en fonction des regroupements identifiés par l'algorithme de "
-"clustering. Étant donné qu'il n'existe pas de convention de nommage "
-"standardisée pour cette nouvelle dimension, ``xHydro`` utilise le nom "
-"``region_id`` pour les regroupements de clusters. Ce processus de "
-"remodelage est géré par la fonction ``xhydro.frequency_analysis.regional.group_ds_by_regions``"
-", qui organise les données en fonction des affectations de "
-"clusters et les prépare pour l'analyse ultérieure."
+"Pour effectuer une analyse fréquentielle régionale, nous devons remodeler"
+" nos jeux de données de maximums annuels et de L-moments en fonction des "
+"regroupements identifiés par l'algorithme de clustering. Étant donné "
+"qu'il n'existe pas de convention de nommage standardisée pour cette "
+"nouvelle dimension, ``xHydro`` utilise le nom ``region_id`` pour les "
+"regroupements de clusters. Ce processus de remodelage est géré par la "
+"fonction ``xhydro.frequency_analysis.regional.group_ds_by_regions``, qui "
+"organise les données en fonction des affectations de clusters et les "
+"prépare pour l'analyse ultérieure."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:315
+#: ../../notebooks/regional_frequency_analysis.ipynb:295
 msgid ""
 "We now need to compute two important scores for evaluating the regional "
 "frequency analysis: the *H-Score* and the *Z-Score*. The H-Score measures"
@@ -283,7 +273,7 @@ msgstr ""
 "déterminer dans quelle mesure la distribution théorique (basée sur le "
 "modèle régional) correspond aux données observées."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:318
+#: ../../notebooks/regional_frequency_analysis.ipynb:298
 msgid "**H-Score (Homogeneity Score)**"
 msgstr "**H-Score (Score d'homogénéité)**"
 
@@ -330,11 +320,11 @@ msgstr ""
 "être adapté à toutes les données. La région peut être trop diverse ou "
 "nécessiter des ajustements du modèle."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:329
+#: ../../notebooks/regional_frequency_analysis.ipynb:309
 msgid "**Z-Score (Goodness of Fit)**"
 msgstr "**Z-Score (Qualité de l'ajustement)**"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:331
+#: ../../notebooks/regional_frequency_analysis.ipynb:311
 msgid ""
 "**Low Z-Score**: A low Z-Score suggests a good fit between the model and "
 "the observed data. Typically, an absolute Z-Score below 1.64 indicates "
@@ -345,7 +335,7 @@ msgstr ""
 " à 1,64 indique que le modèle est approprié et que l'ajustement est "
 "statistiquement acceptable."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:333
+#: ../../notebooks/regional_frequency_analysis.ipynb:313
 msgid ""
 "**High Z-Score**: A high Z-Score suggests significant discrepancies "
 "between observed and expected values. An absolute Z-Score above 1.64 "
@@ -358,7 +348,7 @@ msgstr ""
 "et que des ajustements supplémentaires ou un modèle différent pourraient "
 "être nécessaires."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:335
+#: ../../notebooks/regional_frequency_analysis.ipynb:315
 msgid ""
 "The function ``xhydro.frequency_analysis.regional.calc_h_z`` is used to "
 "compute the *H-Score* and *Z-Score* for the regional frequency analysis."
@@ -367,11 +357,11 @@ msgstr ""
 "pour calculer le *H-Score* et le *Z-Score* pour l'analyse fréquentielle "
 "régionale."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:341
+#: ../../notebooks/regional_frequency_analysis.ipynb:321
 msgid "WARNING"
 msgstr "AVERTISSEMENT"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:343
+#: ../../notebooks/regional_frequency_analysis.ipynb:323
 msgid ""
 "The ``kap`` argument in the "
 "``xhydro.frequency_analysis.regional.calc_h_z`` function expects a Kappa3"
@@ -387,7 +377,7 @@ msgstr ""
 "être incluse dans les exigences de ``xHydro`` et doit être installée "
 "indépendamment."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:377
+#: ../../notebooks/regional_frequency_analysis.ipynb:357
 msgid ""
 "We can filter the results to include only the data that has H and Z "
 "scores below given thresholds using the function "
@@ -402,7 +392,7 @@ msgstr ""
 "peuvent être personnalisés en fonction des exigences spécifiques de "
 "l'analyse fréquentielle."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:408
+#: ../../notebooks/regional_frequency_analysis.ipynb:388
 msgid ""
 "The final step of the regional frequency analysis is similar to the local"
 " frequency analysis, but instead of using "
@@ -423,17 +413,17 @@ msgstr ""
 "comportant moins d'un nombre spécifié de stations. Par défaut, ce seuil "
 "est fixé à 5."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:460
+#: ../../notebooks/regional_frequency_analysis.ipynb:440
 msgid "Let's plot results for one station, comparing local and regional analyses."
 msgstr ""
 "Affichons les résultats pour une station, en comparant les analyses "
 "locales et régionales."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:509
+#: ../../notebooks/regional_frequency_analysis.ipynb:489
 msgid "Uncertainties"
 msgstr "Incertitudes"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:511
+#: ../../notebooks/regional_frequency_analysis.ipynb:491
 msgid ""
 "Uncertainties are an important aspect of frequency analysis and should be"
 " considered when interpreting results. These uncertainties often stem "
@@ -452,11 +442,11 @@ msgstr ""
 "incertitudes, telles que les intervalles de confiance pour les "
 "estimations des paramètres, afin d'assurer des conclusions robustes."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:514
+#: ../../notebooks/regional_frequency_analysis.ipynb:494
 msgid "a) Bootstrapping the observations"
 msgstr "a) Bootstrap des observations"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:516
+#: ../../notebooks/regional_frequency_analysis.ipynb:496
 msgid ""
 "One method for quantifying uncertainties is to bootstrap the "
 "observations. In this example, we will perform bootstrapping a small "
@@ -475,7 +465,7 @@ msgstr ""
 "générer plusieurs ensembles de données, qui peuvent ensuite être utilisés"
 " pour évaluer la variabilité des paramètres et des résultats du modèle."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:518
+#: ../../notebooks/regional_frequency_analysis.ipynb:498
 msgid ""
 "This can be accomplished by calling "
 "``xhydro.frequency_analysis.uncertainties.bootstrap_obs``. One key "
@@ -484,8 +474,8 @@ msgid ""
 " results are obtained by first using "
 "``xhydro.frequency_analysis.uncertainties.calc_moments_iter`` to compute "
 "L-moments for all bootstrap samples. Then, "
-"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups`` is used to "
-"calculate the return periods based on those L-moments."
+"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups``"
+" is used to calculate the return periods based on those L-moments."
 msgstr ""
 "Cela peut être réalisé en appelant "
 "``xhydro.frequency_analysis.uncertainties.bootstrap_obs``. Une différence"
@@ -495,14 +485,15 @@ msgstr ""
 "utilisant d'abord "
 "``xhydro.frequency_analysis.uncertainties.calc_moments_iter`` pour "
 "calculer les L-moments pour tous les échantillons de bootstrap. Ensuite, "
-"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups`` est utilisé pour "
-"calculer les périodes de retour à partir de ces L-moments."
+"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups``"
+" est utilisé pour calculer les périodes de retour à partir de ces "
+"L-moments."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:575
+#: ../../notebooks/regional_frequency_analysis.ipynb:555
 msgid "b) Using multiple regions"
 msgstr "b) Utilisation de plusieurs régions"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:577
+#: ../../notebooks/regional_frequency_analysis.ipynb:557
 msgid ""
 "Another approach to estimating uncertainty is by considering multiple "
 "regions for a single catchment of interest. This can be done by applying "
@@ -523,7 +514,7 @@ msgstr ""
 "régions peut aider à évaluer l'incertitude dans l'analyse fréquentielle "
 "régionale."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:580
+#: ../../notebooks/regional_frequency_analysis.ipynb:560
 msgid ""
 "First, we will use "
 "``xhydro.frequency_analysis.uncertainties.generate_combinations`` on the "
@@ -539,7 +530,7 @@ msgstr ""
 " à chaque fois, nous permettant ainsi d'évaluer comment l'exclusion de "
 "différentes stations affecte les regroupements."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:612
+#: ../../notebooks/regional_frequency_analysis.ipynb:592
 msgid ""
 "Next, we will combine those lists with three clustering methods and, for "
 "each method, we'll try to change some of the parameters."
@@ -548,7 +539,7 @@ msgstr ""
 "et, pour chaque méthode, nous essaierons de modifier certains des "
 "paramètres."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:657
+#: ../../notebooks/regional_frequency_analysis.ipynb:641
 msgid ""
 "The next steps follow a similar approach to the previous ones, but now "
 "with multiple regions."
@@ -556,11 +547,11 @@ msgstr ""
 "Les étapes suivantes suivent une approche similaire à celles précédentes,"
 " mais maintenant avec plusieurs régions."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:699
+#: ../../notebooks/regional_frequency_analysis.ipynb:683
 msgid "c) Combining the bootstrap with multiple regions"
 msgstr "c) Combinaison du bootstrap avec plusieurs régions"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:701
+#: ../../notebooks/regional_frequency_analysis.ipynb:685
 msgid ""
 "It is possible to combine both methods—bootstrapping and multiple "
 "regions—by integrating the following:"
@@ -568,7 +559,7 @@ msgstr ""
 "Il est possible de combiner les deux méthodes—bootstrap et plusieurs "
 "régions—en intégrant les éléments suivants :"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:703
+#: ../../notebooks/regional_frequency_analysis.ipynb:687
 msgid ""
 "Bootstrapped L-moments from "
 "``xhydro.frequency_analysis.uncertainties.calc_moments_iter``."
@@ -576,7 +567,7 @@ msgstr ""
 "Les L-moments bootstrapés de "
 "``xhydro.frequency_analysis.uncertainties.calc_moments_iter``."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:704
+#: ../../notebooks/regional_frequency_analysis.ipynb:688
 msgid ""
 "Masked results from "
 "``xhydro.frequency_analysis.regional.group_ds_by_regions`` that have been"
@@ -586,27 +577,27 @@ msgstr ""
 "``xhydro.frequency_analysis.regional.group_ds_by_regions`` qui ont été "
 "filtrés en fonction des scores H et Z."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:706
+#: ../../notebooks/regional_frequency_analysis.ipynb:690
 msgid ""
 "When combining these methods, "
-"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups`` will check in how"
-" many distinct ``region_id`` values the station is present and will stack"
-" the data accordingly with the bootstrap samples. For instance, if we "
-"have 35 bootstraps and roughly 220 regions, this will generate a total of"
-" around 7,700 samples for further analysis."
+"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups``"
+" will check in how many distinct ``region_id`` values the station is "
+"present and will stack the data accordingly with the bootstrap samples. "
+"For instance, if we have 35 bootstraps and roughly 220 regions, this will"
+" generate a total of around 7,700 samples for further analysis."
 msgstr ""
 "Lors de la combinaison de ces méthodes, "
-"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups`` vérifiera dans "
-"combien de valeurs distinctes de ``region_id`` la station est présente "
-"et empilera les données en conséquence avec les échantillons de "
-"bootstrap. Par exemple, si nous avons 35 bootstraps et environ 220 "
-"régions, cela générera un total d'environ 7 700 échantillons pour "
-"l'analyse ultérieure."
+"``xhydro.frequency_analysis.uncertainties.calculate_quantiles_over_boostraped_groups``"
+" vérifiera dans combien de valeurs distinctes de ``region_id`` la station"
+" est présente et empilera les données en conséquence avec les "
+"échantillons de bootstrap. Par exemple, si nous avons 35 bootstraps et "
+"environ 220 régions, cela générera un total d'environ 7 700 échantillons "
+"pour l'analyse ultérieure."
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:733
+#: ../../notebooks/regional_frequency_analysis.ipynb:717
 msgid "d) Comparison"
 msgstr "d) Comparaison"
 
-#: ../../notebooks/regional_frequency_analysis.ipynb:735
+#: ../../notebooks/regional_frequency_analysis.ipynb:719
 msgid "Let's show the difference between approaches."
 msgstr "Illustrons la différence entre les approches."

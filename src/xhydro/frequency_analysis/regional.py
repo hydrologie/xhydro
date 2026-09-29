@@ -99,7 +99,8 @@ def get_clusters(model: Callable, param: dict, sample: xr.Dataset | xr.DataArray
     list :
         List of indices for each non-excluded group.
     """
-    sample = sample.to_dataframe(name="value").reset_index().pivot(index="Station", columns="components")
+    station_dim = sample.cf.cf_roles["timeseries_id"][0]
+    sample = sample.to_dataframe(name="value").reset_index().pivot(index=station_dim, columns="components")
     return _get_clusters_indices(model(**param).fit(sample), sample)
 
 
@@ -128,6 +129,8 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     - The input data is scaled before PCA is applied.
     - The number of components in the output depends on the n_components parameter passed to PCA.
     """
+    station_dim = ds.cf.cf_roles["timeseries_id"][0]
+    station_dim_attrs = ds[station_dim].attrs.copy()
     ds = _scale_data(ds)
     df = ds.to_dataframe()
     # PCA needs the MultiIndex to be included in the dataframe columns, which is no longer the case with xarray >=2025.9.1
@@ -141,11 +144,12 @@ def fit_pca(ds: xr.Dataset, **kwargs) -> tuple:
     data_pca = xr.DataArray(
         data_pca,
         coords={
-            "Station": ds.coords["Station"].values,
+            station_dim: ds[station_dim].values,
             "components": list(range(pca.n_components_)),
         },
     )
 
+    data_pca[station_dim].attrs = station_dim_attrs
     data_pca.attrs["long_name"] = "Fitted Scaled Data"
     data_pca.attrs["description"] = "Fitted scaled data with StandardScaler and PCA from sklearn.preprocessing and sklearn.decomposition"
     data_pca.attrs["fitted_variables"] = [v for v in ds.var()]
@@ -672,6 +676,9 @@ def group_ds_by_regions(ds: xr.Dataset, *, regions: list) -> xr.Dataset:
     ds_groups = xr.concat(
         [ds.sel(**{id_dim: regions[i]}).assign_coords(region_id=i).expand_dims("region_id") for i in range(len(regions))],
         dim="region_id",
+        join="outer",
+        coords="different",
+        compat="equals",
     )
     ds_groups["region_id"].attrs["cf_role"] = "region_id"
     for v in ds_groups.var():

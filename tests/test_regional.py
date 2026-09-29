@@ -197,7 +197,10 @@ def sample_data():
 @pytest.fixture
 def sample_dataset():
     data = np.random.rand(100, 5)
-    return xr.Dataset({"data": (("time", "Station"), data)})
+    ds = xr.Dataset({"data": (("time", "Station"), data)})
+    ds = ds.assign_coords(Station=("Station", np.arange(ds.dims["Station"])))
+    ds["Station"].attrs["cf_role"] = "timeseries_id"
+    return ds
 
 
 class TestRegionalFrequencyAnalysis:
@@ -220,6 +223,7 @@ class TestRegionalFrequencyAnalysis:
         station = np.array(["020302", "020404", "020502", "020602", "020802"])
         components = [0, 1, 2]
         data = xr.DataArray(data=df, coords=[station, components], dims=["Station", "components"])
+        data["Station"].attrs["cf_role"] = "timeseries_id"
         expected = [["020404", "020602"], ["020502"], ["020302", "020802"]]
         result = get_clusters(AgglomerativeClustering, {"n_clusters": 3}, data)
         # return result

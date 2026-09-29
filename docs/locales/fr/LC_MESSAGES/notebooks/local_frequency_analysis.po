@@ -2,81 +2,58 @@
 # Copyright (C) 2023, Thomas-Charles Fortier Filion
 # This file is distributed under the same license as the xHydro package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-05 13:06-0400\n"
+"POT-Creation-Date: 2026-09-29 13:55-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:9
 msgid "Local frequency analyses"
 msgstr "Analyses fréquentielles locales"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:37
+#: ../../notebooks/local_frequency_analysis.ipynb:36
 msgid "Data extraction and preparation"
 msgstr "Extraction et préparation des données"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:39
+#: ../../notebooks/local_frequency_analysis.ipynb:38
 msgid ""
 "In this example, we will perform a frequency analysis using historical "
-"timeseries data collected from various sites. Our first step is to "
-"acquire a hydrological dataset. For this, we utilize the `xdatasets "
-"<https://hydrologie.github.io/xdatasets/notebooks/getting_started.html>`__"
-" library to retrieve hydrological data from the `Ministère de "
-"l'Environnement, de la Lutte contre les changements climatiques, de la "
-"Faune et des Parcs <https://www.cehq.gouv.qc.ca/atlas-hydroclimatique"
-"/stations-hydrometriques/index.htm>`__ in Québec, Canada. Our query will "
-"focus on stations with IDs beginning with ``020``, and specifically those"
-" with natural flow pattern. Some stations have information on water "
-"levels, but will will only process streamflow data."
+"data collected from the Rivière Rouge hydrological station, available "
+"from the `Ministère de l'Environnement, de la Lutte contre les "
+"changements climatiques, de la Faune et des Parcs "
+"<https://www.cehq.gouv.qc.ca/atlas-hydroclimatique/stations-"
+"hydrometriques/index.htm>`__ in Québec, Canada."
 msgstr ""
-"Dans cet exemple, nous effectuerons une analyse fréquentielle à l'aide de"
-" données historiques pises à partir de divers sites. La première étape "
-"consiste à acquérir un jeu de données hydrologiques. Pour ce faire, nous "
-"utilisons la librairie `xdatasets "
-"<https://hydrologie.github.io/xdatasets/notebooks/getting_started.html>`__"
-" pour récupérer des données hydrologiques du `Ministère de "
-"l'Environnement, de la Lutte contre les changements climatiques, de la "
-"Faune et des Parcs <https://www.cehq.gouv.qc.ca/atlas-hydroclimatique"
-"/stations-hydrometriques/index.htm>`__ au Québec, Canada. Notre requête "
-"se concentrera sur les stations ayant des identifiants commençant par "
-"``020``, et spécifiquement celles ayant un régime de débit naturel. "
-"Certaines stations disposent de données sur les niveaux d'eau, mais nous "
-"ne traiterons que les données de débit."
+"Dans cet exemple, nous effectuerons une analyse fréquentielle en utilisant "
+"des données historiques collectées à partir de la station hydrologique "
+"de la Rivière Rouge, disponibles auprès "
+"du `Ministère de l'Environnement, de la Lutte contre les changements climatiques, de la Faune et des Parcs <https://www.cehq.gouv.qc.ca/atlas-hydroclimatique/stations-hydrometriques/index.htm>`__ au Québec, Canada."
+
+#: ../../notebooks/local_frequency_analysis.ipynb:40
+msgid "Data must adhere to the following requirements:"
+msgstr "Les données doivent respecter les exigences suivantes :"
 
 #: ../../notebooks/local_frequency_analysis.ipynb:42
-msgid ""
-"Alternatively, users can provide their own ``xarray.DataArray``. When "
-"preparing the data for frequency analysis, it must adhere to the "
-"following requirements:"
-msgstr ""
-"Alternativement, les utilisateurs peuvent fournir leur propre "
-"``xarray.DataArray``. Lors de la préparation des données pour l'analyse "
-"fréquentielle, celles-ci doivent respecter les exigences suivantes :"
-
-#: ../../notebooks/local_frequency_analysis.ipynb:44
 msgid "The dataset must include a ``time`` dimension."
 msgstr "Le jeu de données doit inclure une dimension ``time``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:45
+#: ../../notebooks/local_frequency_analysis.ipynb:43
 msgid ""
-"If there is a 1D spatial dimension (e.g., ``id`` in the example below), "
-"it must contain an attribute ``cf_role`` with the value "
-"``timeseries_id``."
+"If there is a 1D spatial dimension, it must contain an attribute "
+"``cf_role`` with the value ``timeseries_id``."
 msgstr ""
-"Si une dimension spatiale 1D existe (par exemple, ``id`` dans l'exemple "
-"ci-dessous), elle doit contenir un attribut ``cf_role`` avec la valeur "
-"``timeseries_id``."
+"S'il y a une dimension spatiale 1D, elle doit contenir un attribut "
+"``cf_role`` avec la valeur ``timeseries_id``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:46
+#: ../../notebooks/local_frequency_analysis.ipynb:44
 msgid ""
 "The variable must have at least a ``units`` attribute. Although "
 "additional attributes, such as ``long_name`` and ``cell_methods``, are "
@@ -90,11 +67,11 @@ msgstr ""
 " de l'analyse fréquentielle. L'absence de ces attributs entraînera des "
 "avertissements."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:110
+#: ../../notebooks/local_frequency_analysis.ipynb:85
 msgid "Acquiring block maxima"
 msgstr "Acquisition des maxima par blocs"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:112
+#: ../../notebooks/local_frequency_analysis.ipynb:87
 msgid ""
 "The ``xhydro.indicators.get_yearly_op`` function can be used to extract "
 "block maxima from a time series. This function provides several options "
@@ -111,11 +88,11 @@ msgstr ""
 "disponibles pour vous aider à adapter l'extraction des maxima de blocs à "
 "vos besoins."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:133
+#: ../../notebooks/local_frequency_analysis.ipynb:108
 msgid "a) Defining seasons"
 msgstr "a) Définir les saisons"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:135
+#: ../../notebooks/local_frequency_analysis.ipynb:110
 msgid ""
 "Seasons can be defined using indexers compatible with "
 "``xclim.core.calendar.select_time``. Four types of indexers are currently"
@@ -125,7 +102,7 @@ msgstr ""
 "``xclim.core.calendar.select_time``. Quatre types d'indexeurs sont "
 "actuellement soutenus :"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:137
+#: ../../notebooks/local_frequency_analysis.ipynb:112
 msgid ""
 "``month``: A sequence of month numbers (e.g., ``[1, 2, 12]`` for January,"
 " February, and December)."
@@ -133,7 +110,7 @@ msgstr ""
 "``month`` : Une séquence de numéros de mois (par exemple, ``[1, 2, 12]`` "
 "pour janvier, février et décembre)."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:138
+#: ../../notebooks/local_frequency_analysis.ipynb:113
 msgid ""
 "``season``: A sequence of season abbreviations, with options being "
 "``'DJF'``, ``'MAM'``, ``'JJA'``, and ``'SON'`` (representing Winter, "
@@ -143,7 +120,7 @@ msgstr ""
 "``'DJF'``, ``'MAM'``, ``'JJA'``, et ``'SON'`` (représentant l'hiver, le "
 "printemps, l'été et l'automne, respectivement)."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:139
+#: ../../notebooks/local_frequency_analysis.ipynb:114
 msgid ""
 "``doy_bounds``: A sequence specifying the inclusive bounds of the period "
 "in terms of day of year (e.g., ``[152, 243]``)."
@@ -151,7 +128,7 @@ msgstr ""
 "``doy_bounds`` : Une séquence spécifiant les limites inclusives de la "
 "période en termes de jour de l'année (par exemple, ``[152, 243]``)."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:140
+#: ../../notebooks/local_frequency_analysis.ipynb:115
 #, python-format
 msgid ""
 "``date_bounds``: Similar to ``doy_bounds``, but using a month-day format "
@@ -160,7 +137,7 @@ msgstr ""
 "``date_bounds`` : Semblable à ``doy_bounds``, mais utilisant un format "
 "mois-jour (``'%m-%d'``), tel que ``[\"01-15\", \"02-23\"]``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:142
+#: ../../notebooks/local_frequency_analysis.ipynb:117
 msgid ""
 "When using ``xhydro.indicators.get_yearly_op`` to calculate block maxima,"
 " the indexers should be grouped within a dictionary and passed to the "
@@ -175,7 +152,7 @@ msgstr ""
 "``'winter'``, ``'summer'``) et seront ajoutées au nom de la variable. "
 "Chaque entrée du dictionnaire peut inclure ce qui suit :"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:144
+#: ../../notebooks/local_frequency_analysis.ipynb:119
 msgid ""
 "The indexer, as defined above (e.g., ``\"date_bounds\": [\"02-11\", "
 "\"06-19\"]``)."
@@ -183,7 +160,7 @@ msgstr ""
 "L'indexeur, tel que défini ci-dessus (par exemple, ``\"date_bounds\": "
 "[\"02-11\", \"06-19\"]``)."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:145
+#: ../../notebooks/local_frequency_analysis.ipynb:120
 msgid ""
 "(Optional) An annual resampling frequency. This is mainly used for "
 "indexers that span across the year. For example, setting ``\"freq\": "
@@ -194,11 +171,11 @@ msgstr ""
 "exemple, en définissant ``\"freq\": \"YS-DEC\"``, l'année commencera en "
 "décembre au lieu de janvier."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:177
+#: ../../notebooks/local_frequency_analysis.ipynb:152
 msgid "b) Defining criteria for missing values"
 msgstr "b) Définir les critères pour les valeurs manquantes"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:179
+#: ../../notebooks/local_frequency_analysis.ipynb:154
 msgid ""
 "The ``xhydro.indicators.get_yearly_op`` function also includes two "
 "arguments, ``missing`` and ``missing_options``, which allow you to define"
@@ -215,11 +192,11 @@ msgstr ""
 "<https://xclim.readthedocs.io/en/stable/checks.html#missing-values-"
 "identification>`__."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:202
+#: ../../notebooks/local_frequency_analysis.ipynb:177
 msgid "c) Simple example"
 msgstr "c) Exemple simple"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:204
+#: ../../notebooks/local_frequency_analysis.ipynb:179
 #, python-format
 msgid ""
 "Let's start with a straightforward example using the ``timeargs`` "
@@ -232,13 +209,13 @@ msgstr ""
 "tolérance où un maximum de 15 % de données manquantes dans une année sera"
 " considéré comme acceptable pour que l'année soit considérée valide."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:240
+#: ../../notebooks/local_frequency_analysis.ipynb:215
 msgid "d) Advanced example: Using custom seasons per year or per station"
 msgstr ""
 "d) Exemple avancé : Utiliser des saisons personnalisées par année ou par "
 "station"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:242
+#: ../../notebooks/local_frequency_analysis.ipynb:217
 msgid ""
 "Customizing date ranges for each year or each station is not directly "
 "supported by ``xhydro.indicators.get_yearly_op``. However, users can work"
@@ -254,7 +231,7 @@ msgstr ""
 " l'argument ``missing`` pour tenir compte des modifications dans la "
 "disponibilité des données."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:244
+#: ../../notebooks/local_frequency_analysis.ipynb:219
 msgid ""
 "In this example, we will define a season that starts on a random date in "
 "April and ends on a random date in June. Since we will mask almost the "
@@ -271,11 +248,11 @@ msgstr ""
 "méthode ``at_least_n`` pour spécifier qu'au moins 45 jours de données "
 "doivent être disponibles pour que la période soit considérée valide."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:337
+#: ../../notebooks/local_frequency_analysis.ipynb:312
 msgid "e) Alternative variable: Computing volumes"
 msgstr "e) Variable alternative : Calcul des volumes"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:339
+#: ../../notebooks/local_frequency_analysis.ipynb:314
 msgid ""
 "Frequency analysis can also be applied to volumes, following a similar "
 "workflow to that of streamflow data. The main difference is that if we're"
@@ -294,11 +271,11 @@ msgstr ""
 " argument, ``interpolate_na``, qui peut être utilisé pour interpoler les "
 "données manquantes avant de calculer la somme."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:391
+#: ../../notebooks/local_frequency_analysis.ipynb:366
 msgid "Local frequency analysis"
 msgstr "Analyse fréquentielle locale"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:393
+#: ../../notebooks/local_frequency_analysis.ipynb:368
 msgid ""
 "After extracting the raw data, such as annual maximums or minimums, the "
 "local frequency analysis is performed in three steps:"
@@ -307,7 +284,7 @@ msgstr ""
 "minimums annuels, l'analyse fréquentielle locale est réalisée en trois "
 "étapes :"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:395
+#: ../../notebooks/local_frequency_analysis.ipynb:370
 msgid ""
 "Use ``xhydro.frequency_analysis.local.fit`` to determine the best set of "
 "parameters for a given number of statistical distributions."
@@ -316,7 +293,7 @@ msgstr ""
 "meilleur ensemble de paramètres pour un nombre donné de distributions "
 "statistiques."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:396
+#: ../../notebooks/local_frequency_analysis.ipynb:371
 msgid ""
 "(Optional) Use ``xhydro.frequency_analysis.local.criteria`` to compute "
 "goodness-of-fit criteria and assess how well each statistical "
@@ -326,7 +303,7 @@ msgstr ""
 "calculer les critères de qualité d'ajustement et évaluer à quel point "
 "chaque distribution statistique correspond bien aux données."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:397
+#: ../../notebooks/local_frequency_analysis.ipynb:372
 msgid ""
 "Use ``xhydro.frequency_analysis.local.parametric_quantiles`` to calculate"
 " return levels based on the fitted parameters."
@@ -334,7 +311,7 @@ msgstr ""
 "Utiliser ``xhydro.frequency_analysis.local.parametric_quantiles`` pour "
 "calculer les niveaux de retour basés sur les paramètres ajustés."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:399
+#: ../../notebooks/local_frequency_analysis.ipynb:374
 msgid ""
 "To speed up the Notebook, we'll only perform the analysis on a subset of "
 "variables."
@@ -342,7 +319,7 @@ msgstr ""
 "Pour accélérer le Notebook, nous effectuerons l'analyse uniquement sur un"
 " sous-ensemble de variables."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:419
+#: ../../notebooks/local_frequency_analysis.ipynb:394
 msgid ""
 "The ``fit`` function enables the fitting of multiple statistical "
 "distributions simultaneously, such as ``[\"genextreme\", \"pearson3\", "
@@ -365,7 +342,7 @@ msgstr ""
 "distribution sont passés. Les distributions sélectionnées sont stockées "
 "dans une nouvelle dimension ``scipy_dist``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:442
+#: ../../notebooks/local_frequency_analysis.ipynb:417
 msgid ""
 "Criteria like AIC (Akaike Information Criterion), BIC (Bayesian "
 "Information Criterion), and AICC (Corrected AIC) are valuable tools for "
@@ -391,7 +368,7 @@ msgstr ""
 " En utilisant ces métriques, nous pouvons déterminer objectivement le "
 "modèle le plus approprié pour nos données."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:445
+#: ../../notebooks/local_frequency_analysis.ipynb:420
 msgid ""
 "These three criteria can be accessed using "
 "``xhydro.frequency_analysis.local.criteria``. The results are added to a "
@@ -412,7 +389,7 @@ msgstr ""
 "distribution exponentielle a été rejetée en fonction de ces critères, ce "
 "qui suggère qu'elles ne correspondent pas correctement aux données."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:477
+#: ../../notebooks/local_frequency_analysis.ipynb:452
 msgid ""
 "Finally, return periods can be obtained using "
 "``xhfa.local.parametric_quantiles``."
@@ -420,7 +397,7 @@ msgstr ""
 "Enfin, les périodes de retour peuvent être obtenues en utilisant "
 "``xhfa.local.parametric_quantiles``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:508
+#: ../../notebooks/local_frequency_analysis.ipynb:483
 msgid ""
 "In a future release, plotting will be managed by a dedicated function. "
 "For now, we demonstrate the process using preliminary utilities in this "
@@ -430,7 +407,7 @@ msgstr ""
 "fonction dédiée. Pour l'instant, nous démontrons le processus en "
 "utilisant les utilitaires préliminaires dans ce Notebook."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:510
+#: ../../notebooks/local_frequency_analysis.ipynb:485
 msgid ""
 "The function ``xhfa.local._prepare_plots`` generates the data points "
 "required to visualize the results of the frequency analysis. If "
@@ -455,11 +432,11 @@ msgstr ""
 " Par défaut, ``(0.4, 0.4)`` est utilisé, ce qui correspond à la méthode "
 "des quantiles non biaisée (Cunnane)."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:567
+#: ../../notebooks/local_frequency_analysis.ipynb:531
 msgid "Uncertainties"
 msgstr "Incertitudes"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:569
+#: ../../notebooks/local_frequency_analysis.ipynb:533
 msgid ""
 "Uncertainties are an important aspect of frequency analysis and should be"
 " considered when interpreting results. These uncertainties often stem "
@@ -478,7 +455,7 @@ msgstr ""
 "incertitudes, telles que les intervalles de confiance pour les "
 "estimations des paramètres, afin d'assurer des conclusions robustes."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:571
+#: ../../notebooks/local_frequency_analysis.ipynb:535
 msgid ""
 "In order to manage computational intensity, we will focus on a single "
 "catchment and limit the analysis to the two distributions that appeared "
@@ -488,11 +465,11 @@ msgstr ""
 "seul bassin versant et limiterons l'analyse aux deux distributions qui "
 "semblaient les mieux correspondre aux données."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:595
+#: ../../notebooks/local_frequency_analysis.ipynb:559
 msgid "a) Bootstrapping the observations"
 msgstr "a) Bootstrap des observations"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:597
+#: ../../notebooks/local_frequency_analysis.ipynb:561
 msgid ""
 "One method for quantifying uncertainties is to bootstrap the "
 "observations. In this example, we will perform bootstrapping a small "
@@ -511,7 +488,7 @@ msgstr ""
 "générer plusieurs ensembles de données, qui peuvent ensuite être utilisés"
 " pour évaluer la variabilité des paramètres et des résultats du modèle."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:599
+#: ../../notebooks/local_frequency_analysis.ipynb:563
 msgid ""
 "This can be accomplished by calling "
 "``xhydro.frequency_analysis.uncertainties.bootstrap_obs``."
@@ -519,7 +496,7 @@ msgstr ""
 "Cela peut être accompli en appelant "
 "``xhydro.frequency_analysis.uncertainties.bootstrap_obs``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:629
+#: ../../notebooks/local_frequency_analysis.ipynb:593
 msgid ""
 "This process will add a new dimension, ``samples``, to the dataset. When "
 "used in conjunction with ``xhydro.frequency_analysis.local.fit``, a new "
@@ -534,11 +511,11 @@ msgstr ""
 "devenir coûteux en termes de calcul, surtout à mesure que le nombre "
 "d'itérations de bootstrap augmente."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:656
+#: ../../notebooks/local_frequency_analysis.ipynb:620
 msgid "b) Bootstrapping the distributions"
 msgstr "b) Bootstrap des distributions"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:658
+#: ../../notebooks/local_frequency_analysis.ipynb:622
 msgid ""
 "In this approach, rather than resampling the observations directly, we "
 "resample the fitted distributions to estimate the uncertainty. This "
@@ -557,7 +534,7 @@ msgstr ""
 " élevé d'itérations fournirait des estimations plus robustes de "
 "l'incertitude."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:660
+#: ../../notebooks/local_frequency_analysis.ipynb:624
 msgid ""
 "This can be accomplished by calling "
 "``xhydro.frequency_analysis.uncertainties.bootstrap_dist``. Unlike "
@@ -571,10 +548,10 @@ msgstr ""
 "paresseuse et requiert une fonction spécifique pour l'étape d'ajustement "
 ": ``xhydro.frequency_analysis.uncertainties.fit_boot_dist``."
 
-#: ../../notebooks/local_frequency_analysis.ipynb:713
+#: ../../notebooks/local_frequency_analysis.ipynb:677
 msgid "c) Comparison"
 msgstr "c) Comparaison"
 
-#: ../../notebooks/local_frequency_analysis.ipynb:715
+#: ../../notebooks/local_frequency_analysis.ipynb:679
 msgid "Let's show the difference between both approaches."
 msgstr "Illustrons la différence entre les deux approches."

@@ -2,26 +2,26 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: None.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* Removed a few instances of hard-coded `Station` dimension in ``xh.frequency_analysis.regional``. (:pull:`461`).
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Replaced `xdatasets` with `xhydro-testdata` in the GIS tests and a few Notebooks. (:pull:`461`).
 
 v0.9.0 (2026-09-24)
 -------------------

@@ -121,8 +121,7 @@ test = [
   "pytest-cov >=7.0.0",
   "python-dotenv >=1.2.1",
   "pytest-xdist >=3.2",
-  "requests",
-  "xdatasets >=0.3.9" # Needed for test_gis.py
+  "requests"
 ]
 notebooks = [
   "hvplot",
@@ -212,7 +211,7 @@ values = [
 ]
 
 [tool.codespell]
-ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty"
+ignore-words-list = "algotrithm,ans,astroid,nd,parametre,projet,socio-economic,thirdparty,Rouge"
 skip = ["*.po", "docs/_build", "docs/notebooks/gis.ipynb", "docs/notebooks/hydrological_modelling_raven.ipynb", "docs/notebooks/extreme_value_analysis.ipynb", "docs/notebooks/use_case.ipynb"]
 
 [tool.coverage.paths]
