@@ -28,14 +28,6 @@ v0.9.1 (2026-09-29)
 
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-New features and enhancements
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* No changes.
-
-Breaking changes
-^^^^^^^^^^^^^^^^
-* No changes.
-
 Bug fixes
 ^^^^^^^^^
 * Removed a few instances of hard-coded `Station` dimension in ``xh.frequency_analysis.regional``. (:pull:`461`).
