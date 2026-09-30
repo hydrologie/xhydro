@@ -2,18 +2,31 @@
 Changelog
 =========
 
-Unreleased
-----------
+..  Unreleased
+    ----------
+
+    Contributors to this version: None.
+
+    New features and enhancements
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Breaking changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+    Bug fixes
+    ^^^^^^^^^
+    * No changes.
+
+    Internal changes
+    ^^^^^^^^^^^^^^^^
+    * No changes.
+
+v0.9.1 (2026-09-29)
+-------------------
 
 Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
-
-New features and enhancements
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* No changes.
-
-Breaking changes
-^^^^^^^^^^^^^^^^
-* No changes.
 
 Bug fixes
 ^^^^^^^^^
