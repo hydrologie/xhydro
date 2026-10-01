@@ -7,4 +7,4 @@ pydantic==2.13.5
 pygments==2.21.0
 pylint==4.0.9
 tox-gh==1.8.0
-tox==4.60.0
+tox==4.64.1
