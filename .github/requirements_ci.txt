@@ -381,9 +381,9 @@ pygments==2.21.0 \
     # via
     #   -r requirements_ci.in
     #   rich
-pylint==4.0.7 \
-    --hash=sha256:9b2d1d15791c84b77a4fe2aafe8f0d9570717e2dea06d53b19c105cf60275a52 \
-    --hash=sha256:be4a3111557a614411ed1fc89347ce4a8e1013a59e1f33d11485227a02e3304d
+pylint==4.0.9 \
+    --hash=sha256:6f1305780229ae720e89b8aff2b3ff857cbb268fbab98c8b586960267667ad34 \
+    --hash=sha256:c4ba5bbaf1e70ecf05f08cd7d6091ea04824b79a2b2d9f5b10dc25fc34cb1124
     # via -r requirements_ci.in
 pyproject-api==1.10.0 \
     --hash=sha256:40c6f2d82eebdc4afee61c773ed208c04c19db4c4a60d97f8d7be3ebc0bbb330 \
