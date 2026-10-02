@@ -10,20 +10,11 @@ from types import ModuleType
 from typing import cast
 
 
-try:
-    import juliapkg
-    from juliacall import Main as jl  # noqa: N813
-
-except (ImportError, ModuleNotFoundError) as e:
-    from xhydro.extreme_value_analysis import JULIA_WARNING
-
-    raise ImportError(JULIA_WARNING) from e
-
 __all__ = ["Extremes", "jl"]
 
 # Check if JuliaCall is already loaded, and if so, warn the user
 # about the relevant environment variables. If not loaded,
-# set up sensible defaults.
+# set up sensible defaults before importing juliacall.
 if "juliacall" in sys.modules:
     warnings.warn(
         "juliacall module already imported. "
@@ -32,13 +23,10 @@ if "juliacall" in sys.modules:
         stacklevel=2,
     )
 else:
-    # TODO: Remove these when juliapkg lets you specify this
-    for k, default in (
-        ("PYTHON_JULIACALL_HANDLE_SIGNALS", "yes"),
-        ("PYTHON_JULIACALL_THREADS", "auto"),
-        ("PYTHON_JULIACALL_OPTLEVEL", "3"),
-    ):
-        os.environ[k] = os.environ.get(k, default)
+    # TODO: Remove these when juliapkg lets you specify this.
+    os.environ.setdefault("PYTHON_JULIACALL_HANDLE_SIGNALS", "yes")
+    os.environ.setdefault("PYTHON_JULIACALL_THREADS", "auto")
+    os.environ.setdefault("PYTHON_JULIACALL_OPTLEVEL", "3")
 
     # Required to avoid segfaults (https://juliapy.github.io/PythonCall.jl/dev/faq/)
     if os.environ.get("PYTHON_JULIACALL_HANDLE_SIGNALS", "no") not in ["yes", ""]:
@@ -55,6 +43,30 @@ else:
             "of your CPU.",
             stacklevel=2,
         )
+
+# It was not necessary to add a dependency dictionary as we only need Extremes.jl, however this mechanism is more
+# scalable in case we need to add many other julia dependencies in the future
+deps = {
+    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "1.0.5"},
+    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "1.13.2"},
+}
+
+try:
+    import juliapkg
+
+    # The Julia dependencies must be resolved before importing juliacall, since importing it starts
+    # a Julia session. Resolving them afterwards can change package versions that are already loaded
+    # in that session (e.g. Parsers), which breaks `using Extremes`.
+    for dependency, info in deps.items():
+        juliapkg.add(dependency, info["uuid"], version=info.get("version"))
+    juliapkg.resolve()
+
+    from juliacall import Main as jl  # noqa: N813
+
+except (ImportError, ModuleNotFoundError) as e:
+    from xhydro.extreme_value_analysis import JULIA_WARNING
+
+    raise ImportError(JULIA_WARNING) from e
 
 
 def check_function_output(func, expected_output, *args, **kwargs) -> bool:
@@ -84,16 +96,6 @@ def check_function_output(func, expected_output, *args, **kwargs) -> bool:
     return expected_output in output
 
 
-# It was not necessary to add a dependency dictionary as we only need Extremes.jl, however this mechanism is more
-# scalable in case we need to add many other julia dependencies in the future
-deps = {
-    "Extremes": {"uuid": "fe3fe864-1b39-11e9-20b8-1f96fa57382d", "version": "1.0.5"},
-    "Optim": {"uuid": "429524aa-4258-5aef-a3af-852621145aeb", "version": "1.13.2"},
-}
-for dependency, info in deps.items():
-    juliapkg.add(dependency, info["uuid"], version=info.get("version"))
-
-juliapkg.resolve()
 jl = cast(ModuleType, jl)
 jl_version = (
     jl.VERSION.major,
