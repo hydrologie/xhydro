@@ -2,26 +2,27 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: None.
+Contributors to this version: Antoine Lafrance (:user:`Antoine-Lafrance`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* ``xhydro.extreme_value_analysis.julia_import`` now resolves the Julia dependencies before importing ``juliacall``, which fixes errors when importing ``Extremes`` on a fresh Julia environment. (:pull:`447`).
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* Updated Julia CI dependency constraints to use ``pyjuliacall>=0.9.35`` and ``pyjuliapkg>=0.1.24``. (:pull:`447`).
+* Updated ``xhydro.extreme_value_analysis.julia_import`` to configure JuliaCall environment defaults before importing ``juliacall``, reducing segfault risk. (:pull:`447`).
 
 v0.9.1 (2026-09-29)
 -------------------
