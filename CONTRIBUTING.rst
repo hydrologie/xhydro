@@ -110,6 +110,32 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
 
    If you want to skip the ``pre-commit`` hooks temporarily, you can pass the `--no-verify` flag to `git commit`.
 
+   Or, alternatively, you can check individual hooks manually with  `ruff`, `flake8`, `flake8-rst-docstrings`, `vulture`, `codespell`, `numpydoc`, `deptry`, and `yamllint`:
+
+   .. code-block:: console
+
+       # To install the necessary dependencies:
+       $ python -m pip install --group lint
+       # To run individual checks
+       $ python -m ruff check --quiet .
+       $ python -m flake8 --config=.flake8 src/ tests
+       $ python -m vulture src/xhydro tests
+       $ codespell src/xhydro tests docs
+       $ python -m numpydoc lint src/xhydro/*.py
+       $ python -m deptry src
+       $ python -m yamllint --config-file=.yamllint.yaml src/xhydro
+
+   .. note::
+
+       `xhydro` is fully type-checked with `mypy`_ (`ty`_).
+       If your contributions are failing this check, it means that the type definitions could be better defined.
+       For some guidance on how to do this, check the `mypy cheat sheet <https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html#cheat-sheet-py3>`_ for examples.
+       If you are adding a new but similar compute function or indicator, following typing conventions of other similar objects will usually address these issues.
+
+.. _`mypy`: https://www.mypy-lang.org/
+.. _`ty`: https://docs.astral.sh/ty/
+
+
 #. Create a branch for local development:
 
    .. code-block:: console
@@ -229,6 +255,14 @@ Before you submit a Pull Request, check that it meets these guidelines:
 ..        $ git commit -s/--signoff
 
 .. This will add a `Signed-off-by:` line to your commit message, which indicates that you agree to the DCO.
+
+.. warning::
+
+    Try to keep your contributions within the scope of the issue that you are addressing.
+    While it might be tempting to fix other aspects of the library as it comes up,
+    it's better to simply to flag the problems in case others are already working on it.
+
+    Consider adding a "**# TODO:**" or "**# FIXME:**" comment if the need arises.
 
 AI Assistance Notice
 --------------------

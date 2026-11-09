@@ -1,6 +1,6 @@
 envlist = [
   "lint",
-  { product = [{ prefix = "py3.", start = 10, stop = 14 }] },
+  { product = [{ prefix = "py3.", start = 11, stop = 14 }] },
   "docs",
   "notebooks-lax"
 ]
@@ -67,7 +67,10 @@ passenv = ["CI", "COVERALLS_*", "GITHUB_*"]
 download = true
 dependency_groups = ["test"]
 install_command = ["python", "-m", "pip", "install", "--no-user", "{opts}", "{packages}"]
-commands_pre = [["pip", "list"], ["pip", "check"]]
+commands_pre = [
+  ["pip", "list"],
+  ["pip", "check"]
+]
 commands = [
   # Recompile h5py to avoid issues with different numpy versions on non-windows systems
   ["python", "-m", "pip", "install", "--no-user", "--no-deps", "--force-reinstall", "--no-binary", "h5py", "h5py>=3.12.1"],

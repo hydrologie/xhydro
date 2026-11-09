@@ -75,6 +75,10 @@ This logo was designed by Élyse Fournier (@elysefounier) and Louise Arnal (@lou
         :class: xhydro-logo-small only-dark-inline
 
 ..
+    .. |mypy| image:: https://www.mypy-lang.org/static/mypy_badge.svg
+            :target: https://mypy-lang.org/
+            :alt: mypy
+
     .. |ossf-bp| image:: https://bestpractices.coreinfrastructure.org/projects/9945/badge
             :target: https://bestpractices.coreinfrastructure.org/projects/9945
             :alt: Open Source Security Foundation Best Practices
