@@ -125,6 +125,7 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
        $ python -m deptry src
        $ python -m yamllint --config-file=.yamllint.yaml src/xhydro
 
+..
    .. note::
 
        `xhydro` is fully type-checked with `mypy`_ (`ty`_).
@@ -132,9 +133,8 @@ Ready to contribute? Here's how to set up ``xHydro`` for local development.
        For some guidance on how to do this, check the `mypy cheat sheet <https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html#cheat-sheet-py3>`_ for examples.
        If you are adding a new but similar compute function or indicator, following typing conventions of other similar objects will usually address these issues.
 
-.. _`mypy`: https://www.mypy-lang.org/
-.. _`ty`: https://docs.astral.sh/ty/
-
+    .. _`mypy`: https://www.mypy-lang.org/
+    .. _`ty`: https://docs.astral.sh/ty/
 
 #. Create a branch for local development:
 
