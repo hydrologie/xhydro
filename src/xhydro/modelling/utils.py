@@ -276,7 +276,7 @@ def aggregate_output(  # noqa: C901
 
     try:
         ds_agg = ds_agg.sortby(ds_agg[f"{to_dim}"].astype(int))
-    except TypeError:
+    except (TypeError, ValueError):
         ds_agg = ds_agg.sortby(ds_agg[f"{to_dim}"])
     ds_agg = ds_agg.transpose("time", f"{to_dim}", ...)
 
