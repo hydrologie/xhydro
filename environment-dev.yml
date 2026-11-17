@@ -31,6 +31,7 @@ dependencies:
   - xarray-spatial >=0.3.7
   - xclim
   - xscen >=0.12.1,<0.16  # xscen controls the version of xclim.
+  - xsdba <0.8.0  # FIXME: Only imported in the backend, but v0.8.0 requires xclim >=1.0.0. Remove when xscen is updated.
   - xvec
   # Leafmap
   - leafmap
