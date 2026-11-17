@@ -2,26 +2,26 @@
 Changelog
 =========
 
-..  Unreleased
-    ----------
+Unreleased
+----------
 
-    Contributors to this version: None.
+Contributors to this version: Gabriel Rondeau-Genesse (:user:`RondeauG`).
 
-    New features and enhancements
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    * No changes.
+New features and enhancements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* No changes.
 
-    Breaking changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Breaking changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
-    Bug fixes
-    ^^^^^^^^^
-    * No changes.
+Bug fixes
+^^^^^^^^^
+* Fixed an issue with the aggregation of outputs when the spatial dimension was a string coordinate instead of an integer ID. (:pull:`462`)
 
-    Internal changes
-    ^^^^^^^^^^^^^^^^
-    * No changes.
+Internal changes
+^^^^^^^^^^^^^^^^
+* No changes.
 
 v0.9.1 (2026-09-29)
 -------------------
