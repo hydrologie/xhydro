@@ -62,7 +62,7 @@ allowlist_externals = [
 
 [env_run_base]
 description = "Run tests with pytest under {basepython}"
-setenv = { PYTEST_ADDOPTS = "--color=yes --cov=xhydro --cov-report=lcov", PYTHONPATH = "{toxinidir}" }
+setenv = { PYTEST_ADDOPTS = "--color=yes --cov=xhydro --cov-report=lcov", PYTHONPATH = "{toxinidir}", CFLAGS = "-std=gnu17" }
 passenv = ["CI", "COVERALLS_*", "GITHUB_*"]
 download = true
 dependency_groups = ["test"]
